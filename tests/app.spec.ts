@@ -78,7 +78,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('space-title')).toHaveText('영상');
     await expect(page.getByTestId('avatars').first()).toHaveAttribute('aria-label', '영상');
     await page.getByLabel('추가할 계정').fill('bora@example.com');
-    await page.getByLabel('부를 이름').fill('보라');
+    await page.getByRole('textbox', { name: '부를 이름' }).fill('보라');
     await page.getByRole('button', { name: '추가', exact: true }).click();
     await expect(page.getByText('bora@example.com', { exact: false }).first()).toBeVisible();
     await expect(page.getByTestId('space-title')).toHaveText('보라 & 영상');
