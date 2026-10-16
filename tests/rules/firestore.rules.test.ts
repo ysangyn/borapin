@@ -173,6 +173,16 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertSucceeds(getDoc(doc(db, 'spaces/main/study/bora')));
     await assertFails(setDoc(doc(as.stranger(), 'spaces/main/study/stranger'), { progress: {}, days: [], v: 1 }));
   });
+  test('오늘의 한 질문: 답은 자기 uid 칸에만, 남의 답은 못 고친다', async () => {
+    const db = as.bora();
+    await assertSucceeds(setDoc(doc(db, 'spaces/main/asks/2026-10-17'), { qid: 'q01', place: { t: 'kr', code: '52' }, answers: { bora: { name: '보라', text: '순두부', at: 1 } }, v: 1 }));
+    await assertFails(setDoc(doc(db, 'spaces/main/asks/2026-10-18'), { qid: 'q01', place: { t: 'kr', code: '52' }, answers: { owner: { name: '영상', text: '가짜', at: 1 } }, v: 1 }));
+    const own = as.owner();
+    await assertSucceeds(updateDoc(doc(own, 'spaces/main/asks/2026-10-17'), { 'answers.owner': { name: '영상', text: '갈치', at: 2 } }));
+    await assertFails(updateDoc(doc(own, 'spaces/main/asks/2026-10-17'), { 'answers.bora': { name: '보라', text: '바꿈', at: 3 } }));
+    await assertSucceeds(getDoc(doc(db, 'spaces/main/asks/2026-10-17')));
+    await assertFails(getDoc(doc(as.stranger(), 'spaces/main/asks/2026-10-17')));
+  });
   test('사진 파일은 올리고, 공개 여부만 바꿀 수 있다', async () => {
     const db = as.bora();
     await assertSucceeds(setDoc(doc(db, 'spaces/main/photoData/p3_l'), photoFile('p3')));

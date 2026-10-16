@@ -210,6 +210,24 @@ service cloud.firestore {
             && request.resource.data.v == 1));
       }
 
+      // 오늘의 한 질문: 날짜마다 문서 하나. answers = { uid: {name, text, at} }, 자기 칸만 쓴다
+      match /asks/{day} {
+        allow read: if inSpace(spaceId);
+        allow create: if inSpace(spaceId)
+          && request.resource.data.keys().hasOnly(['qid', 'place', 'answers', 'v'])
+          && request.resource.data.qid is string && request.resource.data.place is map
+          && request.resource.data.answers is map
+          && request.resource.data.answers.keys().hasOnly([request.auth.uid])
+          && request.resource.data.v == 1;
+        allow update: if inSpace(spaceId)
+          && request.resource.data.keys().hasOnly(['qid', 'place', 'answers', 'v'])
+          && request.resource.data.qid == resource.data.qid
+          && request.resource.data.answers.diff(resource.data.answers).affectedKeys().hasOnly([request.auth.uid])
+          && request.resource.data.answers[request.auth.uid].text is string
+          && request.resource.data.answers[request.auth.uid].text.size() <= 200;
+        allow delete: if false;
+      }
+
       // 피드 하트: 문서 하나 = 피드 항목 하나, by = { uid: 이름 }. 자기 uid 칸만 넣고 뺀다
       match /hearts/{itemKey} {
         allow read: if inSpace(spaceId);

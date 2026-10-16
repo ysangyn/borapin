@@ -690,3 +690,47 @@ a { color: var(--violet); text-decoration: none; }
 .study-word-row { display: flex; gap: 10px; align-items: center; }
 .study-word-row b { flex: none; }
 .study-word-row span { flex: 1; }
+
+/* ===== 홈 '다음 여행 준비' 묶음 (여행과 여행 사이) ===== */
+.hub { display: flex; flex-direction: column; gap: 10px; }
+.hub-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: -2px; }
+.hub-title { color: var(--violet); }
+.hub-block { display: flex; flex-direction: column; gap: 8px; }
+.hub-block.card { padding: 14px 16px; }
+.hub-label { font-size: 12.5px; font-weight: 800; color: var(--ink3); display: flex; align-items: center; gap: 6px; }
+/* 1순위: 사진 위에 이름 */
+.hub-first { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; min-height: 150px; padding: 16px; border-radius: 22px; background: var(--violet) center/cover no-repeat; color: #fff; isolation: isolate; overflow: hidden; }
+.hub-first.has-photo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0.05) 20%, rgba(20, 14, 48, 0.78) 100%); }
+.hub-first:not(.has-photo) { background: linear-gradient(135deg, #5b3fd1, #8a6cf0); }
+.hub-first-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; text-shadow: 0 1px 8px rgba(20, 14, 48, 0.4); }
+.hub-first-copy > b { font-size: 22px; letter-spacing: -0.02em; line-height: 1.2; }
+.hub-first-eyebrow { font-weight: 800; opacity: 0.92; }
+.hub-first-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; opacity: 0.95; }
+.hub-first .hearts .heart { color: rgba(255, 255, 255, 0.75); }
+.hub-first .hearts .heart.on { color: #fff; }
+.hub-first .hearts .heart.on svg { fill: #ff7a8a; }
+.hub-others { display: flex; gap: 8px; }
+.hub-other { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 16px; background: #fff; color: inherit; border: 1px solid var(--line); }
+.hub-other-name { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 오늘의 한 질문 */
+.hub-q { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; }
+.hub-ask-form { display: flex; gap: 6px; }
+.hub-ask-form .btn { height: 46px; padding: 0 16px; }
+.hub-answers { display: flex; flex-direction: column; gap: 6px; }
+.hub-answer { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 14px; background: var(--page); }
+.hub-answer.mine { background: var(--mist); }
+.hub-answer.locked { grid-template-columns: auto 1fr; color: var(--ink3); }
+.hub-answer-text { font-size: 15px; line-height: 1.35; word-break: keep-all; }
+.hub-answer .link-btn { margin: 0; padding: 4px 0; font-size: 12.5px; }
+/* 오늘의 영어 */
+.hub-english { color: inherit; }
+.hub-en { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; }
+.hub-english-foot { font-weight: 700; color: var(--violet); }
+/* 가는 길 */
+.hub-way-rows { display: flex; flex-direction: column; }
+.hub-way-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 8px 0; border: none; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; font-size: 14px; text-align: left; }
+.hub-way-row:first-child { border-top: none; }
+.hub-way-row > svg { flex: none; color: var(--violet); }
+.hub-way-row > span { flex: 1; min-width: 0; }
+.hub-way-row b { font-weight: 800; }
+.hub-news-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

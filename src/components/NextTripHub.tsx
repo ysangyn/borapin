@@ -1,0 +1,232 @@
+import { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Icon, useToast } from './ui';
+import { Hearts, wishTitle } from './WishCard';
+import WishRolling from './WishRolling';
+import { useAuth } from '../lib/auth';
+import { updateWish, type Stats } from '../lib/data';
+import { placeLabel, placeLong, placeParam } from '../lib/geo';
+import { photoForPlace } from '../lib/media';
+import { bothWant, sortWishes, wishState } from '../lib/wishes';
+import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
+import { useFestivals, upcomingFestivals, festivalPeriod, isOngoing } from '../lib/festivals';
+import { flightLinks } from '../lib/flights';
+import { newsAgo, useNews } from '../lib/news';
+import { answerAsk, questionFor, questionText, useTodayAsk } from '../lib/asks';
+import { useStudy } from '../lib/study/store';
+import { summary, todaySet, ymd } from '../lib/study/srs';
+import { everyoneLabel, memberNames } from '../lib/members';
+import { upcomingTrips } from '../lib/stats';
+import { dday, formatWhen } from '../lib/dates';
+import type { Place, Trip, Wish } from '../lib/types';
+
+/**
+ * 여행과 여행 사이의 홈 묶음 "다음 여행 준비".
+ * 다음은 어디 → 오늘의 한 질문 → 오늘의 영어 → 가는 길.
+ * 기준 장소는 하나: 예정된 여행이 있으면 그 여행, 없으면 가고 싶은 곳 1순위(둘 다 원하는 곳 먼저).
+ * 질문·가는 길은 모두 그 장소에 매달린다. 가고 싶은 곳이 하나도 없으면 '3곳만 담아볼까요'가 첫 블록.
+ */
+export default function NextTripHub({ wishes, trips, stats }: { wishes: Wish[]; trips: Trip[]; stats: Stats | null }) {
+  const nextTrip = useMemo(() => upcomingTrips(trips)[0] ?? null, [trips]);
+  const active = useMemo(() => {
+    const list = sortWishes(wishes.filter((w) => wishState(w, trips).kind === 'wish'));
+    return [...list.filter(bothWant), ...list.filter((w) => !bothWant(w))];
+  }, [wishes, trips]);
+  const firstWish = active[0] ?? null;
+  const anchor: { place: Place; wish: Wish | null } | null = nextTrip?.places[0]
+    ? { place: nextTrip.places[0], wish: wishes.find((w) => w.tripId === nextTrip.id) ?? null }
+    : firstWish ? { place: firstWish.place, wish: firstWish } : null;
+  return (
+    <section className="hub" data-testid="next-hub" data-anchor={nextTrip ? 'trip' : firstWish ? 'wish' : 'none'}>
+      <div className="hub-head">
+        <h2 className="h2 hub-title">다음 여행 준비</h2>
+        <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{active.length ? `가고 싶은 곳 ${active.length}곳` : '여행지 뽑기'}</Link>
+      </div>
+      {nextTrip ? <NextTripHero trip={nextTrip} more={upcomingTrips(trips).slice(1, 3)} wishes={active.slice(0, 2)} />
+        : firstWish ? <WhereNext top={active.slice(0, 3)} />
+        : <WishRolling wishes={wishes} trips={trips} stats={stats} bare />}
+      {anchor && <TodayAsk place={anchor.place} wish={anchor.wish} />}
+      <TodayEnglish />
+      {anchor && <WayThere place={anchor.place} months={anchor.wish?.months} />}
+    </section>
+  );
+}
+
+/** 1-a. 예정된 여행이 있으면 그 여행이 '다음' — 날짜가 없으면 정하라고 권한다 */
+function NextTripHero({ trip, more, wishes }: { trip: Trip; more: Trip[]; wishes: Wish[] }) {
+  const ph = trip.places[0] ? photoForPlace(trip.places[0]) : null;
+  const d = dday(trip.when);
+  const undated = trip.when.p === 'unknown' || !trip.when.y;
+  return (
+    <div className="hub-block" data-testid="hub-where">
+      <Link to={`/trips/${trip.id}`} className={'hub-first' + (ph ? ' has-photo' : '')} style={ph ? { backgroundImage: `url(${ph.src.s})` } : undefined} data-testid="hub-first">
+        <span className="hub-first-copy">
+          <span className="tiny hub-first-eyebrow">다음 여행{d ? ` · ${d}` : ''}</span>
+          <b>{trip.title}</b>
+          <span className="small hub-first-meta">{undated ? '날짜는 아직 안 정했어요' : formatWhen(trip.when)}{trip.places.length > 1 ? ` · ${trip.places.map(placeLabel).join(' · ')}` : ''}</span>
+        </span>
+        <Icon name="chev" size={18} />
+      </Link>
+      {(more.length > 0 || wishes.length > 0) && (
+        <div className="hub-others">
+          {more.map((t) => (
+            <Link key={t.id} to={`/trips/${t.id}`} className="hub-other">
+              <span className="hub-other-name">{t.title}</span>
+              <span className="tiny muted">{t.when.p === 'unknown' ? '날짜 미정' : formatWhen(t.when)}</span>
+            </Link>
+          ))}
+          {wishes.slice(0, Math.max(0, 2 - more.length)).map((w) => (
+            <Link key={w.id} to={`/wishes/${w.id}`} className="hub-other">
+              <span className="hub-other-name">{wishTitle(w)}</span>
+              <span className="tiny muted">그다음은 여기 · {bothWant(w) ? everyoneLabel() : (w.wantedBy ?? []).join('·') || '아직 하트가 없어요'}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+      {undated && <Link to={`/trips/${trip.id}/edit`} className="btn soft block" data-testid="hub-set-date">날짜 정하기</Link>}
+    </div>
+  );
+}
+
+/** 1-b. 다음은 어디? — 둘 다 원하는 곳 먼저, 1순위는 사진 크게 */
+function WhereNext({ top }: { top: Wish[] }) {
+  const first = top[0];
+  const ph = photoForPlace(first.place);
+  const both = bothWant(first);
+  const waiting = memberNames().filter((n) => !(first.wantedBy ?? []).includes(n));
+  return (
+    <div className="hub-block" data-testid="hub-where">
+      <Link to={`/wishes/${first.id}`} className={'hub-first' + (ph ? ' has-photo' : '')} style={ph ? { backgroundImage: `url(${ph.src.s})` } : undefined} data-testid="hub-first">
+        <span className="hub-first-copy">
+          <span className="tiny hub-first-eyebrow">{both ? `${everyoneLabel()} · 다음은 여기` : '지금 1순위'}</span>
+          <b>{wishTitle(first)}</b>
+          <span className="small hub-first-meta"><Hearts wantedBy={first.wantedBy} />{!both && waiting.length > 0 && <span>{waiting.join('·')}의 하트를 기다려요</span>}</span>
+        </span>
+        <Icon name="chev" size={18} />
+      </Link>
+      {top.length > 1 && (
+        <div className="hub-others">
+          {top.slice(1).map((w) => (
+            <Link key={w.id} to={`/wishes/${w.id}`} className="hub-other">
+              <span className="hub-other-name">{wishTitle(w)}</span>
+              <span className="tiny muted">{bothWant(w) ? everyoneLabel() : (w.wantedBy ?? []).join('·') || '아직 하트가 없어요'}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+      {both && <Link to={`/record?status=planned&place=${placeParam(first.place)}&wish=${first.id}`} className="btn block" data-testid="hub-confirm">{placeLabel(first.place)} 여행 만들기</Link>}
+    </div>
+  );
+}
+
+/** 2. 오늘의 한 질문 — 모두 답하면 서로의 답이 열린다 */
+function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | null }) {
+  const auth = useAuth();
+  const toast = useToast();
+  const nav = useNavigate();
+  const day = ymd(new Date());
+  const q = questionFor(day);
+  const doc = useTodayAsk(day);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const uid = auth.status === 'ready' ? auth.user.uid : '';
+  const answers = doc?.answers ?? {};
+  const mine = answers[uid];
+  const others = Object.entries(answers).filter(([u]) => u !== uid);
+  const need = Math.max(1, memberNames().length);
+  const opened = Object.keys(answers).length >= need;
+  // 첫 답이 질문의 장소를 고정한다 (둘이 다른 1순위를 보고 있어도 같은 질문)
+  const place = doc?.place ?? anchorPlace;
+  const submit = async () => {
+    if (auth.status !== 'ready' || !text.trim() || busy) return;
+    setBusy(true);
+    try {
+      await answerAsk(day, q, place, text, auth.user, doc ?? null);
+      toast(need > 1 && !opened ? '답을 남겼어요 · 상대도 답하면 서로 보여요' : '답을 남겼어요');
+      setText('');
+    } catch (e) { console.warn(e); toast('남기지 못했어요. 다시 해 주세요'); }
+    finally { setBusy(false); }
+  };
+  // 답을 가고 싶은 곳 메모(먹을 것·가볼 곳·해볼 것)에 넣기 — 메모를 둘 가고 싶은 곳이 있을 때만
+  const canSave = !!q.save && !!wish;
+  const saveToWish = async (t: string) => {
+    if (!q.save || !wish) return;
+    const list = wish[q.save] ?? [];
+    if (list.includes(t)) return toast('이미 메모에 있어요');
+    try { await updateWish(wish.id, { [q.save]: [...list, t] }); toast(`${placeLabel(wish.place)} 메모에 넣었어요`, { label: '보기', onClick: () => nav(`/wishes/${wish.id}`) }); } catch { toast('넣지 못했어요. 다시 해 주세요'); }
+  };
+  return (
+    <div className="hub-block card white hub-ask" data-testid="hub-ask">
+      <div className="hub-label">오늘의 한 질문</div>
+      <p className="hub-q">{questionText(q, place)}</p>
+      {!mine ? (
+        <form className="hub-ask-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
+          <input className="input" aria-label="오늘의 질문 답" placeholder="한 줄이면 돼요" value={text} maxLength={200} onChange={(e) => setText(e.target.value)} />
+          <button type="submit" className="btn" disabled={!text.trim() || busy} data-testid="hub-ask-send">답하기</button>
+        </form>
+      ) : (
+        <div className="hub-answers">
+          <div className="hub-answer mine"><span className="tiny muted">나</span><span className="hub-answer-text">{mine.text}</span>{canSave && <button className="link-btn" onClick={() => saveToWish(mine.text)}>메모에 넣기</button>}</div>
+          {opened ? others.map(([u, a]) => (
+            <div key={u} className="hub-answer" data-testid="hub-answer-other"><span className="tiny muted">{a.name}</span><span className="hub-answer-text">{a.text}</span>{canSave && <button className="link-btn" onClick={() => saveToWish(a.text)}>메모에 넣기</button>}</div>
+          )) : (
+            <div className="hub-answer locked" data-testid="hub-ask-waiting"><Icon name="lock" size={14} /><span className="tiny muted">상대가 답하면 서로의 답이 열려요</span></div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 3. 오늘의 영어 — 한 문장 미리 보기 + 진도 */
+function TodayEnglish() {
+  const { data } = useStudy();
+  const today = useMemo(() => new Date(), []);
+  const set = useMemo(() => (data ? todaySet(data.progress, today) : []), [data, today]);
+  const sum = useMemo(() => (data ? summary(data.progress, data.days, today) : null), [data, today]);
+  const doneToday = !!data?.days.includes(ymd(today));
+  const first = set[0];
+  return (
+    <Link to="/study" className="hub-block card white hub-english" data-testid="hub-english">
+      <div className="hub-label">
+        오늘의 영어
+        {sum && sum.streak > 0 && <span className="tag violet">{sum.streak}일째</span>}
+        {doneToday && <span className="tag"><Icon name="check" size={12} stroke={2.4} />오늘 했어요</span>}
+      </div>
+      {first ? (
+        <>
+          <div className="hub-en">{first.en}</div>
+          <div className="small muted">{first.ko}</div>
+          <div className="tiny muted hub-english-foot">{doneToday ? '더 하기' : '시작하기'} · {set.length}문장 · 90초{sum && sum.learned > 0 ? ` · 외운 문장 ${sum.learned}` : ''}</div>
+        </>
+      ) : (
+        <div className="small muted">오늘 몫을 다 했어요. 내일 또 봐요!</div>
+      )}
+    </Link>
+  );
+}
+
+/** 4. 가는 길 — 가기 좋은 때 · 축제 · 항공권 · 소식 한 줄 (바깥 링크는 여기만) */
+function WayThere({ place, months }: { place: Place; months?: number[] }) {
+  const nav = useNavigate();
+  const seasons = useSeasons();
+  const fest = useFestivals();
+  const s = seasonFor(seasons, place, months);
+  const f = place.t === 'kr' ? upcomingFestivals(fest, place.code, new Date(), 60)[0] : undefined;
+  const flights = flightLinks(place, s?.m[0] ?? null);
+  const news = useNews(place);
+  // 여행 준비 칸이니 사건·재난 기사는 거른다 (안전 정보는 묻기에서)
+  const good = news?.find((n) => !/사고|사망|화재|실종|범죄|폭행|추락|침몰|감염|확진|지진|태풍|폭우|홍수|산불|붕괴|테러|피해/.test(n.title)) ?? null;
+  if (!s && !f && !flights && !good) return null;
+  return (
+    <div className="hub-block card white" data-testid="hub-way">
+      <div className="hub-label">{placeLong(place)} 가는 길</div>
+      <div className="hub-way-rows">
+        {s && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="sun" size={16} /><span>가기 좋은 때 <b>{monthsLabel(s.m)}</b>{s.why ? ` · ${s.why}` : ''}</span></button>}
+        {f && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="flag" size={16} /><span>{isOngoing(f) ? '지금 열리는 축제' : '다가오는 축제'} <b>{f.t}</b> · {festivalPeriod(f)}</span></button>}
+        {flights && <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label}{s ? ` · ${s.m[0]}월` : ''}</span></a>}
+        {good && <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>}
+      </div>
+    </div>
+  );
+}

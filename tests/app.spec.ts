@@ -306,12 +306,67 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByTestId('dice-add').click();
     await expect(page.getByTestId('wish-card')).toHaveCount(2);
 
-    // 홈 롤링, 여행 탭에도 보인다
+    // 홈 '다음 여행 준비'는 예정된 제주 여행을 맡고, 여행 탭에도 보인다
     await page.goto('/');
-    await expect(page.getByTestId('home-wishes').getByTestId('wish-card').first()).toBeVisible();
-    await expect(page.getByTestId('home-wishes')).toContainText('제주');
+    await expect(page.getByTestId('next-hub')).toHaveAttribute('data-anchor', 'trip');
+    await expect(page.getByTestId('hub-first')).toContainText('제주 여행');
     await page.goto('/trips');
     await expect(page.getByTestId('trips-wishes')).toContainText('제주');
+  });
+
+  test('홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다', async ({ page, browser }) => {
+    await signIn(page, OWNER);
+    const hub = page.getByTestId('next-hub');
+    await expect(hub).toBeVisible();
+    // 1. 다음은 어디: 예정된 제주 여행이 맨 위, 그다음은 가고 싶은 곳(강원)
+    await expect(hub.getByTestId('hub-first')).toContainText('제주 여행');
+    await expect(hub.locator('.hub-other')).toContainText([/강원/]);
+    // 2. 오늘의 한 질문: 제주 이야기. 내가 답하면 상대 답은 잠겨 있다
+    const ask = hub.getByTestId('hub-ask');
+    await expect(ask).toContainText('제주');
+    await ask.getByLabel('오늘의 질문 답').fill('흑돼지랑 고기국수');
+    await ask.getByTestId('hub-ask-send').click();
+    await expect(page.getByRole('status')).toContainText('답을 남겼어요');
+    await expect(ask.locator('.hub-answer.mine')).toContainText('흑돼지랑 고기국수');
+    await expect(ask.getByTestId('hub-ask-waiting')).toBeVisible();
+    await expect(ask.getByTestId('hub-answer-other')).toHaveCount(0);
+    await shot(page, '10d-home-hub');
+    // 보라가 들어와 같은 질문을 보고 답하면 → 서로의 답이 열린다 (내 화면은 새로 고침 없이)
+    const bora = await browser.newPage();
+    await signIn(bora, 'bora@example.com');
+    const bAsk = bora.getByTestId('hub-ask');
+    await expect(bAsk).toContainText('제주');
+    await expect(bAsk.getByTestId('hub-answer-other')).toHaveCount(0);
+    await bAsk.getByLabel('오늘의 질문 답').fill('한라산 보이는 카페');
+    await bAsk.getByTestId('hub-ask-send').click();
+    await expect(bAsk.getByTestId('hub-answer-other')).toContainText('흑돼지랑 고기국수');
+    await expect(bAsk.getByTestId('hub-answer-other')).toContainText('영상');
+    await bora.close();
+    await expect(ask.getByTestId('hub-answer-other')).toContainText('한라산 보이는 카페');
+    await expect(ask.getByTestId('hub-answer-other')).toContainText('보라');
+    await expect(ask.getByTestId('hub-ask-waiting')).toHaveCount(0);
+    // 먹을 것·가볼 곳 질문이면 답을 가고 싶은 곳 메모에 넣을 수 있다 (오늘 질문이 그런 종류일 때)
+    const save = ask.locator('.hub-answer.mine').getByRole('button', { name: '메모에 넣기' });
+    if (await save.count()) {
+      await save.click();
+      await expect(page.getByRole('status')).toContainText('메모에 넣었어요');
+      await page.getByRole('button', { name: '보기' }).click();
+      await expect(page).toHaveURL(/\/wishes\/[A-Za-z0-9]+$/);
+      expect(await page.locator('textarea').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value).join('\n'))).toContain('흑돼지랑 고기국수');
+      await page.goto('/');
+    }
+    // 3. 오늘의 영어: 영어 한 문장이 보이고 누르면 공부 화면
+    const en = hub.getByTestId('hub-english');
+    await expect(en.locator('.hub-en')).toHaveText(/[A-Za-z]{3,}/);
+    await expect(en).toContainText(/\d문장 · 90초/);
+    // 4. 가는 길: 같은 곳(제주)의 가기 좋은 때
+    const way = hub.getByTestId('hub-way');
+    await expect(way).toContainText('제주');
+    await expect(way).toContainText('가기 좋은 때');
+    // 바깥 링크(항공권·뉴스)는 국내 여행지엔 없다
+    await expect(way.getByRole('link')).toHaveCount(0);
+    await en.click();
+    await expect(page).toHaveURL(/\/study$/);
   });
 
   test('우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임', async ({ page }) => {

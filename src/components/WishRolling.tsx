@@ -15,7 +15,7 @@ import type { Trip, Wish } from '../lib/types';
 import { useFestivals } from '../lib/festivals';
 
 /** 홈 '가고 싶은 곳': 둘 다 원하는 곳 → 지금 가기 좋은 곳 → 나머지(날마다 섞음) 중 3곳을 조용히 보여 준다. 비어 있으면 이번 달 추천 3곳. */
-export default function WishRolling({ wishes, trips, stats }: { wishes: Wish[]; trips: Trip[]; stats: Stats | null }) {
+export default function WishRolling({ wishes, trips, stats, bare }: { wishes: Wish[]; trips: Trip[]; stats: Stats | null; bare?: boolean }) {
   const seasons = useSeasons();
   const info = useTravelInfo();
   const auth = useAuth();
@@ -42,10 +42,10 @@ export default function WishRolling({ wishes, trips, stats }: { wishes: Wish[]; 
 
   return (
     <section data-testid="home-wishes">
-      <div className="row-between" style={{ marginBottom: 6 }}>
+      {!bare && <div className="row-between" style={{ marginBottom: 6 }}>
         <h2 className="h2" style={{ color: '#b4472c' }}>가고 싶은 곳</h2>
         <Link to="/wishes" className="small" style={{ fontWeight: 600 }}>{items.length ? `모두 보기 ${items.length}` : '여행지 뽑기'}</Link>
-      </div>
+      </div>}
       {items.length > 0 ? (
         <div className="card white wish-home" data-testid="wish-home">
           {items.slice(0, 3).map(({ w, s }) => (

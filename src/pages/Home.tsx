@@ -10,6 +10,7 @@ import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTA
 import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
 import WishRolling from '../components/WishRolling';
+import NextTripHub from '../components/NextTripHub';
 import MonthPick, { useMonthPick } from '../components/MonthPick';
 import { pickMemory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
@@ -109,10 +110,11 @@ export default function Home() {
           </div>
         )}
 
-        {planned.some((t) => t.id !== stage?.trip.id) && (
+        {/* 여행 사이엔 아래 '다음 여행 준비'가 예정 여행을 맡으므로, 여기는 여행 전·중·후일 때만 */}
+        {stage && planned.some((t) => t.id !== stage.trip.id) && (
           <section>
             <div className="small" style={{ fontWeight: 700, color: 'var(--violet)', marginBottom: 4 }}>다가오는 여행</div>
-            <div className="list">{planned.filter((t) => t.id !== stage?.trip.id).slice(0, 2).map((t) => <TripRow key={t.id} trip={t} />)}</div>
+            <div className="list">{planned.filter((t) => t.id !== stage.trip.id).slice(0, 2).map((t) => <TripRow key={t.id} trip={t} />)}</div>
           </section>
         )}
 
@@ -127,8 +129,9 @@ export default function Home() {
           </details>
         ) : (
           <>
+            {/* 여행과 여행 사이: 다음은 어디 → 오늘의 한 질문 → 오늘의 영어 → 가는 길, 그 아래 이달의 추천(미리 담아 두기) */}
+            {trips && wishes && <NextTripHub wishes={wishes} trips={trips} stats={stats} />}
             {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
-            {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
           </>
         )}
 
