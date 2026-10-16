@@ -481,6 +481,10 @@ test.describe.serial('보라핀 1단계', () => {
     // 앞 시험들이 남긴 것들이 다 보인다: 사진 묶음, 글, 우리 장소, 핀
     await expect(page.locator('[data-testid="feed-item"][data-kind="photos"]').first()).toContainText('사진');
     await expect(page.locator('[data-testid="feed-item"][data-kind="note"]').first()).toContainText('바다 보며 커피 마신 날');
+    // 짧은 글은 배경 위에 크게 (강릉 사진이 있으니 사진 배경)
+    const quote = page.locator('[data-testid="feed-item"][data-kind="note"]').first().getByTestId('feed-quote-card');
+    await expect(quote).toBeVisible();
+    await expect(quote).toHaveClass(/has-photo/);
     await expect(page.locator('[data-testid="feed-item"][data-kind="place"]').first()).toBeVisible();
     await expect(page.locator('[data-testid="feed-item"][data-kind="trip"]').first()).toBeVisible();
     // 시간순(최신 먼저): 각 줄의 '얼마 전' 글이 거꾸로 가지 않는지는 단위 시험이 보고, 여기선 내가 남긴 건 '나'로 보이는지

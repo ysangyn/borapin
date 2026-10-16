@@ -14,6 +14,7 @@ import { markFeedSeen } from '../lib/feedSeen';
 import { openSlideshow } from '../components/slideshow';
 import { wishTitle } from '../components/WishCard';
 import QuickUpload from '../components/QuickUpload';
+import { photoForPlace } from '../lib/media';
 
 /** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로 */
 export default function Feed() {
@@ -90,10 +91,20 @@ function FeedRow({ item, me }: { item: FeedItem; me: string }) {
     );
   }
   if (item.kind === 'note') {
+    // 짧은 글은 그 지역 사진(없으면 하늘·바다·노을 빛깔) 위에 크게
+    const short = item.note.text.length <= 90 && !item.note.text.includes('\n\n');
+    const photo = short ? item.trip.places.map(photoForPlace).find(Boolean) ?? null : null;
+    const hue = item.note.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 6;
     return (
       <article className="feed-item" data-testid="feed-item" data-kind="note">
         <header><Who name={item.by} me={me} /><span className="small">{item.trip.title}에 글</span>{when}</header>
-        <p className="feed-text quote">{item.note.text}</p>
+        {short ? (
+          <p className={'feed-quote-card g' + hue + (photo ? ' has-photo' : '')} style={photo ? { backgroundImage: `url(${photo.src.s})` } : undefined} data-testid="feed-quote-card">
+            <span>{item.note.text}</span>
+          </p>
+        ) : (
+          <p className="feed-text quote">{item.note.text}</p>
+        )}
         <Link to={`/trips/${item.trip.id}`} className="tiny feed-link">여행 보기</Link>
       </article>
     );

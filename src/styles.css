@@ -580,3 +580,14 @@ a { color: var(--violet); text-decoration: none; }
 /* 피드 맨 위 사진 올리기 */
 .quick-upload { display: flex; gap: 8px; align-items: center; }
 .quick-upload-trip { flex: 1; min-width: 0; height: 42px; }
+
+/* 피드: 짧은 글은 배경(그 지역 사진 또는 하늘·바다·노을 빛깔) 위에 크게 */
+.feed-quote-card { margin: 0; min-height: 150px; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 22px 20px; text-align: center; color: #fff; font-size: 19px; font-weight: 800; line-height: 1.45; letter-spacing: -0.01em; word-break: keep-all; background: center / cover no-repeat; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 2px 14px rgba(0, 0, 0, 0.25); position: relative; isolation: isolate; overflow: hidden; }
+.feed-quote-card.has-photo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(23, 16, 60, 0.22), rgba(23, 16, 60, 0.5)); }
+.feed-quote-card.g0 { background-image: linear-gradient(135deg, #5b8def, #9ed0ff 55%, #fff3b0); }
+.feed-quote-card.g1 { background-image: linear-gradient(160deg, #0f7fb8, #4fc3d9 60%, #d8f3ff); }
+.feed-quote-card.g2 { background-image: linear-gradient(135deg, #ff9a6c, #ff6b8b 50%, #6a4bd8); }
+.feed-quote-card.g3 { background-image: linear-gradient(150deg, #3a9d6e, #9bd59a 60%, #f3f7c8); }
+.feed-quote-card.g4 { background-image: linear-gradient(135deg, #6a4bd8, #b58cf5 55%, #ffd1e8); }
+.feed-quote-card.g5 { background-image: linear-gradient(160deg, #1d2b64, #4e6cb0 55%, #f8cdda); }
+.feed-quote-card span { max-width: 28ch; }
