@@ -587,7 +587,7 @@ test.describe.serial('보라핀 1단계', () => {
     await again.click();
     await expect(again).toHaveAttribute('aria-pressed', 'true');
     // ② 날짜 ③ 시간·예약
-    await plan.getByRole('button', { name: /경포대/ }).click();
+    await plan.locator('.plan-name', { hasText: '경포대' }).click();
     await plan.getByLabel('날짜').selectOption('2019-05-04');
     await plan.getByLabel('시간').selectOption('18:30');
     await expect(plan).toContainText('2일째 · 5.4 (토)');

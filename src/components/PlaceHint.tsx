@@ -7,6 +7,7 @@ import { cityFor, useWorld } from '../lib/world';
 import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
 import type { Place } from '../lib/types';
 import { accessLine } from '../lib/transport';
+import { localTimeText, tzText } from '../lib/tz';
 
 /**
  * 장소를 고르면 바로 아래에 한 눈 정보: 국내는 볼거리·먹거리·축제, 해외 도시는 도시 정보, 나라만 고르면 가기 좋은 때 + 그 나라 도시들
@@ -39,7 +40,7 @@ export default function PlaceHint({ place }: { place: Place | null }) {
   const cities = (world?.cities ?? []).filter((w) => w.c === place.id);
   return (
     <div className="place-hint" data-testid="place-hint">
-      {country && <span><b>{country.name}</b> · {country.continent}</span>}
+      {country && <span><b>{country.name}</b> · {country.continent}{tzText(place) ? ` · ${tzText(place)}` : ''}{localTimeText(place) ? ` · 지금 ${localTimeText(place)}` : ''}</span>}
       {season && <span><b>가기 좋은 때</b> {monthsLabel(season.m)} · {season.why}{season.at ? ` (${season.at} 기준)` : ''}</span>}
       {cities.length > 0
         ? <span><b>도시 정보 있음</b> {cities.map((w) => w.city).join(' · ')} — 위 칸에 도시를 넣으면 통화·말·입국·먹을 것이 보여요</span>

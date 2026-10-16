@@ -5,6 +5,7 @@ import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { monthsLabel } from '../lib/seasons';
 import { cityFor, COST_LABEL, flyLabel, tzLabel, useWorld, WALK_LABEL, type WorldCity } from '../lib/world';
 import type { Place } from '../lib/types';
+import { localTimeText, tzText } from '../lib/tz';
 
 /**
  * 해외 도시 기본 정보 (world.json): 통화·말·콘센트·시차·비행시간·입국 메모 + 먹을 것·볼 것.
@@ -18,12 +19,16 @@ export default function CityInfo({ place, onAdd, compact }: { place: Place; onAd
 }
 
 export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; updated?: string }) {
+  const place: Place = { t: 'country', id: w.c, city: w.city };
+  const tz = tzText(place) || tzLabel(w.tz);
+  const now = localTimeText(place);
   return (
     <div className="city-info" data-testid="city-info">
       {!compact && <div className="small" style={{ color: 'var(--ink2)' }}>{w.line}</div>}
       <dl className="city-facts">
         <div><dt>가기 좋은 때</dt><dd>{monthsLabel(w.best)} · {w.why}</dd></div>
-        <div><dt>비행</dt><dd>인천에서 {flyLabel(w.fly)} · {tzLabel(w.tz)}</dd></div>
+        <div><dt>비행</dt><dd>인천에서 {flyLabel(w.fly)}</dd></div>
+        <div><dt>시차</dt><dd data-testid="city-tz">{tz}{now ? ` · 지금 그곳은 ${now}` : ''}</dd></div>
         <div><dt>돈</dt><dd>{w.cur} · {COST_LABEL[w.cost]}</dd></div>
         <div><dt>말·콘센트</dt><dd>{w.lang} · {w.plug}</dd></div>
         <div><dt>걷기</dt><dd>{WALK_LABEL[w.walk]}{w.with.length ? ` · ${josa(w.with.join('·'), '와/과')} 좋아요` : ''}</dd></div>
