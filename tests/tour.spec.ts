@@ -70,6 +70,11 @@ test.beforeAll(async () => {
 test('빈 화면 (처음 쓰는 사람)', async ({ browser }) => {
   test.setTimeout(300_000);
   const page = await mobile(browser);
+  // 로그인 화면 (구름 영상이 움직이기 시작한 뒤)
+  await page.goto('/');
+  await expect(page.getByTestId('email-form')).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(2500);
+  await snap(page, 'e00-login', false);
   await signIn(page);
   await snap(page, 'e01-home', false);
   for (const [route, name] of [['/trips', 'e02-trips'], ['/wishes', 'e03-wishes'], ['/places', 'e04-places'], ['/memories', 'e05-memories'], ['/map', 'e06-map'], ['/ask', 'e07-ask'], ['/space', 'e08-space'], ['/record', 'e09-record']] as const) {
@@ -256,13 +261,24 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.goto('/');
   await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
   await page.goto('/map');
+  await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
   await settle(page);
+  // 강릉을 눌러 지역 창 (위쪽에 여행지 사진)
+  const pt = await page.evaluate(() => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([128.88, 37.74]));
+  const box = await page.getByTestId('map').first().boundingBox();
+  if (box) await page.mouse.click(box.x + pt.x, box.y + pt.y);
+  await page.waitForTimeout(1500);
+  await snap(page, 'm22-sheet', false);
   await page.context().close();
 });
 
 test('가득 찬 화면 · PC', async ({ browser }) => {
   test.setTimeout(480_000);
   const page = await desktop(browser);
+  await page.goto('/');
+  await expect(page.getByTestId('email-form')).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(2500);
+  await snap(page, 'd00-login', false);
   await signIn(page);
   for (const [route, name] of [['/', 'd01-home'], ['/trips', 'd02-trips'], ['/trips/t1', 'd03-trip'], ['/trips/t11', 'd04-planned'], ['/record', 'd05-record'], ['/map', 'd06-map'], ['/wishes', 'd07-wishes'], ['/places', 'd08-places'], ['/memories', 'd09-memories'], ['/ask', 'd10-ask'], ['/space', 'd11-space'], ['/admin', 'd12-admin']] as const) {
     await page.goto(route);
