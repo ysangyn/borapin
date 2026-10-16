@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// 보라핀 보안 규칙
+// - 허용 목록(config/access.allowed)에 있는 구글 계정만 읽고 쓸 수 있다.
+// - 주인 계정(OWNER)은 허용 목록이 비어 있어도 들어와 처음 설정을 만들 수 있다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email_verified == true;
+    }
+    function email() { return request.auth.token.email.lower(); }
+    function isOwner() { return signedIn() && email() == 'ysangyn@gmail.com'; }
+    function accessDoc() { return get(/databases/$(database)/documents/config/access); }
+    function isMember() {
+      return isOwner()
+        || (signedIn()
+            && exists(/databases/$(database)/documents/config/access)
+            && email() in accessDoc().data.allowed);
+    }
+    function isAdmin() {
+      return isOwner() || (isMember() && email() in accessDoc().data.admins);
+    }
+
+    function validAccess(d) {
+      return d.keys().hasOnly(['allowed', 'admins', 'updatedAt'])
+        && d.allowed is list && d.allowed.size() <= 50
+        && d.admins is list && d.admins.size() <= 10;
+    }
+
+    function validTrip(d) {
+      return d.keys().hasAll(['title', 'kind', 'status', 'when', 'places', 'v'])
+        && d.title is string && d.title.size() <= 100
+        && d.kind in ['trip', 'outing']
+        && d.status in ['done', 'planned']
+        && d.when is map
+        && d.places is list && d.places.size() >= 1 && d.places.size() <= 50
+        && (!('companions' in d) || (d.companions is list && d.companions.size() <= 30))
+        && (!('memo' in d) || (d.memo is string && d.memo.size() <= 10000))
+        && (!('tags' in d) || (d.tags is list && d.tags.size() <= 30))
+        && d.v == 1;
+    }
+
+    function validWish(d) {
+      return d.keys().hasAll(['place', 'v'])
+        && d.place is map
+        && (!('note' in d) || (d.note is string && d.note.size() <= 5000))
+        && d.v == 1;
+    }
+
+    match /config/access {
+      allow read: if isMember();
+      allow create: if isOwner() && validAccess(request.resource.data);
+      allow update: if isAdmin() && validAccess(request.resource.data)
+        // 주인 계정은 허용·관리자 목록에서 빠지지 않게
+        && 'ysangyn@gmail.com' in request.resource.data.allowed
+        && 'ysangyn@gmail.com' in request.resource.data.admins;
+      allow delete: if false;
+    }
+
+    match /spaces/{spaceId} {
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60;
+      allow delete: if false;
+
+      match /trips/{tripId} {
+        allow read: if isMember();
+        allow create, update: if isMember() && validTrip(request.resource.data);
+        allow delete: if isMember();
+      }
+
+      match /wishes/{wishId} {
+        allow read: if isMember();
+        allow create, update: if isMember() && validWish(request.resource.data);
+        allow delete: if isMember();
+      }
+    }
+
+    // 그 밖의 모든 경로는 막는다
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
