@@ -1,5 +1,6 @@
 import regionsData from '../data/regions.json';
 import countriesData from '../data/countries.json';
+import citiesData from '../data/cities.json';
 import { getChoseong, disassemble } from 'es-hangul';
 import type { Place } from './types';
 
@@ -28,6 +29,10 @@ export const GROUPS: Group[] = regionsData.groups;
 export const COUNTRIES: Country[] = (countriesData as Country[]).filter((c) => c.id !== 'KOR');
 export const REGION_BY_CODE = new Map(REGIONS.map((r) => [r.code, r]));
 export const COUNTRY_BY_ID = new Map(COUNTRIES.map((c) => [c.id, c]));
+
+/** 해외 주요 도시 (나라, 이름, 영문, 다른 이름들…). 검색에서 '청도'→'칭다오 · 중국'처럼 바로 뜨게 */
+export interface City { country: string; name: string; en: string; aliases: string[] }
+export const CITIES: City[] = (citiesData as string[][]).map(([country, name, en, ...aliases]) => ({ country, name, en, aliases }));
 export const CONTINENTS = ['아시아', '유럽', '북아메리카', '남아메리카', '아프리카', '오세아니아'];
 
 export function regionLabel(code: string): string {
@@ -90,7 +95,7 @@ function jamoDistance(a: string, b: string): number {
 
 export interface SearchHit { place: Place; label: string; sub: string; score: number }
 
-function scoreName(name: string, q: string): number {
+function scoreName1(name: string, q: string): number {
   const n = name.replace(/\s+/g, '').toLowerCase();
   const stem = n.replace(/(특별자치시|특별자치도|특별시|광역시|시|군|구|도)$/, '');
   if (n === q || stem === q) return 100;
@@ -110,7 +115,13 @@ function scoreName(name: string, q: string): number {
 }
 
 export function searchPlaces(query: string, limit = 12): SearchHit[] {
-  const q = normalizeQuery(query);
+  // '청도'·'독도'처럼 끝 글자가 조사와 같은 이름도 있으니, 조사를 뗀 것과 안 뗀 것 중 더 잘 맞는 쪽으로
+  const raw = query.replace(/\s+/g, '').toLowerCase();
+  const stripped = normalizeQuery(query);
+  const qs = raw && raw !== stripped ? [raw, stripped] : [stripped];
+  const scoreName = (name: string, _q: string) => Math.max(...qs.map((q) => scoreName1(name, q)));
+  const enHit = (en: string) => qs.some((q) => en.toLowerCase().startsWith(q));
+  const q = stripped;
   if (!q) return [];
   const hits: SearchHit[] = [];
   for (const r of REGIONS) {
@@ -118,8 +129,17 @@ export function searchPlaces(query: string, limit = 12): SearchHit[] {
     if (s > 0) hits.push({ place: { t: 'kr', code: r.code }, label: r.name, sub: areaShort(r) === r.name ? '국내' : `국내 · ${areaShort(r)}`, score: s + 2 });
   }
   for (const c of COUNTRIES) {
-    const s = Math.max(scoreName(c.name, q), c.en.toLowerCase().startsWith(q) ? 70 : 0);
+    const s = Math.max(scoreName(c.name, q), enHit(c.en) ? 70 : 0);
     if (s > 0) hits.push({ place: { t: 'country', id: c.id }, label: c.name, sub: `해외 · ${c.continent}`, score: s });
+  }
+  for (const c of CITIES) {
+    const country = COUNTRY_BY_ID.get(c.country);
+    if (!country) continue;
+    // 다른 이름(청도·북경 …)으로 찾았으면 국내 같은 이름보다 아래, 본 이름이면 나라와 같은 급
+    const own = Math.max(scoreName(c.name, q), enHit(c.en) ? 70 : 0);
+    const alias = Math.max(0, ...c.aliases.map((a) => scoreName(a, q))) - 8;
+    const s = Math.max(own, alias);
+    if (s > 0) hits.push({ place: { t: 'country', id: c.country, city: c.name }, label: c.name, sub: `${country.name} · ${c.en}`, score: s - 1 });
   }
   hits.sort((a, b) => b.score - a.score || a.label.localeCompare(b.label, 'ko'));
   return hits.slice(0, limit);

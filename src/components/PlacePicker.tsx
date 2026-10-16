@@ -17,7 +17,7 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
   const add = (p: Place) => {
     if (!value.some((v) => samePlace(v, p))) onChange([...value, p]);
     setQ('');
-    if (p.t === 'country') setCityFor(p.id);
+    if (p.t === 'country' && !p.city) setCityFor(p.id);
   };
   const remove = (i: number) => onChange(value.filter((_, j) => j !== i));
   const addCity = () => {
