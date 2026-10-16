@@ -31,39 +31,28 @@ Call log:
 - link "담기":
   - /url: /wishes/new
 - tablist "누가 원하는 곳":
-  - tab "전체 5" [selected]
+  - tab "전체 2" [selected]
   - tab "모두 원해요 0"
-  - tab "보라 1"
-  - tab "나 5"
-  - tab "mail.bora 0"
+  - tab "내 하트 2"
 - heading "한 명만 원해요" [level=2]
-- text: 4곳
+- text: 2곳
 - link "강원 영월군 가고 싶은 곳 보기":
-  - /url: /wishes/eEw9uqlWlEbyjGPaLBot
+  - /url: /wishes/I3u20z83E0xWsAJTZOJD
   - text: 강원 1 강원 영월군 지금 축제 · 영월 단종문화제 한마당 큰잔치 거리 퍼레이드 10.15~21 가기 좋은 때 4~6, 9·10월
 - button "내 하트 빼기" [pressed]: 나
 - link "경남 남해군 가고 싶은 곳 보기":
-  - /url: /wishes/q6eOsZyiWVUbBlWYJvUZ
+  - /url: /wishes/7XZQLKJfzEqieImBRA9G
   - text: 경남 남해군 가기 좋은 때 4~6, 10·11월
 - button "내 하트 빼기" [pressed]: 나
-- link "대만 가오슝 가고 싶은 곳 보기":
-  - /url: /wishes/CcFqN5xJLWEX8SQltX9G
-  - text: 대만 대만 가오슝 가기 좋은 때 11~3월 먹을 것 해산물
-- button "내 하트 빼기" [pressed]: 나
-- link "강원 고성군 가고 싶은 곳 보기":
-  - /url: /wishes/2oxOdI1QOi23m8iNaTIh
-  - text: 강원 강원 고성군 가기 좋은 때 5·6, 9·10월
-- button "내 하트 빼기" [pressed]: 나
-- heading "예정" [level=2]
-- text: 1곳
-- link "제주 가고 싶은 곳 보기":
-  - /url: /wishes/1K6iVm1p2bkVSXtCBPUK
-  - text: 1 제주 가기 좋은 때 5·6, 9~11월 가볼 곳 성산일출봉 외 1
-- link "예정 · 2026년쯤":
-  - /url: /trips/dFBGTmu6tTvpOV38QU6w
 - heading "찾아보기" [level=2]
 - button "여행지 뽑기 국내 160곳 · 테마로"
 - button "해외 도시 고르기 125곳 · 예산·비행·누구와"
+- text: 10월에 가 볼 만한 곳 경북 청송군 주왕산의 기암괴석과 달기약수의 시원함 가기 좋은 때 4~6, 9·10월
+- button "담기"
+- text: 충남 부여군 백제의 숨결이 깃든 연꽃 정원 가기 좋은 때 4·5, 9·10월
+- button "담기"
+- text: 강원 횡성군 명품 한우와 숲길 드라이브 가기 좋은 때 4~6, 9·10월
+- button "담기"
 - text: 담아 둔 곳 소식 · 한 곳에 한 줄
 - navigation "주 메뉴":
   - link "홈":
@@ -74,9 +63,8 @@ Call log:
     - /url: /record
   - link "지도":
     - /url: /map
-  - link "새 소식 2개 피드":
+  - link "피드":
     - /url: /feed
-    - text: 피드
 - link "보라에게 물어봐":
   - /url: /ask
 - status
@@ -85,7 +73,6 @@ Call log:
 # Test source
 
 ```ts
-  298 |     // '누가 원해요'만 바꿔도 묻는다 (취소하면 그대로 머문다)
   299 |     await page.getByRole('link', { name: /남해군.*가고 싶은 곳 보기/ }).first().click();
   300 |     await page.getByRole('button', { name: '보라', exact: true }).click();
   301 |     await back.click();
@@ -174,117 +161,118 @@ Call log:
   384 |     const chips = page.locator('.heart-chip');
   385 |     for (let i = 0; i < (await chips.count()); i++) {
   386 |       if ((await chips.nth(i).getAttribute('aria-pressed')) !== 'true') await chips.nth(i).click();
-  387 |     }
-  388 |     await page.getByRole('button', { name: '1순위', exact: true }).click();
-  389 |     await page.getByTestId('wish-save').click();
-  390 |     await expect(page).not.toHaveURL(/wishes\/new/);
-  391 |     // 홈 '다음 여행 준비'에 영월이 올라오고(예정 여행이 없을 때), 카드 모양은 가고 싶은 곳 목록에서 본다
-  392 |     await page.goto('/');
-  393 |     const hub = page.getByTestId('next-hub');
-  394 |     if (await hub.isVisible() && (await hub.getAttribute('data-anchor')) === 'wish') await expect(hub.getByTestId('hub-first')).toContainText('영월');
-  395 |     await page.goto('/wishes');
-  396 |     // 둘 다 원하는 곳은 큰 카드(사진 자리 + 아래 줄)로, 축제 꼬리표는 한 줄, 주요 단추는 '여행 만들기'
-  397 |     const card = page.getByTestId('wish-group-both').getByTestId('wish-card').filter({ hasText: '영월' }).first();
-> 398 |     await expect(card).toBeVisible();
+  387 |       await expect(chips.nth(i)).toHaveAttribute('aria-pressed', 'true');
+  388 |     }
+  389 |     await page.getByRole('button', { name: '1순위', exact: true }).click();
+  390 |     await page.getByTestId('wish-save').click();
+  391 |     await expect(page).not.toHaveURL(/wishes\/new/);
+  392 |     // 홈 '다음 여행 준비'에 영월이 올라오고(예정 여행이 없을 때), 카드 모양은 가고 싶은 곳 목록에서 본다
+  393 |     await page.goto('/');
+  394 |     const hub = page.getByTestId('next-hub');
+  395 |     if (await hub.isVisible() && (await hub.getAttribute('data-anchor')) === 'wish') await expect(hub.getByTestId('hub-first')).toContainText('영월');
+  396 |     await page.goto('/wishes');
+  397 |     // 둘 다 원하는 곳은 큰 카드(사진 자리 + 아래 줄)로, 축제 꼬리표는 한 줄, 주요 단추는 '여행 만들기'
+  398 |     const card = page.getByTestId('wish-group-both').getByTestId('wish-card').filter({ hasText: '영월' }).first();
+> 399 |     await expect(card).toBeVisible();
       |                        ^ Error: expect(locator).toBeVisible() failed
-  399 |     const tag = card.getByTestId('wish-festival');
-  400 |     await expect(tag).toBeVisible();
-  401 |     const tagBox = (await tag.boundingBox())!;
-  402 |     expect(tagBox.height, '축제 꼬리표가 여러 줄로 늘어났어요').toBeLessThan(28);
-  403 |     const box = (await card.boundingBox())!;
-  404 |     const pageW = (await page.viewportSize())!.width;
-  405 |     expect(box.width, '큰 카드는 화면 너비를 꽉 써야 해요').toBeGreaterThan(pageW - 40);
-  406 |     const btn = (await card.getByTestId('wish-plan').boundingBox())!;
-  407 |     expect(btn.x + btn.width, '단추가 카드 밖으로 나가면 안 돼요').toBeLessThanOrEqual(box.x + box.width + 1);
-  408 |     await expect(card.locator('.t')).toContainText('영월');
-  409 |     await page.context().close();
-  410 |   });
-  411 | 
-  412 |   test('우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다', async ({ browser }) => {
-  413 |     const page = await phone(browser);
-  414 |     await signIn(page);
-  415 |     const fab = page.getByTestId('ask-fab');
-  416 |     await expect(fab).toBeVisible();
-  417 |     await expect(fab).toBeInViewport({ ratio: 1 });
-  418 |     // 아래 메뉴와 겹치지 않는다
-  419 |     const f = (await fab.boundingBox())!;
-  420 |     const nav = (await page.getByRole('navigation', { name: '주 메뉴' }).boundingBox())!;
-  421 |     expect(f.y + f.height).toBeLessThanOrEqual(nav.y + 1);
-  422 |     await fab.click();
-  423 |     await expect(page).toHaveURL(/\/ask/);
-  424 |     await expect(page.getByText('보라에게 물어봐')).toBeVisible();
-  425 |     await expect(page.getByTestId('ask-fab')).toHaveCount(0);
-  426 |     await page.goto('/map');
-  427 |     await expect(page.getByTestId('ask-fab')).toHaveCount(0);
-  428 |     await page.context().close();
-  429 |   });
-  430 | 
-  431 |   test('홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로', async ({ browser }) => {
-  432 |     const page = await phone(browser);
-  433 |     await signIn(page);
-  434 |     // 방금 남긴 핀(고흥) 둘레가 보여야 한다
-  435 |     await page.goto('/record');
-  436 |     await page.getByLabel('어디 검색').fill('고흥');
-  437 |     await page.getByRole('option', { name: /고흥군/ }).first().click();
-  438 |     await page.getByRole('button', { name: '몰라요' }).click();
-  439 |     await page.getByTestId('save').click();
-  440 |     await expect(page.getByTestId('trip-title')).toBeVisible();
-  441 |     await page.goto('/');
-  442 |     const map = page.getByTestId('map').first();
-  443 |     await expect(map).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
-  444 |     // 남한 전체는 약 5.6: 한 지역 둘레면 그보다 훨씬 가깝다
-  445 |     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeGreaterThan(6.4);
-  446 |     await expect(page.locator('.map-label', { hasText: '고흥' }).first()).toBeVisible();
-  447 |     const nearZoom = Number(await map.getAttribute('data-zoom'));
-  448 |     await page.getByRole('button', { name: '전체 보기' }).click();
-  449 |     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeLessThan(nearZoom - 0.2);
-  450 |     await page.context().close();
-  451 |   });
-  452 | 
-  453 |   test('홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드', async ({ browser }) => {
-  454 |     const page = await phone(browser);
-  455 |     await signIn(page);
-  456 |     // 날짜는 앱(한국 시간) 기준으로: CI 서버는 UTC라 자정 무렵이면 하루가 어긋난다
-  457 |     const ymd = new Date(Date.now() + 5 * 86400000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-  458 |     await page.goto('/record?status=planned');
-  459 |     await page.getByLabel('어디 검색').fill('속초');
-  460 |     await page.getByRole('option', { name: /속초시/ }).first().click();
-  461 |     await page.getByLabel('제목').fill('속초 단풍 여행');
-  462 |     await page.getByRole('button', { name: '날짜', exact: true }).click();
-  463 |     await page.getByLabel('시작 날짜').fill(ymd);
-  464 |     await page.getByTestId('save').click();
-  465 |     await expect(page.getByTestId('trip-title')).toHaveText('속초 단풍 여행');
-  466 |     await page.goto('/');
-  467 |     const card = page.getByTestId('stage-card');
-  468 |     await expect(card).toHaveAttribute('data-stage', 'before');
-  469 |     await expect(card).toContainText('속초 단풍 여행');
-  470 |     await expect(card).toContainText('D-5');
-  471 |     await expect(card).toContainText('준비물');
-  472 |     // 다가오는 여행 목록에 같은 여행이 또 나오지 않는다
-  473 |     await expect(page.getByTestId('trip-row').filter({ hasText: '속초 단풍 여행' })).toHaveCount(0);
-  474 |     // 지금 중요한 것만 크게: 추천·가고 싶은 곳은 접혀 있고, 펼치면 보인다
-  475 |     const more = page.getByTestId('home-more');
-  476 |     await expect(more).toBeVisible();
-  477 |     await expect(page.getByTestId('month-pick')).toBeHidden();
-  478 |     await more.locator('summary').click();
-  479 |     await expect(page.getByTestId('month-pick')).toBeVisible();
-  480 |     await card.click();
-  481 |     await expect(page).toHaveURL(/\/trips\/[^/]+$/);
-  482 |     await page.context().close();
-  483 |   });
-  484 | 
-  485 |   test('기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다', async ({ browser }) => {
-  486 |     const page = await phone(browser);
-  487 |     await signIn(page);
-  488 |     await page.goto('/record');
-  489 |     await page.getByLabel('어디 검색').fill('여수');
-  490 |     await page.getByRole('option', { name: /여수시/ }).first().click();
-  491 |     await page.getByLabel('제목').fill('여수 밤바다 사진');
-  492 |     await page.getByRole('button', { name: '몰라요' }).click();
-  493 |     await page.getByTestId('record-photo-input').setInputFiles(['tests/fixtures/photo-gangneung.jpg']);
-  494 |     await expect(page.locator('.pending-photo')).toHaveCount(1);
-  495 |     await page.getByTestId('save').click();
-  496 |     await expect(page.getByTestId('trip-title')).toHaveText('여수 밤바다 사진', { timeout: 30_000 });
-  497 |     await expect(page).toHaveURL(/tab=photos/);
-  498 |     await expect(page.getByTestId('trip-photos').locator('.photo-cell img[data-loaded]')).toHaveCount(1, { timeout: 30_000 });
+  400 |     const tag = card.getByTestId('wish-festival');
+  401 |     await expect(tag).toBeVisible();
+  402 |     const tagBox = (await tag.boundingBox())!;
+  403 |     expect(tagBox.height, '축제 꼬리표가 여러 줄로 늘어났어요').toBeLessThan(28);
+  404 |     const box = (await card.boundingBox())!;
+  405 |     const pageW = (await page.viewportSize())!.width;
+  406 |     expect(box.width, '큰 카드는 화면 너비를 꽉 써야 해요').toBeGreaterThan(pageW - 40);
+  407 |     const btn = (await card.getByTestId('wish-plan').boundingBox())!;
+  408 |     expect(btn.x + btn.width, '단추가 카드 밖으로 나가면 안 돼요').toBeLessThanOrEqual(box.x + box.width + 1);
+  409 |     await expect(card.locator('.t')).toContainText('영월');
+  410 |     await page.context().close();
+  411 |   });
+  412 | 
+  413 |   test('우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다', async ({ browser }) => {
+  414 |     const page = await phone(browser);
+  415 |     await signIn(page);
+  416 |     const fab = page.getByTestId('ask-fab');
+  417 |     await expect(fab).toBeVisible();
+  418 |     await expect(fab).toBeInViewport({ ratio: 1 });
+  419 |     // 아래 메뉴와 겹치지 않는다
+  420 |     const f = (await fab.boundingBox())!;
+  421 |     const nav = (await page.getByRole('navigation', { name: '주 메뉴' }).boundingBox())!;
+  422 |     expect(f.y + f.height).toBeLessThanOrEqual(nav.y + 1);
+  423 |     await fab.click();
+  424 |     await expect(page).toHaveURL(/\/ask/);
+  425 |     await expect(page.getByText('보라에게 물어봐')).toBeVisible();
+  426 |     await expect(page.getByTestId('ask-fab')).toHaveCount(0);
+  427 |     await page.goto('/map');
+  428 |     await expect(page.getByTestId('ask-fab')).toHaveCount(0);
+  429 |     await page.context().close();
+  430 |   });
+  431 | 
+  432 |   test('홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로', async ({ browser }) => {
+  433 |     const page = await phone(browser);
+  434 |     await signIn(page);
+  435 |     // 방금 남긴 핀(고흥) 둘레가 보여야 한다
+  436 |     await page.goto('/record');
+  437 |     await page.getByLabel('어디 검색').fill('고흥');
+  438 |     await page.getByRole('option', { name: /고흥군/ }).first().click();
+  439 |     await page.getByRole('button', { name: '몰라요' }).click();
+  440 |     await page.getByTestId('save').click();
+  441 |     await expect(page.getByTestId('trip-title')).toBeVisible();
+  442 |     await page.goto('/');
+  443 |     const map = page.getByTestId('map').first();
+  444 |     await expect(map).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
+  445 |     // 남한 전체는 약 5.6: 한 지역 둘레면 그보다 훨씬 가깝다
+  446 |     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeGreaterThan(6.4);
+  447 |     await expect(page.locator('.map-label', { hasText: '고흥' }).first()).toBeVisible();
+  448 |     const nearZoom = Number(await map.getAttribute('data-zoom'));
+  449 |     await page.getByRole('button', { name: '전체 보기' }).click();
+  450 |     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeLessThan(nearZoom - 0.2);
+  451 |     await page.context().close();
+  452 |   });
+  453 | 
+  454 |   test('홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드', async ({ browser }) => {
+  455 |     const page = await phone(browser);
+  456 |     await signIn(page);
+  457 |     // 날짜는 앱(한국 시간) 기준으로: CI 서버는 UTC라 자정 무렵이면 하루가 어긋난다
+  458 |     const ymd = new Date(Date.now() + 5 * 86400000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+  459 |     await page.goto('/record?status=planned');
+  460 |     await page.getByLabel('어디 검색').fill('속초');
+  461 |     await page.getByRole('option', { name: /속초시/ }).first().click();
+  462 |     await page.getByLabel('제목').fill('속초 단풍 여행');
+  463 |     await page.getByRole('button', { name: '날짜', exact: true }).click();
+  464 |     await page.getByLabel('시작 날짜').fill(ymd);
+  465 |     await page.getByTestId('save').click();
+  466 |     await expect(page.getByTestId('trip-title')).toHaveText('속초 단풍 여행');
+  467 |     await page.goto('/');
+  468 |     const card = page.getByTestId('stage-card');
+  469 |     await expect(card).toHaveAttribute('data-stage', 'before');
+  470 |     await expect(card).toContainText('속초 단풍 여행');
+  471 |     await expect(card).toContainText('D-5');
+  472 |     await expect(card).toContainText('준비물');
+  473 |     // 다가오는 여행 목록에 같은 여행이 또 나오지 않는다
+  474 |     await expect(page.getByTestId('trip-row').filter({ hasText: '속초 단풍 여행' })).toHaveCount(0);
+  475 |     // 지금 중요한 것만 크게: 추천·가고 싶은 곳은 접혀 있고, 펼치면 보인다
+  476 |     const more = page.getByTestId('home-more');
+  477 |     await expect(more).toBeVisible();
+  478 |     await expect(page.getByTestId('month-pick')).toBeHidden();
+  479 |     await more.locator('summary').click();
+  480 |     await expect(page.getByTestId('month-pick')).toBeVisible();
+  481 |     await card.click();
+  482 |     await expect(page).toHaveURL(/\/trips\/[^/]+$/);
+  483 |     await page.context().close();
+  484 |   });
+  485 | 
+  486 |   test('기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다', async ({ browser }) => {
+  487 |     const page = await phone(browser);
+  488 |     await signIn(page);
+  489 |     await page.goto('/record');
+  490 |     await page.getByLabel('어디 검색').fill('여수');
+  491 |     await page.getByRole('option', { name: /여수시/ }).first().click();
+  492 |     await page.getByLabel('제목').fill('여수 밤바다 사진');
+  493 |     await page.getByRole('button', { name: '몰라요' }).click();
+  494 |     await page.getByTestId('record-photo-input').setInputFiles(['tests/fixtures/photo-gangneung.jpg']);
+  495 |     await expect(page.locator('.pending-photo')).toHaveCount(1);
+  496 |     await page.getByTestId('save').click();
+  497 |     await expect(page.getByTestId('trip-title')).toHaveText('여수 밤바다 사진', { timeout: 30_000 });
+  498 |     await expect(page).toHaveURL(/tab=photos/);
+  499 |     await expect(page.getByTestId('trip-photos').locator('.photo-cell img[data-loaded]')).toHaveCount(1, { timeout: 30_000 });
 ```
