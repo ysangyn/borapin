@@ -75,6 +75,43 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '02-home-empty');
   });
 
+  test('초대 링크: 관리자가 만들고 → 링크로 온 사람이 로그인하면 바로 들어온다 (한 번만)', async ({ page, browser }) => {
+    await signIn(page, OWNER);
+    await page.goto('/space');
+    await page.getByLabel('초대할 사람을 부를 이름').fill('막내');
+    await page.getByTestId('invite-make').click();
+    await expect(page.getByRole('status')).toContainText('초대 링크를 만들었어요');
+    const row = page.getByTestId('invite-row').first();
+    await expect(row).toContainText('막내 초대');
+    const url = (await row.getByTestId('invite-url').textContent())!.trim();
+    expect(url).toMatch(/\/join\/[a-z0-9]{8,}$/);
+    await shot(page, '02b-invite');
+
+    // 새 사람: 링크를 열면 로그인 화면에 '초대 링크로 오셨네요', 로그인하면 들어가기 화면 → 들어가기
+    const ctx = await browser.newContext({ locale: 'ko-KR' });
+    const p2 = await ctx.newPage();
+    await p2.goto(url);
+    await expect(p2.getByTestId('login-invite')).toBeVisible();
+    await p2.waitForFunction(() => typeof (window as unknown as { __testSignIn?: unknown }).__testSignIn === 'function');
+    await p2.evaluate(() => (window as unknown as { __testSignIn: (e: string) => Promise<void> }).__testSignIn('newbie@example.com'));
+    await expect(p2.getByTestId('join')).toContainText('보라핀에 초대받았어요');
+    await expect(p2.getByTestId('join')).toContainText('막내');
+    await shot(p2, '02c-join');
+    await p2.getByTestId('join-go').click();
+    await expect(p2.getByTestId('headline')).toBeVisible({ timeout: 20_000 });
+    await p2.goto('/space');
+    await expect(p2.getByText('막내', { exact: true })).toBeVisible();
+    await ctx.close();
+    // 관리자 화면에서 그 링크는 사라졌고(한 번 쓰면 끝), 막내가 함께 쓰는 사람에 있다
+    await page.reload();
+    await expect(page.getByTestId('invite-row')).toHaveCount(0);
+    await expect(page.getByText('newbie@example.com')).toBeVisible();
+    // 정리: 막내를 빼서 다음 시험들이 둘만 있는 공간을 보게
+    await page.getByLabel('newbie@example.com 빼기').click();
+    await page.getByRole('button', { name: '빼기', exact: true }).click();
+    await expect(page.getByText('newbie@example.com')).toHaveCount(0);
+  });
+
   test('초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();

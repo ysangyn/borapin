@@ -12,6 +12,8 @@ import { isOffline } from '../lib/writes';
 import { localDate } from '../lib/dates';
 import type { Photo } from '../lib/types';
 import { spaceTitle } from '../lib/members';
+import { createInvite, deleteInvite, inviteUrl, useOpenInvites } from '../lib/invites';
+import { shareAnyhow } from '../lib/kakao';
 
 export default function Space() {
   const auth = useAuth();
@@ -24,6 +26,9 @@ export default function Space() {
   const [email, setEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
+  const [inviteName, setInviteName] = useState('');
+  const [madeCode, setMadeCode] = useState<string | null>(null);
+  const invites = useOpenInvites(auth.status === 'ready' && auth.isAdmin);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   if (auth.status !== 'ready') return null;
   const { user, access, isAdmin } = auth;
@@ -161,6 +166,40 @@ export default function Space() {
           </div>
           {isAdmin && <div className="tiny muted" style={{ padding: '6px 4px 0' }}>추가한 메일로 구글 로그인이나 이메일 로그인을 하면 들어올 수 있어요.</div>}
         </section>
+
+        {isAdmin && (
+          <section data-testid="invite-section">
+            <div className="label" style={{ padding: '0 4px 6px' }}>초대 링크</div>
+            <div className="setting-group">
+              <div className="setting-row" style={{ alignItems: 'stretch' }}>
+                <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+                  <span className="small" style={{ color: 'var(--ink2)' }}>메일 주소를 몰라도 돼요. 링크를 받은 사람이 로그인하면 바로 들어와요. 7일 동안, 한 번만 쓸 수 있어요.</span>
+                  <input className="input" style={{ height: 42 }} placeholder="앱에서 부를 이름 (선택, 예: 어머니)" value={inviteName} onChange={(e) => setInviteName(e.target.value)} aria-label="초대할 사람을 부를 이름" maxLength={20} />
+                  <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={async () => {
+                    try { const code = await createInvite(user, inviteName); setMadeCode(code); setInviteName(''); toast('초대 링크를 만들었어요'); } catch (e) { console.warn(e); toast('만들지 못했어요. 다시 해 주세요'); }
+                  }} data-testid="invite-make"><Icon name="link" size={15} />초대 링크 만들기</button>
+                </span>
+              </div>
+              {(invites ?? []).map((inv) => (
+                <div key={inv.code} className={'setting-row' + (inv.code === madeCode ? ' invite-new' : '')} data-testid="invite-row">
+                  <span className="ico"><Icon name="link" size={17} /></span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <b>{inv.name ? `${inv.name} 초대` : '초대 링크'}</b>
+                    <div className="tiny muted ellipsis" data-testid="invite-url">{inviteUrl(inv.code)}</div>
+                    <div className="tiny muted">{Math.max(1, Math.ceil((inv.expiresAt - Date.now()) / 86400000))}일 남음 · 한 번 쓰면 사라져요</div>
+                  </span>
+                  <span style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn sm soft" onClick={async () => {
+                      const r = await shareAnyhow({ title: '보라핀에 초대해요', description: `${nameOf(user.email)}이(가) 함께 여행 기록을 남기자고 초대했어요. 링크를 눌러 로그인하면 들어와요.`, url: inviteUrl(inv.code), button: '들어가기' }, () => toast('링크를 복사했어요'));
+                      if (r === 'kakao') toast('카카오톡으로 보냈어요');
+                    }} data-testid="invite-share">보내기</button>
+                    <button className="btn sm line" onClick={() => deleteInvite(inv.code).then(() => toast('초대 링크를 지웠어요'), () => toast('지우지 못했어요'))} aria-label="초대 링크 지우기">지우기</button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section>
           <div className="label" style={{ padding: '0 4px 6px' }}>백업</div>

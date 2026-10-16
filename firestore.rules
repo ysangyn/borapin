@@ -25,7 +25,7 @@ service cloud.firestore {
     }
 
     function validAccess(d) {
-      return d.keys().hasOnly(['allowed', 'admins', 'names', 'updatedAt'])
+      return d.keys().hasOnly(['allowed', 'admins', 'names', 'updatedAt', 'via'])
         && (!('names' in d) || (d.names is map && d.names.size() <= 50))
         && d.allowed is list && d.allowed.size() <= 50
         && d.admins is list && d.admins.size() <= 10;
@@ -91,14 +91,51 @@ service cloud.firestore {
         && d.v == 1;
     }
 
+    // 초대 링크: 관리자가 만든 코드(문서 이름)로 들어온 사람이 자기 메일을 허용 목록에 넣는다 (서버 없이)
+    function inviteOf(code) { return get(/databases/$(database)/documents/invites/$(code)); }
+    function joiningByInvite() {
+      let d = request.resource.data;
+      let old = resource.data;
+      return signedIn() && !isMember()
+        && d.keys().hasOnly(['allowed', 'admins', 'names', 'updatedAt', 'via'])
+        && d.via is string && d.via.size() >= 8 && d.via.size() <= 64
+        && exists(/databases/$(database)/documents/invites/$(d.via))
+        && inviteOf(d.via).data.usedBy == email()
+        // 바뀌는 건 내 메일 한 줄(과 내 이름)뿐
+        && d.admins == old.admins
+        && d.allowed.hasAll(old.allowed) && d.allowed.size() == old.allowed.size() + 1 && d.allowed.size() <= 50
+        && email() in d.allowed
+        && d.get('names', {}).diff(old.get('names', {})).affectedKeys().hasOnly([email()]);
+    }
+
     match /config/access {
       allow read: if isMember();
       allow create: if isOwner() && validAccess(request.resource.data);
-      allow update: if isAdmin() && validAccess(request.resource.data)
+      allow update: if (isAdmin() && validAccess(request.resource.data)
         // 주인 계정은 허용·관리자 목록에서 빠지지 않게
         && 'ysangyn@gmail.com' in request.resource.data.allowed
-        && 'ysangyn@gmail.com' in request.resource.data.admins;
+        && 'ysangyn@gmail.com' in request.resource.data.admins)
+        || joiningByInvite();
       allow delete: if false;
+    }
+
+    // 초대: 문서 이름이 코드. 관리자가 만들고(7일), 링크로 온 사람이 자기 메일로 '썼음' 표시를 한 번만 한다
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['by', 'name', 'createdAt', 'expiresAt', 'v'])
+        && request.resource.data.by == email()
+        && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 20))
+        && request.resource.data.expiresAt is int
+        && request.resource.data.expiresAt <= request.time.toMillis() + 8 * 24 * 3600 * 1000
+        && request.resource.data.v == 1;
+      allow update: if signedIn()
+        && !('usedBy' in resource.data)
+        && request.time.toMillis() < resource.data.expiresAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])
+        && request.resource.data.usedBy == email();
+      allow delete: if isAdmin();
     }
 
     // 앱 스위치(사진 올리기 멈춤 등): 멤버는 읽고 관리자만 바꾼다

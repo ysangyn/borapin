@@ -6,13 +6,14 @@
  */
 import { after, before, beforeEach, describe, test } from 'node:test';
 import fs from 'node:fs';
+import assert from 'node:assert/strict';
 import {
   assertFails,
   assertSucceeds,
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { Bytes, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
+import { Bytes, FieldPath, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
 
 const OWNER = 'ysangyn@gmail.com';
 const BORA = 'bora@example.com';
@@ -230,5 +231,50 @@ describe('주인 (관리자)', () => {
     await assertSucceeds(setDoc(doc(as.bora(), 'reports/r1'), { kind: 'report', message: '확인 부탁' }));
     await assertSucceeds(getDoc(doc(as.owner(), 'reports/r1')));
     await assertSucceeds(deleteDoc(doc(as.owner(), 'reports/r1')));
+  });
+});
+
+describe('초대 링크', () => {
+  const DAY = 24 * 3600 * 1000;
+  const invite = (over: Record<string, unknown> = {}) => ({ by: OWNER, name: '새 식구', createdAt: 1, expiresAt: Date.now() + 7 * DAY, v: 1, ...over });
+  test('관리자만 초대 코드를 만들고(7일 안), 보라는 못 만든다', async () => {
+    await assertSucceeds(setDoc(doc(as.owner(), 'invites/abcdefgh1234'), invite()));
+    await assertFails(setDoc(doc(as.owner(), 'invites/toolong'), invite({ expiresAt: Date.now() + 30 * DAY })));
+    await assertFails(setDoc(doc(as.bora(), 'invites/boramade1'), invite({ by: BORA })));
+    await assertFails(setDoc(doc(as.stranger(), 'invites/strangermade'), invite({ by: STRANGER })));
+  });
+  test('링크로 온 사람: 코드에 자기 메일로 표시하고 → 자기 메일만 허용 목록에 넣는다 (한 번만)', async () => {
+    await setDoc(doc(as.owner(), 'invites/abcdefgh1234'), invite());
+    const me = as.stranger();
+    await assertSucceeds(getDoc(doc(me, 'invites/abcdefgh1234')));
+    // 쓰기 전엔 허용 목록에 못 들어간다
+    await assertFails(updateDoc(doc(me, 'config/access'), 'allowed', arrayUnion(STRANGER), 'via', 'abcdefgh1234', 'updatedAt', 1));
+    await assertSucceeds(updateDoc(doc(me, 'invites/abcdefgh1234'), { usedBy: STRANGER, usedAt: 2 }));
+    // 남의 메일을 넣거나, 관리자를 건드리거나, 둘을 넣는 건 막힌다
+    await assertFails(updateDoc(doc(me, 'config/access'), 'allowed', arrayUnion('other@example.com'), 'via', 'abcdefgh1234', 'updatedAt', 1));
+    await assertFails(updateDoc(doc(me, 'config/access'), 'allowed', arrayUnion(STRANGER), 'admins', arrayUnion(STRANGER), 'via', 'abcdefgh1234', 'updatedAt', 1));
+    await assertFails(updateDoc(doc(me, 'config/access'), 'allowed', arrayUnion(STRANGER, 'other@example.com'), 'via', 'abcdefgh1234', 'updatedAt', 1));
+    // 내 메일 + 내 이름만
+    await assertSucceeds(updateDoc(doc(me, 'config/access'), 'allowed', arrayUnion(STRANGER), new FieldPath('names', STRANGER), '새 식구', 'via', 'abcdefgh1234', 'updatedAt', 1));
+    const after = await getDoc(doc(as.owner(), 'config/access'));
+    assert.deepEqual(after.data()?.allowed, [OWNER, BORA, STRANGER]);
+    // 이제 멤버: 여행을 읽는다
+    await assertSucceeds(getDoc(T(as.stranger())));
+    // 같은 코드를 다른 사람이 또 쓰진 못한다
+    const other = env.authenticatedContext('other', { email: 'other@example.com', email_verified: true }).firestore() as unknown as Firestore;
+    await assertFails(updateDoc(doc(other, 'invites/abcdefgh1234'), { usedBy: 'other@example.com', usedAt: 3 }));
+  });
+  test('만료된 코드·없는 코드로는 못 들어온다', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'invites/expired12345'), invite({ expiresAt: Date.now() - 1000 }));
+    });
+    await assertFails(updateDoc(doc(as.stranger(), 'invites/expired12345'), { usedBy: STRANGER, usedAt: 2 }));
+    await assertFails(updateDoc(doc(as.stranger(), 'config/access'), 'allowed', arrayUnion(STRANGER), 'via', 'nosuchcode1234', 'updatedAt', 1));
+  });
+  test('관리자가 고칠 때 via 칸이 있어도 된다 (초대로 들어온 뒤에도 이름 바꾸기·빼기 가능)', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'config/access'), { allowed: [OWNER, BORA, STRANGER], admins: [OWNER], names: {}, via: 'abcdefgh1234' });
+    });
+    await assertSucceeds(updateDoc(doc(as.owner(), 'config/access'), new FieldPath('names', STRANGER), '막내', 'updatedAt', 1));
   });
 });

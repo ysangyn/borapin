@@ -2,10 +2,12 @@ import { lazy, Suspense, useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import { DataProvider } from './lib/store';
-import { BottomNav, Spinner } from './components/ui';
+import { BottomNav, Spinner, useToast } from './components/ui';
 import { ErrorBoundary, ScrollManager, StatusBanner } from './components/system';
 import { RestArt } from './components/Scene';
 import { Denied, Login, VerifyEmail } from './pages/Login';
+import Join from './pages/Join';
+import { clearPendingInvite, pendingInvite, rememberInviteFromUrl } from './lib/invites';
 import Home from './pages/Home';
 import { preloadCheer } from './lib/celebrate';
 
@@ -64,8 +66,13 @@ export default function App() {
     return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off); };
   }, []);
   if (auth.status === 'loading') return <div className="app"><Spinner /></div>;
-  if (auth.status === 'signedOut') return <div className="app bare"><Login /></div>;
-  if (auth.status === 'denied') return <div className="app"><Denied email={auth.user.email} /></div>;
+  if (auth.status === 'signedOut') { rememberInviteFromUrl(); return <div className="app bare"><Login /></div>; }
+  if (auth.status === 'denied') {
+    // 초대 링크로 온 사람: 들어가기 화면 (아니면 '초대되지 않은 계정')
+    const code = rememberInviteFromUrl() ?? pendingInvite();
+    if (code) return <div className="app"><Join code={code} user={auth.user} /></div>;
+    return <div className="app"><Denied email={auth.user.email} /></div>;
+  }
   if (auth.status === 'verify') return <div className="app"><VerifyEmail email={auth.user.email} /></div>;
   if (auth.status === 'error')
     return (
@@ -106,6 +113,7 @@ export default function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/places" element={<Places />} />
               <Route path="/places/:id" element={<PlaceEdit />} />
+              <Route path="/join/:code" element={<AlreadyIn />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
@@ -130,4 +138,11 @@ function AskFab() {
 /** 입력 화면(기록·고치기·가고 싶은 곳·장소)에서는 아래 메뉴와 떠 있는 보라를 숨긴다 */
 function hideNavFor(path: string) {
   return path.startsWith('/record') || path.endsWith('/edit') || /^\/(wishes|places)\/./.test(path) || path.startsWith('/study');
+}
+
+/** 이미 함께 쓰는 사람이 초대 링크를 열었을 때 */
+function AlreadyIn() {
+  const toast = useToast();
+  useEffect(() => { clearPendingInvite(); toast('이미 함께 쓰고 있어요'); }, [toast]);
+  return <Navigate to="/" replace />;
 }

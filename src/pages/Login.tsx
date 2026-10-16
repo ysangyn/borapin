@@ -1,3 +1,4 @@
+import { pendingInvite } from '../lib/invites';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/ui';
@@ -57,7 +58,11 @@ export function Login() {
           {busy ? '로그인 중…' : '구글로 계속하기'}
         </button>
         {err && <div className="small" style={{ color: 'var(--danger)' }} role="alert">{err}</div>}
-        <div className="tiny muted" style={{ textAlign: 'center' }}>초대받은 메일 주소로만 들어올 수 있어요.</div>
+        {pendingInvite() ? (
+          <div className="small" style={{ textAlign: 'center', color: 'var(--violet-dark)', fontWeight: 700 }} data-testid="login-invite">초대 링크로 오셨네요. 구글이나 메일로 로그인하면 바로 들어가요.</div>
+        ) : (
+          <div className="tiny muted" style={{ textAlign: 'center' }}>초대받은 메일 주소로만 들어올 수 있어요.</div>
+        )}
         <Footer />
       </main>
     </div>
