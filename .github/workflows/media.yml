@@ -36,7 +36,9 @@ jobs:
         run: scripts/push-report.sh media media-scout media-scout-output.txt
       - name: 세계 도시 사진 후보 찾기
         if: github.ref == 'refs/heads/media-cities'
-        run: npx tsx scripts/media-cities.ts $(cat media/cities-only.txt 2>/dev/null) 2>&1 | tee media-cities-output.txt
+        run: |
+          npx tsx scripts/media-cities.ts $(cat media/cities-only.txt 2>/dev/null) 2>&1 | tee media-cities-output.txt
+          npx tsx scripts/media-cities.ts kr $(cat media/kr-only.txt 2>/dev/null) 2>&1 | tee -a media-cities-output.txt
       - name: 도시 후보 올리기
         if: always() && github.ref == 'refs/heads/media-cities'
         env:

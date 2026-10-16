@@ -9,7 +9,11 @@ import path from 'node:path';
 import sharp from 'sharp';
 import world from '../src/data/world.json' with { type: 'json' };
 import queriesRaw from '../media/city-queries.json' with { type: 'json' };
+import krRaw from '../media/kr-queries.json' with { type: 'json' };
+import regionsRaw from '../src/data/regions.json' with { type: 'json' };
+import travelinfo from '../src/data/travelinfo.json' with { type: 'json' };
 const QUERIES = queriesRaw as Record<string, string[]>;
+const KR = krRaw as Record<string, string[]>;
 
 const OUT = 'media-cities';
 fs.mkdirSync(OUT, { recursive: true });
@@ -73,8 +77,18 @@ async function sheet(name: string, rows: { label: string; items: Buffer[] }[]) {
   await sharp({ create: { width: W * COLS, height: rows.length * (H + LABEL), channels: 3, background: '#222' } }).composite(tiles).jpeg({ quality: 78 }).toFile(path.join(OUT, `${name}.jpg`));
 }
 
-const only = process.argv.slice(2);
-const cities = (world as { cities: { c: string; city: string; en: string; see: string[] }[] }).cities.filter((c) => !only.length || only.includes(c.city));
+// 'kr'를 주면 국내 160 시·군, 아니면 세계 도시. 그 뒤에 이름을 주면 그것만.
+const args = process.argv.slice(2);
+const mode = args[0] === 'kr' ? 'kr' : 'world';
+const only = mode === 'kr' ? args.slice(1) : args;
+interface Target { key: string; city: string; en: string; landmarks: string[] }
+const cities: Target[] = mode === 'kr'
+  ? (regionsRaw as { regions: { code: string; name: string }[] }).regions.filter((r) => !only.length || only.includes(r.name)).map((r) => {
+      const spots = ((travelinfo as { cells: Record<string, { main: { spots: string[] } }> }).cells[r.code]?.main.spots ?? []).slice(0, 2);
+      return { key: `kr:${r.code}`, city: r.name, en: KR[r.code]?.[0] ?? r.name, landmarks: [...(KR[r.code] ?? []), ...spots] };
+    })
+  : (world as { cities: { c: string; city: string; en: string }[] }).cities.filter((c) => !only.length || only.includes(c.city)).map((c) => ({ key: `${c.c}:${c.city}`, city: c.city, en: c.en, landmarks: QUERIES[`${c.c}:${c.city}`] ?? [c.en] }));
+const PREFIX = mode === 'kr' ? 'kr' : 'cities';
 const report: Record<string, Cand[]> = {};
 const rows: { label: string; items: Buffer[] }[] = [];
 let sheetNo = 1;
@@ -83,7 +97,7 @@ for (const c of cities) {
   const seen = new Set<string>();
   let all: Cand[] = [];
   // 도시 이름만으로 찾으면 엉뚱한 우수 사진(설명에 도시 이름이 스친 것)이 섞이므로, 명소 이름(영어)으로 찾는다
-  const landmarks = QUERIES[`${c.c}:${c.city}`] ?? [c.en];
+  const landmarks = c.landmarks;
   const queries: [string, string][] = landmarks.flatMap((l) => [[`"${l}" incategory:"Quality images"`, `q:${l}`], [`"${l}" incategory:"Featured pictures on Wikimedia Commons"`, `f:${l}`], [l, `p:${l}`]] as [string, string][]);
   for (const [q, via] of queries) {
     try {
@@ -97,13 +111,13 @@ for (const c of cities) {
   const picked: Cand[] = [];
   for (let round = 0; picked.length < 4 && round < 4; round++) for (const list of byLandmark) { const x = list[round]; if (x && picked.length < 4 && !picked.includes(x)) picked.push(x); }
   all = picked;
-  report[`${c.c}:${c.city}`] = all;
+  report[c.key] = all;
   const items: Buffer[] = [];
   for (const x of all) { try { items.push(await download(x.thumb)); } catch (e) { console.warn(e); } }
   rows.push({ label: `${c.city} (${c.en}) · ${all.map((x) => x.via.slice(0, 1) + ':' + x.via.slice(2, 14)).join(' | ')}`, items });
   console.log(`${c.city}: 후보 ${all.length}장 (${all.map((x) => x.via).join(', ')})`);
-  if (rows.length >= 20) { await sheet(`cities-${String(sheetNo++).padStart(2, '0')}`, rows.splice(0)); }
+  if (rows.length >= 20) { await sheet(`${PREFIX}-${String(sheetNo++).padStart(2, '0')}`, rows.splice(0)); }
 }
-if (rows.length) await sheet(`cities-${String(sheetNo++).padStart(2, '0')}`, rows);
-fs.writeFileSync(path.join(OUT, 'candidates.json'), JSON.stringify(report, null, 1));
+if (rows.length) await sheet(`${PREFIX}-${String(sheetNo++).padStart(2, '0')}`, rows);
+fs.writeFileSync(path.join(OUT, `${PREFIX}-candidates.json`), JSON.stringify(report, null, 1));
 console.log(`도시 ${cities.length}곳, 후보 있는 곳 ${Object.values(report).filter((v) => v.length).length}곳`);

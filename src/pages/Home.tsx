@@ -100,7 +100,7 @@ export default function Home() {
 
         <form className="ask-home" onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/ask?q=${encodeURIComponent(q.trim())}`); }} data-testid="home-ask">
           <img src="/art/bora-face.webp" alt="" width={30} height={30} decoding="async" />
-          <input aria-label="보라에게 물어봐" placeholder="보라에게 물어봐: 영등포 맛집, 작년 여름에 간 곳" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input aria-label="보라에게 물어봐" placeholder="보라에게 물어봐: 강릉 맛집, 11월 축제" value={q} onChange={(e) => setQ(e.target.value)} />
         </form>
 
         {overdue[0] && (
