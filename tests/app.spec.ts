@@ -444,8 +444,8 @@ test.describe.serial('보라핀 1단계', () => {
     await anon.reload();
     await expect(anon.getByText('공개가 끝났거나 없는 여행이에요')).toBeVisible();
     // 공개를 끈 사진 파일은 로그인 없이 못 읽는다
-    const denied = await anon.evaluate((id) => (window as unknown as { __testPhoto: (id: string) => Promise<number> }).__testPhoto(id!).then(() => 'read', (e: Error) => e.message), photoId);
-    expect(denied).toMatch(/permission/i);
+    const denied = await anon.evaluate((id) => (window as unknown as { __testPhoto: (id: string) => Promise<number> }).__testPhoto(id!).then(() => 'read', (e: { code?: string; message: string }) => e.code ?? e.message), photoId);
+    expect(denied).toBe('permission-denied');
     await anon.context().close();
 
     // 공유 카드: 1080×1350 그림
