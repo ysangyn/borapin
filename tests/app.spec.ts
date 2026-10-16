@@ -316,8 +316,11 @@ test.describe.serial('보라핀 1단계', () => {
     await sug.getByRole('button', { name: '채우기' }).click();
     await expect(page.getByText('2019.5.3–4 (추정)')).toBeVisible();
     await expect(page.getByTestId('photo-suggest')).toHaveCount(0);
-    await expect(page.locator('.trip-cover img')).toBeVisible();
     await shot(page, '12-photos');
+    // 표지 사진은 개요 탭 위에
+    await page.getByRole('tab', { name: '개요' }).click();
+    await expect(page.locator('.trip-cover img')).toBeVisible();
+    await page.getByRole('tab', { name: /사진/ }).click();
     // 슬라이드쇼: 자막에 촬영 시각과 장소
     await sec.locator('.photo-cell img').first().click();
     const cap = page.locator('.pswp__caption-bp');
