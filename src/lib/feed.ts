@@ -10,6 +10,8 @@ export type FeedItem =
   | { kind: 'place'; at: number; by: string; trip: Trip | null; rec: PlaceRec; review?: string }
   | { kind: 'trip'; at: number; by: string; trip: Trip }
   | { kind: 'wish'; at: number; by: string; wish: Wish }
+  /** 같은 사람이 잇따라 담은 가고 싶은 곳 묶음 (피드가 '담음·담음·담음'으로 길어지지 않게) */
+  | { kind: 'wishes'; at: number; by: string; wishes: Wish[] }
   /** 오늘의 한 질문에 답함: 모두 답했을 때만(opened) 답 글이 보인다 */
   | { kind: 'ask'; at: number; by: string; day: string; uid: string; question: string; text: string; opened: boolean };
 
@@ -64,7 +66,30 @@ export function buildFeed(d: { trips: Trip[]; photos: Photo[]; notes: Note[]; re
     const opened = Object.keys(a.answers).length >= a.need;
     for (const [uid, ans] of Object.entries(a.answers)) items.push({ kind: 'ask', at: ans.at, by: ans.name, day: a.day, uid, question: a.question, text: ans.text, opened });
   }
-  return items.sort((a, b) => b.at - a.at).slice(0, limit);
+  return mergeBursts(items.sort((a, b) => b.at - a.at)).slice(0, limit);
+}
+
+/** 같은 사람이 3시간 안에 잇따라 담은 가고 싶은 곳은 한 묶음으로 */
+export function mergeBursts(sorted: FeedItem[], windowMs = 3 * 3600_000): FeedItem[] {
+  const out: FeedItem[] = [];
+  for (const it of sorted) {
+    const last = out[out.length - 1];
+    if (it.kind === 'wish' && last && (last.kind === 'wish' || last.kind === 'wishes') && last.by === it.by && last.at - it.at <= windowMs) {
+      const wishes = last.kind === 'wish' ? [last.wish, it.wish] : [...last.wishes, it.wish];
+      out[out.length - 1] = { kind: 'wishes', at: last.at, by: last.by, wishes };
+    } else out.push(it);
+  }
+  return out;
+}
+
+/** 날짜 머리글: 오늘 · 어제 · 10월 15일 · 2025년 3월 2일 */
+export function dayHeading(at: number, now = Date.now()): string {
+  const d = new Date(at), n = new Date(now);
+  const same = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  if (same(d, n)) return '오늘';
+  const y = new Date(n); y.setDate(n.getDate() - 1);
+  if (same(d, y)) return '어제';
+  return d.getFullYear() === n.getFullYear() ? `${d.getMonth() + 1}월 ${d.getDate()}일` : `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
 /** '방금' · '12분 전' · '3시간 전' · '어제' · '5일 전' · '9월 3일' */

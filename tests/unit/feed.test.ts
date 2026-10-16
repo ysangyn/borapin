@@ -50,3 +50,21 @@ test('안 본 소식 수: 마지막으로 본 뒤에 남이 남긴 것만', () =
   assert.equal(unseenCount(items, now - 3 * day, '영상'), 1);
   assert.equal(unseenCount(items, now, '영상'), 0);
 });
+
+test('잇따라 담은 가고 싶은 곳은 한 묶음, 날짜 머리글', async () => {
+  const { mergeBursts, dayHeading } = await import('../../src/lib/feed');
+  const w = (id: string) => ({ id, place: { t: 'kr', code: '11' }, priority: null, spots: [], todos: [], foods: [], note: '', source: 'app' }) as never;
+  const t0 = Date.UTC(2026, 9, 16, 12);
+  const items = [
+    { kind: 'wish', at: t0, by: '영상', wish: w('a') },
+    { kind: 'wish', at: t0 - 60_000, by: '영상', wish: w('b') },
+    { kind: 'wish', at: t0 - 120_000, by: '보라', wish: w('c') },
+    { kind: 'wish', at: t0 - 5 * 3600_000, by: '영상', wish: w('d') },
+  ] as never[];
+  const merged = mergeBursts(items as never);
+  assert.deepEqual(merged.map((i) => i.kind), ['wishes', 'wish', 'wish']);
+  assert.equal((merged[0] as { wishes: unknown[] }).wishes.length, 2);
+  assert.equal(dayHeading(t0, t0), '오늘');
+  assert.equal(dayHeading(t0 - 86400000, t0), '어제');
+  assert.match(dayHeading(t0 - 10 * 86400000, t0), /^10월 6일$/);
+});

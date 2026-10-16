@@ -5,7 +5,8 @@ import PhotoImg from '../components/PhotoImg';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { usePhotos } from '../lib/photos';
 import { useAllNotes } from '../lib/tripExtras';
-import { ago, buildFeed, type FeedItem } from '../lib/feed';
+import { ago, buildFeed, dayHeading, type FeedItem } from '../lib/feed';
+import { tileText } from '../components/TripRow';
 import { placeLabel, placeLong } from '../lib/geo';
 import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
 import { toneOf } from '../lib/members';
@@ -55,7 +56,16 @@ export default function Feed() {
         )}
         {items && items.length > 0 && (
           <ol className="feed-list">
-            {items.map((it) => <li key={keyOf(it)}><FeedRow item={it} me={me} heart={hearts?.get(heartKey(it))} onHeart={auth.status === 'ready' ? () => toggleHeart(heartKey(it), hearts?.get(heartKey(it)), auth.user).catch((e) => console.warn(e)) : undefined} uid={auth.status === 'ready' ? auth.user.uid : ''} /></li>)}
+            {items.map((it, i) => {
+              const head = dayHeading(it.at);
+              const prev = i > 0 ? dayHeading(items[i - 1].at) : null;
+              return (
+                <li key={keyOf(it)}>
+                  {head !== prev && <div className="feed-day" data-testid="feed-day">{head}</div>}
+                  <FeedRow item={it} me={me} heart={hearts?.get(heartKey(it))} onHeart={auth.status === 'ready' ? () => toggleHeart(heartKey(it), hearts?.get(heartKey(it)), auth.user).catch((e) => console.warn(e)) : undefined} uid={auth.status === 'ready' ? auth.user.uid : ''} />
+                </li>
+              );
+            })}
           </ol>
         )}
       </div>
@@ -63,7 +73,7 @@ export default function Feed() {
   );
 }
 
-const keyOf = (it: FeedItem) => `${it.kind}:${it.at}:${it.kind === 'photos' ? it.photos[0].id : it.kind === 'note' ? it.note.id : it.kind === 'place' ? it.rec.id : it.kind === 'wish' ? it.wish.id : it.kind === 'ask' ? `${it.day}:${it.uid}` : it.trip.id}`;
+const keyOf = (it: FeedItem) => `${it.kind}:${it.at}:${it.kind === 'photos' ? it.photos[0].id : it.kind === 'note' ? it.note.id : it.kind === 'place' ? it.rec.id : it.kind === 'wish' ? it.wish.id : it.kind === 'ask' ? `${it.day}:${it.uid}` : it.kind === 'wishes' ? `${it.by}:${it.wishes[0].id}` : it.trip.id}`;
 
 function Who({ name, me }: { name: string; me: string }) {
   const tone = toneOf(name);
@@ -153,16 +163,46 @@ function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string
     return (
       <article className="feed-item" data-testid="feed-item" data-kind="wish">
         <header><Who name={item.by} me={me} /><span className="small">가고 싶은 곳에 담음</span>{when}</header>
-        <p className="feed-text"><b>{wishTitle(item.wish)}</b>{item.wish.spotName ? <span className="muted"> · {placeLong(item.wish.place)}</span> : null}</p>
+        <Link to={`/wishes/${item.wish.id}`} className="feed-place">
+          <PlaceThumb place={item.wish.place} />
+          <span className="feed-place-copy"><b>{wishTitle(item.wish)}</b>{item.wish.spotName ? <span className="muted small">{placeLong(item.wish.place)}</span> : null}</span>
+        </Link>
         {foot(`/wishes/${item.wish.id}`, '보기')}
+      </article>
+    );
+  }
+  if (item.kind === 'wishes') {
+    return (
+      <article className="feed-item" data-testid="feed-item" data-kind="wishes">
+        <header><Who name={item.by} me={me} /><span className="small">가고 싶은 곳에 {item.wishes.length}곳 담음</span>{when}</header>
+        <div className="feed-places">
+          {item.wishes.slice(0, 6).map((w) => (
+            <Link key={w.id} to={`/wishes/${w.id}`} className="feed-place col"><PlaceThumb place={w.place} /><span className="tiny ellipsis">{wishTitle(w)}</span></Link>
+          ))}
+          {item.wishes.length > 6 && <span className="tiny muted">외 {item.wishes.length - 6}곳</span>}
+        </div>
+        {foot('/wishes', '가고 싶은 곳 보기')}
       </article>
     );
   }
   return (
     <article className="feed-item" data-testid="feed-item" data-kind="trip">
       <header><Who name={item.by} me={me} /><span className="small">{item.trip.status === 'planned' ? '여행 계획을 만듦' : '핀을 꽂음'}</span>{when}</header>
-      <p className="feed-text"><b>{item.trip.title}</b><span className="muted"> · {item.trip.places.map(placeLabel).join(', ')}</span></p>
+      <Link to={`/trips/${item.trip.id}`} className="feed-place">
+        {item.trip.places[0] ? <PlaceThumb place={item.trip.places[0]} planned={item.trip.status === 'planned'} /> : null}
+        <span className="feed-place-copy"><b>{item.trip.title}</b><span className="muted small">{item.trip.places.map(placeLabel).join(', ')}</span></span>
+      </Link>
       {foot(`/trips/${item.trip.id}`, '여행 보기')}
     </article>
+  );
+}
+
+/** 장소 네모: 사진이 있으면 사진, 없으면 지역 이름 글자 */
+function PlaceThumb({ place, planned }: { place: Parameters<typeof photoForPlace>[0]; planned?: boolean }) {
+  const ph = photoForPlace(place);
+  return (
+    <span className={'trip-tile' + (ph ? ' photo' : planned ? ' planned' : place.t === 'country' ? ' abroad' : '')} style={ph ? { backgroundImage: `url(${ph.lqip})` } : undefined} aria-hidden="true">
+      {ph ? <img src={ph.src.s} alt="" loading="lazy" decoding="async" /> : tileText({ places: [place] } as never)}
+    </span>
   );
 }

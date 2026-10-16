@@ -393,19 +393,19 @@ test.describe('사람처럼 쓰기', () => {
     const hub = page.getByTestId('next-hub');
     if (await hub.isVisible() && (await hub.getAttribute('data-anchor')) === 'wish') await expect(hub.getByTestId('hub-first')).toContainText('영월');
     await page.goto('/wishes');
-    const card = page.getByTestId('wish-card').filter({ hasText: '영월' }).first();
+    // 둘 다 원하는 곳은 큰 카드(사진 자리 + 아래 줄)로, 축제 꼬리표는 한 줄, 주요 단추는 '여행 만들기'
+    const card = page.getByTestId('wish-group-both').getByTestId('wish-card').filter({ hasText: '영월' }).first();
     await expect(card).toBeVisible();
     const tag = card.getByTestId('wish-festival');
     await expect(tag).toBeVisible();
     const tagBox = (await tag.boundingBox())!;
     expect(tagBox.height, '축제 꼬리표가 여러 줄로 늘어났어요').toBeLessThan(28);
-    // 목록 카드는 네모(사진)·글·버튼이 세로 가운데로 나란하다
     const box = (await card.boundingBox())!;
-    const mid = box.y + box.height / 2;
-    const tile = (await card.locator('.trip-tile, .wish-thumb').first().boundingBox())!;
+    const pageW = (await page.viewportSize())!.width;
+    expect(box.width, '큰 카드는 화면 너비를 꽉 써야 해요').toBeGreaterThan(pageW - 40);
     const btn = (await card.getByTestId('wish-plan').boundingBox())!;
-    expect(Math.abs(tile.y + tile.height / 2 - mid), '네모가 카드 가운데에 있어야 해요').toBeLessThan(12);
-    expect(Math.abs(btn.y + btn.height / 2 - mid), '버튼이 카드 가운데에 있어야 해요').toBeLessThan(12);
+    expect(btn.x + btn.width, '단추가 카드 밖으로 나가면 안 돼요').toBeLessThanOrEqual(box.x + box.width + 1);
+    await expect(card.locator('.t')).toContainText('영월');
     await page.context().close();
   });
 

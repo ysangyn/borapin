@@ -305,6 +305,18 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '10c-dice');
     await page.getByTestId('dice-add').click();
     await expect(page.getByTestId('wish-card')).toHaveCount(2);
+    // 한 명만 원하는 곳은 한 줄로, 오른쪽 하트로 바로 뺐다 넣었다 (목록에서 마음 맞추기)
+    const gw = page.getByTestId('wish-card').filter({ hasText: '강원' });
+    await expect(gw.getByTestId('wish-heart')).toHaveAttribute('aria-pressed', 'true');
+    await gw.getByTestId('wish-heart').click();
+    await expect(page.getByRole('status')).toContainText('내 하트를 뺐어요');
+    await expect(gw.getByTestId('wish-heart')).toHaveAttribute('aria-pressed', 'false');
+    await gw.getByTestId('wish-heart').click();
+    await expect(gw.getByTestId('wish-heart')).toHaveAttribute('aria-pressed', 'true');
+    // 둘 다 원하는 곳(제주, 예정)과 한 명만(강원)이 묶음으로 나뉜다
+    await expect(page.getByTestId('wish-group-예정')).toContainText('제주');
+    await expect(page.getByTestId('wish-group-한 명만 원해요')).toContainText('강원');
+    await shot(page, '10c2-wishes-groups');
 
     // 해외 도시 고르기: 속성을 조합한다 (예산 가볍게 + 4시간 안 + 미식) → 목록이 줄고 → 담기
     await page.getByLabel('뽑을 범위').selectOption('world');

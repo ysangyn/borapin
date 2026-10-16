@@ -767,3 +767,58 @@ a { color: var(--violet); text-decoration: none; }
 .phrase-sound { grid-area: sound; font-size: 14px; color: var(--violet-dark); font-weight: 600; }
 .phrase-play { grid-area: play; color: var(--violet); }
 .review-row.review-hidden { min-height: 46px; align-items: center; padding: 0 4px; }
+
+/* ===== 가고 싶은 곳 (둘의 버킷리스트) ===== */
+.wish-group { display: flex; flex-direction: column; gap: 8px; }
+.wish-group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.wish-rows { padding: 2px 14px; }
+.wish-rows .wish-card { padding: 11px 0; }
+.wish-rows .wish-card:first-child { border-top: none; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 둘 다 원하는 곳: 사진 크게 */
+.wish-heroes { display: flex; flex-direction: column; gap: 12px; }
+.wish-hero { border-radius: 22px; overflow: hidden; background: #fff; border: 1px solid var(--line); }
+.wish-hero-photo { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 110px; aspect-ratio: 16 / 8; background: linear-gradient(135deg, #f3edff, #ffe4df) center/cover no-repeat; color: var(--ink); isolation: isolate; }
+.wish-hero.has-photo .wish-hero-photo { color: #fff; }
+.wish-hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.wish-hero.has-photo .wish-hero-photo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0) 35%, rgba(20, 14, 48, 0.7) 100%); }
+.wish-hero-top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; }
+.wish-hero-top .flag-badge { position: static; box-shadow: none; }
+.wish-hero-top .flag-badge:only-child { margin-left: auto; visibility: hidden; }
+.wish-hero-copy { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; text-shadow: 0 1px 8px rgba(20, 14, 48, 0.35); }
+.wish-hero:not(.has-photo) .wish-hero-copy { text-shadow: none; }
+.wish-hero-copy .t { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.wish-hero-foot { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; }
+.wish-flights.row { flex-direction: row; gap: 10px; align-items: center; }
+/* 나도 원해요 하트 */
+.my-heart { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 36px; padding: 0 12px 0 10px; border-radius: 18px; border: 1px solid var(--line2); background: #fff; color: var(--ink3); font: inherit; font-size: 13px; font-weight: 700; transition: background 0.15s, color 0.15s; }
+.my-heart svg { fill: none; stroke: currentColor; stroke-width: 2; }
+.my-heart.on { background: var(--coral-mist); border-color: transparent; color: var(--coral-ink); }
+.my-heart.on svg { fill: var(--coral-ink); stroke: var(--coral-ink); }
+.my-heart:not(.on):active { background: var(--coral-mist); }
+.my-heart.sm { height: 30px; font-size: 12px; }
+/* 찾아보기 타일 */
+.find-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.find-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: 18px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; text-align: left; }
+.find-tile svg { color: var(--violet); margin-bottom: 2px; }
+.find-tile b { font-size: 15px; }
+.find-tile .tiny { color: var(--ink3); }
+.find-tile:active { background: var(--mist); }
+/* 다녀왔어요 접기 */
+.wish-done summary { list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 16px; background: var(--page); font-weight: 700; color: var(--ink2); cursor: pointer; }
+.wish-done summary::-webkit-details-marker { display: none; }
+.wish-done[open] summary { margin-bottom: 8px; }
+.wish-done[open] summary svg { transform: rotate(180deg); }
+/* 피드: 날짜 머리글, 장소 네모 */
+.feed-day { font-size: 12.5px; font-weight: 800; color: var(--ink3); padding: 6px 4px 8px; }
+.feed-list > li + li .feed-day { padding-top: 10px; }
+.feed-place { display: flex; align-items: center; gap: 12px; color: inherit; min-width: 0; }
+.feed-place .trip-tile { width: 52px; height: 52px; border-radius: 14px; position: relative; overflow: hidden; }
+.feed-place .trip-tile.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.feed-place-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 15px; }
+.feed-place-copy b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed-places { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.feed-places::-webkit-scrollbar { display: none; }
+.feed-place.col { flex: none; flex-direction: column; align-items: center; gap: 4px; width: 64px; }
+.feed-place.col .trip-tile { width: 60px; height: 60px; }
+.feed-place.col .tiny { max-width: 64px; text-align: center; }
