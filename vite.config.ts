@@ -32,8 +32,9 @@ export default defineConfig({
     versionStamp(),
     // 앱처럼 설치·오프라인: 화면과 지도 경계는 기기에 저장, 사진은 한 번 본 것만 저장
     VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // 새 버전은 UpdateWatcher가 받는다 (쓰던 내용이 있으면 저장할 때까지 기다림)
+      registerType: 'prompt',
+      injectRegister: false,
       manifest: false, // public/manifest.webmanifest를 그대로 쓴다 (공유 대상 포함)
       workbox: {
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,topojson}', 'art/bora-rest.webp'],
@@ -52,6 +53,12 @@ export default defineConfig({
             urlPattern: ({ url }) => /^\/(media|art)\/.+\.webp$/.test(url.pathname),
             handler: 'CacheFirst',
             options: { cacheName: 'scenery', expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 } },
+          },
+          {
+            // 지역 축제: 있는 걸 먼저 보여 주고 뒤에서 새로 받는다
+            urlPattern: ({ url }) => url.pathname === '/data/festivals.json',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'festivals', expiration: { maxEntries: 2 } },
           },
           {
             urlPattern: ({ url }) => url.hostname === 'cdn.jsdelivr.net',

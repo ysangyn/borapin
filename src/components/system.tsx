@@ -3,7 +3,8 @@ import { useLocation, useNavigationType } from 'react-router-dom';
 import { sendReport } from '../lib/admin';
 import { useStore } from '../lib/store';
 import { onLateWriteError } from '../lib/writes';
-import { useToast } from './ui';
+import { hasUnsavedInput, useToast } from './ui';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RestArt } from './Scene';
 
 /** 화면을 그리다 난 오류: 흰 화면 대신 다시 시도할 수 있는 안내 */
@@ -111,4 +112,41 @@ export function ScrollManager() {
     if (type !== 'POP') window.scrollTo(0, 0);
   }, [pathname, type]);
   return null;
+}
+
+/**
+ * 새 버전 받기: 새 버전이 올라오면 바로 새로 고친다 (옛 버전이 남지 않게).
+ * 다만 쓰던 내용이 있으면 날아가지 않게, 저장할 때까지 기다리며 띠로 알려 준다.
+ */
+export function UpdateWatcher() {
+  const {
+    needRefresh: [need],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegisteredSW(_url, reg) {
+      // 앱을 오래 열어 두어도 한 시간마다 새 버전이 있는지 본다
+      if (reg) window.setInterval(() => void reg.update().catch(() => undefined), 60 * 60 * 1000);
+    },
+    onRegisterError() {
+      /* 서비스 워커를 못 쓰는 환경(시험·사생활 보호 모드)에서는 그냥 둔다 */
+    },
+  });
+  const [waiting, setWaiting] = useState(false);
+  useEffect(() => {
+    if (!need) return;
+    const tryNow = () => {
+      if (hasUnsavedInput()) return setWaiting(true);
+      void updateServiceWorker(true);
+    };
+    tryNow();
+    const t = window.setInterval(tryNow, 3000);
+    return () => window.clearInterval(t);
+  }, [need, updateServiceWorker]);
+  if (!need || !waiting) return null;
+  return (
+    <div className="status-banner" role="status" data-testid="update-banner">
+      새 버전이 있어요. 쓰던 내용을 저장하면 바로 바뀌어요.
+      <button onClick={() => void updateServiceWorker(true)}>지금 새로 고침</button>
+    </div>
+  );
 }

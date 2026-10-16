@@ -16,6 +16,7 @@ import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
 import { ScenicPhoto } from './Scene';
 import { times } from '../lib/ko';
+import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -41,6 +42,8 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
 }) {
   const nav = useNavigate();
   const seasons = useSeasons();
+  const festData = useFestivals();
+  const fests = place.t === 'kr' ? upcomingFestivals(festData, place.code, new Date(), 120).slice(0, 2) : [];
   const wish = wishes.find((w) => samePlaceW(w.place, place));
   const season = seasonFor(seasons, place, wish?.months);
   const auth = useAuth();
@@ -114,6 +117,17 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }} data-testid="sheet-title">{name}</div>
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
+          {fests.length > 0 && (
+            <div className="sheet-fests" data-testid="sheet-festivals">
+              {fests.map((f) => (
+                <span key={f.id || f.t + f.s} className="fest">
+                  <span className={'tag ' + (isOngoing(f) ? 'coral' : 'violet')}>{isOngoing(f) ? '지금 축제' : '축제'}</span>
+                  <span className="fest-name">{f.t}</span>
+                  <span className="muted">{festivalPeriod(f)}</span>
+                </span>
+              ))}
+            </div>
+          )}
           <div className="small muted">
             {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>

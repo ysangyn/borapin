@@ -8,6 +8,9 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # 매주 월요일 새벽(한국 03:17): 축제 자료를 새로 받아 같은 관문을 거쳐 다시 배포
+  schedule:
+    - cron: '17 18 * * 0'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,6 +44,10 @@ jobs:
         run: npx tsx scripts/travelinfo.ts --check
       - name: 찾아보기 채점 (95% 미만이면 멈춤)
         run: npx tsx scripts/ask-test.ts 2>&1 | tee ask-output.txt
+      - name: 지역 축제 자료 받기 (한국관광공사 TourAPI, 실패하면 기존 자료 그대로)
+        env:
+          TOUR_API_KEY: ${{ secrets.TOUR_API_KEY }}
+        run: npx tsx scripts/tour-festivals.ts 2>&1 | tee festivals-output.txt
       - name: 빌드 (이 파일을 끝까지 그대로 쓴다)
         run: npm run build 2>&1 | tee build-output.txt
       - name: 빌드 버전 확인
@@ -56,7 +63,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt
+        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt festivals-output.txt
 
   emulator:
     name: 2. 에뮬레이터 시험 (보안 규칙 + 화면)
@@ -186,7 +193,7 @@ jobs:
   deploy:
     name: 4. borapin.web.app 배포와 확인
     needs: preview
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

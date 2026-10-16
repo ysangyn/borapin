@@ -101,6 +101,7 @@ function Credits() {
       </ul>
       <h2>기후 자료</h2>
       <p>NASA POWER 월별 기후값 (NASA Langley Research Center)</p>
+      <p>지역 축제 정보: 한국관광공사 TourAPI (공공누리 제1유형). 이름과 기간만 매주 받아 씁니다.</p>
     </>
   );
 }

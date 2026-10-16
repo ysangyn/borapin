@@ -87,15 +87,23 @@ export function useGoBack() {
 }
 
 /** 쓰던 내용이 있으면 새로고침·창 닫기 전에 묻는다 */
+// 지금 화면에 저장하지 않은 입력이 있는지 (새 버전으로 바로 새로 고쳐도 되는지 판단할 때 쓴다)
+let unsaved = 0;
+export const hasUnsavedInput = () => unsaved > 0;
+
 export function useLeaveGuard(dirty: boolean) {
   useEffect(() => {
     if (!dirty) return;
+    unsaved++;
     const h = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = '';
     };
     window.addEventListener('beforeunload', h);
-    return () => window.removeEventListener('beforeunload', h);
+    return () => {
+      unsaved--;
+      window.removeEventListener('beforeunload', h);
+    };
   }, [dirty]);
 }
 

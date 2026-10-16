@@ -453,6 +453,11 @@ a { color: var(--violet); text-decoration: none; }
 .month-pick-photo { position: absolute; inset: 0; z-index: -2; }
 .month-pick::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0) 12%, rgba(20, 14, 48, 0.35) 45%, rgba(20, 14, 48, 0.86) 100%); }
 .month-pick-copy { display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 16px; text-shadow: 0 1px 10px rgba(20, 14, 48, 0.45); }
+.month-pick-fest { font-size: 13px; font-weight: 700; color: #ffe1d6; }
+.season-line .tag { white-space: normal; height: auto; min-height: 22px; padding-top: 2px; padding-bottom: 2px; max-width: 100%; }
+.sheet-fests { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 2px; }
+.sheet-fests .fest { display: flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
+.sheet-fests .fest-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .month-pick-eyebrow { font-size: 12px; font-weight: 800; opacity: 0.9; }
 .month-pick-name { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
 .month-pick-theme { font-size: 14px; font-weight: 600; opacity: 0.95; }

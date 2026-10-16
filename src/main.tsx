@@ -6,7 +6,7 @@ import App from './App';
 import { AuthProvider } from './lib/auth';
 import { ToastProvider } from './components/ui';
 import { installErrorReporting } from './lib/admin';
-import { installChunkRecovery } from './components/system';
+import { installChunkRecovery, UpdateWatcher } from './components/system';
 import { IS_PREVIEW } from './lib/firebase';
 
 installErrorReporting();
@@ -26,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
+          <UpdateWatcher />
           <App />
         </ToastProvider>
       </AuthProvider>

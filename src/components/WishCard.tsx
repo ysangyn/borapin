@@ -3,9 +3,10 @@ import { Icon } from './ui';
 import { tileText } from './TripRow';
 import { formatWhen } from '../lib/dates';
 import { placeLabel, placeLong, placeParam } from '../lib/geo';
-import { isGoodNow, monthsLabel, seasonFor, type SeasonData } from '../lib/seasons';
+import { monthsLabel, seasonFor, type SeasonData } from '../lib/seasons';
 import { bothWant, COUPLE, type WishState } from '../lib/wishes';
 import type { Wish } from '../lib/types';
+import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 
 export function wishTitle(w: Wish) {
   return w.spotName ? `${w.spotName}` : placeLong(w.place);
@@ -45,7 +46,8 @@ export default function WishCard({ wish, state, seasons, compact }: {
   compact?: boolean;
 }) {
   const season = seasonFor(seasons, wish.place, wish.months);
-  const now = isGoodNow(season);
+  const festData = useFestivals();
+  const fest = wish.place.t === 'kr' ? upcomingFestivals(festData, wish.place.code, new Date(), 45)[0] : undefined;
   const memo = [
     wish.spots.length ? `가볼 곳 ${wish.spots[0]}${wish.spots.length > 1 ? ` 외 ${wish.spots.length - 1}` : ''}` : '',
     wish.foods.length ? `먹을 것 ${wish.foods[0]}` : '',
@@ -64,10 +66,10 @@ export default function WishCard({ wish, state, seasons, compact }: {
             <Hearts wantedBy={wish.wantedBy} />
             {bothWant(wish) && <span className="tag coral">둘 다 원해요</span>}
           </span>
-          {season && (
+          {(fest || season) && (
             <span className="tiny season-line">
-              {now && <span className="tag coral now">지금 가기 좋아요</span>}
-              <span className="muted">{now ? '' : '가기 좋은 때 '}{monthsLabel(season.m)}</span>
+              {fest && <span className={'tag ' + (isOngoing(fest) ? 'coral' : 'violet')} data-testid="wish-festival">{isOngoing(fest) ? '지금 축제' : '축제'} · {fest.t} {festivalPeriod(fest)}</span>}
+              {season && <span className="muted">가기 좋은 때 {monthsLabel(season.m)}</span>}
             </span>
           )}
           {!compact && memo.length > 0 && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{memo.join(' · ')}</span>}
