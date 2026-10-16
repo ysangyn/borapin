@@ -42,11 +42,16 @@ export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[]
       </div>
       {list.length === 0 && (
         <>
-          <span className="small muted">어떤 여행인가요? 기본 목록을 채워 드려요.</span>
-          <div className="chips">
-            {Object.entries(PACK_TEMPLATES).map(([k, v]) => (
-              <button key={k} className="chip" onClick={() => save(packFromTemplate(k, abroad))}>{v.label}</button>
-            ))}
+          <div className="pack-empty">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span className="small muted">어떤 여행인가요? 기본 목록을 채워 드려요.</span>
+              <div className="chips">
+                {Object.entries(PACK_TEMPLATES).map(([k, v]) => (
+                  <button key={k} className="chip" onClick={() => save(packFromTemplate(k, abroad))}>{v.label}</button>
+                ))}
+              </div>
+            </div>
+            <img className="pack-art" src="/art/bora-pack.webp" alt="" aria-hidden="true" width={420} height={398} loading="lazy" decoding="async" />
           </div>
           {past.length > 0 && (
             <select className="select" aria-label="지난 여행에서 불러오기" defaultValue="" onChange={(e) => {
