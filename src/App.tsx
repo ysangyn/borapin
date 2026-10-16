@@ -17,6 +17,7 @@ const MapPage = lazy(() => import('./pages/MapPage'));
 const Memories = lazy(() => import('./pages/Memories'));
 const Feed = lazy(() => import('./pages/Feed'));
 const Backdrop = lazy(() => import('./components/Backdrop'));
+const Study = lazy(() => import('./pages/Study'));
 const Space = lazy(() => import('./pages/Space'));
 const Wishes = lazy(() => import('./pages/Wishes'));
 const WishEdit = lazy(() => import('./pages/WishEdit'));
@@ -95,6 +96,7 @@ export default function App() {
               <Route path="/map" element={<MapPage />} />
               <Route path="/memories" element={<Memories />} />
               <Route path="/feed" element={<Feed />} />
+              <Route path="/study" element={<Study />} />
               <Route path="/space" element={<Space />} />
               <Route path="/wishes" element={<Wishes />} />
               <Route path="/wishes/:id" element={<WishEdit />} />
@@ -125,5 +127,5 @@ function AskFab() {
 
 /** 입력 화면(기록·고치기·가고 싶은 곳·장소)에서는 아래 메뉴와 떠 있는 보라를 숨긴다 */
 function hideNavFor(path: string) {
-  return path.startsWith('/record') || path.endsWith('/edit') || /^\/(wishes|places)\/./.test(path);
+  return path.startsWith('/record') || path.endsWith('/edit') || /^\/(wishes|places)\/./.test(path) || path.startsWith('/study');
 }

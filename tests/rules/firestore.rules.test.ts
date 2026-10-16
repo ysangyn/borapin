@@ -165,6 +165,14 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertSucceeds(updateDoc(doc(db, 'spaces/main/hearts/note_n1'), { 'by.bora': deleteField() }));
     await assertFails(setDoc(doc(as.stranger(), 'spaces/main/hearts/note_n9'), { by: { stranger: '손님' }, v: 1 }));
   });
+  test('영어 공부 진도: 자기 문서만 읽고 쓴다', async () => {
+    const db = as.bora();
+    await assertSucceeds(setDoc(doc(db, 'spaces/main/study/bora'), { progress: { ap1: { box: 1, due: '2026-10-18', seen: 1, right: 1, wrong: 0 } }, days: ['2026-10-17'], v: 1 }));
+    await assertFails(setDoc(doc(db, 'spaces/main/study/owner'), { progress: {}, days: [], v: 1 }));
+    await assertFails(getDoc(doc(db, 'spaces/main/study/owner')));
+    await assertSucceeds(getDoc(doc(db, 'spaces/main/study/bora')));
+    await assertFails(setDoc(doc(as.stranger(), 'spaces/main/study/stranger'), { progress: {}, days: [], v: 1 }));
+  });
   test('사진 파일은 올리고, 공개 여부만 바꿀 수 있다', async () => {
     const db = as.bora();
     await assertSucceeds(setDoc(doc(db, 'spaces/main/photoData/p3_l'), photoFile('p3')));

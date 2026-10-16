@@ -511,6 +511,29 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/study');
+    await expect(page.getByTestId('study-card')).toHaveCount(3, { timeout: 15_000 });
+    await page.getByTestId('study-know').first().click();
+    await expect(page.getByRole('status')).toContainText('외웠어요');
+    await expect(page.getByTestId('study-summary')).toContainText('1');
+    // 새로 고쳐도 진도가 남고, 외운 문장도 오늘 묶음에 그대로 있다
+    await page.reload();
+    await expect(page.getByTestId('study-card')).toHaveCount(3, { timeout: 15_000 });
+    await expect(page.getByTestId('study-card').first()).toContainText('1단계');
+    await page.getByTestId('study-more').click();
+    await expect(page.getByTestId('study-card')).toHaveCount(6);
+    // 고르기: 보기 4개, 하나 고르면 다음으로
+    await page.getByRole('tab', { name: '고르기' }).click();
+    const quiz = page.getByTestId('study-pick');
+    await expect(quiz.locator('.study-opt')).toHaveCount(4);
+    await quiz.locator('.study-opt').first().click();
+    await expect(quiz.getByRole('button', { name: /다음|끝/ })).toBeVisible();
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);

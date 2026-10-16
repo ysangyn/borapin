@@ -200,6 +200,16 @@ service cloud.firestore {
         allow delete: if inSpace(spaceId);
       }
 
+      // 영어 공부 진도: 사람마다 문서 하나(uid). 자기 것만 읽고 쓴다
+      match /study/{uid} {
+        allow read, write: if inSpace(spaceId) && uid == request.auth.uid
+          && (request.method == 'get' || request.method == 'delete' || (
+            request.resource.data.keys().hasOnly(['progress', 'days', 'v'])
+            && request.resource.data.progress is map
+            && request.resource.data.days is list && request.resource.data.days.size() <= 1000
+            && request.resource.data.v == 1));
+      }
+
       // 피드 하트: 문서 하나 = 피드 항목 하나, by = { uid: 이름 }. 자기 uid 칸만 넣고 뺀다
       match /hearts/{itemKey} {
         allow read: if inSpace(spaceId);

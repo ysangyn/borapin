@@ -665,3 +665,28 @@ a { color: var(--violet); text-decoration: none; }
 .trip-tile.photo { position: relative; overflow: hidden; }
 .trip-tile.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .trip-tile.photo .tile-mark { position: absolute; left: 0; right: 0; bottom: 0; font-size: 10px; font-weight: 800; color: #fff; background: rgba(23, 20, 43, 0.55); text-align: center; padding: 2px 0; }
+
+/* 오늘의 영어 */
+.study { gap: 14px; }
+.study-top { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; padding: 10px 8px; background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+.study-list { display: flex; flex-direction: column; gap: 10px; }
+.study-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; }
+.study-card header { display: flex; justify-content: space-between; align-items: center; }
+.study-card.done { opacity: 0.6; }
+.icon-btn.on { background: var(--mist); color: var(--violet); }
+.study-en { border: none; background: none; text-align: left; padding: 0; font-size: 19px; font-weight: 800; line-height: 1.35; color: var(--ink); letter-spacing: -0.01em; display: flex; gap: 8px; align-items: flex-start; }
+.study-en svg { flex: none; margin-top: 4px; color: var(--violet); }
+.study-ko { font-size: 14.5px; color: var(--ink2); }
+.study-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.study-quiz { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.study-q { font-size: 20px; font-weight: 800; line-height: 1.4; }
+.study-opts { display: flex; flex-direction: column; gap: 8px; }
+.study-opt { text-align: left; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--page); font-size: 15px; color: var(--ink); line-height: 1.4; }
+.study-opt.right { background: var(--ok-mist); border-color: var(--ok); color: var(--ok); font-weight: 700; }
+.study-opt.wrong { background: #fdeeee; border-color: #e7b3b7; color: var(--danger); }
+.ok-text { color: var(--ok); font-weight: 700; }
+.bad-text { color: var(--danger); font-weight: 700; }
+.study-word { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; }
+.study-word-row { display: flex; gap: 10px; align-items: center; }
+.study-word-row b { flex: none; }
+.study-word-row span { flex: 1; }
