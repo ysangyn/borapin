@@ -12,103 +12,102 @@
 # Error details
 
 ```
-Error: locator.click: Error: strict mode violation: getByTestId('plan-tab').getByRole('button', { name: /경포대/ }) resolved to 2 elements:
-    1) <button type="button" aria-pressed="true" class="plan-again on" data-testid="plan-again" aria-label="경포대 또 갈래요 취소">…</button> aka getByRole('button', { name: '경포대 또 갈래요 취소' })
-    2) <button class="plan-name" aria-expanded="false">…</button> aka getByRole('button', { name: '경포대', exact: true })
+Test timeout of 60000ms exceeded.
+```
 
+```
+Error: locator.click: Test timeout of 60000ms exceeded.
 Call log:
-  - waiting for getByTestId('plan-tab').getByRole('button', { name: /경포대/ })
+  - waiting for getByTestId('packing').getByRole('button', { name: '휴양' })
 
 ```
 
 # Page snapshot
 
 ```yaml
-- generic [ref=f2e1]:
-  - generic [ref=f2e2]:
-    - generic [ref=f2e3]:
-      - generic [ref=f2e4]:
-        - generic [ref=f2e5]:
-          - button "뒤로" [ref=f2e6] [cursor=pointer]
-          - generic [ref=f2e9]: 여행
-        - link "고치기" [ref=f2e10] [cursor=pointer]:
-          - /url: /trips/IBwqloAXgwBuyyIrWcE8/edit
-      - generic [ref=f2e13]:
-        - generic [ref=f2e14]:
-          - generic [ref=f2e15]: 강릉시 여행
-          - generic [ref=f2e16]: 2019.5.3–4 · 1박 2일
-        - tablist "여행 보기" [ref=f2e18]:
-          - tab "개요" [ref=f2e19] [cursor=pointer]
-          - tab "들른 곳" [selected] [ref=f2e20] [cursor=pointer]
-          - tab "사진 3" [ref=f2e21] [cursor=pointer]
-          - tab "글" [ref=f2e22] [cursor=pointer]
-        - generic [ref=f2e23]:
-          - generic [ref=f2e24]:
-            - textbox "들른 곳 추가" [ref=f2e25]:
-              - /placeholder: "들른 곳 적기 (예: 안목 커피거리)"
-            - button "추가" [ref=f2e26] [cursor=pointer]
-          - generic [ref=f2e27]:
-            - generic [ref=f2e28]: 날짜 없이
-            - generic [ref=f2e29]:
-              - generic [ref=f2e31]:
-                - button "경포대 또 갈래요 취소" [active] [pressed] [ref=f2e32] [cursor=pointer]
-                - button "경포대" [ref=f2e35] [cursor=pointer]
-                - link "경포대 네이버지도" [ref=f2e37] [cursor=pointer]:
-                  - /url: https://map.naver.com/p/search/%EA%B0%95%EB%A6%89%EC%8B%9C%20%EA%B2%BD%ED%8F%AC%EB%8C%80
-                  - text: 지도
-              - generic [ref=f2e39]:
-                - button "안목 커피거리 또 갈래요" [ref=f2e40] [cursor=pointer]
-                - button "안목 커피거리" [ref=f2e43] [cursor=pointer]
-                - link "안목 커피거리 네이버지도" [ref=f2e45] [cursor=pointer]:
-                  - /url: https://map.naver.com/p/search/%EA%B0%95%EB%A6%89%EC%8B%9C%20%EC%95%88%EB%AA%A9%20%EC%BB%A4%ED%94%BC%EA%B1%B0%EB%A6%AC
-                  - text: 지도
-              - generic [ref=f2e47]:
-                - button "초당할머니순두부 또 갈래요" [ref=f2e48] [cursor=pointer]
-                - button "초당할머니순두부" [ref=f2e51] [cursor=pointer]
-                - link "초당할머니순두부 네이버지도" [ref=f2e53] [cursor=pointer]:
-                  - /url: https://naver.me/xYz12
-                  - text: 지도
-      - navigation "주 메뉴" [ref=f2e54]:
-        - link "홈" [ref=f2e55] [cursor=pointer]:
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - generic [ref=f4e3]:
+      - generic [ref=f4e4]:
+        - generic [ref=f4e5]:
+          - button "뒤로" [ref=f4e6] [cursor=pointer]
+          - generic [ref=f4e9]: 예정된 여행
+        - link "고치기" [ref=f4e10] [cursor=pointer]:
+          - /url: /trips/Si6jQZxcbWVVySbmpNbT/edit
+      - generic [ref=f4e13]:
+        - generic [ref=f4e14]:
+          - generic [ref=f4e15]: 제주 여행
+          - generic [ref=f4e16]: 2026년쯤
+        - tablist "여행 보기" [ref=f4e18]:
+          - tab "개요" [selected] [ref=f4e19] [cursor=pointer]
+          - tab "일정" [ref=f4e20] [cursor=pointer]
+          - tab "준비" [ref=f4e21] [cursor=pointer]
+          - tab "사진" [ref=f4e22] [cursor=pointer]
+          - tab "글" [ref=f4e23] [cursor=pointer]
+        - generic [ref=f4e24]:
+          - generic [ref=f4e25]:
+            - generic:
+              - region "Map" [ref=f4e26]
+              - generic: 대한해협
+              - generic: 동해
+              - generic: 서해
+              - generic: 남해
+          - generic [aria-hidden]:
+            - generic: 제주
+        - button "준비 준비물 목록 만들기 · 가는 길 · 항공권 · 현지어" [ref=f4e27] [cursor=pointer]:
+          - generic [ref=f4e31]:
+            - text: 준비
+            - generic [ref=f4e32]: 준비물 목록 만들기 · 가는 길 · 항공권 · 현지어
+        - generic [ref=f4e35]:
+          - generic [ref=f4e36]:
+            - generic [ref=f4e37]: 어디
+            - generic [ref=f4e39]:
+              - generic [ref=f4e40]: 제주
+              - link "제주 네이버지도" [ref=f4e41] [cursor=pointer]:
+                - /url: https://map.naver.com/p/search/%EC%A0%9C%EC%A3%BC%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%A0%9C%EC%A3%BC
+                - text: "N"
+              - link "제주 구글지도" [ref=f4e42] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/?api=1&query=%EC%A0%9C%EC%A3%BC%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%A0%9C%EC%A3%BC
+                - text: G
+          - generic [ref=f4e43]:
+            - generic [ref=f4e44]: 누구와
+            - generic [ref=f4e45]: 보라, 영상
+          - generic [ref=f4e46]:
+            - generic [ref=f4e47]: 남긴 사람
+            - generic [ref=f4e48]: 영상
+        - generic [ref=f4e49]:
+          - generic [ref=f4e50]:
+            - heading "장소" [level=2] [ref=f4e51]
+            - link "+ 장소 남기기" [ref=f4e52] [cursor=pointer]:
+              - /url: /places/new?trip=Si6jQZxcbWVVySbmpNbT
+          - generic [ref=f4e53]: 기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요.
+        - generic [ref=f4e54]:
+          - generic [ref=f4e55]:
+            - generic [ref=f4e56]: 링크 공개
+            - generic [ref=f4e59]: 우리만 보기
+          - generic [ref=f4e60]: 앱이 없어도 이 여행을 볼 수 있는 링크를 만들어요. 제목·날짜·장소, 사진과 촬영 날짜·설명, 들른 곳 이름이 보여요. 메모와 글, 함께 간 사람 이름은 넣지 않아요.
+          - button "링크 만들기" [ref=f4e61] [cursor=pointer]
+        - button "이 여행 지우기" [ref=f4e62] [cursor=pointer]
+      - navigation "주 메뉴" [ref=f4e65]:
+        - link "홈" [ref=f4e66] [cursor=pointer]:
           - /url: /
-        - link "여행" [ref=f2e58] [cursor=pointer]:
+        - link "여행" [ref=f4e69] [cursor=pointer]:
           - /url: /trips
-        - link "기록하기" [ref=f2e61] [cursor=pointer]:
+        - link "기록하기" [ref=f4e72] [cursor=pointer]:
           - /url: /record
-        - link "지도" [ref=f2e64] [cursor=pointer]:
+        - link "지도" [ref=f4e75] [cursor=pointer]:
           - /url: /map
-        - link "새 소식 1개 피드" [ref=f2e67] [cursor=pointer]:
+        - link "새 소식 1개 피드" [ref=f4e78] [cursor=pointer]:
           - /url: /feed
-          - generic "새 소식 1개" [ref=f2e71]
+          - generic "새 소식 1개" [ref=f4e82]
           - text: 피드
-    - status:
-      - generic [ref=f2e72]: 또 갈래요!
-  - iframe [aria-hidden] [ref=f2e74]
+    - status
+  - iframe [aria-hidden] [ref=f4e83]
 ```
 
 # Test source
 
 ```ts
-  490 |     await page.getByTestId('blind-toggle').click();
-  491 |     await page.getByLabel('보라 한 줄 평').fill('아침으로 최고');
-  492 |     await page.getByRole('button', { name: '또 갈래요' }).click();
-  493 |     await shot(page, '11-place-edit');
-  494 |     await page.getByTestId('place-save').click();
-  495 |     const tp = page.getByTestId('trip-places');
-  496 |     await expect(tp).toContainText('초당할머니순두부');
-  497 |     await expect(tp).toContainText('또 갈래요');
-  498 |     await expect(tp).toContainText('순두부 젤라또까지 완벽');
-  499 | 
-  500 |     // 지도에서 강릉을 누르면 우리 장소가 모여 보인다
-  501 |     await page.goto('/');
-  502 |     await expectMapDrawn(page);
-  503 |     await tapLngLat(page, 128.86, 37.73);
-  504 |     const sheet = page.getByTestId('region-sheet');
-  505 |     await expect(sheet.getByTestId('sheet-title')).toHaveText('강원 강릉시');
-  506 |     await expect(sheet).toContainText('우리 장소 · 1');
-  507 |     await expect(sheet.getByTestId('place-rec')).toContainText('초당할머니순두부');
-  508 | 
-  509 |     // 우리 장소 목록과 '또 갈래요' 거르기
   510 |     await page.goto('/places');
   511 |     await page.getByRole('button', { name: '또 갈래요' }).click();
   512 |     await expect(page.getByTestId('place-rec')).toHaveCount(1);
@@ -189,8 +188,7 @@ Call log:
   587 |     await again.click();
   588 |     await expect(again).toHaveAttribute('aria-pressed', 'true');
   589 |     // ② 날짜 ③ 시간·예약
-> 590 |     await plan.getByRole('button', { name: /경포대/ }).click();
-      |                                                     ^ Error: locator.click: Error: strict mode violation: getByTestId('plan-tab').getByRole('button', { name: /경포대/ }) resolved to 2 elements:
+  590 |     await plan.locator('.plan-name', { hasText: '경포대' }).click();
   591 |     await plan.getByLabel('날짜').selectOption('2019-05-04');
   592 |     await plan.getByLabel('시간').selectOption('18:30');
   593 |     await expect(plan).toContainText('2일째 · 5.4 (토)');
@@ -210,7 +208,8 @@ Call log:
   607 |     await page.goto('/trips');
   608 |     await page.getByText('제주 여행', { exact: true }).click();
   609 |     const pack = page.getByTestId('packing');
-  610 |     await pack.getByRole('button', { name: '휴양' }).click();
+> 610 |     await pack.getByRole('button', { name: '휴양' }).click();
+      |                                                    ^ Error: locator.click: Test timeout of 60000ms exceeded.
   611 |     await expect(pack).toContainText('수영복');
   612 |     await pack.getByLabel('수영복 챙김').check();
   613 |     await expect(pack).toContainText(/1\/\d+ 챙김/);
@@ -291,4 +290,24 @@ Call log:
   688 |     await expect(page.getByTestId('feed-dot')).toHaveCount(0);
   689 |     // 하트: 내가 누르면 '나', 보라가 보면 '영상'으로 보이고, 보라 화면 아래 메뉴에 점
   690 |     await items.first().getByTestId('feed-heart').click();
+  691 |     await expect(items.first().getByTestId('feed-heart')).toHaveAttribute('aria-pressed', 'true');
+  692 |     await expect(items.first().getByTestId('feed-heart-names')).toHaveText('나');
+  693 |     const bora2 = await browser.newPage();
+  694 |     await signIn(bora2, 'bora@example.com');
+  695 |     await expect(bora2.getByTestId('feed-dot')).toBeVisible({ timeout: 15_000 });
+  696 |     await bora2.getByTestId('nav-feed').click();
+  697 |     await expect(bora2.getByTestId('feed-item').first().getByTestId('feed-heart-names')).toHaveText('영상');
+  698 |     await expect(bora2.getByTestId('feed-dot')).toHaveCount(0);
+  699 |     await bora2.close();
+  700 |     // 다시 누르면 뺀다
+  701 |     await items.first().getByTestId('feed-heart').click();
+  702 |     await expect(items.first().getByTestId('feed-heart')).toHaveAttribute('aria-pressed', 'false');
+  703 |     // 추억 돌아보기로 넘어갈 수 있다
+  704 |     await page.getByTestId('to-memories').click();
+  705 |     await expect(page).toHaveURL(/\/memories$/);
+  706 |   });
+  707 | 
+  708 |   test('공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기', async ({ page, browser }) => {
+  709 |     await signIn(page, OWNER);
+  710 |     await page.goto('/trips');
 ```
