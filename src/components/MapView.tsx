@@ -342,9 +342,9 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       const at = f.place.t === 'kr' ? REGION_BY_CODE.get(f.place.code) : COUNTRY_BY_ID.get(f.place.id);
       if (!at) continue;
       const el = document.createElement('div');
-      el.className = 'wish-flag' + (f.both ? ' both' : '');
+      el.className = 'wish-flag-marker';
       el.dataset.testid = 'wish-flag';
-      el.innerHTML = `<svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M2 21V2" stroke="#c4553a" stroke-width="2" stroke-linecap="round"/><path d="M3 2.5h11l-2.4 4L14 10.5H3z" fill="#FF7A59" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>${f.priority ? `<b>${f.priority}</b>` : ''}`;
+      el.innerHTML = `<div class="wish-flag${f.both ? ' both' : ''}"><svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M2 21V2" stroke="#c4553a" stroke-width="2" stroke-linecap="round"/><path d="M3 2.5h11l-2.4 4L14 10.5H3z" fill="#FF7A59" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>${f.priority ? `<b>${f.priority}</b>` : ''}</div>`;
       flagMarkers.current.push(new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [5, -7] }).setLngLat([at.lng, at.lat]).addTo(map));
     }
   }, [flags, mode, ready]);

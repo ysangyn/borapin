@@ -227,6 +227,15 @@ test.describe.serial('보라핀 1단계', () => {
     await page.goto('/map');
     await expectMapDrawn(page);
     await expect(page.getByTestId('wish-flag')).toHaveCount(1);
+    // 깃발이 실제로 제주 위에 그려졌는지 (위치 확인)
+    const jeju = await page.evaluate(() => {
+      const w = window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } };
+      return w.__map.project([126.55, 33.38]);
+    });
+    const mapBox = (await page.getByTestId('map').first().boundingBox())!;
+    const flagBox = (await page.getByTestId('wish-flag').boundingBox())!;
+    expect(Math.abs(flagBox.x + flagBox.width / 2 - (mapBox.x + jeju.x))).toBeLessThan(40);
+    expect(Math.abs(flagBox.y + flagBox.height - (mapBox.y + jeju.y))).toBeLessThan(40);
     await shot(page, '10b-map-flags');
 
     // 여행지 뽑기: 강원 · 바다 → 담기

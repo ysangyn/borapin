@@ -1,0 +1,28 @@
+name: 데이터 만들기
+
+# data-build 브랜치에 올리면 외부 공개 자료를 받아 계산하고, 결과를 ci-report 브랜치에 올린다.
+on:
+  push:
+    branches: [data-build]
+
+permissions:
+  contents: write
+
+jobs:
+  seasons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 가기 좋은 달 계산 (NASA POWER)
+        run: npx tsx scripts/seasons.ts 2>&1 | tee seasons-output.txt
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh data src/data/seasons.json data/climate.json seasons-output.txt
