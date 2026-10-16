@@ -391,3 +391,25 @@ a { color: var(--violet); text-decoration: none; }
   .nav, .sheet { max-width: 560px; }
   .ask-bar { max-width: 528px; }
 }
+
+/* ---------- 이번 달 여행지 (큰 사진 카드) ---------- */
+.month-pick { position: relative; border-radius: 24px; overflow: hidden; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; color: #fff; isolation: isolate; }
+.month-pick-photo { position: absolute; inset: 0; z-index: -2; }
+.month-pick::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0) 30%, rgba(20, 14, 48, 0.78) 100%); }
+.month-pick-copy { display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 16px; }
+.month-pick-eyebrow { font-size: 12px; font-weight: 800; opacity: 0.9; }
+.month-pick-name { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+.month-pick-theme { font-size: 14px; font-weight: 600; opacity: 0.95; }
+.month-pick-months { font-size: 12px; opacity: 0.85; }
+.month-pick-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.btn.glass { background: rgba(255, 255, 255, 0.2); color: #fff; backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.35); }
+.photo-banner { border-radius: 20px; aspect-ratio: 16 / 9; }
+.sheet-photo { margin: 0 -20px 12px; aspect-ratio: 16 / 8; }
+.sheet-photo-credit { position: absolute; right: 8px; bottom: 6px; font-size: 10px; color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.ask-hero { position: relative; border-radius: 22px; overflow: hidden; color: #fff; isolation: isolate; }
+.ask-hero .scenic { position: absolute; inset: 0; z-index: -2; }
+.ask-hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0.25), rgba(20, 14, 48, 0.72)); }
+.ask-hero .chip { background: rgba(255, 255, 255, 0.92); border-color: transparent; color: var(--ink); }
+.ask-hero .muted { color: rgba(255, 255, 255, 0.85); }
+.empty-photo { width: calc(100% + 32px); margin: -26px -16px 4px; border-radius: 20px 20px 0 0; aspect-ratio: 16 / 8; }
+.legal .credits { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }

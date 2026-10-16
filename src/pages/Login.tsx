@@ -10,6 +10,7 @@ const Footer = () => (
   <div className="tiny muted login-foot">
     <Link to="/terms">이용약관</Link>
     <Link to="/privacy">개인정보 처리방침</Link>
+    <Link to="/credits">사진 출처</Link>
   </div>
 );
 

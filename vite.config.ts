@@ -24,6 +24,12 @@ export default defineConfig({
             options: { cacheName: 'fonts-local', expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 365 } },
           },
           {
+            // 꾸밈 사진·그림: 한 번 본 것만 저장 (영상은 브라우저 캐시에 맡긴다)
+            urlPattern: ({ url }) => /^\/(media|art)\/.+\.webp$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: { cacheName: 'scenery', expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 } },
+          },
+          {
             urlPattern: ({ url }) => url.hostname === 'cdn.jsdelivr.net',
             handler: 'StaleWhileRevalidate',
             options: { cacheName: 'fonts', expiration: { maxEntries: 120 } },

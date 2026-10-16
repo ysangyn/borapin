@@ -13,6 +13,8 @@ import { samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { confetti, whatsNew } from '../lib/celebrate';
+import { photoForPlace } from '../lib/media';
+import { ScenicPhoto } from './Scene';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -101,6 +103,11 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   return (
     <div className="sheet" role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
       <div className="grip" />
+      {photoForPlace(place) && (
+        <div style={{ position: 'relative' }}>
+          <ScenicPhoto photo={photoForPlace(place)} className="sheet-photo" />
+        </div>
+      )}
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }} data-testid="sheet-title">{name}</div>

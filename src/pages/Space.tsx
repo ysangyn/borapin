@@ -180,7 +180,7 @@ export default function Space() {
         </div>
         <div className="tiny muted" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span>
-            <Link to="/terms" style={{ color: 'inherit' }}>이용약관</Link> · <Link to="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link>
+            <Link to="/terms" style={{ color: 'inherit' }}>이용약관</Link> · <Link to="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link> · <Link to="/credits" style={{ color: 'inherit' }}>사진·영상·지도 출처</Link>
           </span>
           <span>보라핀 v{__APP_VERSION__} · 지도 경계: 통계청 SGIS(공공누리 1유형) · vuski/admdongkor(CC BY 4.0) · Natural Earth</span>
         </div>

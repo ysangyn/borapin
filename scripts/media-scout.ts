@@ -122,8 +122,8 @@ const PLACES_ALL: { id: string; q: string[] }[] = [
 ];
 
 const VIDEOS_ALL: { id: string; q: string[] }[] = [
-  { id: 'clouds', q: ['clouds time-lapse', 'timelapse clouds sky', 'cloud timelapse mountain'] },
-  { id: 'stream', q: ['brook forest', 'mountain creek', 'small waterfall forest', 'stream water rocks', 'Bach Wasser', 'river rapids calm', 'cascade forest stream'] },
+  { id: 'clouds', q: ['clouds time-lapse', 'timelapse clouds sky', 'cloud timelapse mountain', 'cloudscape timelapse', 'Wolken Zeitraffer', 'sky timelapse 4K', 'clouds over mountains'] },
+  { id: 'stream', q: ['waterfall', 'Wasserfall', 'Gebirgsbach', 'mountain stream', 'forest brook', 'creek flowing water', 'cascade', 'valley stream Korea'] },
   { id: 'waves', q: ['ocean waves beach', 'sea waves shore'] },
 ];
 
@@ -170,7 +170,8 @@ for (const v of VIDEOS) {
       console.warn(v.id, q, e);
     }
   }
-  all = all.filter((c) => !NOISE.test(c.title + ' ' + c.desc) && c.w >= 1280 && c.w > c.h).slice(0, 12);
+  // 큰 것부터 (전체 화면에 써도 흐리지 않게)
+  all = all.filter((c) => !NOISE.test(c.title + ' ' + c.desc) && c.w >= 1280 && c.w > c.h).sort((a, b) => b.w * b.h - a.w * a.h).slice(0, 16);
   report[`video-${v.id}`] = all;
   const items: { buf: Buffer; label: string }[] = [];
   for (const [i, c] of all.entries()) {

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/ui';
+import { PHOTOS, VIDEOS } from '../lib/media';
 
 const OPERATOR = '윤영상';
 const CONTACT = 'ysangyn@gmail.com';
@@ -78,15 +79,42 @@ function Terms() {
   );
 }
 
-/** 약관·개인정보 처리방침 (로그인 없이 볼 수 있음) */
-export default function Legal({ kind }: { kind: 'privacy' | 'terms' }) {
+function Credits() {
+  const items = [...PHOTOS.map((p) => ({ what: p.name, c: p.credit })), ...VIDEOS.map((v) => ({ what: `${v.name} (영상)`, c: v.credit }))];
+  return (
+    <>
+      <h1>사진·영상 출처</h1>
+      <p>앱을 꾸미는 여행지 사진과 영상은 위키미디어 공용(Wikimedia Commons)에서 자유 이용이 허락된 자료를 줄여서 썼습니다. 각 자료의 이용 허락 조건을 따릅니다(CC BY-SA 자료를 줄인 것은 같은 조건으로 나눕니다).</p>
+      <ul className="credits">
+        {items.map(({ what, c }) => (
+          <li key={c.page}>
+            <b>{what}</b> · <a href={c.page} target="_blank" rel="noreferrer">{c.title}</a> · {c.artist} · {c.license}
+          </li>
+        ))}
+        {items.length === 0 && <li>아직 실린 자료가 없어요.</li>}
+      </ul>
+      <h2>지도 경계</h2>
+      <ul>
+        <li>통계청 SGIS 행정구역 경계 (공공누리 1유형)</li>
+        <li>vuski/admdongkor (CC BY 4.0)</li>
+        <li>Natural Earth (퍼블릭 도메인)</li>
+      </ul>
+      <h2>기후 자료</h2>
+      <p>NASA POWER 월별 기후값 (NASA Langley Research Center)</p>
+    </>
+  );
+}
+
+/** 약관·개인정보 처리방침·사진 출처 (로그인 없이 볼 수 있음) */
+export default function Legal({ kind }: { kind: 'privacy' | 'terms' | 'credits' }) {
   return (
     <div className="page legal" style={{ paddingTop: 20, paddingBottom: 40 }}>
       <Link to="/" className="brand" style={{ color: 'inherit' }}><Logo />보라핀</Link>
-      <article>{kind === 'privacy' ? <Privacy /> : <Terms />}</article>
-      <div className="small" style={{ display: 'flex', gap: 14 }}>
+      <article>{kind === 'privacy' ? <Privacy /> : kind === 'terms' ? <Terms /> : <Credits />}</article>
+      <div className="small" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <Link to="/privacy">개인정보 처리방침</Link>
         <Link to="/terms">이용약관</Link>
+        <Link to="/credits">사진·영상 출처</Link>
       </div>
     </div>
   );

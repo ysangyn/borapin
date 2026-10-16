@@ -9,6 +9,7 @@ import type { Place } from '../lib/types';
 import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTAL_GROUPS, upcomingTrips, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import WishRolling from '../components/WishRolling';
+import MonthPick from '../components/MonthPick';
 import { pickMemory } from '../lib/memories';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
@@ -93,6 +94,8 @@ export default function Home() {
         )}
 
         {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
+
+        {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
 
         {memory && (
           <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">

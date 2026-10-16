@@ -10,6 +10,7 @@ import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
 import { whenSortKey } from '../lib/dates';
+import { ScenicPhoto } from '../components/Scene';
 
 type Filter = 'all' | 'kr' | 'abroad';
 
@@ -125,6 +126,7 @@ export default function Trips() {
           {!trips && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
           {trips && done.length === 0 && (
             <div className="empty">
+              {!(q || filter !== 'all' || who) && <ScenicPhoto id="jeonju" className="photo-banner empty-photo" alt="" />}
               <b>{q || filter !== 'all' || who ? '조건에 맞는 기록이 없어요' : '아직 다녀온 기록이 없어요'}</b>
               {q || filter !== 'all' || who ? (
                 <button className="btn sm ghost" onClick={() => { setQ(''); setFilter('all'); setWho(''); }}>조건 지우기</button>

@@ -10,17 +10,22 @@ const shot = (page: Page, name: string) => page.screenshot({ path: path.join(SHO
 // 화면에서 난 오류는 모두 모아 두었다가 테스트 끝에 확인한다
 const IGNORED = [/permission[-_ ]denied/i, /Missing or insufficient permissions/i];
 let problems: string[] = [];
+/** 이 테스트에서 일부러 내는 오류 응답 (예: 틀린 비밀번호) */
+let expected: RegExp[] = [];
 test.beforeEach(({ page }) => {
   problems = [];
+  expected = [];
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}\n${(e.stack ?? '').split('\n').slice(0, 6).join('\n')}`));
   page.on('console', (m) => {
     if (m.type() === 'error' && !IGNORED.some((r) => r.test(m.text()))) problems.push(`console: ${m.text().slice(0, 300)}`);
   });
   page.on('response', (r) => {
-    if (r.status() === 404 || r.status() === 400 || r.status() >= 500) problems.push(`${r.status()}: ${r.url().slice(0, 160)}`);
+    if ((r.status() === 404 || r.status() === 400 || r.status() >= 500) && !expected.some((x) => x.test(r.url()))) problems.push(`${r.status()}: ${r.url().slice(0, 160)}`);
   });
 });
 test.afterEach(() => {
+  // 일부러 낸 오류 응답은 브라우저도 콘솔에 'Failed to load resource'로 남긴다
+  if (expected.length) problems = problems.filter((p) => !/^console: Failed to load resource: the server responded with a status of 400/.test(p));
   expect(problems, problems.join('\n')).toEqual([]);
 });
 
@@ -553,7 +558,8 @@ test.describe.serial('보라핀 1단계', () => {
     expect(r.ok).toBeTruthy();
     await page.getByTestId('verified').click();
     await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 15_000 });
-    // 다시 로그인: 틀린 비밀번호 → 맞는 비밀번호
+    // 다시 로그인: 틀린 비밀번호(400이 정상) → 맞는 비밀번호
+    expected = [/accounts:signInWithPassword/];
     await page.goto('/space');
     await page.getByRole('button', { name: '로그아웃' }).click();
     await page.getByLabel('메일 주소').fill(MAIL);

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { josa } from 'es-hangul';
 import { Link, useNavigate } from 'react-router-dom';
+import { ScenicPhoto } from './Scene';
+import { photoForPlace } from '../lib/media';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import type { Stats } from '../lib/data';
@@ -84,6 +86,7 @@ export default function DicePicker({ stats, info, seasons, wishes }: {
       {none && <div className="small muted">조건에 맞는 곳이 없어요. 조건을 바꿔 보세요.</div>}
       {face && (
         <div className={'dice-face' + (rolling ? ' rolling' : '')} data-testid="dice-face" aria-live="polite">
+          {!rolling && photoForPlace(face.place) && <ScenicPhoto photo={photoForPlace(face.place)} className="photo-banner" />}
           <div style={{ fontSize: 20, fontWeight: 800 }}>{placeLong(face.place)}</div>
           {face.theme && <div className="small" style={{ color: '#33248a', fontWeight: 600 }}>{face.theme}</div>}
           {face.spots && face.spots.length > 0 && <div className="tiny muted">{face.spots.slice(0, 4).join(' · ')}</div>}

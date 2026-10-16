@@ -27,7 +27,7 @@ export default function App() {
   const auth = useAuth();
   const loc = useLocation();
   // 링크 공개된 여행과 약관·개인정보 처리방침은 로그인 없이 본다
-  if (loc.pathname.startsWith('/s/') || loc.pathname === '/privacy' || loc.pathname === '/terms') {
+  if (loc.pathname.startsWith('/s/') || ['/privacy', '/terms', '/credits'].includes(loc.pathname)) {
     return (
       <div className="app">
         <ErrorBoundary resetKey={loc.pathname}>
@@ -36,6 +36,7 @@ export default function App() {
               <Route path="/s/:token" element={<SharedTripPage />} />
               <Route path="/privacy" element={<Legal kind="privacy" />} />
               <Route path="/terms" element={<Legal kind="terms" />} />
+              <Route path="/credits" element={<Legal kind="credits" />} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

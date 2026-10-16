@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ScenicPhoto } from '../components/Scene';
+import { photoById } from '../lib/media';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
 import { useAuth } from '../lib/auth';
@@ -70,8 +72,9 @@ export default function Ask() {
       <TopBar back title="찾아보기" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); }}>처음으로</button> : undefined} />
       <div className="page ask-page" style={{ paddingTop: 4 }} data-testid="ask">
         {msgs.length === 0 && (
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <b>무엇이든 물어보세요</b>
+          <div className={'card' + (photoById('seorak') ? ' ask-hero' : '')} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: photoById('seorak') ? '64px 16px 16px' : undefined }}>
+            {photoById('seorak') && <ScenicPhoto id="seorak" alt="" />}
+            <b style={{ fontSize: photoById('seorak') ? 20 : undefined }}>무엇이든 물어보세요</b>
             <span className="small muted">국내 160곳 여행정보, 가기 좋은 때, 우리 기록을 바로 찾아 드려요. 인터넷이나 AI를 쓰지 않아 비용이 들지 않아요.</span>
             <div className="chips">
               {STARTERS.map((s) => <button key={s} className="chip" onClick={() => send(s)} disabled={!ready}>{s}</button>)}
