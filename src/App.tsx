@@ -65,10 +65,11 @@ export default function App() {
         </div>
       </div>
     );
-  const hideNav = loc.pathname.startsWith('/record') || loc.pathname.endsWith('/edit') || /^\/(wishes|places)\/./.test(loc.pathname);
+  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map');
+  const hideNav = hideNavFor(loc.pathname);
   return (
     <DataProvider>
-      <div className={'app' + (hideNav ? ' no-nav' : '')}>
+      <div className={'app' + (hideNav ? ' no-nav' : '') + (showFab ? ' has-fab' : '')}>
         <ScrollManager />
         <StatusBanner />
         <ErrorBoundary resetKey={loc.pathname}>
@@ -93,7 +94,7 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
         {!hideNav && <BottomNav />}
-        {!hideNav && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && <AskFab />}
+        {showFab && <AskFab />}
       </div>
     </DataProvider>
   );
@@ -107,4 +108,9 @@ function AskFab() {
       <img src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />
     </Link>
   );
+}
+
+/** 입력 화면(기록·고치기·가고 싶은 곳·장소)에서는 아래 메뉴와 떠 있는 보라를 숨긴다 */
+function hideNavFor(path: string) {
+  return path.startsWith('/record') || path.endsWith('/edit') || /^\/(wishes|places)\/./.test(path);
 }

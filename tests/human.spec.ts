@@ -374,14 +374,14 @@ test.describe('사람처럼 쓰기', () => {
     // 긴 이름의 '지금 축제'를 제주에 하나 넣어 둔다 (실제 축제 자료는 매주 바뀌므로)
     const d = new Date(); const ymd = (x: Date) => x.toISOString().slice(0, 10).replace(/-/g, '');
     const s = new Date(d); s.setDate(d.getDate() - 1); const e = new Date(d); e.setDate(d.getDate() + 5);
-    await page.route('**/data/festivals.json', (r) => r.fulfill({ json: { updated: ymd(d), source: '시험', cells: { '50': [{ t: '제주 탐라문화제 한마당 큰잔치 거리 퍼레이드', s: ymd(s), e: ymd(e), id: 'x' }] } } }));
+    await page.route('**/data/festivals.json', (r) => r.fulfill({ json: { updated: ymd(d), source: '시험', cells: { '51750': [{ t: '영월 단종문화제 한마당 큰잔치 거리 퍼레이드', s: ymd(s), e: ymd(e), id: 'x' }] } } }));
     await signIn(page);
-    // 제주를 가고 싶은 곳에 담는다
-    await page.goto('/wishes/new?place=kr:50');
+    // 영월을 가고 싶은 곳에 담는다 (다른 시험이 건드리지 않는 곳)
+    await page.goto('/wishes/new?place=kr:51750');
     await page.getByTestId('wish-save').click();
     await expect(page).not.toHaveURL(/wishes\/new/);
     await page.goto('/');
-    const card = page.getByTestId('home-wishes').getByTestId('wish-card').filter({ hasText: '제주' }).first();
+    const card = page.getByTestId('home-wishes').getByTestId('wish-card').filter({ hasText: '영월' }).first();
     await expect(card).toBeVisible();
     const tag = card.getByTestId('wish-festival');
     await expect(tag).toBeVisible();
