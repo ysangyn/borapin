@@ -1,11 +1,16 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { members } from '../lib/members';
+import { useStore } from '../lib/store';
+import { displayName, useAuth } from '../lib/auth';
+import { buildFeed, unseenCount } from '../lib/feed';
+import { feedSeenAt, onFeedSeen } from '../lib/feedSeen';
 
 const PATHS: Record<string, string> = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
   bag: 'M3 8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18',
   map: 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',
+  feed: 'M4 5h16v4H4zM4 12h10M4 16h16M4 20h7',
   image: 'M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM21 16l-5-5-9 9M9 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4z',
   plus: 'M12 5v14M5 12h14',
   minus: 'M5 12h14',
@@ -65,15 +70,31 @@ export function Avatars({ size = 32 }: { size?: number }) {
   );
 }
 
+/** 아래 메뉴 '피드'의 새 소식 점: 마지막으로 본 뒤에 남이 남긴 여행·장소·가고 싶은 곳 (사진·글은 피드에 들어가면 센다) */
+function useFeedUnseen() {
+  const { trips, wishes, places } = useStore();
+  const auth = useAuth();
+  const [seen, setSeen] = useState(feedSeenAt);
+  useEffect(() => onFeedSeen(() => setSeen(feedSeenAt())), []);
+  const me = auth.status === 'ready' ? displayName(auth.user) : '';
+  return useMemo(() => {
+    if (!trips || !wishes || !places) return 0;
+    return unseenCount(buildFeed({ trips, wishes, recs: places, photos: [], notes: [] }), seen, me);
+  }, [trips, wishes, places, seen, me]);
+}
+
 export function BottomNav() {
   const cls = ({ isActive }: { isActive: boolean }) => (isActive ? 'on' : '');
+  const unseen = useFeedUnseen();
   return (
     <nav className="nav" aria-label="주 메뉴">
       <NavLink to="/" end className={cls}><Icon name="home" size={24} />홈</NavLink>
       <NavLink to="/trips" className={cls}><Icon name="bag" size={24} />여행</NavLink>
       <NavLink to="/record" className="plus" aria-label="기록하기"><Icon name="plus" size={26} stroke={2.4} /></NavLink>
       <NavLink to="/map" className={cls}><Icon name="map" size={24} />지도</NavLink>
-      <NavLink to="/memories" className={cls}><Icon name="image" size={24} />추억</NavLink>
+      <NavLink to="/feed" className={({ isActive }) => (isActive || location.pathname.startsWith('/memories') ? 'on' : '')} data-testid="nav-feed">
+        <span className="nav-icon"><Icon name="feed" size={24} />{unseen > 0 && <i className="nav-dot" aria-label={`새 소식 ${unseen}개`} data-testid="feed-dot" />}</span>피드
+      </NavLink>
     </nav>
   );
 }

@@ -53,11 +53,11 @@ export default function Memories() {
     return t ? t.places.map(placeLong).join(', ') : null;
   };
 
-  if (!trips) return (<><TopBar title="추억" /><div className="page"><div className="skeleton-list" aria-busy="true"><i /><i /><i /></div></div></>);
+  if (!trips) return (<><TopBar title="추억" right={<Link to="/feed" className="btn sm soft">피드</Link>} /><div className="page"><div className="skeleton-list" aria-busy="true"><i /><i /><i /></div></div></>);
   if (doneCount === 0)
     return (
       <>
-        <TopBar title="추억" />
+        <TopBar title="추억" right={<Link to="/feed" className="btn sm soft">피드</Link>} />
         <div className="page" style={{ paddingTop: 4 }}>
           <div className="empty" data-testid="memories-empty">
             <Art id="bora-walk" className="empty-art" size={260} />
@@ -78,7 +78,7 @@ export default function Memories() {
 
   return (
     <>
-      <TopBar title="추억" />
+      <TopBar title="추억" right={<Link to="/feed" className="btn sm soft">피드</Link>} />
       <div className="page" style={{ paddingTop: 4 }}>
         {memory && (
           <section className="card" data-testid="memory-card">

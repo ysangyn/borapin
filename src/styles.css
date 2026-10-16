@@ -534,3 +534,27 @@ a { color: var(--violet); text-decoration: none; }
 .bot-row { display: flex; gap: 8px; align-items: flex-end; max-width: 100%; }
 .bot-row .bubble.bot { max-width: calc(88% - 36px); }
 .bot-face { width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--violet); border: 1.5px solid #fff; box-shadow: 0 1px 4px rgba(23, 20, 43, 0.15); margin-bottom: 2px; }
+
+/* 피드 */
+.feed-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.feed-item { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.feed-item header { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.feed-item header .small { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink2); }
+.feed-when { flex: none; }
+.feed-who { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.feed-who .avatar { width: 26px; height: 26px; font-size: 11px; border-width: 1.5px; }
+.feed-text { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
+.feed-text.quote { padding: 10px 12px; border-radius: 12px; background: var(--page); white-space: pre-wrap; }
+.feed-link { font-weight: 700; color: var(--violet); align-self: flex-start; }
+.feed-photos { display: grid; gap: 4px; border-radius: 14px; overflow: hidden; }
+.feed-photos.n1 { grid-template-columns: 1fr; }
+.feed-photos.n2 { grid-template-columns: 1fr 1fr; }
+.feed-photos.n3 { grid-template-columns: 2fr 1fr 1fr; }
+.feed-photos.n4 { grid-template-columns: 1fr 1fr; }
+.feed-photo { position: relative; padding: 0; border: none; background: var(--page); aspect-ratio: 1; overflow: hidden; }
+.feed-photos.n1 .feed-photo { aspect-ratio: 4 / 3; }
+.feed-photos.n3 .feed-photo:first-child { grid-row: span 2; aspect-ratio: auto; }
+.feed-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.feed-more { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(23, 20, 43, 0.45); color: #fff; font-weight: 800; font-size: 18px; }
+.nav-icon { position: relative; display: inline-flex; }
+.nav-dot { position: absolute; top: -2px; right: -4px; width: 9px; height: 9px; border-radius: 50%; background: var(--coral); border: 2px solid #fff; }

@@ -472,6 +472,46 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(answers.last()).toContainText('시·군');
   });
 
+  test('피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점', async ({ page, browser }) => {
+    await signIn(page, OWNER);
+    await page.getByTestId('nav-feed').click();
+    await expect(page).toHaveURL(/\/feed$/);
+    const items = page.getByTestId('feed-item');
+    await expect(items.first()).toBeVisible({ timeout: 15_000 });
+    // 앞 시험들이 남긴 것들이 다 보인다: 사진 묶음, 글, 우리 장소, 핀
+    await expect(page.locator('[data-testid="feed-item"][data-kind="photos"]').first()).toContainText('사진');
+    await expect(page.locator('[data-testid="feed-item"][data-kind="note"]').first()).toContainText('바다 보며 커피 마신 날');
+    await expect(page.locator('[data-testid="feed-item"][data-kind="place"]').first()).toBeVisible();
+    await expect(page.locator('[data-testid="feed-item"][data-kind="trip"]').first()).toBeVisible();
+    // 시간순(최신 먼저): 각 줄의 '얼마 전' 글이 거꾸로 가지 않는지는 단위 시험이 보고, 여기선 내가 남긴 건 '나'로 보이는지
+    await expect(items.first().locator('.feed-who')).toContainText('나');
+    // 내 소식만 있으니 점은 없다
+    await expect(page.getByTestId('feed-dot')).toHaveCount(0);
+    await shot(page, '17-feed');
+
+    // 보라가 핀을 꽂으면 → 내 화면 아래 메뉴에 새 소식 점, 피드에 들어가면 사라진다
+    const bora = await browser.newPage();
+    await signIn(bora, 'bora@example.com');
+    await expect(bora.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 15_000 });
+    await bora.goto('/record');
+    await bora.getByLabel('어디 검색').fill('통영');
+    await bora.getByRole('option', { name: /통영시/ }).first().click();
+    await bora.getByLabel('제목').fill('보라의 통영 나들이');
+    await bora.getByRole('button', { name: '몰라요' }).click();
+    await bora.getByTestId('save').click();
+    await expect(bora.getByTestId('trip-title')).toHaveText('보라의 통영 나들이');
+    await bora.close();
+    await page.goto('/');
+    await expect(page.getByTestId('feed-dot')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('nav-feed').click();
+    await expect(items.first()).toContainText('보라의 통영 나들이');
+    await expect(items.first().locator('.feed-who')).toContainText('보라');
+    await expect(page.getByTestId('feed-dot')).toHaveCount(0);
+    // 추억 돌아보기로 넘어갈 수 있다
+    await page.getByTestId('to-memories').click();
+    await expect(page).toHaveURL(/\/memories$/);
+  });
+
   test('공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기', async ({ page, browser }) => {
     await signIn(page, OWNER);
     await page.goto('/trips');
@@ -610,6 +650,8 @@ test.describe.serial('보라핀 1단계', () => {
   test('기록 고치기와 지우기', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/trips');
+    await expect(page.getByTestId('trip-row').first()).toBeVisible();
+    const before = await page.getByTestId('trip-row').count();
     await page.getByText('강릉시 여행', { exact: true }).click();
     await page.getByRole('link', { name: '고치기' }).click();
     await expect(page.getByRole('button', { name: /강릉시 빼기/ })).toBeVisible();
@@ -620,6 +662,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '이 여행 지우기' }).click();
     await page.getByRole('button', { name: '지우기', exact: true }).click();
     await expect(page).toHaveURL(/\/trips$/);
-    await expect(page.getByTestId('trip-row')).toHaveCount(3);
+    await expect(page.getByTestId('trip-row').filter({ hasText: '엄마랑 강릉' })).toHaveCount(0);
+    await expect(page.getByTestId('trip-row')).toHaveCount(before - 1);
   });
 });
