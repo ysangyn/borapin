@@ -1,0 +1,39 @@
+name: 예전 기록 옮기기
+
+# migrate-data 브랜치에 올리면 한 번 실행된다. 끝나면 그 브랜치는 지운다.
+on:
+  push:
+    branches: [migrate-data]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 배포 열쇠 준비
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+      - name: 옮기기
+        run: |
+          if [ -f migrate/dry-run ]; then export DRY_RUN=1; fi
+          npx tsx scripts/migrate.ts migrate/v21.json 2>&1 | tee migrate-output.txt
+      - name: 열쇠 지우기
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
+      - name: 결과 올리기 (ci-report 브랜치)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh migrate migrate-output.txt
