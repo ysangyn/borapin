@@ -3,6 +3,7 @@ import { josa } from 'es-hangul';
 import type { Trip } from '../lib/types';
 import { dday, formatWhen, nightsDays } from '../lib/dates';
 import { placeLabel, placeLong, REGION_BY_CODE, COUNTRY_BY_ID, areaShort } from '../lib/geo';
+import { isMemberName } from '../lib/members';
 
 export function tileText(t: Trip): string {
   const p = t.places[0];
@@ -23,7 +24,7 @@ export function tripSubtitle(t: Trip): string {
 export default function TripRow({ trip }: { trip: Trip }) {
   const abroad = trip.places.length > 0 && trip.places.every((p) => p.t === 'country');
   const cls = 'trip-tile' + (trip.status === 'planned' ? ' planned' : abroad ? ' abroad' : '');
-  const others = trip.companions.filter((c) => c !== '보라' && c !== '영상');
+  const others = trip.companions.filter((c) => !isMemberName(c));
   return (
     <Link to={`/trips/${trip.id}`} className="trip-row" data-testid="trip-row">
       <span className={cls}>{tileText(trip)}</span>

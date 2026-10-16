@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
-import { useAuth, displayName, memberNames } from '../lib/auth';
+import { useAuth, displayName } from '../lib/auth';
 import { createPlace, createTrip, deletePlace, restorePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
 import { quickTripInput } from '../lib/tripActions';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { formatWhen } from '../lib/dates';
 import { parsePlaceParam } from '../lib/geo';
 import { KINDS, parseNaverShare, placeRecLinks, VERDICTS } from '../lib/placeRecs';
-import { COUPLE, samePlace } from '../lib/wishes';
+import { samePlace } from '../lib/wishes';
+import { memberNames, toneOf } from '../lib/members';
 import type { Place, PlaceKind, PlaceRecInput, Verdict } from '../lib/types';
 
 /** 장소 남기기·고치기: 이름, 종류, 어디, 어느 여행, 둘의 한 줄 평, 평가, 네이버 링크 */
@@ -72,7 +73,7 @@ export default function PlaceEdit() {
   const where = region[region.length - 1] ?? null;
   const tripOptions = useMemo(() => (trips && where ? tripsAtPlace(trips, (p) => samePlace(p, where)) : []), [trips, where]);
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
-  const writers = [...new Set([...COUPLE, me].filter(Boolean))];
+  const writers = [...new Set([...memberNames(), me, ...Object.keys(reviews)].filter(Boolean))];
 
   const applyPaste = (text: string) => {
     setPaste(text);
@@ -209,7 +210,7 @@ export default function PlaceEdit() {
           <span className="label">한 줄 평</span>
           {writers.map((w) => (
             <label key={w} className="review-row">
-              <span className={'avatar ' + (w === '보라' ? 'bora' : 'ys')} aria-hidden="true">{w.slice(0, 1)}</span>
+              <span className={'avatar t' + Math.max(0, toneOf(w))} aria-hidden="true">{[...w][0]}</span>
               <input
                 className="input"
                 aria-label={`${w} 한 줄 평`}

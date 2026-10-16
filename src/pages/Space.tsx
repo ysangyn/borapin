@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatars, Icon, TopBar, useToast } from '../components/ui';
 import { logOut, nameOf, useAuth } from '../lib/auth';
-import { computeStats, readAll, setAccessList, usePlaces, useTrips, useWishes } from '../lib/data';
+import { addMember as addMemberDoc, computeStats, readAll, setAccessList, setMemberName, usePlaces, useTrips, useWishes } from '../lib/data';
 import { exportXlsx, saveBlob } from '../lib/exportXlsx';
 import { sendReport } from '../lib/admin';
 import { useSeasons } from '../lib/seasons';
@@ -11,6 +11,7 @@ import { OWNER_EMAIL } from '../lib/firebase';
 import { isOffline } from '../lib/writes';
 import { localDate } from '../lib/dates';
 import type { Photo } from '../lib/types';
+import { spaceTitle } from '../lib/members';
 
 export default function Space() {
   const auth = useAuth();
@@ -21,6 +22,7 @@ export default function Space() {
   const seasons = useSeasons();
   const [busy, setBusy] = useState<'xlsx' | 'json' | null>(null);
   const [email, setEmail] = useState('');
+  const [newName, setNewName] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   if (auth.status !== 'ready') return null;
@@ -30,13 +32,16 @@ export default function Space() {
     const e = email.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return toast('메일 주소를 확인해 주세요');
     if (access.allowed.includes(e)) return toast('이미 함께 쓰고 있는 계정이에요');
+    const n = newName.trim();
     setEmail('');
+    setNewName('');
     try {
-      await setAccessList('allowed', e, true);
-      toast(`${e} 계정이 들어올 수 있어요`);
+      await addMemberDoc(e, n);
+      toast(`${n || e} 님이 들어올 수 있어요`);
     } catch (err) {
       console.warn(err);
       setEmail(e);
+      setNewName(n);
       toast('추가하지 못했어요. 잠시 뒤 다시 해 주세요.');
     }
   };
@@ -104,7 +109,7 @@ export default function Space() {
         <div className="setting-group" style={{ padding: 16, display: 'flex', gap: 14, alignItems: 'center' }}>
           <Avatars size={44} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 19, fontWeight: 800 }}>보라 &amp; 영상</div>
+            <div style={{ fontSize: 19, fontWeight: 800 }} data-testid="space-title">{spaceTitle()}</div>
             <div className="small muted">여행 {stats?.tripsDone ?? 0}번 · 핀 {stats?.pins ?? 0}개</div>
             <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nameOf(user.email)} · {user.email}</div>
           </div>
@@ -118,6 +123,18 @@ export default function Space() {
                 <span className="ico"><Icon name="users" size={17} /></span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <b>{nameOf(e)}</b>{e === OWNER_EMAIL ? <span className="tag violet" style={{ marginLeft: 6 }}>관리자</span> : null}
+                  {isAdmin && (
+                    <button className="link-btn" style={{ marginLeft: 8, display: 'inline' }} aria-label={`${e} 부를 이름 바꾸기`} onClick={async () => {
+                      const n = window.prompt('앱에서 부를 이름 (예: 보라)', nameOf(e));
+                      if (n === null) return;
+                      try {
+                        await setMemberName(e, n);
+                        toast('이름을 바꿨어요');
+                      } catch {
+                        toast('바꾸지 못했어요. 다시 해 주세요');
+                      }
+                    }}>이름 바꾸기</button>
+                  )}
                   <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{e}</div>
                 </span>
                 {isAdmin && e !== OWNER_EMAIL && (
@@ -134,7 +151,10 @@ export default function Space() {
             ))}
             {isAdmin && (
               <div className="setting-row">
-                <input className="input" style={{ height: 42 }} type="email" inputMode="email" placeholder="함께 쓸 사람의 메일 주소" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) addMember(); }} aria-label="추가할 계정" />
+                <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+                  <input className="input" style={{ height: 42 }} type="email" inputMode="email" placeholder="함께 쓸 사람의 메일 주소" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) addMember(); }} aria-label="추가할 계정" />
+                  <input className="input" style={{ height: 42 }} placeholder="앱에서 부를 이름 (예: 보라)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) addMember(); }} aria-label="부를 이름" maxLength={20} />
+                </span>
                 <button className="btn sm" onClick={addMember}>추가</button>
               </div>
             )}

@@ -1,7 +1,7 @@
 import type { Place, Trip, Wish } from './types';
 import { localDate } from './dates';
+import { everyoneWants } from './members';
 
-export const COUPLE = ['보라', '영상'] as const;
 
 const ms = (t: { toMillis?: () => number } | null | undefined) => (t?.toMillis ? t.toMillis() : Date.now());
 
@@ -29,7 +29,7 @@ export function wishState(w: Wish, trips: Trip[]): WishState {
   return { kind: 'wish' };
 }
 
-export const bothWant = (w: Wish) => COUPLE.every((n) => (w.wantedBy ?? []).includes(n));
+export const bothWant = (w: Wish) => everyoneWants(w.wantedBy);
 
 /** 목록 순서: 1·2·3순위 → 둘 다 원해요 → 최근에 담은 것 */
 export function sortWishes(list: Wish[]): Wish[] {

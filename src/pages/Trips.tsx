@@ -11,6 +11,7 @@ import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
 import { whenSortKey } from '../lib/dates';
 import { times } from '../lib/ko';
+import { isMemberName } from '../lib/members';
 
 type Filter = 'all' | 'kr' | 'abroad';
 
@@ -30,7 +31,7 @@ export default function Trips() {
 
   const people = useMemo(() => {
     const s = new Set<string>();
-    trips?.forEach((t) => t.companions.forEach((c) => c !== '보라' && c !== '영상' && s.add(c)));
+    trips?.forEach((t) => t.companions.forEach((c) => !isMemberName(c) && s.add(c)));
     return [...s];
   }, [trips]);
 

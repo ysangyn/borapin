@@ -4,7 +4,8 @@ import { tileText } from './TripRow';
 import { formatWhen } from '../lib/dates';
 import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { monthsLabel, seasonFor, type SeasonData } from '../lib/seasons';
-import { bothWant, COUPLE, type WishState } from '../lib/wishes';
+import { bothWant, type WishState } from '../lib/wishes';
+import { everyoneLabel, memberNames } from '../lib/members';
 import type { Wish } from '../lib/types';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 
@@ -16,7 +17,7 @@ export function Hearts({ wantedBy, size = 13 }: { wantedBy?: string[]; size?: nu
   const set = new Set(wantedBy ?? []);
   return (
     <span className="hearts" aria-label={`원하는 사람: ${[...set].join(', ') || '없음'}`}>
-      {COUPLE.map((n) => (
+      {memberNames().map((n) => (
         <span key={n} className={'heart' + (set.has(n) ? ' on' : '')}>
           <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
@@ -64,7 +65,7 @@ export default function WishCard({ wish, state, seasons, compact }: {
           <span className="t">{wishTitle(wish)}{wish.spotName && <span className="muted small"> · {placeLabel(wish.place)}</span>}</span>
           <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <Hearts wantedBy={wish.wantedBy} />
-            {bothWant(wish) && <span className="tag coral">둘 다 원해요</span>}
+            {bothWant(wish) && <span className="tag coral">{everyoneLabel()}</span>}
           </span>
           {(fest || season) && (
             <span className="tiny season-line">

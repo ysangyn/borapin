@@ -8,6 +8,10 @@ import { ask, type AskCtx, type AskData } from '../src/lib/ask/engine';
 import { placeParam } from '../src/lib/geo';
 import type { PlaceRec, Trip, Wish } from '../src/lib/types';
 import { CASES } from '../tests/ask/cases';
+import { setMembers } from '../src/lib/members';
+
+// 채점용 공간: 보라·영상 두 사람
+setMembers([{ email: 'ysangyn@gmail.com', name: '영상' }, { email: 'bora@example.com', name: '보라' }]);
 
 const T = (id: string, title: string, places: Trip['places'], when: Trip['when'], extra: Partial<Trip> = {}): Trip =>
   ({ id, title, kind: 'trip', status: 'done', when, places, companions: ['보라', '영상'], memo: '', tags: [], source: 'app', v: 1, ...extra }) as Trip;

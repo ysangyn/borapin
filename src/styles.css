@@ -128,6 +128,12 @@ a { color: var(--violet); text-decoration: none; }
 .avatar + .avatar { margin-left: -10px; }
 .avatar.bora { background: #ffd8cc; color: #8a2e12; }
 .avatar.ys { background: #d9d0ff; color: #33248a; }
+/* 멤버 색: 가나다 순서대로 */
+.avatar.t0 { background: #ffd8cc; color: #8a2e12; }
+.avatar.t1 { background: #d9d0ff; color: #33248a; }
+.avatar.t2 { background: #cdeedd; color: #1e5a3c; }
+.avatar.t3 { background: #cfe6ff; color: #1d4a7a; }
+.avatar.more { background: var(--page); color: var(--ink3); }
 .review-row { display: flex; gap: 10px; align-items: center; }
 .review-row .avatar { flex: none; width: 34px; height: 34px; }
 .review-row .input { flex: 1; min-width: 0; }
@@ -300,7 +306,9 @@ a { color: var(--violet); text-decoration: none; }
 .plan-more .btn { grid-column: 1 / -1; justify-self: start; }
 .note { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
 .note-by { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 10px; background: var(--mist); color: #33248a; }
-.note-by.bora { background: var(--coral-mist); color: var(--coral-ink); }
+.note-by.bora, .note-by.t0 { background: var(--coral-mist); color: var(--coral-ink); }
+.note-by.t2 { background: #e2f5ea; color: #1e5a3c; }
+.note-by.t3 { background: #e3efff; color: #1d4a7a; }
 .pack-row { display: flex; align-items: center; gap: 10px; font-size: 15px; }
 .pack-row.done span { color: var(--ink4); text-decoration: line-through; }
 .tiny-chip { height: 30px; padding: 0 10px; font-size: 12px; }

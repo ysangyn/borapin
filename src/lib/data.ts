@@ -4,6 +4,7 @@ import {
   deleteDoc,
   deleteField,
   doc,
+  FieldPath,
   getDoc,
   getDocs,
   query,
@@ -212,6 +213,22 @@ export async function setAccessList(field: 'allowed' | 'admins', email: string, 
       updatedAt: serverTimestamp(),
     }),
   );
+}
+
+/** 함께 쓰는 사람 넣기 (부를 이름도 함께). 메일에 점이 있어 이름은 FieldPath로 쓴다 */
+export async function addMember(email: string, name: string) {
+  const e = email.toLowerCase().trim();
+  const ref = doc(db, 'config', 'access');
+  await queued(
+    name.trim()
+      ? updateDoc(ref, 'allowed', arrayUnion(e), new FieldPath('names', e), name.trim(), 'updatedAt', serverTimestamp())
+      : updateDoc(ref, { allowed: arrayUnion(e), updatedAt: serverTimestamp() }),
+  );
+}
+/** 부를 이름 바꾸기 (비우면 기본 이름으로) */
+export async function setMemberName(email: string, name: string) {
+  const e = email.toLowerCase().trim();
+  await queued(updateDoc(doc(db, 'config', 'access'), new FieldPath('names', e), name.trim() || deleteField(), 'updatedAt', serverTimestamp()));
 }
 
 /** 한 번만 읽기 (백업 등) */

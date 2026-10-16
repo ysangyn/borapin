@@ -3,6 +3,7 @@ import { useAuth } from '../lib/auth';
 import { addNote, deleteNote, useNotes } from '../lib/tripExtras';
 import { useToast } from './ui';
 import type { Trip } from '../lib/types';
+import { toneOf } from '../lib/members';
 
 /** '2024.5.6' (올해면 '5.6 21:00') */
 function noteDate(d: Date) {
@@ -53,7 +54,7 @@ export default function NotesTab({ trip }: { trip: Trip }) {
       {shown.map((n) => (
         <div key={n.id} className="note" data-testid="note">
           <div className="row-between" style={{ alignItems: 'center' }}>
-            <span className={'note-by' + (n.by.name === '보라' ? ' bora' : '')}>{n.by.name}</span>
+            <span className={'note-by t' + Math.max(0, toneOf(n.by.name))}>{n.by.name}</span>
             <span className="tiny muted">{n.createdAt?.toDate ? noteDate(n.createdAt.toDate()) : '방금'}</span>
           </div>
           <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>{n.text}</div>

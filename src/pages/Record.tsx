@@ -8,6 +8,7 @@ import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
 import { parsePlaceParam, placeLabel } from '../lib/geo';
 import type { Place, Precision, Season, TripInput, TripKind, TripStatus, When } from '../lib/types';
 import { celebrate, whatsNew } from '../lib/celebrate';
+import { memberNames } from '../lib/members';
 
 const PRECISIONS: { p: Precision; label: string }[] = [
   { p: 'day', label: '날짜' },
@@ -35,7 +36,7 @@ export default function Record() {
   const [status, setStatus] = useState<TripStatus>(sp.get('status') === 'planned' ? 'planned' : 'done');
   const [places, setPlaces] = useState<Place[]>(() => parsePlaceParam(sp.get('place')));
   const [when, setWhen] = useState<When>({ p: 'day' });
-  const [companions, setCompanions] = useState<string[]>(['보라', '영상']);
+  const [companions, setCompanions] = useState<string[]>(() => memberNames());
   const [newName, setNewName] = useState('');
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');

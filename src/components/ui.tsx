@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { members } from '../lib/members';
 
 const PATHS: Record<string, string> = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
@@ -51,12 +52,15 @@ export function Logo({ size = 26 }: { size?: number }) {
   );
 }
 
+/** 함께 쓰는 사람 동그라미 (실제 멤버, 셋까지 + 나머지 수) */
 export function Avatars({ size = 32 }: { size?: number }) {
   const s = { width: size, height: size, fontSize: Math.round(size * 0.38) };
+  const list = members();
+  const shown = list.slice(0, 3);
   return (
-    <span className="avatars" aria-label="보라 · 영상">
-      <span className="avatar bora" style={s}>보</span>
-      <span className="avatar ys" style={s}>영</span>
+    <span className="avatars" aria-label={list.map((m) => m.name).join(' · ') || '우리'} data-testid="avatars">
+      {shown.map((m) => <span key={m.email} className={'avatar t' + m.tone} style={s}>{m.initial}</span>)}
+      {list.length > 3 && <span className="avatar more" style={s}>+{list.length - 3}</span>}
     </span>
   );
 }

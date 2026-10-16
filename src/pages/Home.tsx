@@ -14,6 +14,7 @@ import MonthPick from '../components/MonthPick';
 import { pickMemory } from '../lib/memories';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
+import { spaceTitle } from '../lib/members';
 
 export default function Home() {
   const { trips } = useTrips();
@@ -44,7 +45,7 @@ export default function Home() {
       </div>
       <div className="page" style={{ paddingTop: 4 }}>
         <div>
-          <div className="small muted">보라 &amp; 영상의 지도</div>
+          <div className="small muted">{spaceTitle()}의 지도</div>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }} data-testid="headline">
             {stats ? (stats.tripsDone ? `${stats.tripsDone}번의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
           </div>

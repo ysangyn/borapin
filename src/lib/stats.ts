@@ -1,6 +1,7 @@
 import type { Place, Trip } from './types';
 import { COUNTRY_BY_ID, GROUPS, REGION_BY_CODE } from './geo';
 import { isUpcoming, whenSortKey } from './dates';
+import { memberNames } from './members';
 
 // ---------- 통계 ----------
 export interface Stats {
@@ -79,7 +80,7 @@ export function tripsAtPlace(trips: Trip[], match: (p: Place) => boolean) {
 export function companionSuggestions(trips: Trip[]): string[] {
   const count = new Map<string, number>();
   for (const t of trips) for (const c of t.companions) count.set(c, (count.get(c) ?? 0) + 1);
-  const base = ['보라', '영상'];
+  const base = memberNames();
   const rest = [...count.entries()].filter(([n]) => !base.includes(n)).sort((a, b) => b[1] - a[1]).map(([n]) => n);
   return [...base, ...rest];
 }

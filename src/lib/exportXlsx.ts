@@ -5,6 +5,7 @@ import { monthsLabel, seasonFor, type SeasonData } from './seasons';
 import type { TravelInfo } from './travelinfo';
 import type { Photo, PlaceRec, Trip, Wish } from './types';
 import { REGIONS } from './geo';
+import { memberNames } from './members';
 
 type Cell = { value: string | number; fontWeight?: 'bold' } | null;
 
@@ -21,11 +22,13 @@ export async function exportXlsx(d: { trips: Trip[]; recs: PlaceRec[]; wishes: W
       v(t.places.map(placeLong).join(', ')), v(t.companions.join(', ')), v(t.memo), v(d.photos.filter((p) => p.tripId === t.id).length),
     ]),
   ];
+  // 한 줄 평 칸: 지금 멤버 + 예전에 평을 남긴 사람
+  const writers = [...new Set([...memberNames(), ...d.recs.flatMap((r) => Object.keys(r.reviews ?? {}))])];
   const recs: Cell[][] = [
-    head(['이름', '종류', '지역', '다시 간다면', '보라', '영상', '네이버지도', '주소', '메모']),
+    head(['이름', '종류', '지역', '다시 간다면', ...writers, '네이버지도', '주소', '메모']),
     ...d.recs.map((r) => [
       v(r.name), v(KIND_LABEL[r.kind]), v(placeLong(r.region)), v(r.verdict ? VERDICT_LABEL[r.verdict] : ''),
-      v(r.reviews?.['보라']), v(r.reviews?.['영상']), v(r.naverUrl), v(r.address), v(r.memo),
+      ...writers.map((w) => v(r.reviews?.[w])), v(r.naverUrl), v(r.address), v(r.memo),
     ]),
   ];
   const wishes: Cell[][] = [

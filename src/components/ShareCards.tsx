@@ -4,6 +4,7 @@ import { CARD_KINDS, drawCard, shareOrSave, type CardKind } from '../lib/shareCa
 import { useTravelInfo } from '../lib/travelinfo';
 import { useAllNotes } from '../lib/tripExtras';
 import type { Trip } from '../lib/types';
+import { spaceTitle } from '../lib/members';
 
 /** 공유카드 7종: 골라서 미리 보고, 휴대폰 공유창으로 보내거나 저장 */
 export default function ShareCards({ trips, year }: { trips: Trip[]; year: number }) {
@@ -19,7 +20,7 @@ export default function ShareCards({ trips, year }: { trips: Trip[]; year: numbe
     if (!kind) return;
     let alive = true;
     setBusy(true);
-    drawCard(kind, { trips, notes: notes ?? [], info, year, space: '보라 & 영상' })
+    drawCard(kind, { trips, notes: notes ?? [], info, year, space: spaceTitle() })
       .then((blob) => {
         if (!alive) return;
         setImg((old) => {

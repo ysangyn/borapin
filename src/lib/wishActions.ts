@@ -1,7 +1,8 @@
 import type { User } from 'firebase/auth';
 import { createWish } from './data';
 import { displayName } from './auth';
-import { COUPLE, samePlace } from './wishes';
+import { samePlace } from './wishes';
+import { isMemberName } from './members';
 import type { Place, Wish } from './types';
 
 const inFlight = new Map<string, Promise<string>>();
@@ -21,7 +22,7 @@ export async function quickWish(place: Place, user: User, existing: Wish[] = [])
   const p = createWish(
     {
       place,
-      wantedBy: (COUPLE as readonly string[]).includes(me) ? [me] : [],
+      wantedBy: isMemberName(me) ? [me] : [],
       priority: null,
       spots: [],
       todos: [],

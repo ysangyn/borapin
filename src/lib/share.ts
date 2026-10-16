@@ -4,6 +4,7 @@ import { setPhotosPublic } from './photoData';
 import { patchTrip } from './data';
 import { formatWhen } from './dates';
 import type { Photo, PlaceRec, SharedTrip, Trip } from './types';
+import { spaceTitle } from './members';
 
 const shareDoc = (token: string) => doc(db, 'shares', token);
 
@@ -14,7 +15,7 @@ export function buildShared(trip: Trip, photos: Photo[], recs: PlaceRec[]): Omit
     places: trip.places,
     photos: photos.slice(0, 60).map((p) => ({ id: p.id, w: p.w, h: p.h, taken: p.taken, ...(p.caption ? { caption: p.caption } : {}) })),
     spots: recs.map((r) => ({ name: r.name, kind: r.kind, verdict: r.verdict ?? null })),
-    space: '보라 & 영상',
+    space: spaceTitle(),
     v: 1,
   };
 }

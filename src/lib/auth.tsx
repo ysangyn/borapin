@@ -15,6 +15,8 @@ import {
 import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, OWNER_EMAIL, SPACE_ID, USE_EMULATOR } from './firebase';
 import type { Access } from './types';
+import { setMembers } from './members';
+export { memberNames } from './members';
 
 type State =
   | { status: 'loading' }
@@ -43,9 +45,6 @@ export function nameOf(email: string | null | undefined, fallback = ''): string 
   if (partner && e === partner) return '보라';
   return fallback || e.split('@')[0];
 }
-/** 함께 쓰는 사람 이름 (허용 목록 순서). 아직 아무도 없으면 빈 목록 */
-export const memberNames = () => [...new Set(access.allowed.map((e) => nameOf(e)).filter(Boolean))];
-
 export function displayName(user: User | null | undefined): string {
   if (!user) return '';
   return nameOf(user.email, user.displayName?.split(' ')[0] || user.email?.split('@')[0] || '나');
@@ -90,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (snap) => {
           const a = (snap.data() as Access | undefined) ?? { allowed: [], admins: [] };
           access = { allowed: a.allowed ?? [], admins: a.admins ?? [], names: a.names ?? {} };
+          setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e) })));
           const email = (user.email || '').toLowerCase();
           const isOwner = email === OWNER_EMAIL;
           if (!isOwner && !access.allowed.includes(email)) return setState({ status: 'denied', user });

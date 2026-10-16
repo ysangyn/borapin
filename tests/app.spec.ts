@@ -67,6 +67,30 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '02-home-empty');
   });
 
+  test('초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다', async ({ page }) => {
+    await signIn(page, 'stranger@example.com');
+    await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();
+    await shot(page, '10-denied');
+    await page.getByRole('button', { name: '다른 계정으로 로그인' }).click();
+    await signIn(page, OWNER);
+    // 혼자일 때는 내 이름만 (박아 둔 '보라 & 영상'이 아니라)
+    await page.goto('/space');
+    await expect(page.getByTestId('space-title')).toHaveText('영상');
+    await expect(page.getByTestId('avatars').first()).toHaveAttribute('aria-label', '영상');
+    await page.getByLabel('추가할 계정').fill('bora@example.com');
+    await page.getByLabel('부를 이름').fill('보라');
+    await page.getByRole('button', { name: '추가', exact: true }).click();
+    await expect(page.getByText('bora@example.com', { exact: false }).first()).toBeVisible();
+    await expect(page.getByTestId('space-title')).toHaveText('보라 & 영상');
+    await shot(page, '11-space');
+    await page.getByRole('button', { name: '로그아웃' }).click();
+    // 보라로 들어와도 같은 공간
+    await signIn(page, 'bora@example.com');
+    await expect(page.getByTestId('headline')).toBeVisible();
+    await page.goto('/space');
+    await expect(page.getByTestId('space-title')).toHaveText('보라 & 영상');
+  });
+
   test('국내 여행 기록 (초성 검색, 연도만)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.getByRole('link', { name: '기록하기' }).click();
@@ -511,22 +535,6 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('cutoff')).toContainText('켜짐');
     await page.getByTestId('reports').getByRole('button', { name: '해결함' }).first().click();
     await expect(page.getByTestId('reports')).toContainText('들어온 신고가 없어요');
-  });
-
-  test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {
-    await signIn(page, 'stranger@example.com');
-    await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();
-    await shot(page, '10-denied');
-    await page.getByRole('button', { name: '다른 계정으로 로그인' }).click();
-    await signIn(page, OWNER);
-    await page.goto('/space');
-    await page.getByLabel('추가할 계정').fill('bora@example.com');
-    await page.getByRole('button', { name: '추가', exact: true }).click();
-    await expect(page.getByText('bora@example.com', { exact: false }).first()).toBeVisible();
-    await shot(page, '11-space');
-    await page.getByRole('button', { name: '로그아웃' }).click();
-    await signIn(page, 'bora@example.com');
-    await expect(page.getByTestId('headline')).toHaveText(/번의 여행/);
   });
 
   test('이메일로 가입하고 메일 인증 뒤 들어온다', async ({ page }) => {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Icon, useToast } from './ui';
 import { mutatePacking } from '../lib/data';
 import { packFromTemplate, PACK_TEMPLATES } from '../lib/tripExtras';
-import { COUPLE } from '../lib/wishes';
+import { memberNames } from '../lib/members';
 import type { PackItem, Trip } from '../lib/types';
 
 /** 준비물 (예정된 여행): 유형별 기본 목록, 담당자, 지난 여행에서 불러오기 */
@@ -32,7 +32,12 @@ export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[]
   const addItem = (t: string) => apply((l) => (l.some((y) => y.t === t) ? l : [...l, { t, who: null, done: false }]));
   const past = trips.filter((t) => t.id !== trip.id && (t.packing?.length ?? 0) > 0);
   const done = list.filter((x) => x.done).length;
-  const nextWho = (w: string | null) => (w === null ? COUPLE[0] : w === COUPLE[0] ? COUPLE[1] : null);
+  // 담당: 아무도 → 첫 사람 → 다음 사람 … → 다시 아무도
+  const nextWho = (w: string | null) => {
+    const names = memberNames();
+    const i = w === null ? -1 : names.indexOf(w);
+    return i + 1 < names.length ? names[i + 1] : null;
+  };
 
   return (
     <section className="card white" data-testid="packing" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -7,7 +7,8 @@ import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { parsePlaceParam, placeParam } from '../lib/geo';
-import { COUPLE, lines, wishState } from '../lib/wishes';
+import { lines, wishState } from '../lib/wishes';
+import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, WishInput, WishPriority } from '../lib/types';
 
 export default function WishEdit() {
@@ -26,7 +27,7 @@ export default function WishEdit() {
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const [places, setPlaces] = useState<Place[]>(() => parsePlaceParam(sp.get('place')));
   const [spotName, setSpotName] = useState('');
-  const [wantedBy, setWantedBy] = useState<string[]>(() => ((COUPLE as readonly string[]).includes(me) ? [me] : []));
+  const [wantedBy, setWantedBy] = useState<string[]>(() => (isMemberName(me) ? [me] : []));
   const [priority, setPriority] = useState<WishPriority>(null);
   const [spots, setSpots] = useState('');
   const [todos, setTodos] = useState('');
@@ -140,7 +141,7 @@ export default function WishEdit() {
         <div className="field">
           <span className="label">누가 원해요</span>
           <div className="chips">
-            {COUPLE.map((n) => (
+            {memberNames().map((n) => (
               <button key={n} type="button" className={'chip heart-chip' + (wantedBy.includes(n) ? ' on-coral' : '')} onClick={() => toggle(n)} aria-pressed={wantedBy.includes(n)}>
                 {wantedBy.includes(n)
                   ? <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>
@@ -148,7 +149,7 @@ export default function WishEdit() {
                 {n}
               </button>
             ))}
-            {COUPLE.every((n) => wantedBy.includes(n)) && <span className="tag coral" style={{ alignSelf: 'center' }}>둘 다 원해요</span>}
+            {everyoneWants(wantedBy) && <span className="tag coral" style={{ alignSelf: 'center' }}>{everyoneLabel()}</span>}
           </div>
         </div>
 

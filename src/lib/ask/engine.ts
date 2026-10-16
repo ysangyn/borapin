@@ -15,6 +15,7 @@ import { dailyShuffle, samePlace } from '../wishes';
 import { findMentions, type Mention } from './gazetteer';
 import { josa } from 'es-hangul';
 import { times } from '../ko';
+import { isMemberName } from '../members';
 
 /** 이름 뒤 조사: '강릉시는', '부산을' */
 const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (w ? josa(w, pair) : '');
@@ -105,7 +106,7 @@ function readThemes(q: string) {
 }
 const PEOPLE = /(엄마|아빠|부모님|어머니|아버지|동생|친구|가족|언니|오빠|누나|형|장모님|장인|시어머니|시아버지|조카|아이|애들)/;
 function readPerson(q: string, trips: Trip[]): string | null {
-  const names = new Set(trips.flatMap((t) => t.companions).filter((c) => c !== '보라' && c !== '영상'));
+  const names = new Set(trips.flatMap((t) => t.companions).filter((c) => !isMemberName(c)));
   for (const n of names) if (n.length >= 2 && q.includes(n)) return n;
   const m = q.match(PEOPLE);
   return m ? m[1] : null;

@@ -1,6 +1,7 @@
 import type { Stats } from './stats';
 import type { Photo, PlaceRec, Trip } from './types';
 import { CONTINENTS } from './geo';
+import { isMemberName } from './members';
 
 /** v20 도전 뱃지를 보라핀 기록으로 다시 계산 (저장하지 않고 매번 센다) */
 export interface Badge {
@@ -16,7 +17,7 @@ const seasonOf = (m: number) => (m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 
 
 export function badges(trips: Trip[], stats: Stats, photos: Photo[], recs: PlaceRec[]): Badge[] {
   const done = trips.filter((t) => t.status === 'done');
-  const others = new Set(done.flatMap((t) => t.companions.filter((c) => c !== '보라' && c !== '영상')));
+  const others = new Set(done.flatMap((t) => t.companions.filter((c) => !isMemberName(c))));
   // 한 해에 네 계절을 모두 다닌 해
   const seasonsByYear = new Map<number, Set<string>>();
   for (const t of done) {
