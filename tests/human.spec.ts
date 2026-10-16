@@ -205,6 +205,8 @@ test.describe('사람처럼 쓰기', () => {
   test('PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다', async ({ browser }) => {
     const page = await desktop(browser);
     await signIn(page);
+    // PC 양옆엔 흐린 배경 장면이 붙는다 (폰에선 없음)
+    await expect(page.getByTestId('backdrop')).toBeAttached({ timeout: 10_000 });
     await page.goto('/record');
     await page.getByLabel('어디 검색').fill('단양');
     await page.getByRole('option', { name: /단양군/ }).first().click();

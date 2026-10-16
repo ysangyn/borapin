@@ -16,6 +16,7 @@ const Record = lazy(() => import('./pages/Record'));
 const MapPage = lazy(() => import('./pages/MapPage'));
 const Memories = lazy(() => import('./pages/Memories'));
 const Feed = lazy(() => import('./pages/Feed'));
+const Backdrop = lazy(() => import('./components/Backdrop'));
 const Space = lazy(() => import('./pages/Space'));
 const Wishes = lazy(() => import('./pages/Wishes'));
 const WishEdit = lazy(() => import('./pages/WishEdit'));
@@ -70,6 +71,7 @@ export default function App() {
   const hideNav = hideNavFor(loc.pathname);
   return (
     <DataProvider>
+      <Suspense fallback={null}><Backdrop /></Suspense>
       <div className={'app' + (hideNav ? ' no-nav' : '') + (showFab ? ' has-fab' : '')}>
         <ScrollManager />
         <StatusBanner />
