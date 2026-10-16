@@ -12,11 +12,12 @@ export interface ArtImage {
 export const ART: ArtImage[] = [
   {
     id: 'bora-walk',
-    src: { s: '/art/bora-walk-s.webp', l: '/art/bora-walk-l.webp' },
+    // 글자 없는 판 (2026-10-16 받음). 파일 이름을 바꿔 기기에 저장된 옛 그림이 남지 않게
+    src: { s: '/art/bora-walk2-s.webp', l: '/art/bora-walk2-l.webp' },
     w: 1080,
     h: 1080,
-    lqip: 'data:image/webp;base64,UklGRh4BAABXRUJQVlA4IBIBAAAwBgCdASoYABgAPu1qq1EppaOiqAqpMB2JZgCdMoMuunmPADGQB+5dWfw2H1gysgMRMpvcPAxGb+MAAOIe2ZrYEQ1R/Kp5ui3bFZmNS6TS4l7wWJhJuDwHRfwWQyk/JMvhZBO1xSOMdjk8uT4sioJvY6FaqdzcTzKS6/a09/leDIHEGlr9f02TxEvgcifzlPTX6EOMDE+SUZXytI5zzTDg+Mas6uYN/2MVe9CHoCVmBYC3HaOvZt0vO4DoiFQcb61/zs5mkRYgRjVq7MR8W9Xvt0V72nzPGVEPTOfJF1HKgcTtowg8rqWeDWvAMNBWtRTiov8TkdSZgMKERIGXaqouOmJbB9JXMJne/r5UHY1MAAAA',
-    alt: '지도를 들고 캐리어를 끌며 여행 떠나는 보라',
+    lqip: 'data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAABwBgCdASoYABgAPu1oqU+ppaOiKA1RMB2JagCdMoMkom6LsG+BVNA+qfLZlZmLNbwzATr2iTNSDrTG4gAA4huRWRSqr0i5n5x404Vo0gtvK7SuS/MVpSKoZ8gYA3kHkmlDGWki+nxyFxsLag+CaRiW4ftmDHRXNOtJNFBSa+McAprQwoGK7rN0EWeKneND4iwWk+9qKydotuJb+tIHfUz3YtyOKapYSw0CpJh8NHfxk9fO33ZdOyfe4pQ9mVWSASTnuN9izlR8WhdL07RPEAdwoSyx9hktC/frTFSBJcruSo/VyifE8u/48fibt22tRwHRJ7G2NV2z/CCZ2mQRJyqeZ308D7YAAAA=',
+    alt: '지도를 들고 캐리어를 끌며 공룡 친구와 여행 떠나는 보라',
   },
   {
     id: 'bora-login',
