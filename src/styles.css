@@ -328,16 +328,24 @@ a { color: var(--violet); text-decoration: none; }
 .ph-img.failed { opacity: 1; background: repeating-linear-gradient(135deg, var(--page) 0 8px, #ecebf2 8px 16px); }
 
 /* ---------- 로그인 ---------- */
-.login { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding: 28px 28px calc(20px + var(--safe-b)); gap: 20px; background: radial-gradient(120% 60% at 50% 0%, var(--mist2) 0%, #fff 70%); }
-.login-map { width: min(78%, 300px); align-self: center; margin-top: 2vh; }
-.login-copy { display: flex; flex-direction: column; gap: 6px; }
-.login-brand { display: flex; align-items: center; gap: 8px; font-size: 30px; font-weight: 800; letter-spacing: -0.04em; }
-.login-tag { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink2); }
-.login-copy .small { margin: 2px 0 0; }
-.login-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
-.btn.google { height: 54px; border-radius: 17px; font-size: 16px; }
-.login-foot { display: flex; gap: 16px; justify-content: center; }
+.login { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; background: #fff; }
+.login-hero { position: relative; min-height: 42vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px 24px 18px; overflow: hidden; background: radial-gradient(120% 80% at 50% 0%, var(--mist) 0%, #fff 75%); }
+.login-hero .hero-media { position: absolute; inset: 0; }
+.login-hero::after { content: ''; position: absolute; inset: auto 0 0 0; height: 55%; background: linear-gradient(transparent, #fff); pointer-events: none; }
+.login-hero .login-map { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: min(58%, 230px); }
+.login-brand, .login-tag { position: relative; z-index: 2; }
+.login-brand { display: flex; align-items: center; gap: 10px; font-size: 34px; font-weight: 800; letter-spacing: -0.045em; color: var(--ink); }
+.login-logo { width: 46px; height: 46px; border-radius: 15px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(30, 22, 64, 0.16); }
+.login-tag { margin: 6px 0 0; font-size: 18px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink2); }
+.login-body { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 6px 24px calc(18px + var(--safe-b)); }
+.login-or { display: flex; align-items: center; gap: 10px; color: var(--ink4); font-size: 12px; font-weight: 700; margin-top: 6px; }
+.login-or::before, .login-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.btn.google { height: 52px; border-radius: 16px; font-size: 15px; background: #fff; color: var(--ink); border: 1px solid var(--line2); }
+.login-foot { display: flex; gap: 16px; justify-content: center; margin-top: auto; padding-top: 8px; }
 .login-foot a { color: var(--ink3); padding: 6px 0; }
+.email-login { display: flex; flex-direction: column; gap: 10px; }
+.email-login .input { height: 50px; }
+.email-login .btn { height: 52px; border-radius: 16px; }
 .mosaic { display: block; overflow: visible; }
 .m-cell { fill: #e9e6f2; stroke: #fff; stroke-width: 0.6; stroke-linejoin: round; }
 .m-cell.on { animation: cell-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
@@ -346,6 +354,13 @@ a { color: var(--violet); text-decoration: none; }
 .m-cell.on.t2 { --to: var(--v3); }
 @keyframes cell-in { from { fill: #e9e6f2; } 60% { fill: var(--coral); } to { fill: var(--to); } }
 @media (prefers-reduced-motion: reduce) { .m-cell.on { animation: none; fill: var(--to); } }
+
+/* ---------- 풍경 사진·영상 ---------- */
+.scene { position: relative; overflow: hidden; background-size: cover; background-position: center; }
+.scene video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scenic { position: relative; overflow: hidden; background-size: cover; background-position: center; }
+.scenic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s; }
+.scenic img.on { opacity: 1; }
 
 /* ---------- 약관 ---------- */
 .legal article { display: flex; flex-direction: column; gap: 4px; line-height: 1.65; }
@@ -365,7 +380,6 @@ a { color: var(--violet); text-decoration: none; }
 .confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; }
 .season-line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .season-line .tag.now { height: 20px; font-size: 11px; }
-.email-login { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: #fff; border: 1px solid var(--line); }
 .shared-foot { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 14px; border-radius: 16px; background: var(--page); color: var(--ink3); font-size: 13px; font-weight: 600; }
 
 /* ---------- PC: 지도는 화면 가득, 나머지는 읽기 좋은 폭 ---------- */
@@ -376,5 +390,4 @@ a { color: var(--violet); text-decoration: none; }
   .app { max-width: 560px; }
   .nav, .sheet { max-width: 560px; }
   .ask-bar { max-width: 528px; }
-  .login { padding-top: 6vh; }
 }

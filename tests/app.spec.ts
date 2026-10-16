@@ -407,7 +407,7 @@ test.describe.serial('보라핀 1단계', () => {
     const input = page.getByLabel('질문');
     await input.fill('거기 언제 가면 좋아?');
     await input.press('Enter');
-    await expect(answers.last()).toContainText('강원 강릉시은(는)');
+    await expect(answers.last()).toContainText('강원 강릉시는');
     await input.fill('강릉 몇 번 갔지?');
     await input.press('Enter');
     await expect(answers.last()).toContainText('1번 다녀왔어요');
@@ -534,7 +534,6 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByText(MAIL).first()).toBeVisible();
     await page.getByRole('button', { name: '로그아웃' }).click();
     // 가입
-    await page.getByTestId('email-open').click();
     const form = page.getByTestId('email-form');
     await form.getByRole('radio', { name: '처음이에요' }).click();
     await form.getByLabel('메일 주소').fill(MAIL);
@@ -557,7 +556,6 @@ test.describe.serial('보라핀 1단계', () => {
     // 다시 로그인: 틀린 비밀번호 → 맞는 비밀번호
     await page.goto('/space');
     await page.getByRole('button', { name: '로그아웃' }).click();
-    await page.getByTestId('email-open').click();
     await page.getByLabel('메일 주소').fill(MAIL);
     await page.getByLabel('비밀번호').fill('wrong-pass');
     await page.getByTestId('email-submit').click();
