@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { Icon, useToast } from './ui';
 import { disableShare, enableShare, shareUrl, syncShare } from '../lib/share';
 import { isOffline } from '../lib/writes';
+import { kakaoReady, shareAnyhow } from '../lib/kakao';
+import { photoForPlace } from '../lib/media';
+import { formatWhen } from '../lib/dates';
+import { placeLabel } from '../lib/geo';
 import type { Photo, PlaceRec, Trip } from '../lib/types';
 
 /**
@@ -48,10 +52,17 @@ export default function ShareLinkCard({ trip, photos, recs }: { trip: Trip; phot
       window.prompt('이 링크를 복사하세요', url);
     }
   };
+  // 카카오톡(등록된 주소에서) → 기기 공유하기 → 복사
   const share = async () => {
-    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
-    if (nav.share) await nav.share({ title: trip.title, url }).catch(() => undefined);
-    else copy();
+    const photo = trip.places.map(photoForPlace).find(Boolean);
+    const r = await shareAnyhow({
+      title: trip.title,
+      description: `${formatWhen(trip.when)} · ${trip.places.map(placeLabel).join(', ')}${photos.length ? ` · 사진 ${photos.length}장` : ''}`,
+      imageUrl: photo ? `${location.origin}${photo.src.l}` : undefined,
+      url,
+      button: '여행 보기',
+    }, () => toast('링크를 복사했어요'));
+    if (r === 'kakao') toast('카카오톡으로 보냈어요');
   };
 
   return (
@@ -73,7 +84,7 @@ export default function ShareLinkCard({ trip, photos, recs }: { trip: Trip; phot
         <>
           <input className="input" readOnly value={url} aria-label="공유 링크" onFocus={(e) => e.target.select()} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button className="btn sm" onClick={share}>보내기</button>
+            <button className="btn sm" onClick={share} data-testid="share-send">{kakaoReady() ? '카카오톡으로 보내기' : '보내기'}</button>
             <button className="btn sm ghost" onClick={copy}>복사</button>
             <a className="btn sm ghost" href={url} target="_blank" rel="noreferrer">미리 보기</a>
             <button className="btn sm line" style={{ marginLeft: 'auto' }} disabled={busy} onClick={() => run(() => disableShare(trip, photos), '공개를 껐어요')}>공개 끄기</button>

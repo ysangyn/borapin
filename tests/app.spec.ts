@@ -467,6 +467,11 @@ test.describe.serial('보라핀 1단계', () => {
     await card.getByTestId('share-on').click();
     const url = await card.getByLabel('공유 링크').inputValue();
     expect(url).toMatch(/\/s\/[a-z0-9]{8,}$/);
+    // 보내기: 시험 주소는 카카오에 등록돼 있지 않으니 기기 공유하기로 (제목과 링크를 넘긴다)
+    await expect(card.getByTestId('share-send')).toHaveText('보내기');
+    await page.evaluate(() => { (navigator as unknown as { share: (d: ShareData) => Promise<void> }).share = async (d) => { (window as unknown as { __shared: ShareData }).__shared = d; }; });
+    await card.getByTestId('share-send').click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared?: ShareData }).__shared)).toMatchObject({ title: '강릉시 여행', url });
 
     // 로그인하지 않은 사람이 링크로 연다
     const anon = await (await browser.newContext({ locale: 'ko-KR', serviceWorkers: 'block' })).newPage();

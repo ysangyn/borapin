@@ -1,3 +1,4 @@
+import { kakaoReady, sendKakaoText } from '../lib/kakao';
 import { useEffect, useState } from 'react';
 import { Icon, useToast } from './ui';
 import { mutatePacking } from '../lib/data';
@@ -39,11 +40,38 @@ export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[]
     return i + 1 < names.length ? names[i + 1] : null;
   };
 
+  // 준비물 목록을 글로 보내기 (카카오톡이 되면 카카오톡으로, 아니면 기기 공유·복사)
+  const sharePacking = async () => {
+    const text = `[${trip.title}] 준비물 ${done}/${list.length}\n` + list.map((x) => `${x.done ? '☑' : '☐'} ${x.t}${x.who ? ` (${x.who})` : ''}`).join('\n');
+    const url = `${location.origin}/trips/${trip.id}`;
+    if (kakaoReady()) {
+      try {
+        await sendKakaoText(text, url, '준비물 보기');
+        return;
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    if (nav.share) return nav.share({ title: `${trip.title} 준비물`, text }).catch(() => undefined);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('준비물 목록을 복사했어요');
+    } catch {
+      window.prompt('준비물 목록', text);
+    }
+  };
+
   return (
     <section className="card white" data-testid="packing" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div className="row-between" style={{ alignItems: 'center' }}>
         <h2 className="h2" style={{ fontSize: 17 }}>준비물</h2>
-        {list.length > 0 && <span className="small" style={{ fontWeight: 700, color: done === list.length ? 'var(--ok)' : 'var(--ink3)' }}>{done}/{list.length} 챙김</span>}
+        {list.length > 0 && (
+          <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <span className="small" style={{ fontWeight: 700, color: done === list.length ? 'var(--ok)' : 'var(--ink3)' }}>{done}/{list.length} 챙김</span>
+            <button className="link-btn small" onClick={sharePacking} aria-label="준비물 보내기" data-testid="packing-share">{kakaoReady() ? '카카오톡' : '보내기'}</button>
+          </span>
+        )}
       </div>
       {list.length === 0 && (
         <>
