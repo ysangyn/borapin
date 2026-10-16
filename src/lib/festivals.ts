@@ -44,8 +44,11 @@ export function festivalPeriod(f: Festival): string {
 }
 
 /** 아직 안 끝났고(진행 중 포함) days일 안에 시작하는 축제, 가까운 순서 */
+/** 진짜 축제만: 두 달 넘게 이어지는 건 '문화가 있는 날' 같은 상시 프로그램이라 뺀다 */
+export const isRealFestival = (f: Festival) => (toDate(f.e || f.s).getTime() - toDate(f.s).getTime()) / 86400_000 <= 60;
+
 export function upcomingFestivals(data: FestivalData | null, code: string, today = new Date(), days = 90): Festival[] {
-  const list = data?.cells[code];
+  const list = data?.cells[code]?.filter(isRealFestival);
   if (!list?.length) return [];
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const until = new Date(start.getTime() + days * 86400_000);
@@ -62,7 +65,7 @@ export const isOngoing = (f: Festival, today = new Date()) => {
 /** 그 지역에 축제가 열리는 달 (지난 1년 자료로. 축제는 해마다 비슷한 때 열린다) */
 export function festivalMonths(data: FestivalData | null, code: string): number[] {
   const set = new Set<number>();
-  for (const f of data?.cells[code] ?? []) {
+  for (const f of (data?.cells[code] ?? []).filter(isRealFestival)) {
     set.add(Number(f.s.slice(4, 6)));
     set.add(Number((f.e || f.s).slice(4, 6)));
   }
