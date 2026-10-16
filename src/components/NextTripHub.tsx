@@ -137,6 +137,9 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
   const others = Object.entries(answers).filter(([u]) => u !== uid);
   const need = Math.max(1, memberNames().length);
   const opened = Object.keys(answers).length >= need;
+  // 둘의 답이 같으면(띄어쓰기·기호 무시) 작은 기쁨 하나
+  const norm = (t: string) => t.replace(/[\s.,!~·]/g, '').toLowerCase();
+  const matched = opened && need > 1 && new Set(Object.values(answers).map((a) => norm(a.text))).size === 1;
   // 첫 답이 질문의 장소를 고정한다 (둘이 다른 1순위를 보고 있어도 같은 질문)
   const place = doc?.place ?? anchorPlace;
   const submit = async () => {
@@ -159,7 +162,7 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
   };
   return (
     <div className="hub-block card white hub-ask" data-testid="hub-ask">
-      <div className="hub-label">오늘의 한 질문</div>
+      <div className="hub-label">오늘의 한 질문{matched && <span className="tag coral" data-testid="hub-ask-matched">마음이 통했어요 💜</span>}</div>
       <p className="hub-q">{questionText(q, place)}</p>
       {!mine ? (
         <form className="hub-ask-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
