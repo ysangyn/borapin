@@ -263,6 +263,37 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/wishes/new');
+    await page.getByLabel('어디 검색').fill('남해');
+    await page.getByRole('option', { name: /남해군/ }).first().click();
+    await page.getByTestId('wish-save').click();
+    await expect(page).toHaveURL(/\/wishes$/);
+    await page.getByRole('link', { name: /남해군.*가고 싶은 곳 보기/ }).first().click();
+    await expect(page).toHaveURL(/\/wishes\/[^/]+$/);
+    const back = page.getByRole('button', { name: '뒤로' });
+
+    // 아무것도 안 바꿨으면 묻지 않고 나간다
+    let asked = '';
+    page.on('dialog', (d) => {
+      asked = d.message();
+      void d.dismiss();
+    });
+    await back.click();
+    await expect(page).toHaveURL(/\/wishes$/);
+    expect(asked).toBe('');
+
+    // '누가 원해요'만 바꿔도 묻는다 (취소하면 그대로 머문다)
+    await page.getByRole('link', { name: /남해군.*가고 싶은 곳 보기/ }).first().click();
+    await page.getByRole('button', { name: '보라', exact: true }).click();
+    await back.click();
+    await expect.poll(() => asked).toContain('저장하지 않은 내용');
+    await expect(page).toHaveURL(/\/wishes\/[^/]+$/);
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);
