@@ -390,6 +390,13 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(ask.getByTestId('hub-answer-other')).toContainText('한라산 보이는 카페');
     await expect(ask.getByTestId('hub-answer-other')).toContainText('보라');
     await expect(ask.getByTestId('hub-ask-waiting')).toHaveCount(0);
+    // 상대의 답은 새 소식: 아래 메뉴에 점, 피드에 '오늘의 질문에 답함'
+    await expect(page.getByTestId('feed-dot')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('nav-feed').click();
+    const askItem = page.locator('[data-testid="feed-item"][data-kind="ask"]').first();
+    await expect(askItem).toContainText('한라산 보이는 카페');
+    await expect(page.getByTestId('feed-dot')).toHaveCount(0);
+    await page.goto('/');
     // 먹을 것·가볼 곳 질문이면 답을 가고 싶은 곳 메모에 넣을 수 있다 (오늘 질문이 그런 종류일 때)
     const save = ask.locator('.hub-answer.mine').getByRole('button', { name: '메모에 넣기' });
     if (await save.count()) {

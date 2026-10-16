@@ -9,14 +9,18 @@ export type FeedItem =
   | { kind: 'note'; at: number; by: string; trip: Trip; note: Note }
   | { kind: 'place'; at: number; by: string; trip: Trip | null; rec: PlaceRec; review?: string }
   | { kind: 'trip'; at: number; by: string; trip: Trip }
-  | { kind: 'wish'; at: number; by: string; wish: Wish };
+  | { kind: 'wish'; at: number; by: string; wish: Wish }
+  /** 오늘의 한 질문에 답함: 모두 답했을 때만(opened) 답 글이 보인다 */
+  | { kind: 'ask'; at: number; by: string; day: string; uid: string; question: string; text: string; opened: boolean };
+
+export interface AskFeedSrc { day: string; qid: string; question: string; answers: Record<string, { name: string; text: string; at: number }>; need: number }
 
 const ms = (t: { toMillis?: () => number } | null | undefined) => (t && typeof t.toMillis === 'function' ? t.toMillis() : 0);
 const dayKey = (at: number) => new Date(at).toDateString();
 const who = (x: { createdBy?: { name?: string; email?: string } } | undefined, fallback = '') =>
   x?.createdBy?.name || (x?.createdBy?.email ? x.createdBy.email.split('@')[0] : fallback);
 
-export function buildFeed(d: { trips: Trip[]; photos: Photo[]; notes: Note[]; recs: PlaceRec[]; wishes: Wish[] }, limit = 40): FeedItem[] {
+export function buildFeed(d: { trips: Trip[]; photos: Photo[]; notes: Note[]; recs: PlaceRec[]; wishes: Wish[]; asks?: AskFeedSrc[] }, limit = 40): FeedItem[] {
   const tripOf = new Map(d.trips.map((t) => [t.id, t]));
   const items: FeedItem[] = [];
 
@@ -55,6 +59,10 @@ export function buildFeed(d: { trips: Trip[]; photos: Photo[]; notes: Note[]; re
   for (const w of d.wishes) {
     const at = ms(w.createdAt);
     if (at) items.push({ kind: 'wish', at, by: who(w), wish: w });
+  }
+  for (const a of d.asks ?? []) {
+    const opened = Object.keys(a.answers).length >= a.need;
+    for (const [uid, ans] of Object.entries(a.answers)) items.push({ kind: 'ask', at: ans.at, by: ans.name, day: a.day, uid, question: a.question, text: ans.text, opened });
   }
   return items.sort((a, b) => b.at - a.at).slice(0, limit);
 }

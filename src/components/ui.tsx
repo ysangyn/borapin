@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { members } from '../lib/members';
+import { members, memberNames } from '../lib/members';
+import { asksForFeed, useRecentAsks } from '../lib/asks';
 import { useStore } from '../lib/store';
 import { displayName, useAuth } from '../lib/auth';
 import { buildFeed, unseenCount } from '../lib/feed';
@@ -81,13 +82,14 @@ function useFeedUnseen() {
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const uid = auth.status === 'ready' ? auth.user.uid : '';
   const hearts = useHearts();
+  const asks = useRecentAsks(3);
   return useMemo(() => {
     if (!trips || !wishes || !places) return 0;
-    const items = buildFeed({ trips, wishes, recs: places, photos: [], notes: [] });
+    const items = buildFeed({ trips, wishes, recs: places, photos: [], notes: [], asks: asksForFeed(asks, memberNames().length) });
     const fromHearts = unseenHearts(hearts, seen, uid);
     if (import.meta.env.VITE_EMULATOR === '1') (window as unknown as { __unseen?: unknown }).__unseen = { seen, me, items: items.slice(0, 5).map((i) => ({ kind: i.kind, at: i.at, by: i.by })) };
     return unseenCount(items, seen, me) + fromHearts;
-  }, [trips, wishes, places, seen, me, hearts, uid]);
+  }, [trips, wishes, places, seen, me, hearts, uid, asks]);
 }
 
 export function BottomNav() {

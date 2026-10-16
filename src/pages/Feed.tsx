@@ -16,6 +16,8 @@ import { wishTitle } from '../components/WishCard';
 import QuickUpload from '../components/QuickUpload';
 import { photoForPlace } from '../lib/media';
 import { heartKey, toggleHeart, useHearts, type Heart } from '../lib/hearts';
+import { asksForFeed, useRecentAsks } from '../lib/asks';
+import { memberNames } from '../lib/members';
 
 /** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로 */
 export default function Feed() {
@@ -26,8 +28,9 @@ export default function Feed() {
   const { wishes } = useWishes();
   const notes = useAllNotes();
   const hearts = useHearts();
+  const asks = useRecentAsks();
   const ready = !!(trips && photos && recs && wishes && notes);
-  const items = useMemo(() => (ready ? buildFeed({ trips: trips!, photos: photos!, notes: notes!, recs: recs!, wishes: wishes! }) : null), [ready, trips, photos, notes, recs, wishes]);
+  const items = useMemo(() => (ready ? buildFeed({ trips: trips!, photos: photos!, notes: notes!, recs: recs!, wishes: wishes!, asks: asksForFeed(asks, memberNames().length) }) : null), [ready, trips, photos, notes, recs, wishes, asks]);
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
 
   // 들어와서 봤으면 '새 소식' 표시를 지운다
@@ -60,7 +63,7 @@ export default function Feed() {
   );
 }
 
-const keyOf = (it: FeedItem) => `${it.kind}:${it.at}:${it.kind === 'photos' ? it.photos[0].id : it.kind === 'note' ? it.note.id : it.kind === 'place' ? it.rec.id : it.kind === 'wish' ? it.wish.id : it.trip.id}`;
+const keyOf = (it: FeedItem) => `${it.kind}:${it.at}:${it.kind === 'photos' ? it.photos[0].id : it.kind === 'note' ? it.note.id : it.kind === 'place' ? it.rec.id : it.kind === 'wish' ? it.wish.id : it.kind === 'ask' ? `${it.day}:${it.uid}` : it.trip.id}`;
 
 function Who({ name, me }: { name: string; me: string }) {
   const tone = toneOf(name);
@@ -134,6 +137,15 @@ function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string
         <header><Who name={item.by} me={me} /><span className="small">{placeLabel(item.rec.region)}에 {KIND_LABEL[item.rec.kind]} 남김</span>{when}</header>
         <p className="feed-text"><b>{item.rec.name}</b>{item.rec.verdict ? <span className="tag" style={{ marginLeft: 6 }}>{VERDICT_LABEL[item.rec.verdict]}</span> : null}{item.review ? <span className="muted"> · “{item.review}”</span> : null}</p>
         {foot(`/places/${item.rec.id}`, '장소 보기')}
+      </article>
+    );
+  }
+  if (item.kind === 'ask') {
+    return (
+      <article className="feed-item" data-testid="feed-item" data-kind="ask">
+        <header><Who name={item.by} me={me} /><span className="small">오늘의 질문에 답함</span>{when}</header>
+        <p className="feed-text"><span className="muted small" style={{ display: 'block' }}>{item.question}</span>{item.opened || item.by === me ? <b>{item.text}</b> : <span className="muted">내가 답하면 열려요 🔒</span>}</p>
+        {foot('/', item.opened || item.by === me ? '홈에서 보기' : '나도 답하기')}
       </article>
     );
   }

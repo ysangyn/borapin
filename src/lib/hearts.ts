@@ -19,6 +19,7 @@ export function heartKey(it: FeedItem): string {
     case 'note': return `note_${it.note.id}`;
     case 'place': return `place_${it.rec.id}`;
     case 'wish': return `wish_${it.wish.id}`;
+    case 'ask': return `ask_${it.day}_${safe(it.uid)}`;
     default: return `trip_${it.trip.id}`;
   }
 }
