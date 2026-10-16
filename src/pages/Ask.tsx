@@ -134,6 +134,19 @@ export default function Ask() {
             <div className="bubble bot" data-testid="answer">
               <b>{m.a.text}</b>
               {m.a.lines && m.a.lines.length > 0 && <ul>{m.a.lines.map((l, j) => <li key={j}>{l}</li>)}</ul>}
+              {m.a.items && m.a.items.length > 0 && (
+                <div className="ask-items" data-testid="ask-items">
+                  {m.a.items.map((it, j) => (
+                    <div key={j} className="ask-item">
+                      <button type="button" className="ask-item-main" onClick={() => it.open && press(it.open, m.q)} disabled={!it.open}>
+                        <b>{it.title}</b>
+                        {it.sub && <span className="tiny muted">{it.sub}</span>}
+                      </button>
+                      {it.wish && <button type="button" className="ask-item-heart" aria-label={`${it.title} 가고 싶은 곳에 담기`} onClick={() => press({ label: `${it.title} 담기`, wish: it.wish }, m.q)}><Icon name="heart" size={18} stroke={2.2} /></button>}
+                    </div>
+                  ))}
+                </div>
+              )}
               {m.a.source && <span className="tiny muted">{m.a.source}</span>}
               {m.a.buttons.some((b) => !b.url) && (
                 <div className="chips ask-actions">

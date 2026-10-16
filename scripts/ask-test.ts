@@ -38,7 +38,7 @@ for (const c of CASES) {
   let ctx: AskCtx = {};
   if (c.after) ctx = ask(c.after, {}, data).ctx;
   const a = ask(c.q, ctx, data);
-  const all = [a.text, ...(a.lines ?? []), ...a.buttons.map((b) => b.label)].join(' / ');
+  const all = [a.text, ...(a.lines ?? []), ...(a.items ?? []).map((i) => `${i.title} ${i.sub ?? ''}`), ...a.buttons.map((b) => b.label)].join(' / ');
   const problems: string[] = [];
   if (a.intent !== c.intent) problems.push(`틀: ${a.intent} (기대 ${c.intent})`);
   if (c.place && (!a.ctx.place || placeParam(a.ctx.place).split(':').slice(0, 2).join(':') !== c.place)) problems.push(`장소: ${a.ctx.place ? placeParam(a.ctx.place) : '없음'} (기대 ${c.place})`);

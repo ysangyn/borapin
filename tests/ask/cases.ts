@@ -14,6 +14,12 @@ export interface Case {
 }
 
 export const CASES: Case[] = [
+  // 해외 쪽 추천은 세계 도시 자료로 (국내로 엉뚱하게 답하지 않게)
+  { q: '북극해 여행지 추천', intent: 'recommend', has: '북극권' },
+  { q: '카리브해 여행지 추천', intent: 'recommend', has: '자료가 없어요' },
+  { q: '오로라 보러 갈 만한 곳 추천', intent: 'recommend', has: '북극권' },
+  { q: '1월에 동남아 어디 갈까', intent: 'recommend', has: '동남아' },
+  { q: '부모님 모시고 유럽 추천', intent: 'recommend', has: '유럽' },
   // 볼거리·먹거리·특산물·교통 (지명 + 조사·띄어쓰기·오타·초성)
   { q: '강릉 볼거리', intent: 'spots', place: 'kr:51150', has: '안목 커피거리' },
   { q: '강릉에서 뭐 하지?', intent: 'spots', place: 'kr:51150' },

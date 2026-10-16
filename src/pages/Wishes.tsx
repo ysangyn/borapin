@@ -32,7 +32,7 @@ export default function Wishes() {
   const nav = useNavigate();
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const [who, setWho] = useState<string>('all'); // all · both · 이름
-  const [dice, setDice] = useState<false | 'kr' | 'world'>(false);
+  const [dice, setDice] = useState<false | 'kr' | 'world'>(() => (new URLSearchParams(location.search).get('find') === 'world' ? 'world' : false));
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   const withState = useMemo(

@@ -10,7 +10,7 @@ import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_COD
 import { candidates, THEMES } from '../recommend';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
-import { cityFor, COST_LABEL, flyLabel, tzLabel, WALK_LABEL, type WorldData } from '../world';
+import { cityFor, cityPlace, COST_LABEL, countryName, flyLabel, pickCities, tzLabel, WALK_LABEL, type WorldCity, type WorldData } from '../world';
 import type { Note, Photo, PlanItem, Place, PlaceRec, Season, Trip, Wish } from '../types';
 import { festivalPeriod, isOngoing, upcomingFestivals, type FestivalData } from '../festivals';
 import { dday } from '../dates';
@@ -44,10 +44,13 @@ export interface Btn {
   choose?: Place;
 }
 
+/** 추천처럼 '곳' 목록으로 답할 때: 한 줄 = 이름·설명 + 누르면 자세히 + 오른쪽 하트(담기) */
+export interface AnswerItem { title: string; sub?: string; open?: Btn; wish?: Place }
 export interface Answer {
   intent: Intent;
   text: string;
   lines?: string[];
+  items?: AnswerItem[];
   buttons: Btn[];
   source?: string;
   ctx: AskCtx;
@@ -309,7 +312,56 @@ const SEASON_MONTH: Record<Season, number> = { spring: 4, summer: 7, autumn: 10,
 /** 꽃·단풍 같은 '볼거리 낱말': 이 말이 든 볼거리가 있는 곳을 먼저, 때도 맞춘다 */
 const SIGHT_WORDS: { re: RegExp; month: number }[] = [{ re: /벚꽃|꽃놀이|유채|튤립/, month: 4 }, { re: /단풍|억새|핑크뮬리/, month: 10 }, { re: /눈꽃|설경|스키|얼음/, month: 1 }, { re: /해돋이|일출/, month: 1 }, { re: /해수욕|물놀이/, month: 7 }];
 
+/** 해외 쪽 말: 이 말이 있으면 세계 도시 자료에서 고른다 (나라 코드 묶음 또는 꼬리표) */
+const WORLD_AREAS: { re: RegExp; label: string; countries?: string[]; tags?: string[] }[] = [
+  { re: /북극|오로라|백야/, label: '북극권(오로라)', tags: ['오로라'] },
+  { re: /남극/, label: '남극에 가까운 곳', countries: ['ARG', 'CHL', 'NZL'] },
+  { re: /북유럽|스칸디나비아/, label: '북유럽', countries: ['NOR', 'SWE', 'FIN', 'DNK', 'ISL'] },
+  { re: /동유럽/, label: '동유럽', countries: ['CZE', 'HUN', 'POL', 'HRV', 'SVN', 'MNE', 'AUT'] },
+  { re: /지중해/, label: '지중해', countries: ['ITA', 'ESP', 'GRC', 'HRV', 'MLT', 'FRA', 'MNE', 'TUR'] },
+  { re: /유럽/, label: '유럽', countries: ['ITA', 'ESP', 'FRA', 'CHE', 'GBR', 'HRV', 'GRC', 'PRT', 'AUT', 'CZE', 'HUN', 'NLD', 'BEL', 'NOR', 'ISL', 'FIN', 'DNK', 'POL', 'SVN', 'MNE', 'MLT'] },
+  { re: /동남아/, label: '동남아', countries: ['THA', 'VNM', 'SGP', 'MYS', 'IDN', 'PHL', 'KHM', 'LAO'] },
+  { re: /중화권|대만|홍콩|마카오/, label: '중화권', countries: ['TWN', 'HKG', 'MAC', 'CHN'] },
+  { re: /남태평양|휴양지 섬|괌|사이판/, label: '태평양 섬', countries: ['GUM', 'MNP', 'PLW', 'FJI', 'MDV'] },
+  { re: /미주|북미|미국|캐나다/, label: '북미', countries: ['USA', 'CAN', 'MEX'] },
+  { re: /남미/, label: '남미', countries: ['PER', 'BRA', 'ARG', 'CHL'] },
+  { re: /아프리카/, label: '아프리카', countries: ['EGY', 'MAR', 'ZAF', 'TZA', 'KEN'] },
+  { re: /중동/, label: '중동', countries: ['ARE', 'TUR', 'JOR', 'GEO'] },
+  { re: /오세아니아|호주|뉴질랜드/, label: '오세아니아', countries: ['AUS', 'NZL', 'FJI'] },
+  { re: /해외|외국|비행기 타고/, label: '해외' },
+];
+
+function worldRecommend(q: string, d: AskData, month: number | null): Omit<Answer, 'ctx'> | null {
+  const area = WORLD_AREAS.find((a) => a.re.test(q));
+  if (!area) return null;
+  if (!d.world) return { intent: 'recommend', text: '해외 도시 자료를 불러오는 중이에요', lines: ['잠시 뒤 다시 물어봐 주세요.'], buttons: [] };
+  const withWho = /부모님|엄마|아빠|어르신/.test(q) ? '부모님' : /아이|애들|아기/.test(q) ? '아이' : /친구/.test(q) ? '친구' : null;
+  const cheap = /싼|저렴|물가.*(낮|싼)|가성비/.test(q) ? 1 as const : null;
+  const near = /가까운|짧은 비행|4시간/.test(q) ? 'near' as const : null;
+  let list: WorldCity[] = pickCities(d.world, { month, tags: area.tags, with: withWho, cost: cheap, fly: near, unvisitedOnly: /안\s*가\s*본/.test(q) }, computeStats(d.trips), d.wishes);
+  if (area.countries) list = list.filter((w) => area.countries!.includes(w.c));
+  const picks = list.slice(0, 3);
+  const head = [month ? `${month}월에` : '', area.label].filter(Boolean).join(' ');
+  if (!picks.length) return { intent: 'recommend', text: `${head} 쪽은 아직 고를 곳이 없어요`, lines: ['조건을 하나 빼거나, 가고 싶은 곳 → 해외 도시 고르기에서 찾아보세요.'], buttons: [{ label: '해외 도시 고르기', to: '/wishes?find=world' }] };
+  return {
+    intent: 'recommend',
+    text: `${head} 가 볼 만한 곳 ${picks.length}곳`,
+    items: picks.map((w) => ({ title: `${w.city} · ${countryName(w)}`, sub: `${w.line} · 좋은 때 ${monthsLabel(w.best)} · 인천에서 ${flyLabel(w.fly)}`, open: { label: `${w.city} 자세히`, ask: `${w.city} 여행` }, wish: cityPlace(w) })),
+    buttons: [{ label: '다른 곳', ask: q + ' ' }, { label: '해외 도시 고르기', to: '/wishes?find=world' }],
+    source: `보라핀 세계 도시 자료 ${d.world.updated.slice(0, 7).replace('-', '.')} 기준`,
+  };
+}
+
+/** 지도에 없는 바다·대륙 이름 같은 걸 물으면(북극해·카리브해…) 국내로 엉뚱하게 답하지 않게 */
+const UNKNOWN_FAR = /([가-힣]{2,}(해|양|대륙|반도|제도|사막))(\s|에|으로|로|쪽|의|$)/;
+
 function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, groupId?: string | null): Omit<Answer, 'ctx'> {
+  const wr = worldRecommend(q, d, monthArg ?? readMonth(q));
+  if (wr) return wr;
+  const far = q.match(UNKNOWN_FAR);
+  if (far && !findMentions(q, d.info).length && !/바다|동해|서해|남해/.test(far[1])) {
+    return { intent: 'recommend', text: `${far[1]} 쪽 여행지는 아직 자료가 없어요`, lines: ['가까운 나라나 도시 이름으로 물어보면 찾아볼게요. 예: 노르웨이 트롬쇠, 아이슬란드'], buttons: [{ label: '오로라 보러 갈 만한 곳', ask: '오로라 보러 갈 만한 곳 추천' }, { label: '해외 도시 고르기', to: '/wishes?find=world' }] };
+  }
   const sight = SIGHT_WORDS.find((x) => x.re.test(q));
   const seasonQ = readSeason(q);
   const month = monthArg ?? readMonth(q) ?? sight?.month ?? (seasonQ ? SEASON_MONTH[seasonQ] : null);
@@ -337,11 +389,11 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   return {
     intent: 'recommend',
     text: `${head ? head + ' ' : ''}가 볼 만한 곳 ${picks.length}곳`,
-    lines: picks.map((c) => {
+    items: picks.map((c) => {
       const s = seasonFor(d.seasons, c.place);
-      return `${placeName(c.place)} · ${c.theme ?? ''}${s ? ` · ${monthsLabel(s.m)}` : ''}`;
+      return { title: placeName(c.place), sub: `${c.theme ?? ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''}`, open: { label: `${placeLabel(c.place)} 자세히`, ask: `${placeLabel(c.place)} 볼거리` }, wish: c.place };
     }),
-    buttons: picks.flatMap((c) => [{ label: `${placeLabel(c.place)} 자세히`, ask: `${placeLabel(c.place)} 볼거리` }, { label: `${placeLabel(c.place)} 담기`, wish: c.place }]).concat([{ label: '다른 곳', ask: q + ' ' }]),
+    buttons: [{ label: '다른 곳', ask: q + ' ' }],
     source: `${INFO_SRC(d)} · 날씨: NASA POWER 월평균`,
   };
 }
