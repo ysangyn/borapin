@@ -4,9 +4,6 @@
 
 [36m[1mi  emulators:[22m[39m Starting emulators: auth, firestore
 [36m[1mi  emulators:[22m[39m Detected demo project ID "demo-borapin", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
-[33m[1m⚠ [22m[39m It appears you are running in a CI environment. You can avoid downloading the Firestore Emulator repeatedly by caching the /home/runner/.cache/firebase/emulators directory.
-[36m[1mi  firestore:[22m[39m downloading cloud-firestore-emulator-v1.22.0.jar...
-
 [36m[1mi  firestore:[22m[39m Firestore Emulator logging to [1mfirestore-debug.log[22m
 [32m[1m✔  firestore:[22m[39m Firestore Emulator was started in standard edition.
 [32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
@@ -14,17 +11,17 @@
 
 Running 9 tests using 1 worker
 
-  ✓  1 tests/app.spec.ts:44:3 › 보라핀 1단계 › 로그인 화면 (629ms)
-  ✓  2 tests/app.spec.ts:50:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (3.5s)
-  ✓  3 tests/app.spec.ts:57:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.3s)
-  ✓  4 tests/app.spec.ts:73:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.2s)
-  ✓  5 tests/app.spec.ts:87:3 › 보라핀 1단계 › 여행 목록과 필터 (942ms)
-  ✓  6 tests/app.spec.ts:97:3 › 보라핀 1단계 › 홈 통계와 지도 (6.2s)
-  ✓  7 tests/app.spec.ts:115:3 › 보라핀 1단계 › v22 기록 가져오기 (2.0s)
-  ✓  8 tests/app.spec.ts:137:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다 (2.3s)
-  ✓  9 tests/app.spec.ts:153:3 › 보라핀 1단계 › 기록 고치기와 지우기 (2.7s)
+  ✓  1 tests/app.spec.ts:52:3 › 보라핀 1단계 › 로그인 화면 (678ms)
+  ✓  2 tests/app.spec.ts:58:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (3.8s)
+  ✓  3 tests/app.spec.ts:65:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.2s)
+  ✓  4 tests/app.spec.ts:81:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.2s)
+  ✓  5 tests/app.spec.ts:95:3 › 보라핀 1단계 › 여행 목록과 필터 (945ms)
+  ✓  6 tests/app.spec.ts:105:3 › 보라핀 1단계 › 홈 통계와 지도 (6.5s)
+  ✓  7 tests/app.spec.ts:123:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (14.2s)
+  ✓  8 tests/app.spec.ts:179:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다 (1.8s)
+  ✓  9 tests/app.spec.ts:195:3 › 보라핀 1단계 › 기록 고치기와 지우기 (2.3s)
 
-  9 passed (24.6s)
+  9 passed (36.6s)
 [32m[1m✔ [22m[39m Script exited successfully (code 0)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
