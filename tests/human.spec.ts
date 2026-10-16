@@ -378,6 +378,12 @@ test.describe('사람처럼 쓰기', () => {
     await signIn(page);
     // 영월을 가고 싶은 곳에 담는다 (다른 시험이 건드리지 않는 곳)
     await page.goto('/wishes/new?place=kr:51750');
+    // 둘 다 원해요 + 1순위로 담아 홈 세 줄 안에 들게
+    for (const n of ['보라', '영상']) {
+      const b = page.getByRole('button', { name: n, exact: true });
+      if ((await b.getAttribute('aria-pressed')) !== 'true') await b.click();
+    }
+    await page.getByRole('button', { name: '1순위', exact: true }).click();
     await page.getByTestId('wish-save').click();
     await expect(page).not.toHaveURL(/wishes\/new/);
     await page.goto('/');
@@ -485,7 +491,8 @@ test.describe('사람처럼 쓰기', () => {
     await page.goto('/feed');
     const sel = page.getByLabel('사진을 올릴 여행');
     await expect(sel).toBeVisible();
-    await sel.selectOption({ label: /여수 밤바다 사진/ });
+    const value = await sel.locator('option', { hasText: '여수 밤바다 사진' }).first().getAttribute('value');
+    await sel.selectOption(value!);
     await page.getByTestId('quick-upload-input').setInputFiles(['tests/fixtures/photo-gangneung.jpg', 'tests/fixtures/photo-gangneung.jpg']);
     await expect(page.getByRole('status')).toContainText('사진 2장을 올렸어요', { timeout: 60_000 });
     const first = page.getByTestId('feed-item').first();
