@@ -31,6 +31,8 @@ interface Pick {
   clean?: { x: number; y: number; w: number; h: number }[];
   /** 영상: 세로(폰)로 자를 때 가로 위치 0(왼쪽)~1(오른쪽), 기본 가운데 */
   px?: number;
+  /** 출처에 적을 지은이 (공용 정보가 지저분할 때) */
+  artist?: string;
   /** 사진: 잘라낼 때 남길 쪽 */
   focus?: 'center' | 'top' | 'bottom' | 'attention';
 }
@@ -89,7 +91,7 @@ for (const p of picks.photos) {
     fs.writeFileSync(path.join(OUT, `${p.id}-l.webp`), l);
     fs.writeFileSync(path.join(OUT, `${p.id}-s.webp`), s);
     fs.writeFileSync(path.join(PREVIEW, `photo-${p.id}.jpg`), await sharp(l).resize(640).jpeg({ quality: 75 }).toBuffer());
-    out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-l.webp` }, w: 1280, h: 853, lqip: await lqip(s), credit: i.credit });
+    out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-l.webp` }, w: 1280, h: 853, lqip: await lqip(s), credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
     console.log(`사진 ${p.id}: ${kb(path.join(OUT, `${p.id}-l.webp`))} / ${kb(path.join(OUT, `${p.id}-s.webp`))} · ${i.credit.license}`);
   } catch (e) {
     console.error(`사진 ${p.id} 실패`, e);

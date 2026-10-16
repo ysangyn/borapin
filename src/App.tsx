@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import { DataProvider } from './lib/store';
@@ -6,6 +6,7 @@ import { BottomNav, Logo, Spinner } from './components/ui';
 import { ErrorBoundary, ScrollManager, StatusBanner } from './components/system';
 import { Denied, Login, VerifyEmail } from './pages/Login';
 import Home from './pages/Home';
+import { preloadCheer } from './lib/celebrate';
 
 // 홈 말고는 그 화면에 갈 때 불러온다 (첫 화면이 빨리 뜨게)
 const Trips = lazy(() => import('./pages/Trips'));
@@ -26,6 +27,12 @@ const Legal = lazy(() => import('./pages/Legal'));
 export default function App() {
   const auth = useAuth();
   const loc = useLocation();
+  // 축하 그림은 들어온 뒤 잠시 있다가 미리 받아 둔다
+  useEffect(() => {
+    if (auth.status !== 'ready') return;
+    const t = setTimeout(preloadCheer, 3000);
+    return () => clearTimeout(t);
+  }, [auth.status]);
   // 링크 공개된 여행과 약관·개인정보 처리방침은 로그인 없이 본다
   if (loc.pathname.startsWith('/s/') || ['/privacy', '/terms', '/credits'].includes(loc.pathname)) {
     return (

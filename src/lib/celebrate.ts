@@ -57,6 +57,45 @@ export function confetti(origin?: { x: number; y: number }) {
   requestAnimationFrame(tick);
 }
 
+const CHEER = '/art/bora-cheer.webp';
+let cheerImg: HTMLImageElement | null = null;
+
+/** 축하 그림을 미리 받아 둔다 (로그인 뒤 잠시 있다가, 처음 축하할 때 바로 뜨게) */
+export function preloadCheer() {
+  if (cheerImg || typeof window === 'undefined') return;
+  cheerImg = new Image();
+  cheerImg.decoding = 'async';
+  cheerImg.src = CHEER;
+}
+
+/**
+ * 처음 가본 곳·새 뱃지: 화면 가운데에 핀을 꽂으며 환호하는 보라가 잠깐 떴다 사라지고,
+ * 보라가 든 핀에서 색종이가 터진다. 누르거나 가리지 않는다 (글은 알림이 맡는다).
+ */
+export function celebrate() {
+  if (typeof window === 'undefined') return;
+  const img = cheerImg;
+  const W = window.innerWidth, H = window.innerHeight;
+  if (img?.complete && img.naturalWidth) {
+    const wrap = document.createElement('div');
+    wrap.className = 'cheer';
+    wrap.setAttribute('aria-hidden', 'true');
+    const el = img.cloneNode() as HTMLImageElement;
+    el.alt = '';
+    wrap.appendChild(el);
+    document.body.appendChild(wrap);
+    const done = () => wrap.remove();
+    wrap.addEventListener('animationend', done);
+    setTimeout(done, 3200);
+    // 보라가 든 핀 자리 (그림의 오른쪽 위)
+    const w = 170, h = (w * img.naturalHeight) / img.naturalWidth;
+    confetti({ x: W / 2 - w / 2 + w * 0.79, y: H * 0.45 - h / 2 + h * 0.1 });
+  } else {
+    preloadCheer();
+    confetti();
+  }
+}
+
 /**
  * 여행을 더한 뒤 새로 생긴 기쁜 일: 처음 가본 시·군·나라, 새 뱃지.
  * 없으면 null.

@@ -12,7 +12,7 @@ import { recsAt } from '../lib/placeRecs';
 import { samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
-import { confetti, whatsNew } from '../lib/celebrate';
+import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
 import { ScenicPhoto } from './Scene';
 
@@ -80,7 +80,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       };
       const news = whatsNew(trips, [...trips, { ...input, id: 'new', v: 1 }]);
       const id = await createTrip(input, auth.user);
-      if (news) confetti();
+      if (news) celebrate();
       toast(`${placeLabel(place)}에 핀을 꽂았어요${news ? ` · ${news}` : ''}`, { label: '되돌리기', onClick: () => void deleteTrip(id) });
     } catch (e) {
       console.warn(e);

@@ -393,7 +393,22 @@ a { color: var(--violet); text-decoration: none; }
 .photo-more { aspect-ratio: 1; border-radius: 10px; background: var(--page); color: var(--ink3); font-weight: 800; display: flex; align-items: center; justify-content: center; }
 .preview-list { margin: 2px 0 4px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: 13px; color: var(--ink2); }
 .preview-list b { color: #33248a; margin-right: 6px; }
-.confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; }
+.confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 61; }
+/* 처음 가본 곳: 환호하는 보라가 잠깐 */
+.cheer { position: fixed; left: 50%; top: 45%; width: 170px; z-index: 60; pointer-events: none; transform: translate(-50%, -50%); animation: cheer 2.6s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.cheer::before { content: ''; position: absolute; left: 50%; top: 52%; width: 256px; height: 256px; transform: translate(-50%, -50%); z-index: -1; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #fff 0%, #fff 55%, var(--mist2) 100%); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.55), 0 24px 60px rgba(91, 63, 209, 0.28); }
+.cheer img { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 14px rgba(91, 63, 209, 0.18)); }
+@keyframes cheer {
+  0% { opacity: 0; transform: translate(-50%, -36%) scale(0.72); }
+  14% { opacity: 1; transform: translate(-50%, -53%) scale(1.04); }
+  24% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -46%) scale(0.97); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cheer { animation-name: cheer-fade; }
+  @keyframes cheer-fade { 0%, 100% { opacity: 0; } 12%, 82% { opacity: 1; } }
+}
 .season-line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .season-line .tag.now { height: 20px; font-size: 11px; }
 .shared-foot { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 14px; border-radius: 16px; background: var(--page); color: var(--ink3); font-size: 13px; font-weight: 600; }

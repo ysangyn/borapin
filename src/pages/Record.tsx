@@ -7,7 +7,7 @@ import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } fr
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
 import { parsePlaceParam, placeLabel } from '../lib/geo';
 import type { Place, Precision, Season, TripInput, TripKind, TripStatus, When } from '../lib/types';
-import { confetti, whatsNew } from '../lib/celebrate';
+import { celebrate, whatsNew } from '../lib/celebrate';
 
 const PRECISIONS: { p: Precision; label: string }[] = [
   { p: 'day', label: '날짜' },
@@ -102,7 +102,7 @@ export default function Record() {
         const newId = await createTrip(input, auth.user);
         const wishId = sp.get('wish');
         if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
-        if (news) confetti();
+        if (news) celebrate();
         toast(status === 'planned' ? '여행 계획을 담았어요' : `기록했어요${news ? ` · ${news}` : ''}`);
         nav(`/trips/${newId}`, { replace: true });
       }
