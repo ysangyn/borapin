@@ -182,7 +182,8 @@ export default function Space() {
           <span>
             <Link to="/terms" style={{ color: 'inherit' }}>이용약관</Link> · <Link to="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link> · <Link to="/credits" style={{ color: 'inherit' }}>사진·영상·지도 출처</Link>
           </span>
-          <span>보라핀 v{__APP_VERSION__} · 지도 경계: 통계청 SGIS(공공누리 1유형) · vuski/admdongkor(CC BY 4.0) · Natural Earth</span>
+          <span data-testid="app-version">보라핀 v{__APP_VERSION__} ({__COMMIT__})</span>
+          <span>지도 경계: 통계청 SGIS(공공누리 1유형) · vuski/admdongkor(CC BY 4.0) · Natural Earth</span>
         </div>
       </div>
     </div>

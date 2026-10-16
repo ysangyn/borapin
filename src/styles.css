@@ -326,6 +326,7 @@ a { color: var(--violet); text-decoration: none; }
 @media (min-width: 900px) { .admin { max-width: 760px; margin: 0 auto; } }
 
 /* ---------- 상태 띠 ---------- */
+.preview-ribbon { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 100; padding: 3px 12px; border-radius: 0 0 10px 10px; background: #ffb020; color: #3a2600; font-size: 11px; font-weight: 800; pointer-events: none; }
 .status-banner { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 16px; background: var(--night); color: #fff; font-size: 13px; font-weight: 600; text-align: center; }
 .status-banner.warn { background: #fff4e5; color: #8a4b00; }
 .status-banner button { border: none; background: none; color: inherit; font-weight: 800; text-decoration: underline; padding: 6px 2px; }

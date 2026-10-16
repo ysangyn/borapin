@@ -1,5 +1,8 @@
 name: 점검과 배포
 
+# 순서: 코드 검사 → 에뮬레이터 시험 → 미리보기 채널 배포 → 미리보기 주소에서 진짜 Firebase(시험용 프로젝트)로 시험 → 실제 배포 → 실제 주소 확인
+# 앞 단계가 하나라도 실패하면 뒤 단계(특히 실제 배포)는 돌지 않는다.
+# 빌드는 '코드 검사'에서 한 번만 하고, 그 파일 그대로 미리보기와 실제 서비스에 올린다 (시험한 파일 = 올리는 파일).
 on:
   push:
     branches: [main]
@@ -19,10 +22,47 @@ defaults:
     shell: bash
 
 jobs:
-  test:
-    name: 자동 점검 (가짜 Firebase)
+  check:
+    name: 1. 코드 검사와 빌드
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 타입 검사 (앱 + 스크립트 + 시험 코드)
+        run: npm run typecheck
+      - name: 순수 기능 시험 (날짜·계절·조사 등)
+        run: npm run test:unit 2>&1 | tee unit-output.txt
+      - name: 여행정보 DB 검사
+        run: npx tsx scripts/travelinfo.ts --check
+      - name: 찾아보기 채점 (95% 미만이면 멈춤)
+        run: npx tsx scripts/ask-test.ts 2>&1 | tee ask-output.txt
+      - name: 빌드 (이 파일을 끝까지 그대로 쓴다)
+        run: npm run build 2>&1 | tee build-output.txt
+      - name: 빌드 버전 확인
+        run: |
+          test "$(node -p "require('./dist/version.json').commit")" = "${GITHUB_SHA::7}"
+          grep -q "borapin-version\" content=\"[^\"]*+${GITHUB_SHA::7}\"" dist/index.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist
+          retention-days: 7
+      - name: 결과 올리기
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt
+
+  emulator:
+    name: 2. 에뮬레이터 시험 (보안 규칙 + 화면)
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -35,19 +75,11 @@ jobs:
           java-version: 21
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: 타입 검사
-        run: npm run typecheck
-      - name: 여행정보 DB 검사
-        run: npx tsx scripts/travelinfo.ts --check
-      - name: 찾아보기 채점 (95% 미만이면 멈춤)
-        run: npx tsx scripts/ask-test.ts 2>&1 | tee ask-output.txt
-      - name: 빌드
-        run: npm run build 2>&1 | tee build-output.txt
-      - name: 예전 기록 옮기기 스크립트 점검 (에뮬레이터, 두 번 돌려도 겹치지 않는지)
-        run: npm run test:migrate 2>&1 | tee migrate-test-output.txt
-      - name: 보안 규칙 시험 (에뮬레이터 + 실제 firestore.rules)
+      - name: 보안 규칙 시험 (허용·막힘, 실제 firestore.rules)
         run: npm run test:rules 2>&1 | tee rules-output.txt
-      - name: 화면 점검 (에뮬레이터)
+      - name: 예전 기록 옮기기 스크립트 점검 (두 번 돌려도 겹치지 않는지)
+        run: npm run test:migrate 2>&1 | tee migrate-test-output.txt
+      - name: 화면 시험 (구글 창 로그인, 한글 입력, 끌어다 놓기, 375px, 새로 고침 포함)
         run: npm run test:e2e 2>&1 | tee test-output.txt
       - name: 실패 화면 모으기
         if: failure()
@@ -56,18 +88,24 @@ jobs:
           find test-results \( -name 'test-failed-*.png' -o -name 'error-context.md' \) | while read -r f; do
             cp "$f" "failures/$(echo "$f" | tr '/' '_')"
           done
-      - name: 점검 결과 올리기 (ci-report 브랜치)
+      - name: 결과 올리기 (ci-report 브랜치)
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh test test-results/screens test-results/tour test-output.txt rules-output.txt build-output.txt migrate-test-output.txt ask-output.txt failures
+        run: scripts/push-report.sh test test-results/screens test-results/tour test-output.txt rules-output.txt migrate-test-output.txt failures
 
-  deploy:
-    name: borapin.web.app 배포
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  preview:
+    name: 3. 미리보기 배포와 진짜 Firebase 시험
+    needs: [check, emulator]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    # 시험용 프로젝트는 하나뿐이라 한 번에 하나씩
+    concurrency:
+      group: borapin-test-project
+      cancel-in-progress: false
+    outputs:
+      url: ${{ steps.channel.outputs.url }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -75,42 +113,118 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
-      - name: 배포 열쇠 준비
-        id: key
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+      - name: 배포 열쇠 준비 (실제 프로젝트: 호스팅 미리보기용)
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
+          if [ -z "$SA" ]; then echo "::error::FIREBASE_SERVICE_ACCOUNT 비밀값이 없어요"; exit 1; fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+      - name: 미리보기 채널에 배포
+        id: channel
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: |
+          ch="ci-$(echo "$GITHUB_REF_NAME" | tr 'A-Z' 'a-z' | tr -c 'a-z0-9-' '-' | cut -c1-30 | sed 's/-*$//')"
+          npx firebase hosting:channel:deploy "$ch" --project borapin --expires 3d --non-interactive --json > channel.json
+          url=$(node -p "Object.values(require('./channel.json').result)[0].url")
+          echo "미리보기 주소: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: 미리보기 주소 파일·버전 확인
+        run: npx tsx scripts/verify-deploy.ts "${{ steps.channel.outputs.url }}" "${GITHUB_SHA::7}" 2>&1 | tee preview-verify.txt
+      - name: 시험용 프로젝트 열쇠 준비
+        id: testkey
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEST }}
+        run: |
           if [ -z "$SA" ]; then
-            echo "::warning::FIREBASE_SERVICE_ACCOUNT 비밀값이 없어 배포를 건너뜁니다."
+            echo "::warning::FIREBASE_SERVICE_ACCOUNT_TEST 비밀값이 없어 진짜 Firebase 시험을 건너뜁니다."
             echo "ok=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa-test.json"
+          pw="$(openssl rand -base64 24)"
+          echo "::add-mask::$pw"
+          echo "PREVIEW_PW=$pw" >> "$GITHUB_ENV"
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+      - name: 시험용 프로젝트에 보안 규칙 올리기
+        if: steps.testkey.outputs.ok == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa-test.json
+        run: npx firebase deploy --only firestore --project borapin-test --non-interactive --force
+      - name: 시험 계정 준비
+        if: steps.testkey.outputs.ok == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa-test.json
+          GCLOUD_PROJECT: borapin-test
+        run: npx tsx scripts/preview-env.ts cleanup && npx tsx scripts/preview-env.ts seed
+      - name: 미리보기 주소에서 화면 시험 (진짜 Firebase)
+        if: steps.testkey.outputs.ok == 'true'
+        env:
+          PREVIEW_URL: ${{ steps.channel.outputs.url }}
+        run: |
+          npx playwright install --with-deps chromium
+          COMMIT="${GITHUB_SHA::7}" npx playwright test -c playwright.preview.config.ts 2>&1 | tee preview-output.txt
+      - name: 시험 기록·계정 지우기
+        if: always() && steps.testkey.outputs.ok == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa-test.json
+          GCLOUD_PROJECT: borapin-test
+        run: npx tsx scripts/preview-env.ts cleanup
+      - name: 열쇠 지우기
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json" "$RUNNER_TEMP/sa-test.json"
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh preview preview-verify.txt preview-output.txt test-results
+
+  deploy:
+    name: 4. borapin.web.app 배포와 확인
+    needs: preview
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+      - name: 배포 열쇠 준비
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then echo "::error::FIREBASE_SERVICE_ACCOUNT 비밀값이 없어요"; exit 1; fi
           printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
-          echo "ok=true" >> "$GITHUB_OUTPUT"
-      - name: 호스팅 사이트 확인
-        if: steps.key.outputs.ok == 'true'
-        run: |
-          if ! npx firebase hosting:sites:get borapin --project borapin --non-interactive >/dev/null 2>&1; then
-            echo "호스팅 사이트가 없어 새로 만듭니다."
-            npx firebase hosting:sites:create borapin --project borapin --non-interactive
-          fi
-      - name: 배포 (화면 + 보안 규칙)
-        if: steps.key.outputs.ok == 'true'
+      - name: 배포 전 실제 주소를 열어 옛 버전을 저장해 두기 (옛 버전이 남는지 보려고)
+        run: npx tsx scripts/sw-update-check.ts before https://borapin.web.app 2>&1 | tee sw-output.txt || echo "배포 전 기록 실패 (첫 배포일 수 있음)"
+      - name: 배포 (미리보기에서 시험한 같은 파일 + 보안 규칙)
         run: npx firebase deploy --only hosting,firestore:rules --project borapin --non-interactive --force --message "${GITHUB_SHA::7}" 2>&1 | tee deploy-output.txt
       - name: 열쇠 지우기
         if: always()
         run: rm -f "$RUNNER_TEMP/sa.json"
-      - name: 실제 주소 확인
-        if: steps.key.outputs.ok == 'true'
+      - name: 실제 주소 파일·버전 확인
+        run: npx tsx scripts/verify-deploy.ts https://borapin.web.app "${GITHUB_SHA::7}" 2>&1 | tee live-verify.txt
+      - name: 옛 버전이 새 버전으로 바뀌는지 (서비스 워커)
+        run: npx tsx scripts/sw-update-check.ts after https://borapin.web.app "${GITHUB_SHA::7}" 2>&1 | tee -a sw-output.txt
+      - name: 실제 주소 화면 확인 (로그인 화면, 구글 창 열림, 지도 파일)
         run: |
-          npx playwright install --with-deps chromium
-          sleep 5
           export WORKER_PATH="/assets/$(basename dist/assets/maplibre-gl-worker-*.mjs)"
-          npx playwright test -c playwright.live.config.ts 2>&1 | tee live-output.txt
-      - name: 배포 결과 올리기 (ci-report 브랜치)
+          COMMIT="${GITHUB_SHA::7}" npx playwright test -c playwright.live.config.ts 2>&1 | tee live-output.txt
+      - name: 결과 올리기 (ci-report 브랜치)
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh deploy deploy-output.txt live-output.txt test-results/screens
+        run: scripts/push-report.sh deploy deploy-output.txt live-verify.txt sw-output.txt live-output.txt test-results/screens

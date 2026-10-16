@@ -45,17 +45,20 @@ export function seasonFor(data: SeasonData | null, p: Place, override?: number[]
   return (p.t === 'kr' ? data.kr[p.code] : data.world[p.id]) ?? null;
 }
 
-/** [3,4,5,9,10] → '3~5 · 9·10월' */
+/** [3,4,5,9,10] → '3~5, 9·10월', [11,12,1,2] → '11~2월' (12월→1월은 이어진 것으로), 열두 달 → '언제든' */
 export function monthsLabel(m: number[]): string {
   if (!m.length) return '';
   const s = [...new Set(m)].sort((a, b) => a - b);
+  if (s.length >= 12) return '언제든';
   const runs: number[][] = [];
   for (const x of s) {
     const last = runs.at(-1);
     if (last && x === last[last.length - 1] + 1) last.push(x);
     else runs.push([x]);
   }
-  return runs.map((r) => (r.length >= 3 ? `${r[0]}~${r[r.length - 1]}` : r.join('·'))).join(' · ') + '월';
+  // 12월로 끝나는 묶음과 1월로 시작하는 묶음은 겨울 하나로 잇는다
+  if (runs.length > 1 && runs[0][0] === 1 && runs.at(-1)!.at(-1) === 12) runs.unshift([...runs.pop()!, ...runs.shift()!]);
+  return runs.map((r) => (r.length >= 3 ? `${r[0]}~${r[r.length - 1]}` : r.join('·'))).join(', ') + '월';
 }
 
 export const isGoodNow = (info: SeasonInfo | null, month = new Date().getMonth() + 1) => !!info?.m.includes(month);

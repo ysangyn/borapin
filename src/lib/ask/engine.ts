@@ -222,7 +222,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
       const ours = tripsAt(d.trips, p).filter((t) => t.when.m || t.when.s).map((t) => (t.when.m ? `${t.when.m}월` : SEASON_LABEL[t.when.s!]));
       return {
         intent,
-        text: s ? `${jo(placeName(p), '은/는')} ${jo(monthsLabel(s.m), '이/가')} 좋아요` : `${placeName(p)}의 가기 좋은 때 자료가 없어요`,
+        text: s ? (monthsLabel(s.m) === '언제든' ? `${jo(placeName(p), '은/는')} 언제 가도 좋아요` : `${jo(placeName(p), '은/는')} ${jo(monthsLabel(s.m), '이/가')} 좋아요`) : `${placeName(p)}의 가기 좋은 때 자료가 없어요`,
         lines: [s ? `${s.why}${s.at ? ` (${s.at} 기준)` : ''}` : '', ours.length ? `우리가 갔던 때: ${[...new Set(ours)].join(', ')}` : ''].filter(Boolean),
         buttons: placeButtons(p),
         source: 'NASA POWER 월별 기후값으로 계산',

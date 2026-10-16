@@ -18,10 +18,22 @@ const firebaseConfig = {
   appId: '1:148116962013:web:17ffc0608e37c71c997934',
 };
 
+// 시험용 프로젝트 borapin-test (실제 기록과 완전히 분리). 미리보기 주소에서만 쓴다.
+const testConfig = {
+  apiKey: 'AIzaSyAXT9E3jX2BBJwQv0dWS4Fqcx-7qK8bWt0',
+  authDomain: 'borapin-test.firebaseapp.com',
+  projectId: 'borapin-test',
+  storageBucket: 'borapin-test.firebasestorage.app',
+  messagingSenderId: '604713963331',
+  appId: '1:604713963331:web:35c413dcdffff3d0f7e9f6',
+};
+
 export const USE_EMULATOR = import.meta.env.VITE_EMULATOR === '1';
+/** 호스팅 미리보기 채널 주소 (borapin--채널-해시.web.app): 실제 기록 대신 시험용 프로젝트에 붙는다 */
+export const IS_PREVIEW = typeof location !== 'undefined' && /^borapin--[a-z0-9-]+\.web\.app$/.test(location.hostname);
 
 export const app = initializeApp(
-  USE_EMULATOR ? { ...firebaseConfig, projectId: 'demo-borapin' } : firebaseConfig,
+  USE_EMULATOR ? { ...firebaseConfig, projectId: 'demo-borapin' } : IS_PREVIEW ? testConfig : firebaseConfig,
 );
 export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
