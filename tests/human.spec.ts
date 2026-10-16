@@ -379,9 +379,9 @@ test.describe('사람처럼 쓰기', () => {
     // 영월을 가고 싶은 곳에 담는다 (다른 시험이 건드리지 않는 곳)
     await page.goto('/wishes/new?place=kr:51750');
     // 둘 다 원해요 + 1순위로 담아 홈 세 줄 안에 들게
-    for (const n of ['보라', '영상']) {
-      const b = page.getByRole('button', { name: n, exact: true });
-      if ((await b.getAttribute('aria-pressed')) !== 'true') await b.click();
+    const chips = page.locator('.heart-chip');
+    for (let i = 0; i < (await chips.count()); i++) {
+      if ((await chips.nth(i).getAttribute('aria-pressed')) !== 'true') await chips.nth(i).click();
     }
     await page.getByRole('button', { name: '1순위', exact: true }).click();
     await page.getByTestId('wish-save').click();
