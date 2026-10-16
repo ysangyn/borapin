@@ -1,0 +1,42 @@
+name: 영어 문장 보태기 (달마다)
+
+# 달에 한 번 Workers AI(무료)로 한 주제 10문장을 만들어 PR로 올린다. 사람이 보고 합친다. 상한은 scripts/english-grow.ts의 MAX_ITEMS.
+on:
+  schedule:
+    - cron: '17 1 1 * *'   # 매달 1일 01:17 UTC (10:17 KST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  grow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 문장 만들기
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx tsx scripts/english-grow.ts 2>&1 | tee grow.txt
+      - name: 틀 검사
+        run: npm run test:unit
+      - name: PR 올리기
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- src/data/english.json; then echo "바뀐 게 없어요"; exit 0; fi
+          b="english-$(date +%Y%m)"
+          git config user.name "borapin-bot"; git config user.email "bot@borapin.local"
+          git checkout -b "$b"
+          git add src/data/english.json
+          git commit -m "영어 문장 보태기 $(date +%Y-%m) (AI 초안, 사람이 확인)"
+          git push -f origin "$b"
+          gh pr create --title "영어 문장 보태기 $(date +%Y-%m)" --body "$(printf 'Workers AI가 만든 초안이에요. 아래 문장을 읽어 보고 어색한 건 고치거나 빼고 합쳐 주세요.\n\n```\n%s\n```' "$(cat grow.txt)")" --base main --head "$b" || echo "PR이 이미 있어요"
