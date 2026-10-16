@@ -5,6 +5,9 @@ import { addPlan, dayLabel, deletePlan, restorePlan, tripDays, updatePlan, usePl
 import { placeRecLinks, recsAt } from '../lib/placeRecs';
 import type { PlaceRec, PlanItem, Trip } from '../lib/types';
 
+/** 00:00~23:45, 15분 간격 (24시간 표기) */
+const TIMES = Array.from({ length: 96 }, (_, i) => `${String(Math.floor(i / 4)).padStart(2, '0')}:${String((i % 4) * 15).padStart(2, '0')}`);
+
 /** 일정은 필요한 만큼만: ① 가볼 곳 목록 → ② 날짜별 배치 → ③ 시간·예약 정보 */
 export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }) {
   // 기기에 먼저 저장돼 누르면 바로 보이고, 상대가 바꾼 것도 그대로 보인다
@@ -102,7 +105,12 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
                           {days.map((d) => <option key={d} value={d}>{dayLabel(d, days)}</option>)}
                         </select>
                       )}
-                      <input className="input" type="time" aria-label="시간" value={it.time ?? ''} onChange={(e) => updatePlan(it.id, { time: e.target.value || null })} />
+                      {/* 24시간 표기로 고르기 (기기 설정과 상관없이 같은 모양) */}
+                      <select className="select" aria-label="시간" value={it.time ?? ''} onChange={(e) => updatePlan(it.id, { time: e.target.value || null })}>
+                        <option value="">시간 없이</option>
+                        {TIMES.map((t) => <option key={t} value={t}>{t}</option>)}
+                        {it.time && !TIMES.includes(it.time) && <option value={it.time}>{it.time}</option>}
+                      </select>
                       <input className="input" aria-label="예약·메모" placeholder="예약번호, 메모" defaultValue={it.info} onBlur={(e) => e.target.value !== it.info && updatePlan(it.id, { info: e.target.value.trim() })} maxLength={200} />
                       <button className="btn sm line" onClick={() => { const copy = it; setOpen(null); deletePlan(copy.id).catch(() => toast('빼지 못했어요')); toast(`'${copy.name}'${josa.pick(copy.name, '을/를')} 일정에서 뺐어요`, { label: '되돌리기', onClick: () => void restorePlan(copy) }); }}><Icon name="trash" size={15} />일정에서 빼기</button>
                     </div>

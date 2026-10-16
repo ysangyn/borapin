@@ -527,7 +527,7 @@ test.describe.serial('보라핀 1단계', () => {
     // ② 날짜 ③ 시간·예약
     await plan.getByRole('button', { name: /경포대/ }).click();
     await plan.getByLabel('날짜').selectOption('2019-05-04');
-    await plan.getByLabel('시간').fill('18:30');
+    await plan.getByLabel('시간').selectOption('18:30');
     await expect(plan).toContainText('2일째 · 5.4 (토)');
     await expect(plan.getByTestId('plan-item').filter({ hasText: '경포대' })).toContainText('18:30');
     await shot(page, '13-plan');
