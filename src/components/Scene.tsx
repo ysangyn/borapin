@@ -86,10 +86,13 @@ export function SceneVideo({ id, className, children }: { id: string; className?
 export function Art({ id, className, size = 280 }: { id: string; className?: string; size?: number }) {
   const a = artById(id);
   const [loaded, setLoaded] = useState(false);
+  // 이미 기기에 저장된 그림은 onLoad가 안 올 수 있다 → 붙은 뒤 complete를 한 번 본다 (흐린 미리보기에 멈추던 문제)
+  const ref = (el: HTMLImageElement | null) => { if (el && el.complete && el.naturalWidth > 0) setLoaded(true); };
   if (!a) return null;
   return (
     <div className={'art ' + (className ?? '')} style={{ backgroundImage: `url(${a.lqip})`, width: `min(100%, ${size}px)` }}>
       <img
+        ref={ref}
         src={a.src.l}
         srcSet={`${a.src.s} 540w, ${a.src.l} 1080w`}
         sizes={`${size}px`}
