@@ -35,9 +35,10 @@ async function signIn(page: Page, email = OWNER, name = '테스트') {
   await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 20_000 });
 }
 
+// Firestore가 연결을 계속 열어 두므로 networkidle은 쓰지 않는다
 async function settle(page: Page) {
-  await page.waitForLoadState('networkidle').catch(() => undefined);
-  await page.waitForTimeout(700);
+  await page.waitForLoadState('load').catch(() => undefined);
+  await page.waitForTimeout(1200);
 }
 
 async function snap(page: Page, name: string, full = true) {
