@@ -306,6 +306,41 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByTestId('dice-add').click();
     await expect(page.getByTestId('wish-card')).toHaveCount(2);
 
+    // 해외 도시 고르기: 속성을 조합한다 (예산 가볍게 + 4시간 안 + 미식) → 목록이 줄고 → 담기
+    await page.getByLabel('뽑을 범위').selectOption('world');
+    const wp = page.getByTestId('world-picker');
+    await expect(wp).toBeVisible();
+    await wp.getByLabel('떠날 달').selectOption('1');
+    const before = Number((await wp.getByTestId('world-count').textContent())!.match(/\d+/)![0]);
+    await wp.getByRole('button', { name: '가볍게' }).click();
+    await wp.getByRole('button', { name: '4시간 안' }).click();
+    await wp.getByRole('button', { name: '미식', exact: true }).click();
+    const after = Number((await wp.getByTestId('world-count').textContent())!.match(/\d+/)![0]);
+    expect(after).toBeGreaterThan(0);
+    expect(after).toBeLessThan(before);
+    const rows = wp.getByTestId('world-city');
+    await expect(rows.first()).toContainText('물가 가벼움');
+    await expect(rows.first()).toContainText('인천에서');
+    await shot(page, '10e-world-picker');
+    const cityName = (await rows.first().locator('.t').textContent())!.trim().split(' ')[0];
+    await rows.first().getByTestId('world-add').click();
+    await expect(page.getByRole('status')).toContainText(`가고 싶은 곳에 담았어요`);
+    await expect(page.getByTestId('wish-card')).toHaveCount(3);
+    // 해외 도시 카드엔 도시 정보: 통화·입국·먹을 것, 눌러서 메모에 넣기
+    await page.getByTestId('wish-card').filter({ hasText: cityName }).locator('.wish-main').click();
+    await expect(page).toHaveURL(/\/wishes\/[A-Za-z0-9]+$/);
+    const info = page.getByTestId('city-info');
+    await expect(info).toBeVisible();
+    await expect(info).toContainText('입국');
+    await expect(info).toContainText('떠나기 전 확인');
+    const firstEat = info.getByRole('button', { name: /메모에 넣기$/ }).first();
+    const eatText = (await firstEat.getAttribute('aria-label'))!.replace(' 메모에 넣기', '');
+    await firstEat.click();
+    await expect(page.getByLabel('먹을 것')).toHaveValue(new RegExp(eatText));
+    await shot(page, '10f-city-info');
+    await page.getByTestId('wish-save').click();
+    await expect(page.getByRole('status')).toContainText('고쳤어요');
+
     // 홈 '다음 여행 준비'는 예정된 제주 여행을 맡고, 여행 탭에도 보인다
     await page.goto('/');
     await expect(page.getByTestId('next-hub')).toHaveAttribute('data-anchor', 'trip');
@@ -320,7 +355,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(hub).toBeVisible();
     // 1. 다음은 어디: 예정된 제주 여행이 맨 위, 그다음은 가고 싶은 곳(강원)
     await expect(hub.getByTestId('hub-first')).toContainText('제주 여행');
-    await expect(hub.locator('.hub-other')).toContainText([/강원/]);
+    await expect(hub.locator('.hub-others')).toContainText('강원');
     // 2. 오늘의 한 질문: 제주 이야기. 내가 답하면 상대 답은 잠겨 있다
     const ask = hub.getByTestId('hub-ask');
     await expect(ask).toContainText('제주');
@@ -352,7 +387,7 @@ test.describe.serial('보라핀 1단계', () => {
       await expect(page.getByRole('status')).toContainText('메모에 넣었어요');
       await page.getByRole('status').getByRole('button', { name: '보기' }).click();
       await expect(page).toHaveURL(/\/wishes\/[A-Za-z0-9]+$/);
-      expect(await page.locator('textarea').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value).join('\n'))).toContain('흑돼지랑 고기국수');
+      await expect.poll(() => page.locator('textarea').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value).join('\n')), { timeout: 15_000 }).toContain('흑돼지랑 고기국수');
       await page.goto('/');
     }
     // 3. 오늘의 영어: 영어 한 문장이 보이고 누르면 공부 화면
