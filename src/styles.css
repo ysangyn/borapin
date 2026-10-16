@@ -254,6 +254,7 @@ a { color: var(--violet); text-decoration: none; }
 .photo-cell { position: relative; aspect-ratio: 1; border: none; padding: 0; border-radius: 10px; overflow: hidden; background: var(--page); display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--ink3); }
 .photo-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .photo-cell.add { border: 1.5px dashed var(--line2, #d9d5e6); background: #fff; gap: 2px; }
+.photo-cell.add.paused { opacity: 0.5; }
 .photo-cell.uploading { background: var(--mist); color: #33248a; font-weight: 800; font-size: 13px; }
 .trip-cover { border: none; padding: 0; border-radius: 20px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--page); }
 .trip-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }

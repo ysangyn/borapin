@@ -55,7 +55,7 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
         </div>
       ))}
       <button
-        className="photo-cell add"
+        className={'photo-cell add' + (paused ? ' paused' : '')}
         onClick={() =>
           paused
             ? toast(full ? '무료 저장 공간이 거의 차서 사진 올리기를 멈췄어요' : `사진 올리기를 잠시 멈췄어요${flags.reason ? ` (${flags.reason})` : ''}`)
@@ -63,7 +63,6 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
         }
         disabled={queue.length > 0}
         data-testid="photo-add"
-        aria-disabled={paused}
       >
         <Icon name="plus" size={22} stroke={2.2} />
         <span className="tiny">사진</span>
