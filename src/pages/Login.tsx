@@ -157,7 +157,13 @@ export function Denied({ email }: { email: string | null }) {
     <div className="center-screen">
       <KoreaMosaic className="auth-mosaic" />
       <div style={{ fontSize: 20, fontWeight: 800 }}>아직 초대되지 않은 계정이에요</div>
-      <div className="small muted">{email}<br />함께 쓰는 사람에게 이 메일 주소를 추가해 달라고 해 주세요.</div>
+      <div className="small muted" style={{ maxWidth: 320 }}>
+        보라핀은 초대받은 사람끼리만 써요. 함께 쓸 사람(공간 주인)에게 아래 메일 주소를 보내고, <b>우리 공간 → 함께 쓰는 사람 → 추가</b>에 넣어 달라고 해 주세요. 추가되면 이 화면이 저절로 바뀌어요.
+      </div>
+      <div className="denied-mail" data-testid="denied-mail">
+        <code>{email}</code>
+        <button className="btn sm" onClick={async () => { try { await navigator.clipboard.writeText(email ?? ''); alert('메일 주소를 복사했어요'); } catch { /* 복사 못 해도 보이니 괜찮다 */ } }}>복사</button>
+      </div>
       <button className="btn line" onClick={() => logOut()}>다른 계정으로 로그인</button>
       <Footer />
     </div>

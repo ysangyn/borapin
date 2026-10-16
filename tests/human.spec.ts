@@ -482,6 +482,8 @@ test.describe('사람처럼 쓰기', () => {
     await expect(page.getByTestId('trip-title')).toHaveText('여수 밤바다 사진', { timeout: 30_000 });
     await expect(page).toHaveURL(/tab=photos/);
     await expect(page.getByTestId('trip-photos').locator('.photo-cell img[data-loaded]')).toHaveCount(1, { timeout: 30_000 });
+    // 사진 탭 아래에 남은 공간 안내
+    await expect(page.getByTestId('photo-space')).toContainText(/약 [\d,]+장 더 올릴 수 있어요/);
     await page.context().close();
   });
 

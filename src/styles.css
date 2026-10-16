@@ -602,3 +602,6 @@ a { color: var(--violet); text-decoration: none; }
 
 .btn.listening { background: var(--coral); color: #fff; animation: pulse 1s infinite; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 122, 89, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(255, 122, 89, 0); } }
+
+.denied-mail { display: flex; gap: 8px; align-items: center; background: var(--page); border-radius: 12px; padding: 6px 6px 6px 12px; }
+.denied-mail code { font-size: 14px; font-weight: 700; color: var(--ink); }

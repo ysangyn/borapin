@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PlanTab from '../components/PlanTab';
 import NotesTab from '../components/NotesTab';
@@ -11,7 +11,8 @@ import { computeStats, deleteTripAll, patchTrip, usePlaces, useTrips } from '../
 import PhotoGrid from '../components/PhotoGrid';
 import { openSlideshow } from '../components/slideshow';
 import PhotoImg from '../components/PhotoImg';
-import { deletePhoto, suggestPlaces, suggestWhen, useTripPhotos } from '../lib/photos';
+import { deletePhoto, photoUsage, suggestPlaces, suggestWhen, useTripPhotos } from '../lib/photos';
+import { photosLeft } from '../lib/usage';
 import PlaceRecRow from '../components/PlaceRecRow';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
@@ -166,6 +167,7 @@ export default function TripDetail() {
             </div>
           )}
           <PhotoGrid photos={photos} tripId={trip.id} placeOf={tripPlace} />
+          <PhotoSpaceNote count={photos.length} />
           {(sugWhen || sugPlaces.length > 0) && (
             <div className="card coral-soft" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }} data-testid="photo-suggest">
               {sugWhen && (
@@ -213,5 +215,22 @@ export default function TripDetail() {
         </>}
       </div>
     </>
+  );
+}
+
+/** 사진 탭 아래 작은 안내: 무료 저장 공간과 권장 장수 (앱이 어떤 앱인지 솔직하게) */
+function PhotoSpaceNote({ count }: { count: number }) {
+  const [left, setLeft] = useState<number | null>(null);
+  useEffect(() => {
+    let on = true;
+    photoUsage().then((u) => on && setLeft(photosLeft(u)), () => on && setLeft(null));
+    return () => { on = false; };
+  }, [count]);
+  return (
+    <div className="tiny muted" style={{ marginTop: 8, lineHeight: 1.5 }} data-testid="photo-space">
+      여행마다 고른 사진 30장쯤을 남기는 앱이에요 (사진은 긴 변 1600px로 줄여 저장해요).
+      {left !== null && <> 무료 저장 공간에 <b>약 {left.toLocaleString()}장</b> 더 올릴 수 있어요.</>}
+      {count > 60 && <> 이 여행은 사진이 많아요 — 공유 링크에는 앞 60장만 보여요.</>}
+    </div>
   );
 }

@@ -78,6 +78,9 @@ test.describe.serial('보라핀 1단계', () => {
   test('초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();
+    // 다음에 뭘 해야 하는지와 복사할 메일 주소가 보인다
+    await expect(page.getByText(/우리 공간 → 함께 쓰는 사람 → 추가/)).toBeVisible();
+    await expect(page.getByTestId('denied-mail')).toContainText('stranger@example.com');
     await shot(page, '10-denied');
     await page.getByRole('button', { name: '다른 계정으로 로그인' }).click();
     await signIn(page, OWNER);
