@@ -338,6 +338,8 @@ test.describe('사람처럼 쓰기', () => {
     await page.getByLabel('어디 검색').fill('칠곡');
     await page.getByRole('option', { name: /칠곡군/ }).first().click();
     await page.getByTestId('place-save').click();
+    // 저장이 끝난 뒤(알림이 뜬 뒤)에 홈으로 — 저장 중에 새로 고치면 사람도 기록을 잃는다
+    await expect(page.getByRole('status')).toContainText('장소를 남겼어요');
     await page.goto('/');
     await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
     const spot = page.locator('[data-testid="place-spot"][data-code="47850"]');
@@ -352,6 +354,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.getByRole('option', { name: /칠곡군/ }).first().click();
     await page.getByLabel('여기 다녀왔어요 (지도에 핀도 꽂기)').check();
     await page.getByTestId('place-save').click();
+    await expect(page.getByRole('status')).toContainText('장소를 남기고 핀도 꽂았어요');
     await page.goto('/');
     await expect(page.locator('[data-testid="place-spot"][data-code="47850"]')).toContainText('2');
     await expect(page.getByTestId('headline')).not.toHaveText(before);
