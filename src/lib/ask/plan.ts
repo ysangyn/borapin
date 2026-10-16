@@ -1,4 +1,5 @@
 import type { ToolCall } from './tools';
+import { THEMES } from '../recommend';
 
 /**
  * AI가 짠 도구 계획의 안전망 (공짜·즉시).
@@ -10,8 +11,35 @@ const NOTE_LIKE = /글|일기|남긴|썼|적었/;
 const PLACE_LIKE = /맛집|식당|카페|가게|먹었|마셨|장소|또 가|다시 가/;
 const PHOTO_LIKE = /사진/;
 
-export function ensurePlan(question: string, calls: ToolCall[], placeName: string | null): ToolCall[] {
+/** 질문 글에서 테마 낱말 찾기: '바다 쪽', '실내에서', '온천' → 테마 이름 */
+const THEME_WORDS: [RegExp, string][] = [
+  [/바다|바닷가|해변|해수욕/, '바다'], [/산|숲|계곡|트레킹|등산/, '산·숲'], [/섬/, '섬'], [/온천|스파/, '온천'], [/야경|밤/, '야경'],
+  [/역사|전통|한옥|유적|사찰|절/, '역사·전통'], [/카페|커피/, '카페'], [/시장|먹거리|먹을/, '시장·먹거리'], [/실내|비 오|비가 오|비오/, '실내'],
+];
+export function themesIn(question: string): string[] {
+  return THEME_WORDS.filter(([re]) => re.test(question)).map(([, label]) => label).filter((l) => THEMES.some((t) => t.label === l));
+}
+/** '다음 달'·'11월'·'내년 1월' → 달 숫자 */
+export function monthIn(question: string, now = new Date()): number | null {
+  const m = question.match(/(\d{1,2})월/);
+  if (m) { const n = Number(m[1]); if (n >= 1 && n <= 12) return n; }
+  if (/다음\s*달/.test(question)) return (now.getMonth() + 1) % 12 + 1;
+  if (/이번\s*달|이달/.test(question)) return now.getMonth() + 1;
+  return null;
+}
+
+export function ensurePlan(question: string, calls: ToolCall[], placeName: string | null, now = new Date()): ToolCall[] {
   const out = [...calls];
+  // 추천 도구에 질문의 테마·달·안 가본 곳 조건이 빠졌으면 채운다 (모델이 자주 빼먹는 인자)
+  for (const c of out) {
+    if (c.tool !== 'recommend') continue;
+    const a = (c.args ??= {});
+    const themes = themesIn(question);
+    if (themes.length && !a.themes && !a.theme) a.themes = themes;
+    const month = monthIn(question, now);
+    if (month && !a.month) a.month = month;
+    if (/안\s*가\s*본|못\s*가\s*본|새로운 곳/.test(question) && a.unvisited === undefined) a.unvisited = true;
+  }
   const has = (t: string) => out.some((c) => c.tool === t);
   const place = placeName ?? (out.find((c) => c.tool === 'resolve_place')?.args?.place as string | undefined) ?? null;
   const withPlace = (extra: Record<string, unknown> = {}) => (place ? { place, ...extra } : extra);

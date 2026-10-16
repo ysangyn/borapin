@@ -16,6 +16,7 @@ export const THEMES: { id: string; label: string; re: RegExp }[] = [
   { id: 'heritage', label: '역사·전통', re: /한옥|향교|서원|사찰|[가-힣]사(?=[ ,·]|$)|궁|성곽|산성|민속|전통|고택|유적|왕릉/ },
   { id: 'cafe', label: '카페', re: /카페|커피|브런치|베이커리|빵/ },
   { id: 'market', label: '시장·먹거리', re: /시장|골목|먹자|노포/ },
+  { id: 'indoor', label: '실내', re: /박물관|미술관|아쿠아리움|수족관|전시|동굴|온천|스파|갤러리|기념관|과학관/ },
 ];
 
 export interface Candidate {

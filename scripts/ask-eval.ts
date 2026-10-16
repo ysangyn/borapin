@@ -9,6 +9,8 @@ import travelinfo from '../src/data/travelinfo.json' with { type: 'json' };
 import seasons from '../src/data/seasons.json' with { type: 'json' };
 import type { AskData } from '../src/lib/ask/engine';
 import { runTools, type ToolCall } from '../src/lib/ask/tools';
+import { ensurePlan } from '../src/lib/ask/plan';
+import { findMentions } from '../src/lib/ask/gazetteer';
 import { grounded } from '../src/lib/ask/confidence';
 import { setMembers } from '../src/lib/members';
 import type { Note, PlaceRec, Trip, Wish } from '../src/lib/types';
@@ -54,8 +56,15 @@ async function token(): Promise<string> {
   if (!j.idToken) throw new Error(`로그인 실패: ${j.error?.message}`);
   return j.idToken;
 }
-async function post(path: string, tk: string, body: unknown) {
-  const r = await fetch(`${ASK_URL}${path}`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tk}` }, body: JSON.stringify(body) });
+async function post(path: string, tk: string, body: unknown, tries = 2) {
+  let r: Response;
+  try {
+    r = await fetch(`${ASK_URL}${path}`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tk}` }, body: JSON.stringify(body) });
+  } catch (e) {
+    // 네트워크가 잠깐 끊기면 한 번 더 (시험 결과가 날씨에 흔들리지 않게)
+    if (tries > 1) { await new Promise((ok) => setTimeout(ok, 2000)); return post(path, tk, body, tries - 1); }
+    throw e;
+  }
   const j = (await r.json().catch(() => ({}))) as Record<string, unknown>;
   if (!r.ok) throw new Error(`${path} ${r.status} ${JSON.stringify(j).slice(0, 120)}`);
   return j;
@@ -68,7 +77,9 @@ for (const q of QUESTIONS) {
   const t0 = Date.now();
   try {
     const plan = await post('/plan', tk, { question: q, context });
-    const calls = (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[];
+    const mention = findMentions(q, data.info)[0]?.entry.label ?? null;
+    const calls = ensurePlan(q, (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[], mention, data.now);
+    console.log(`   계획: ${JSON.stringify(calls)}`);
     const facts = runTools(calls, data, null, data.now);
     const factText = [facts.text, facts.actions.length ? `actions: ${facts.actions.map((x) => `${x.id}=${x.btn.label}`).join(', ')}` : ''].filter(Boolean).join('\n');
     const ans = await post('/answer', tk, { question: q, context, facts: factText });

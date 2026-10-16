@@ -19,3 +19,14 @@ test('일반 여행정보 질문은 건드리지 않는다', () => {
   const given = [{ tool: 'resolve_place', args: { place: '남해' } }, { tool: 'best_time', args: { place: '남해' } }];
   assert.deepEqual(ensurePlan('남해는 언제 가는 게 좋아', given, '남해'), given);
 });
+
+test('추천 도구에 질문의 테마·달·안 가본 곳을 채운다', () => {
+  const now = new Date(2026, 9, 16);
+  const calls = ensurePlan('다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까', [{ tool: 'recommend', args: {} }], null, now);
+  assert.deepEqual(calls[0].args, { themes: ['바다'], month: 11, unvisited: true });
+  const rain = ensurePlan('11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳', [{ tool: 'recommend', args: { month: 11 } }], null, now);
+  assert.deepEqual(rain[0].args, { month: 11, themes: ['실내'] });
+  // 모델이 이미 적은 건 그대로
+  const kept = ensurePlan('바다 추천', [{ tool: 'recommend', args: { themes: ['섬'] } }], null, now);
+  assert.deepEqual(kept[0].args, { themes: ['섬'] });
+});
