@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Avatars, Icon, TopBar, useToast } from '../components/ui';
 import { logOut, useAuth } from '../lib/auth';
-import { computeStats, setAccessList, useTrips, useWishes } from '../lib/data';
+import { computeStats, setAccessList, usePlaces, useTrips, useWishes } from '../lib/data';
+import { exportXlsx, saveBlob } from '../lib/exportXlsx';
+import { usePhotos } from '../lib/photos';
+import { useSeasons } from '../lib/seasons';
+import { useTravelInfo } from '../lib/travelinfo';
 import { OWNER_EMAIL } from '../lib/firebase';
 
 export default function Space() {
@@ -9,6 +13,11 @@ export default function Space() {
   const toast = useToast();
   const { trips } = useTrips();
   const { wishes } = useWishes();
+  const { places: recs } = usePlaces();
+  const { photos } = usePhotos();
+  const info = useTravelInfo();
+  const seasons = useSeasons();
+  const [xlsxBusy, setXlsxBusy] = useState(false);
   const [email, setEmail] = useState('');
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   if (auth.status !== 'ready') return null;
@@ -28,8 +37,23 @@ export default function Space() {
     }
   };
 
+  const exportExcel = async () => {
+    if (!trips || !info || xlsxBusy) return;
+    setXlsxBusy(true);
+    try {
+      const blob = await exportXlsx({ trips, recs: recs ?? [], wishes: wishes ?? [], photos: photos ?? [], info, seasons });
+      saveBlob(blob, `보라핀_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast('엑셀 파일을 내려받았어요');
+    } catch (e) {
+      console.warn(e);
+      toast('엑셀을 만들지 못했어요');
+    } finally {
+      setXlsxBusy(false);
+    }
+  };
+
   const exportBackup = () => {
-    const data = { app: 'borapin', exported: new Date().toISOString(), trips, wishes };
+    const data = { app: 'borapin', exported: new Date().toISOString(), trips, wishes, places: recs, photos };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -74,6 +98,11 @@ export default function Space() {
         <section>
           <div className="label" style={{ padding: '0 4px 6px' }}>백업</div>
           <div className="setting-group">
+            <button className="setting-row" onClick={exportExcel} disabled={xlsxBusy} data-testid="xlsx">
+              <span className="ico"><Icon name="download" size={17} /></span>
+              <span style={{ flex: 1 }}>엑셀로 내려받기<div className="tiny muted">여행 · 우리 장소 · 가고 싶은 곳 · 여행정보 (시트 4개)</div></span>
+              <Icon name="chev" size={16} />
+            </button>
             <button className="setting-row" onClick={exportBackup}>
               <span className="ico"><Icon name="download" size={17} /></span>
               <span style={{ flex: 1 }}>백업 파일 내려받기<div className="tiny muted">여행 {trips?.length ?? 0}건 · 가고 싶은 곳 {wishes?.length ?? 0}곳</div></span>

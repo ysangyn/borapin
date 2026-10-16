@@ -6,7 +6,10 @@ import type { PlaceRec, PlanItem, Trip } from '../lib/types';
 
 /** 일정은 필요한 만큼만: ① 가볼 곳 목록 → ② 날짜별 배치 → ③ 시간·예약 정보 */
 export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }) {
-  const items = usePlan(trip.id);
+  const remoteItems = usePlan(trip.id);
+  // 체크는 누르면 바로 보이게 (저장은 뒤에서)
+  const [doneOver, setDoneOver] = useState<Record<string, boolean>>({});
+  const items = remoteItems?.map((i) => (i.id in doneOver ? { ...i, done: doneOver[i.id] } : i)) ?? null;
   const toast = useToast();
   const [name, setName] = useState('');
   const [open, setOpen] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
               return (
                 <div key={it.id} className={'plan-row' + (it.done ? ' done' : '')} data-testid="plan-item">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <input type="checkbox" checked={it.done} onChange={(e) => updatePlan(it.id, { done: e.target.checked })} aria-label={`${it.name} 다녀옴`} />
+                    <input type="checkbox" checked={it.done} onChange={(e) => { const v = e.target.checked; setDoneOver((o) => ({ ...o, [it.id]: v })); updatePlan(it.id, { done: v }); }} aria-label={`${it.name} 다녀옴`} />
                     <button className="plan-name" onClick={() => setOpen(isOpen ? null : it.id)} aria-expanded={isOpen}>
                       {it.time && <span className="tag violet">{it.time}</span>}
                       <span>{it.name}</span>

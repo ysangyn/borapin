@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Icon } from './ui';
 import { patchTrip } from '../lib/data';
 import { packFromTemplate, PACK_TEMPLATES } from '../lib/tripExtras';
@@ -7,10 +7,16 @@ import type { PackItem, Trip } from '../lib/types';
 
 /** 준비물 (예정된 여행): 유형별 기본 목록, 담당자, 지난 여행에서 불러오기 */
 export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[] }) {
-  const list = trip.packing ?? [];
+  // 누르면 바로 바뀌게 화면 먼저 고치고 저장한다
+  const [list, setList] = useState<PackItem[]>(trip.packing ?? []);
+  const remote = JSON.stringify(trip.packing ?? []);
+  useEffect(() => setList(JSON.parse(remote)), [remote]);
   const [text, setText] = useState('');
   const abroad = trip.places.some((p) => p.t === 'country');
-  const save = (next: PackItem[]) => patchTrip(trip.id, { packing: next });
+  const save = (next: PackItem[]) => {
+    setList(next);
+    patchTrip(trip.id, { packing: next }).catch((e) => console.warn(e));
+  };
   const past = trips.filter((t) => t.id !== trip.id && (t.packing?.length ?? 0) > 0);
   const done = list.filter((x) => x.done).length;
   const nextWho = (w: string | null) => (w === null ? COUPLE[0] : w === COUPLE[0] ? COUPLE[1] : null);

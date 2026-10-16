@@ -410,6 +410,54 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(answers.last()).toContainText('시·군');
   });
 
+  test('공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기', async ({ page, browser }) => {
+    await signIn(page, OWNER);
+    await page.goto('/trips');
+    await page.getByText('강릉시 여행', { exact: true }).click();
+    const card = page.getByTestId('share-link');
+    await card.getByTestId('share-on').click();
+    const url = await card.getByLabel('공유 링크').inputValue();
+    expect(url).toMatch(/\/s\/[a-z0-9]{8,}$/);
+
+    // 로그인하지 않은 사람이 링크로 연다
+    const anon = await (await browser.newContext({ locale: 'ko-KR', serviceWorkers: 'block' })).newPage();
+    await anon.goto(url);
+    const shared = anon.getByTestId('shared-trip');
+    await expect(shared).toContainText('강릉시 여행');
+    await expect(shared).toContainText('초당할머니순두부');
+    await expect(shared.locator('.photo-cell img')).toHaveCount(3);
+    await expect(shared).not.toContainText('바다 보며 커피 마신 날');
+    await anon.screenshot({ path: `${SHOTS}/15-shared-trip.png` });
+
+    // 공개를 끄면 링크가 닫힌다
+    await card.getByRole('button', { name: '공개 끄기' }).click();
+    await expect(card.getByTestId('share-on')).toBeVisible();
+    await anon.reload();
+    await expect(anon.getByText('공개가 끝났거나 없는 여행이에요')).toBeVisible();
+    await anon.context().close();
+
+    // 공유 카드: 1080×1350 그림
+    await page.goto('/memories');
+    const sc = page.getByTestId('share-cards');
+    await sc.getByRole('button', { name: '나의 지도' }).click();
+    await expect(sc.getByTestId('card-img')).toBeVisible();
+    const size = await sc.getByTestId('card-img').evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight]);
+    expect(size).toEqual([1080, 1350]);
+    await sc.getByTestId('card-img').screenshot({ path: `${SHOTS}/15b-card-map.png` });
+    await sc.getByRole('button', { name: '메모 인용' }).click();
+    await page.waitForTimeout(800);
+    await sc.getByTestId('card-img').screenshot({ path: `${SHOTS}/15c-card-quote.png` });
+
+    // 엑셀: 시트 4개짜리 .xlsx
+    await page.goto('/space');
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.getByTestId('xlsx').click()]);
+    expect(dl.suggestedFilename()).toMatch(/^보라핀_.*\.xlsx$/);
+    const fs = await import('node:fs');
+    const buf = fs.readFileSync((await dl.path())!);
+    expect(buf.subarray(0, 2).toString()).toBe('PK');
+    expect(buf.length).toBeGreaterThan(5000);
+  });
+
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();

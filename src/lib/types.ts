@@ -37,6 +37,8 @@ export interface Trip {
   tags: string[];
   /** 준비물 (예정된 여행) */
   packing?: PackItem[];
+  /** 링크 공개: 이 토큰으로 읽기 전용 페이지(/s/토큰)가 열린다 */
+  share?: { token: string } | null;
   /** 날짜 채우기 놀이: 사람마다 '언제였을까' 답 */
   guesses?: Record<string, { y?: number; s?: Season }>;
   source: 'app' | 'v22';
@@ -156,6 +158,18 @@ export interface PackItem {
   t: string;
   who: string | null;
   done: boolean;
+}
+
+/** 공개 링크용 여행 사본 (로그인 없이 읽힘 — 메모·글·동행 이름은 넣지 않는다) */
+export interface SharedTrip {
+  title: string;
+  when: string;
+  places: Place[];
+  photos: { url: string; thumb: string; w: number; h: number; taken: string | null; caption?: string }[];
+  spots: { name: string; kind: string; verdict: string | null }[];
+  space: string;
+  updatedAt?: Timestamp | null;
+  v: 1;
 }
 
 export interface Access {

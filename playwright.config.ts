@@ -16,6 +16,7 @@ export default defineConfig({
     timezoneId: 'Asia/Seoul',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    serviceWorkers: 'block',
   },
   webServer: {
     // 실제 배포와 같은 묶음(build)으로 점검한다

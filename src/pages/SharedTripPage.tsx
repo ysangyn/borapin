@@ -1,0 +1,66 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Logo } from '../components/ui';
+import MapView from '../components/LazyMap';
+import { openSlideshow } from '../components/slideshow';
+import { computeStats } from '../lib/stats';
+import { placeLong } from '../lib/geo';
+import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
+import { loadShared } from '../lib/share';
+import type { Photo, PlaceKind, SharedTrip, Trip, Verdict } from '../lib/types';
+
+/** 링크 공개된 여행: 로그인 없이 보는 읽기 전용 페이지 */
+export default function SharedTripPage() {
+  const { token } = useParams();
+  const [d, setD] = useState<SharedTrip | null | undefined>(undefined);
+  useEffect(() => {
+    if (token) loadShared(token).then(setD, () => setD(null));
+  }, [token]);
+  const stats = useMemo(() => (d ? computeStats([{ id: 's', title: d.title, kind: 'trip', status: 'done', when: { p: 'unknown' }, places: d.places, companions: [], memo: '', tags: [], source: 'app', v: 1 } as Trip]) : null), [d]);
+  const photos = useMemo(() => (d?.photos ?? []).map((p, i) => ({ ...p, id: String(i), tripId: null, takenGuess: false, bytes: 0, v: 1 }) as Photo), [d]);
+
+  if (d === undefined) return <div className="center-screen muted">불러오는 중…</div>;
+  if (d === null) return <div className="center-screen"><Logo size={56} /><b>공개가 끝났거나 없는 여행이에요</b></div>;
+  const abroad = d.places.every((p) => p.t === 'country');
+  return (
+    <div className="page" style={{ paddingTop: 20, paddingBottom: 40 }} data-testid="shared-trip">
+      <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}><Logo />보라핀 <span className="muted small" style={{ fontWeight: 600 }}>· {d.space}의 여행</span></div>
+      <div>
+        <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em' }}>{d.title}</div>
+        <div className="muted">{d.when} · {d.places.map(placeLong).join(', ')}</div>
+      </div>
+      {photos[0] && (
+        <button className="trip-cover" onClick={() => openSlideshow(photos, 0)} aria-label="사진 크게 보기"><img src={photos[0].url} alt="" /></button>
+      )}
+      <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={d.places} height={220} controls={false} />
+      {photos.length > 1 && (
+        <section>
+          <div className="row-between" style={{ marginBottom: 6 }}>
+            <h2 className="h2" style={{ fontSize: 17 }}>사진 · {photos.length}</h2>
+            <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true })}>▶ 슬라이드쇼</button>
+          </div>
+          <div className="photo-grid">
+            {photos.map((p, i) => (
+              <button key={i} className="photo-cell" onClick={() => openSlideshow(photos, i)} aria-label={`사진 ${i + 1}`}><img src={p.thumb} alt="" loading="lazy" /></button>
+            ))}
+          </div>
+        </section>
+      )}
+      {d.spots.length > 0 && (
+        <section>
+          <h2 className="h2" style={{ fontSize: 17, marginBottom: 4 }}>들른 곳</h2>
+          <div className="list">
+            {d.spots.map((s, i) => (
+              <div key={i} className="rec-row">
+                <span className={`kind-badge k-${s.kind}`}>{KIND_LABEL[s.kind as PlaceKind] ?? s.kind}</span>
+                <b style={{ flex: 1 }}>{s.name}</b>
+                {s.verdict && <span className={`tag verdict v-${s.verdict}`}>{VERDICT_LABEL[s.verdict as Verdict]}</span>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+      <a href="/" className="btn soft block">보라핀 · 가본 곳마다, 우리 핀 하나</a>
+    </div>
+  );
+}

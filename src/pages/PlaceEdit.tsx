@@ -38,6 +38,14 @@ export default function PlaceEdit() {
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
+  // 안드로이드 공유(네이버지도 → 보라핀)로 들어온 글
+  useEffect(() => {
+    if (editing) return;
+    const shared = [sp.get('title'), sp.get('text'), sp.get('url')].filter(Boolean).join('\n');
+    if (shared) applyPaste(shared);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 여행에서 들어오면 그 여행의 첫 장소를 지역으로
   useEffect(() => {
     if (!editing && tripFromParam && region.length === 0) setRegion(tripFromParam.places.slice(0, 1));

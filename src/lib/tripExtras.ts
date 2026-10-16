@@ -53,3 +53,10 @@ export function packFromTemplate(kind: string, abroad: boolean): PackItem[] {
   const names = [...(abroad ? ABROAD : []), ...COMMON, ...(PACK_TEMPLATES[kind]?.items ?? [])];
   return [...new Set(names)].map((t) => ({ t, who: null, done: false }));
 }
+
+/** 모든 여행의 글 (공유카드 '메모 인용' 등) */
+export function useAllNotes() {
+  const [items, setItems] = useState<Note[] | null>(null);
+  useEffect(() => onSnapshot(notesCol(), (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Note))), []);
+  return items;
+}

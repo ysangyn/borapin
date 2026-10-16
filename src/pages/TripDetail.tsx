@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import PlanTab from '../components/PlanTab';
 import NotesTab from '../components/NotesTab';
 import PackingCard from '../components/PackingCard';
+import ShareLinkCard from '../components/ShareLinkCard';
 import { useNotes } from '../lib/tripExtras';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
@@ -150,6 +151,8 @@ export default function TripDetail() {
             <div className="list">{(recs ?? []).filter((r) => r.tripId === trip.id).map((r) => <PlaceRecRow key={r.id} rec={r} />)}</div>
           )}
         </section>
+
+        <ShareLinkCard trip={trip} photos={photos} recs={(recs ?? []).filter((r) => r.tripId === trip.id)} />
 
         {!confirm ? (
           <button className="btn danger block" onClick={() => setConfirm(true)}><Icon name="trash" size={17} />이 기록 지우기</button>

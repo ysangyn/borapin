@@ -101,6 +101,18 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 링크 공개된 여행 사본: 토큰을 아는 사람만 하나씩 읽을 수 있다 (목록 조회 불가)
+    match /shares/{token} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if isMember()
+        && request.resource.data.keys().hasAll(['title', 'when', 'places', 'photos', 'v'])
+        && request.resource.data.title is string && request.resource.data.title.size() <= 100
+        && request.resource.data.photos is list && request.resource.data.photos.size() <= 60
+        && !('memo' in request.resource.data) && !('companions' in request.resource.data);
+      allow delete: if isMember();
+    }
+
     match /spaces/{spaceId} {
       allow read: if isMember();
       allow create, update: if isMember()

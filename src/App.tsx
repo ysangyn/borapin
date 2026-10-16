@@ -14,10 +14,19 @@ import WishEdit from './pages/WishEdit';
 import Places from './pages/Places';
 import PlaceEdit from './pages/PlaceEdit';
 import Ask from './pages/Ask';
+import SharedTripPage from './pages/SharedTripPage';
 
 export default function App() {
   const auth = useAuth();
   const loc = useLocation();
+  // 링크 공개된 여행은 로그인 없이 본다
+  if (loc.pathname.startsWith('/s/')) {
+    return (
+      <div className="app">
+        <Routes><Route path="/s/:token" element={<SharedTripPage />} /></Routes>
+      </div>
+    );
+  }
   if (auth.status === 'loading') return <div className="app"><Spinner /></div>;
   if (auth.status === 'signedOut') return <div className="app"><Login /></div>;
   if (auth.status === 'denied') return <div className="app"><Denied email={auth.user.email} /></div>;

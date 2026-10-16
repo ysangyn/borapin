@@ -9,6 +9,7 @@ import { openSlideshow } from '../components/slideshow';
 import PhotoGrid from '../components/PhotoGrid';
 import MapReplay from '../components/MapReplay';
 import DateGame from '../components/DateGame';
+import ShareCards from '../components/ShareCards';
 import { badges } from '../lib/achievements';
 import { monthGrid, yearReview } from '../lib/yearReview';
 import { placeLong } from '../lib/geo';
@@ -110,6 +111,8 @@ export default function Memories() {
             })}
           </div>
         </section>
+
+        {trips && <ShareCards trips={trips} year={year} />}
 
         <section data-testid="album">
           <div className="row-between" style={{ marginBottom: 6 }}>
