@@ -4,11 +4,11 @@ import { choices, cloze, grade, ITEMS, speakScore, summary, todaySet, ymd } from
 
 const day = (s: string) => new Date(s + 'T09:00:00');
 
-test('문장 은행: 200문장, 주제 20개, 빠진 칸 없음', () => {
-  assert.equal(ITEMS.length, 200);
-  assert.equal(new Set(ITEMS.map((i) => i.topic)).size, 20);
+test('문장 은행: 300문장 이상, 주제 30개, 빠진 칸 없음', () => {
+  assert.ok(ITEMS.length >= 300);
+  assert.ok(new Set(ITEMS.map((i) => i.topic)).size >= 30);
   for (const i of ITEMS) { assert.ok(i.en && i.ko && i.words.length >= 1, i.id); assert.ok(/[a-z]/i.test(i.en)); }
-  assert.equal(new Set(ITEMS.map((i) => i.id)).size, 200);
+  assert.equal(new Set(ITEMS.map((i) => i.id)).size, ITEMS.length);
 });
 
 test('오늘 묶음: 처음엔 새 문장 3개(주제 안 겹침), 같은 날엔 같은 묶음, 더 보기로 3개씩 추가', () => {
