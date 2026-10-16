@@ -560,3 +560,7 @@ a { color: var(--violet); text-decoration: none; }
 .feed-more { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(23, 20, 43, 0.45); color: #fff; font-weight: 800; font-size: 18px; }
 .nav-icon { position: relative; display: inline-flex; }
 .nav-dot { position: absolute; top: -2px; right: -4px; width: 9px; height: 9px; border-radius: 50%; background: var(--coral); border: 2px solid #fff; }
+/* 말풍선은 몇 초 보여 주고 접는다 (얼굴만 남음) */
+@keyframes fab-bubble { 0%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateX(6px); visibility: hidden; } }
+.ask-fab-bubble { animation: fab-bubble 7s ease forwards; }
+@media (prefers-reduced-motion: reduce) { .ask-fab-bubble { animation: none; } }
