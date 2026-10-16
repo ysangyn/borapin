@@ -15,6 +15,8 @@ import { markFeedSeen } from '../lib/feedSeen';
 import { openSlideshow } from '../components/slideshow';
 import { wishTitle } from '../components/WishCard';
 import QuickUpload from '../components/QuickUpload';
+import NewsDigest from '../components/NewsDigest';
+import { sortWishes, wishState } from '../lib/wishes';
 import { photoForPlace } from '../lib/media';
 import { heartKey, toggleHeart, useHearts, type Heart } from '../lib/hearts';
 import { asksForFeed, useRecentAsks } from '../lib/asks';
@@ -44,6 +46,7 @@ export default function Feed() {
       <TopBar title="피드" right={<Link to="/memories" className="btn sm soft" data-testid="to-memories">추억 돌아보기</Link>} />
       <div className="page feed" style={{ paddingTop: 4 }} data-testid="feed">
         {trips && trips.length > 0 && <QuickUpload trips={trips} />}
+        {wishes && trips && <NewsDigest places={sortWishes(wishes.filter((w) => wishState(w, trips).kind !== 'done')).map((w) => w.place).slice(0, 3)} compact />}
         {!items && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
         {items && items.length === 0 && (
           <div className="card art-row" data-testid="feed-empty">

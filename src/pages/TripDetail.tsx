@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PlanTab from '../components/PlanTab';
 import NotesTab from '../components/NotesTab';
-import PackingCard from '../components/PackingCard';
+import PrepTab from '../components/PrepTab';
 import ShareLinkCard, { useShareSync } from '../components/ShareLinkCard';
 import { useNotes } from '../lib/tripExtras';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
@@ -19,7 +19,7 @@ import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
 import { COUNTRY_BY_ID, placeLabel, placeLong, REGION_BY_CODE } from '../lib/geo';
-import type { Place } from '../lib/types';
+import type { Place, Trip } from '../lib/types';
 
 function mapLinks(p: Place) {
   let q = '';
@@ -42,7 +42,7 @@ export default function TripDetail() {
   const [confirm, setConfirm] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [sp, setSp] = useSearchParams();
-  const tab = (sp.get('tab') as 'info' | 'plan' | 'photos' | 'notes' | null) ?? 'info';
+  const tab = (sp.get('tab') as 'info' | 'plan' | 'prep' | 'photos' | 'notes' | null) ?? 'info';
   const setTab = (t: string) => setSp(t === 'info' ? {} : { tab: t }, { replace: true });
   const notes = useNotes(id);
   const trip = trips?.find((t) => t.id === id);
@@ -115,18 +115,19 @@ export default function TripDetail() {
         )}
 
         <div className="seg tabs" role="tablist" aria-label="여행 보기">
-          {([['info', '개요'], ['plan', trip.status === 'done' ? '들른 곳' : '일정'], ['photos', `사진${photos.length ? ` ${photos.length}` : ''}`], ['notes', `글${notes?.length ? ` ${notes.length}` : ''}`]] as const).map(([k, label]) => (
+          {([['info', '개요'], ['plan', trip.status === 'done' ? '들른 곳' : '일정'], ...(trip.status === 'planned' ? [['prep', '준비'] as const] : []), ['photos', `사진${photos.length ? ` ${photos.length}` : ''}`], ['notes', `글${notes?.length ? ` ${notes.length}` : ''}`]] as const).map(([k, label]) => (
             <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>
           ))}
         </div>
 
         {tab === 'plan' && <PlanTab trip={trip} recs={recs ?? []} />}
+        {tab === 'prep' && trip.status === 'planned' && <PrepTab trip={trip} trips={trips} />}
         {tab === 'notes' && <NotesTab trip={trip} />}
 
         {tab === 'info' && <>
         <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} interactive={false} />
 
-        {trip.status === 'planned' && <PackingCard trip={trip} trips={trips} />}
+        {trip.status === 'planned' && <PackingSummary trip={trip} onOpen={() => setTab('prep')} />}
 
         <div className="card white" style={{ padding: '4px 16px' }}>
           <div className="kv"><span className="k">어디</span>
@@ -236,5 +237,18 @@ function PhotoSpaceNote({ count }: { count: number }) {
       {left !== null && <> 앞으로 <b>약 {(Math.round(left / 100) * 100).toLocaleString()}장</b> 더 올릴 수 있어요.</>}
       {count > 60 && <> 이 여행은 사진이 많아요 — 공유 링크에는 앞 60장만 보여요.</>}
     </div>
+  );
+}
+
+/** 개요 탭의 준비 요약 한 줄 (자세한 건 '준비' 탭) */
+function PackingSummary({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
+  const list = trip.packing ?? [];
+  const done = list.filter((x) => x.done).length;
+  return (
+    <button className="card white" style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left', font: 'inherit', color: 'inherit' }} onClick={onOpen} data-testid="packing-summary">
+      <span className="ico"><Icon name="check" size={17} /></span>
+      <span style={{ flex: 1 }}><b>준비</b><div className="tiny muted">{list.length ? `준비물 ${done}/${list.length} 챙김 · 가는 길 · 항공권 · 현지어` : '준비물 목록 만들기 · 가는 길 · 항공권 · 현지어'}</div></span>
+      <Icon name="chev" size={16} />
+    </button>
   );
 }

@@ -6,14 +6,14 @@ import WishCard, { wishTitle } from '../components/WishCard';
 import DicePicker from '../components/DicePicker';
 import { useAuth, displayName } from '../lib/auth';
 import { computeStats, deleteWish, restoreWish, reviveWish, useTrips, useWishes } from '../lib/data';
-import { placeLabel, placeLong } from '../lib/geo';
-import type { Place, Wish } from '../lib/types';
+import { placeLong } from '../lib/geo';
+import type { Wish } from '../lib/types';
 import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
 import { bothWant, sortWishes, wishState, type WishState } from '../lib/wishes';
 import { everyoneLabel } from '../lib/members';
-import NewsStrip from '../components/NewsStrip';
+import NewsDigest from '../components/NewsDigest';
 import { quickWish } from '../lib/wishActions';
 import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
 
@@ -138,7 +138,7 @@ export default function Wishes() {
               </div>
             )}
             {active.length > 0 && who === 'all' && (
-              <WishNews places={sortWishes(active.map((x) => x.w)).map((w) => w.place).filter((p): p is Place & { t: 'kr' } => p.t === 'kr').slice(0, 3)} />
+              <div style={{ marginTop: 10 }}><NewsDigest places={sortWishes(active.map((x) => x.w)).map((w) => w.place).slice(0, 3)} /></div>
             )}
           </section>
         )}
@@ -159,16 +159,5 @@ export default function Wishes() {
         )}
       </div>
     </>
-  );
-}
-
-/** 가고 싶은 곳 소식 (뒷단이 있을 때만 보인다) */
-function WishNews({ places }: { places: Place[] }) {
-  if (!places.length) return null;
-  return (
-    <div className="card white" style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }} data-testid="wish-news">
-      <div className="tiny" style={{ fontWeight: 800, color: 'var(--ink3)' }}>담아 둔 곳 소식 · 한 곳에 한 줄</div>
-      {places.map((p) => <NewsStrip key={placeLabel(p)} place={p} max={1} title={placeLabel(p)} />)}
-    </div>
   );
 }

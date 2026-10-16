@@ -12,6 +12,7 @@ import { photoForPlace } from '../lib/media';
 import { flightLinks } from '../lib/flights';
 import { useAuth, displayName } from '../lib/auth';
 import { updateWish } from '../lib/data';
+import { accessLine } from '../lib/transport';
 
 export function wishTitle(w: Wish) {
   return w.spotName ? `${w.spotName}` : placeLong(w.place);
@@ -123,6 +124,7 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
         <div className="wish-hero-foot">
           <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <SeasonLine season={season} fest={fest} />
+            {wish.place.t === 'kr' && accessLine(wish.place) && <span className="tiny muted ellipsis">가는 길 {accessLine(wish.place)}</span>}
             {memo.length > 0 && <span className="tiny muted ellipsis">{memo.join(' · ')}</span>}
             {flights && <span className="wish-flights row" data-testid="wish-flights"><a href={flights.skyscanner} target="_blank" rel="noreferrer">항공권</a><a href={flights.google} target="_blank" rel="noreferrer" title="구글 항공권에서 가격 알림을 켤 수 있어요">가격 알림</a></span>}
           </span>

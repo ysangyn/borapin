@@ -17,8 +17,12 @@ export const newsQuery = (p: Place) => `${placeLabel(p)} 여행`;
 
 export { isTravelNews } from './newsFilter';
 
-export async function fetchNews(p: Place): Promise<NewsItem[]> {
-  const q = newsQuery(p);
+export const fetchNews = (p: Place) => fetchNewsQuery(newsQuery(p));
+
+/** 여행 전반 소식 검색어 (유류할증료·항공권·축제·여권 같은 '준비에 영향 주는' 것) */
+export const GENERAL_NEWS_QUERY = '여행 항공권 유류할증료 OR 축제 OR 여권 OR 환율';
+
+export async function fetchNewsQuery(q: string): Promise<NewsItem[]> {
   const c = mem.get(q);
   if (c && Date.now() - c.at < TTL) return c.items;
   try {
@@ -42,14 +46,15 @@ export async function fetchNews(p: Place): Promise<NewsItem[]> {
 }
 
 /** 지역의 소식 (없으면 빈 배열, 뒷단이 없으면 null → 칸을 숨긴다) */
-export function useNews(p: Place | null): NewsItem[] | null {
+export function useNews(p: Place | null): NewsItem[] | null { return useNewsQuery(p ? newsQuery(p) : ''); }
+
+export function useNewsQuery(key: string): NewsItem[] | null {
   const [items, setItems] = useState<NewsItem[] | null>(null);
-  const key = p ? newsQuery(p) : '';
   useEffect(() => {
     let on = true;
     setItems(null);
-    if (!p || !aiAvailable()) return;
-    fetchNews(p).then((x) => on && setItems(x), () => on && setItems([]));
+    if (!key || !aiAvailable()) return;
+    fetchNewsQuery(key).then((x) => on && setItems(x), () => on && setItems([]));
     return () => { on = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);

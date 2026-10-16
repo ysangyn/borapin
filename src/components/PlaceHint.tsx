@@ -6,6 +6,7 @@ import { useTravelInfo } from '../lib/travelinfo';
 import { cityFor, useWorld } from '../lib/world';
 import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
 import type { Place } from '../lib/types';
+import { accessLine } from '../lib/transport';
 
 /**
  * 장소를 고르면 바로 아래에 한 눈 정보: 국내는 볼거리·먹거리·축제, 해외 도시는 도시 정보, 나라만 고르면 가기 좋은 때 + 그 나라 도시들
@@ -28,6 +29,7 @@ export default function PlaceHint({ place }: { place: Place | null }) {
         {c && c.foods.length > 0 && <span><b>먹거리</b> {c.foods.slice(0, 3).join(' · ')}</span>}
         {f && <span><b>축제</b> {f.t} · {festivalPeriod(f)}</span>}
         {season && <span><b>가기 좋은 때</b> {monthsLabel(season.m)} · {season.why}</span>}
+        {accessLine(place) && <span data-testid="place-access"><b>가는 길</b> {accessLine(place)}</span>}
       </div>
     );
   }
