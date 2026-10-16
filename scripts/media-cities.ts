@@ -8,6 +8,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import world from '../src/data/world.json' with { type: 'json' };
+import queriesRaw from '../media/city-queries.json' with { type: 'json' };
+const QUERIES = queriesRaw as Record<string, string[]>;
 
 const OUT = 'media-cities';
 fs.mkdirSync(OUT, { recursive: true });
@@ -80,25 +82,25 @@ let sheetNo = 1;
 for (const c of cities) {
   const seen = new Set<string>();
   let all: Cand[] = [];
-  const queries: [string, string][] = [
-    [`"${c.en}" incategory:"Featured pictures on Wikimedia Commons"`, 'featured'],
-    [`"${c.en}" incategory:"Quality images"`, 'quality'],
-    [`${c.en} skyline OR landscape OR view`, 'view'],
-    [c.en, 'plain'],
-  ];
+  // 도시 이름만으로 찾으면 엉뚱한 우수 사진(설명에 도시 이름이 스친 것)이 섞이므로, 명소 이름(영어)으로 찾는다
+  const landmarks = QUERIES[`${c.c}:${c.city}`] ?? [c.en];
+  const queries: [string, string][] = landmarks.flatMap((l) => [[`"${l}" incategory:"Quality images"`, `q:${l}`], [`"${l}" incategory:"Featured pictures on Wikimedia Commons"`, `f:${l}`], [l, `p:${l}`]] as [string, string][]);
   for (const [q, via] of queries) {
     try {
-      for (const x of await search(q, via)) if (!seen.has(x.title)) { seen.add(x.title); all.push(x); }
+      for (const x of await search(q, via, 20)) if (!seen.has(x.title)) { seen.add(x.title); all.push(x); }
     } catch (e) { console.warn(c.city, q, e); }
-    if (all.filter((x) => x.w >= 1600 && x.w / x.h >= 1.3).length >= 8) break;
   }
-  // 큰 가로 사진만, 우수 사진 먼저, 그다음 큰 것부터
-  const rank = (x: Cand) => (x.via === 'featured' ? 2 : x.via === 'quality' ? 1 : 0);
-  all = all.filter((x) => !NOISE.test(x.title + ' ' + x.desc) && x.w >= 1600 && x.w / x.h >= 1.3 && x.w / x.h <= 2.3).sort((a, b) => rank(b) - rank(a) || b.w * b.h - a.w * a.h).slice(0, 4);
+  // 큰 가로 사진만. 명소마다 하나씩 고루(첫 명소 → 둘째 → 셋째), 같은 명소 안에선 우수 사진 먼저·큰 것부터
+  const good = all.filter((x) => !NOISE.test(x.title + ' ' + x.desc) && x.w >= 1600 && x.w / x.h >= 1.3 && x.w / x.h <= 2.3);
+  const rank = (x: Cand) => (x.via.startsWith('f:') ? 2 : x.via.startsWith('q:') ? 1 : 0);
+  const byLandmark = landmarks.map((l) => good.filter((x) => x.via.slice(2) === l).sort((a, b) => rank(b) - rank(a) || b.w * b.h - a.w * a.h));
+  const picked: Cand[] = [];
+  for (let round = 0; picked.length < 4 && round < 4; round++) for (const list of byLandmark) { const x = list[round]; if (x && picked.length < 4 && !picked.includes(x)) picked.push(x); }
+  all = picked;
   report[`${c.c}:${c.city}`] = all;
   const items: Buffer[] = [];
   for (const x of all) { try { items.push(await download(x.thumb)); } catch (e) { console.warn(e); } }
-  rows.push({ label: `${c.city} (${c.en}) · ${all.map((x) => x.via[0]).join(' ')}`, items });
+  rows.push({ label: `${c.city} (${c.en}) · ${all.map((x) => x.via.slice(0, 1) + ':' + x.via.slice(2, 14)).join(' | ')}`, items });
   console.log(`${c.city}: 후보 ${all.length}장 (${all.map((x) => x.via).join(', ')})`);
   if (rows.length >= 20) { await sheet(`cities-${String(sheetNo++).padStart(2, '0')}`, rows.splice(0)); }
 }
