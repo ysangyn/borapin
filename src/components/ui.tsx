@@ -88,18 +88,36 @@ export function TopBar({ title, back, right }: { title?: ReactNode; back?: boole
 }
 
 // ---------- 토스트 ----------
-const ToastCtx = createContext<(msg: string) => void>(() => {});
+export interface ToastAction { label: string; onClick: () => void }
+type ToastFn = (msg: string, action?: ToastAction) => void;
+const ToastCtx = createContext<ToastFn>(() => {});
 export const useToast = () => useContext(ToastCtx);
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [msg, setMsg] = useState<string | null>(null);
-  const show = useCallback((m: string) => {
-    setMsg(m);
-    window.setTimeout(() => setMsg((cur) => (cur === m ? null : cur)), 2600);
+  const [t, setT] = useState<{ msg: string; action?: ToastAction; id: number } | null>(null);
+  const show = useCallback<ToastFn>((msg, action) => {
+    const id = Date.now() + Math.random();
+    setT({ msg, action, id });
+    window.setTimeout(() => setT((cur) => (cur?.id === id ? null : cur)), action ? 5000 : 2600);
   }, []);
   return (
     <ToastCtx.Provider value={show}>
       {children}
-      {msg && <div className="toast" role="status">{msg}</div>}
+      {t && (
+        <div className="toast" role="status">
+          <span>{t.msg}</span>
+          {t.action && (
+            <button
+              className="toast-action"
+              onClick={() => {
+                t.action?.onClick();
+                setT(null);
+              }}
+            >
+              {t.action.label}
+            </button>
+          )}
+        </div>
+      )}
     </ToastCtx.Provider>
   );
 }

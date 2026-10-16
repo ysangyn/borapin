@@ -10,6 +10,7 @@ import { COUNTRY_BY_ID, REGION_BY_CODE } from '../lib/geo';
 import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
+import { labelsFor } from './mapLabels';
 
 // v6는 워커 파일을 자기 옆에서 찾는데, 번들되면 그 자리에 파일이 없다 → 주소를 직접 알려 준다.
 maplibregl.setWorkerUrl(workerUrl);
@@ -42,6 +43,20 @@ const COLORS = { v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#E6E2F0', s
 
 // ---------- 경계 데이터는 한 번만 불러온다 ----------
 let geoPromise: Promise<{ kr: FeatureCollection; krMesh: MultiLineString; world: FeatureCollection }> | null = null;
+/** 경계 크기(대략) — 이름 자리 경쟁에서 큰 곳이 먼저 */
+const SIZES = new Map<string, number>();
+function bboxSize(geom: unknown): number {
+  let x0 = 180, y0 = 90, x1 = -180, y1 = -90;
+  const walk = (c: unknown): void => {
+    if (Array.isArray(c) && typeof c[0] === 'number') {
+      const [x, y] = c as [number, number];
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    } else if (Array.isArray(c)) c.forEach(walk);
+  };
+  walk((geom as { coordinates?: unknown })?.coordinates);
+  if (x1 < x0) return 0;
+  return (x1 - x0) * (y1 - y0) * Math.cos((((y0 + y1) / 2) * Math.PI) / 180);
+}
 function loadGeo() {
   if (!geoPromise) {
     geoPromise = Promise.all([
@@ -54,6 +69,8 @@ function loadGeo() {
       const groupOf = (g: unknown) => REGION_BY_CODE.get((g as { properties?: { cell?: string } }).properties?.cell ?? '')?.group;
       const krMesh = mesh(krT, krObj, (a, b) => a !== b && groupOf(a) !== groupOf(b)) as MultiLineString;
       const world = feature(wT, wObj) as unknown as FeatureCollection;
+      for (const f of kr.features) SIZES.set(`kr:${f.properties?.cell}`, bboxSize(f.geometry));
+      for (const f of world.features) SIZES.set(`w:${f.properties?.ADM0_A3}`, bboxSize(f.geometry));
       return { kr, krMesh, world };
     });
   }
@@ -95,6 +112,58 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   onSelectRef.current = onSelect;
   const statsRef = useRef(stats);
   statsRef.current = stats;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const labelBox = useRef<HTMLDivElement>(null);
+  const labelEls = useRef(new Map<string, HTMLSpanElement>());
+  const shown = useRef(new Set<string>());
+  const raf = useRef(0);
+
+  // 지역 이름 배치: 화면 안, 겹치지 않게, 다녀온 곳 > 큰 곳 순
+  const layoutLabels = () => {
+    const map = mapRef.current;
+    const box = labelBox.current;
+    if (!map || !box) return;
+    const set = labelsFor(modeRef.current, map.getZoom());
+    const W = box.clientWidth, H = box.clientHeight;
+    const s = statsRef.current;
+    const ordered = set
+      .map((l) => {
+        const on = l.visited(s);
+        const size = l.sizeKey ? SIZES.get(l.sizeKey) ?? 0 : 0;
+        return { l, on, p: l.base + (on ? 10000 : 0) + Math.log2(1 + size * 100) * 10 };
+      })
+      .sort((a, b) => b.p - a.p);
+    const placed: number[][] = [];
+    const next = new Set<string>();
+    for (const { l, on } of ordered) {
+      const pt = map.project([l.lng, l.lat]);
+      const x0 = pt.x - l.w / 2, y0 = pt.y - l.h / 2, x1 = x0 + l.w, y1 = y0 + l.h;
+      if (x0 < 2 || y0 < 2 || x1 > W - 2 || y1 > H - 2) continue;
+      if (placed.some((b) => x0 < b[2] + 2 && x1 > b[0] - 2 && y0 < b[3] + 1 && y1 > b[1] - 1)) continue;
+      placed.push([x0, y0, x1, y1]);
+      let el = labelEls.current.get(l.key);
+      if (!el) {
+        el = document.createElement('span');
+        el.className = `map-label ${l.kind}`;
+        el.textContent = l.text;
+        box.appendChild(el);
+        labelEls.current.set(l.key, el);
+      }
+      el.style.transform = `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`;
+      el.classList.toggle('on', on);
+      el.style.display = '';
+      next.add(l.key);
+    }
+    for (const k of shown.current) if (!next.has(k)) { const el = labelEls.current.get(k); if (el) el.style.display = 'none'; }
+    shown.current = next;
+  };
+  const layoutRef = useRef(layoutLabels);
+  layoutRef.current = layoutLabels;
+  const scheduleLabels = () => {
+    cancelAnimationFrame(raf.current);
+    raf.current = requestAnimationFrame(() => layoutRef.current());
+  };
   const fittedRef = useRef('');
 
   // 지도 만들기
@@ -171,6 +240,11 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         const f = map.queryRenderedFeatures(e.point, { layers: ['kr-fill', 'world-fill'] });
         map.getCanvas().style.cursor = f.length ? 'pointer' : '';
       });
+      map.on('move', scheduleLabels);
+      map.on('resize', scheduleLabels);
+      scheduleLabels();
+      if (import.meta.env.VITE_EMULATOR === '1') (window as unknown as { __map?: MLMap }).__map = map;
+
       // 점검용: 실제로 그려진 경계 수를 남긴다
       map.on('idle', () => {
         if (!el.current) return;
@@ -181,11 +255,18 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     });
     return () => {
       cancelled = true;
+      cancelAnimationFrame(raf.current);
       map.remove();
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 국내/세계, 기록이 바뀌면 이름도 다시 배치
+  useEffect(() => {
+    if (ready) scheduleLabels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, stats, ready]);
 
   // 세계 지도에서는 국내 160칸을 숨기고 한국을 나라 하나로 칠한다
   useEffect(() => {
@@ -266,6 +347,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   return (
     <div className={'map-wrap ' + (className ?? '')} style={{ height }}>
       <div ref={el} style={{ position: 'absolute', inset: 0 }} data-testid="map" />
+      <div ref={labelBox} className="map-labels" aria-hidden="true" />
       {controls && (
         <div className="map-ctrls" style={{ top: controlsTop }}>
           <button aria-label="확대" onClick={() => zoom(1)}><Icon name="plus" size={18} stroke={2.2} /></button>

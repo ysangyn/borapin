@@ -4,6 +4,8 @@ import { Avatars, Icon, Logo } from '../components/ui';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
+import PlaceSheet from '../components/PlaceSheet';
+import type { Place } from '../lib/types';
 import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips } from '../lib/data';
 import { pickMemory } from '../lib/memories';
 import { formatWhen } from '../lib/dates';
@@ -12,6 +14,7 @@ import { placeLabel } from '../lib/geo';
 export default function Home() {
   const { trips } = useTrips();
   const [mode, setMode] = useState<MapMode>('kr');
+  const [sel, setSel] = useState<Place | null>(null);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   const planned = trips?.filter((t) => t.status === 'planned') ?? [];
   const recent = trips?.filter((t) => t.status === 'done').slice(0, 3) ?? [];
@@ -38,12 +41,13 @@ export default function Home() {
         <div className="card" style={{ padding: 12 }}>
           <div className="row-between" style={{ alignItems: 'center', marginBottom: 8 }}>
             <div className="seg dark" role="tablist">
-              <button role="tab" aria-selected={mode === 'kr'} className={mode === 'kr' ? 'on' : ''} onClick={() => setMode('kr')}>국내</button>
-              <button role="tab" aria-selected={mode === 'world'} className={mode === 'world' ? 'on' : ''} onClick={() => setMode('world')}>세계</button>
+              <button role="tab" aria-selected={mode === 'kr'} className={mode === 'kr' ? 'on' : ''} onClick={() => { setMode('kr'); setSel(null); }}>국내</button>
+              <button role="tab" aria-selected={mode === 'world'} className={mode === 'world' ? 'on' : ''} onClick={() => { setMode('world'); setSel(null); }}>세계</button>
             </div>
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
-          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} />
+          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} />
+          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">
               {few ? (
@@ -92,16 +96,14 @@ export default function Home() {
           {trips && recent.length === 0 && (
             <div className="empty">
               <b>아직 기록이 없어요</b>
-              <span className="small">어디, 대략 언제만 있으면 기록 하나가 돼요.<br />예전 여행지도(v22) 기록은 '우리 공간'에서 가져올 수 있어요.</span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Link to="/record" className="btn sm">첫 기록 남기기</Link>
-                <Link to="/space" className="btn sm soft">v22 가져오기</Link>
-              </div>
+              <span className="small">위 지도에서 다녀온 곳을 누르면 바로 핀이 꽂혀요.<br />날짜·메모는 나중에 적어도 돼요.</span>
+              <Link to="/record" className="btn sm">기록 남기기</Link>
             </div>
           )}
           <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
         </section>
       </div>
+      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} onClose={() => setSel(null)} />}
     </>
   );
 }

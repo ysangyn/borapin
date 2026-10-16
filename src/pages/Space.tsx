@@ -1,8 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Avatars, Icon, TopBar, useToast } from '../components/ui';
 import { logOut, useAuth } from '../lib/auth';
-import { batchWrite, computeStats, setAccessList, useTrips, useWishes } from '../lib/data';
-import { planV22Import, type ImportPlan } from '../lib/v22import';
+import { computeStats, setAccessList, useTrips, useWishes } from '../lib/data';
 import { OWNER_EMAIL } from '../lib/firebase';
 
 export default function Space() {
@@ -11,9 +10,6 @@ export default function Space() {
   const { trips } = useTrips();
   const { wishes } = useWishes();
   const [email, setEmail] = useState('');
-  const [plan, setPlan] = useState<ImportPlan | null>(null);
-  const [busy, setBusy] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   if (auth.status !== 'ready') return null;
   const { user, access, isAdmin } = auth;
@@ -29,39 +25,6 @@ export default function Space() {
       console.warn(err);
       setEmail(e);
       toast('추가하지 못했어요. 잠시 뒤 다시 해 주세요.');
-    }
-  };
-
-  const onFile = async (f: File | undefined) => {
-    if (!f) return;
-    try {
-      const json = JSON.parse(await f.text());
-      setPlan(planV22Import(json));
-    } catch (e) {
-      toast((e as Error).message || '파일을 읽지 못했어요');
-    } finally {
-      if (fileRef.current) fileRef.current.value = '';
-    }
-  };
-
-  const runImport = async () => {
-    if (!plan) return;
-    setBusy(true);
-    try {
-      await batchWrite(
-        [
-          ...plan.trips.map((t) => ({ coll: 'trips' as const, id: t.id, data: t.data as unknown as Record<string, unknown> })),
-          ...plan.wishes.map((w) => ({ coll: 'wishes' as const, id: w.id, data: w.data as unknown as Record<string, unknown> })),
-        ],
-        user,
-      );
-      toast(`여행 ${plan.trips.length}건, 가고 싶은 곳 ${plan.wishes.length}곳을 가져왔어요`);
-      setPlan(null);
-    } catch (e) {
-      console.error(e);
-      toast('가져오지 못했어요. 파일을 확인해 주세요.');
-    } finally {
-      setBusy(false);
     }
   };
 
@@ -109,36 +72,14 @@ export default function Space() {
         </section>
 
         <section>
-          <div className="label" style={{ padding: '0 4px 6px' }}>기록 옮기기</div>
+          <div className="label" style={{ padding: '0 4px 6px' }}>백업</div>
           <div className="setting-group">
-            <button className="setting-row" onClick={() => fileRef.current?.click()} data-testid="v22-import">
-              <span className="ico"><Icon name="upload" size={17} /></span>
-              <span style={{ flex: 1 }}>예전 여행지도(v22) 기록 가져오기<div className="tiny muted">v22 '내보내기'로 받은 .json 파일을 고르세요</div></span>
-              <Icon name="chev" size={16} />
-            </button>
             <button className="setting-row" onClick={exportBackup}>
               <span className="ico"><Icon name="download" size={17} /></span>
               <span style={{ flex: 1 }}>백업 파일 내려받기<div className="tiny muted">여행 {trips?.length ?? 0}건 · 가고 싶은 곳 {wishes?.length ?? 0}곳</div></span>
               <Icon name="chev" size={16} />
             </button>
           </div>
-          <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={(e) => onFile(e.target.files?.[0])} data-testid="v22-file" />
-          {plan && (
-            <div className="card white" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }} data-testid="import-plan">
-              <b>이렇게 가져올게요</b>
-              <div className="small">
-                다녀온 지역 <b>{plan.trips.length}곳</b> → 지난 여행 {plan.trips.length}건<br />
-                가고 싶은 곳 <b>{plan.wishes.length}곳</b>
-                {plan.photoCount > 0 && <><br /><span className="muted">사진 {plan.photoCount}장은 사진 기능이 열리는 2단계에서 옮겨요.</span></>}
-                {plan.skipped.length > 0 && <><br /><span className="muted">알 수 없는 지역 {plan.skipped.length}개는 건너뛰어요.</span></>}
-                <br /><span className="muted">여러 번 가져와도 같은 지역은 겹치지 않고 덮어써요.</span>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn ghost" style={{ flex: 1 }} onClick={() => setPlan(null)}>취소</button>
-                <button className="btn" style={{ flex: 1 }} disabled={busy} onClick={runImport} data-testid="import-run">{busy ? '가져오는 중…' : '가져오기'}</button>
-              </div>
-            </div>
-          )}
         </section>
 
         {isAdmin && (

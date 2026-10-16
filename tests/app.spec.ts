@@ -29,6 +29,14 @@ async function expectMapDrawn(page: Page) {
   await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
 }
 
+/** 지도 위 경도·위도 지점을 누른다 */
+async function tapLngLat(page: Page, lng: number, lat: number) {
+  const pt = await page.evaluate(([x, y]) => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([x, y]), [lng, lat] as [number, number]);
+  const box = await page.getByTestId('map').first().boundingBox();
+  if (!box) throw new Error('지도가 없어요');
+  await page.mouse.click(box.x + pt.x, box.y + pt.y);
+}
+
 async function signIn(page: Page, email: string) {
   await page.goto('/');
   await page.waitForFunction(() => typeof (window as unknown as { __testSignIn?: unknown }).__testSignIn === 'function');
@@ -112,26 +120,60 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '08-map-world');
   });
 
-  test('v22 기록 가져오기', async ({ page }) => {
+  test('지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름', async ({ page }) => {
     await signIn(page, OWNER);
+    await expectMapDrawn(page);
+    // 부산을 누른다
+    await tapLngLat(page, 129.06, 35.2);
+    const sheet = page.getByTestId('region-sheet');
+    await expect(sheet.getByTestId('sheet-title')).toHaveText('부산');
+    await expect(sheet).toContainText('아직 안 가본 곳');
+    await sheet.getByTestId('quick-pin').click();
+    await expect(page.getByRole('status')).toContainText('부산에 핀을 꽂았어요');
+    await expect(sheet).toContainText('다녀왔어요');
+    await expect(sheet.getByTestId('trip-row')).toHaveCount(1);
+    // 되돌리기
+    await page.getByRole('button', { name: '되돌리기' }).click();
+    await expect(sheet).toContainText('아직 안 가본 곳');
+    await expect(sheet.getByTestId('trip-row')).toHaveCount(0);
+    // 다시 꽂아 둔다
+    await sheet.getByTestId('quick-pin').click();
+    await expect(sheet.getByTestId('trip-row')).toHaveCount(1);
+    await expect(page.getByTestId('headline')).toHaveText('3번의 여행, 핀 3개');
+    await shot(page, '09-sheet');
+    await sheet.getByRole('button', { name: '닫기' }).click();
+    await expect(sheet).toHaveCount(0);
+
+    // 확대하면 시·군 이름이 보이고, 다녀온 곳은 진하게
+    await page.evaluate(() => (window as unknown as { __map: { jumpTo: (o: object) => void } }).__map.jumpTo({ center: [128.95, 35.25], zoom: 7.6 }));
+    const busan = page.locator('.map-label', { hasText: /^부산$/ });
+    await expect(busan).toBeVisible();
+    await expect(busan).toHaveClass(/\bon\b/);
+    await expect(page.locator('.map-label', { hasText: /^김해시$/ })).toBeVisible();
+    await page.getByTestId('map').first().scrollIntoViewIfNeeded();
+    await shot(page, '09b-labels-cells');
+
+    // 큰 지도: 중간 확대에서는 도 이름
+    await page.goto('/map');
+    await expectMapDrawn(page);
+    await page.evaluate(() => (window as unknown as { __map: { jumpTo: (o: object) => void } }).__map.jumpTo({ center: [127.9, 36.3], zoom: 6.1 }));
+    await expect(page.locator('.map-label.province', { hasText: '강원' })).toHaveClass(/\bon\b/);
+    await expect(page.locator('.map-label.province', { hasText: '경남' })).toBeVisible();
+    await expect(page.locator('.map-label.province', { hasText: '경남' })).not.toHaveClass(/\bon\b/);
+    await shot(page, '09c-labels-provinces');
+
+    // 세계: 나라 이름, 다녀온 일본은 진하게
+    await page.getByRole('tab', { name: '세계' }).click();
+    await page.waitForTimeout(900);
+    await page.evaluate(() => (window as unknown as { __map: { jumpTo: (o: object) => void } }).__map.jumpTo({ center: [131, 35], zoom: 3.4 }));
+    await expect(page.locator('.map-label.country', { hasText: /^일본$/ })).toHaveClass(/\bon\b/);
+    await expect(page.locator('.map-label.country', { hasText: /^한국$/ })).toHaveClass(/\bon\b/);
+    await shot(page, '09d-labels-world');
+
+    // 우리 공간에는 더 이상 가져오기 버튼이 없다
     await page.goto('/space');
-    await page.getByTestId('v22-file').setInputFiles(path.resolve('tests/fixtures/v22-backup.json'));
-    await expect(page.getByTestId('import-plan')).toContainText('다녀온 지역 2곳');
-    await expect(page.getByTestId('import-plan')).toContainText('가고 싶은 곳 1곳');
-    await shot(page, '09-import');
-    await page.getByTestId('import-run').click();
-    await expect(page.getByText(/여행 2건, 가고 싶은 곳 1곳을 가져왔어요/)).toBeVisible();
-    await page.goto('/trips');
-    await expect(page.getByTestId('trip-row')).toHaveCount(4);
-    await expect(page.getByText('첫 강릉 바다')).toBeVisible();
-    await page.getByLabel('여행 찾기').fill('안목');
-    await expect(page.getByTestId('trip-row')).toHaveCount(1);
-    // 다시 가져와도 겹치지 않는다
-    await page.goto('/space');
-    await page.getByTestId('v22-file').setInputFiles(path.resolve('tests/fixtures/v22-backup.json'));
-    await page.getByTestId('import-run').click();
-    await page.goto('/trips');
-    await expect(page.getByTestId('trip-row')).toHaveCount(4);
+    await expect(page.getByText('백업 파일 내려받기')).toBeVisible();
+    await expect(page.getByText(/가져오기/)).toHaveCount(0);
   });
 
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {
@@ -163,6 +205,6 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '이 기록 지우기' }).click();
     await page.getByRole('button', { name: '지우기', exact: true }).click();
     await expect(page).toHaveURL(/\/trips$/);
-    await expect(page.getByTestId('trip-row')).toHaveCount(3);
+    await expect(page.getByTestId('trip-row')).toHaveCount(2);
   });
 });

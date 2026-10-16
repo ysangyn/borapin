@@ -18,7 +18,9 @@ const SPACE = 'spaces/main';
 const file = process.argv[2];
 const dry = process.env.DRY_RUN === '1';
 
-initializeApp({ credential: applicationDefault(), projectId: 'borapin' });
+const projectId = process.env.GCLOUD_PROJECT || 'borapin';
+// 점검 때는 가짜 Firebase(에뮬레이터)에 쓴다
+initializeApp(process.env.FIRESTORE_EMULATOR_HOST ? { projectId } : { credential: applicationDefault(), projectId });
 const db = getFirestore();
 
 function explain(e: unknown): never {
@@ -86,6 +88,10 @@ try {
   }
   const n = (await db.collection(`${SPACE}/trips`).count().get()).data().count;
   console.log(`\n✓ 옮김 완료. 지금 보라핀 여행 기록은 모두 ${n}건이에요.`);
+  if (process.env.EXPECT_TRIPS && Number(process.env.EXPECT_TRIPS) !== n) {
+    console.error(`✗ 기대한 ${process.env.EXPECT_TRIPS}건과 달라요 (겹쳐 쓰기 확인 실패)`);
+    process.exit(1);
+  }
 } catch (e) {
   explain(e);
 }
