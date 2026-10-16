@@ -15,6 +15,7 @@ import Places from './pages/Places';
 import PlaceEdit from './pages/PlaceEdit';
 import Ask from './pages/Ask';
 import SharedTripPage from './pages/SharedTripPage';
+import Admin from './pages/Admin';
 
 export default function App() {
   const auth = useAuth();
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/wishes" element={<Wishes />} />
         <Route path="/wishes/:id" element={<WishEdit />} />
         <Route path="/ask" element={<Ask />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/places" element={<Places />} />
         <Route path="/places/:id" element={<PlaceEdit />} />
         <Route path="*" element={<Navigate to="/" replace />} />

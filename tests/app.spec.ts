@@ -12,7 +12,7 @@ const IGNORED = [/permission[-_ ]denied/i, /Missing or insufficient permissions/
 let problems: string[] = [];
 test.beforeEach(({ page }) => {
   problems = [];
-  page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
+  page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}\n${(e.stack ?? '').split('\n').slice(0, 6).join('\n')}`));
   page.on('console', (m) => {
     if (m.type() === 'error' && !IGNORED.some((r) => r.test(m.text()))) problems.push(`console: ${m.text().slice(0, 300)}`);
   });
@@ -456,6 +456,34 @@ test.describe.serial('보라핀 1단계', () => {
     const buf = fs.readFileSync((await dl.path())!);
     expect(buf.subarray(0, 2).toString()).toBe('PK');
     expect(buf.length).toBeGreaterThan(5000);
+  });
+
+  test('관리자: 사용량, 사진 올리기 멈춤, 문제 신고', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/space');
+    // 문제 신고
+    page.once('dialog', (d) => d.accept('지도가 가끔 늦게 떠요'));
+    await page.getByTestId('report').click();
+    await expect(page.getByRole('status')).toContainText('보내 주셔서 고마워요');
+    await page.getByTestId('admin-link').click();
+    const admin = page.getByTestId('admin');
+    await expect(admin.getByTestId('usage')).toContainText('3장');
+    await expect(admin.getByTestId('reports')).toContainText('지도가 가끔 늦게 떠요');
+    // 사진 올리기 멈춤 → 여행 사진 탭에서 막힘
+    await admin.getByLabel('멈추는 이유').fill('예산 점검');
+    await admin.getByTestId('uploads-off').click();
+    await expect(admin.getByTestId('cutoff')).toContainText('멈춤 · 예산 점검');
+    await shot(page, '16-admin');
+    await page.goto('/trips');
+    await page.getByText('강릉시 여행', { exact: true }).click();
+    await page.getByRole('tab', { name: /사진/ }).click();
+    await page.getByTestId('photo-add').click();
+    await expect(page.getByRole('status')).toContainText('사진 올리기를 잠시 멈췄어요');
+    await page.goto('/admin');
+    await page.getByTestId('uploads-on').click();
+    await expect(page.getByTestId('cutoff')).toContainText('켜짐');
+    await page.getByTestId('reports').getByRole('button', { name: '해결함' }).first().click();
+    await expect(page.getByTestId('reports')).toContainText('들어온 신고가 없어요');
   });
 
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {

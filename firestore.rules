@@ -101,6 +101,26 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 앱 스위치(사진 올리기 멈춤 등): 멤버는 읽고 관리자만 바꾼다
+    match /config/flags {
+      allow read: if isMember();
+      allow write: if isAdmin();
+    }
+    // 이번 달 비용: 서버 작업만 쓴다 (관리자 서비스 계정), 관리자가 읽는다
+    match /config/billing {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    // 오류 기록·문제 신고: 멤버가 남기고 관리자가 보고 지운다
+    match /reports/{id} {
+      allow create: if isMember()
+        && request.resource.data.kind in ['error', 'report']
+        && request.resource.data.message is string && request.resource.data.message.size() <= 500
+        && (!('detail' in request.resource.data) || (request.resource.data.detail is string && request.resource.data.detail.size() <= 3000));
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
     // 링크 공개된 여행 사본: 토큰을 아는 사람만 하나씩 읽을 수 있다 (목록 조회 불가)
     match /shares/{token} {
       allow get: if true;

@@ -3,6 +3,8 @@ import { Avatars, Icon, TopBar, useToast } from '../components/ui';
 import { logOut, useAuth } from '../lib/auth';
 import { computeStats, setAccessList, usePlaces, useTrips, useWishes } from '../lib/data';
 import { exportXlsx, saveBlob } from '../lib/exportXlsx';
+import { sendReport } from '../lib/admin';
+import { Link } from 'react-router-dom';
 import { usePhotos } from '../lib/photos';
 import { useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
@@ -132,6 +134,23 @@ export default function Space() {
             </div>
           </section>
         )}
+
+        <div className="setting-group">
+          {isAdmin && (
+            <Link to="/admin" className="setting-row" data-testid="admin-link">
+              <span className="ico"><Icon name="shield" size={17} /></span>
+              <span style={{ flex: 1 }}>관리자 화면<div className="tiny muted">요금·사용량·자동 차단·오류 신고</div></span>
+              <Icon name="chev" size={16} />
+            </Link>
+          )}
+          <button className="setting-row" onClick={() => {
+            const t = window.prompt('어떤 문제가 있었나요? (화면, 하려던 일)');
+            if (t?.trim()) sendReport('report', t.trim()).then(() => toast('보내 주셔서 고마워요'));
+          }} data-testid="report">
+            <span className="ico"><Icon name="external" size={17} /></span>
+            <span style={{ flex: 1 }}>문제 신고</span>
+          </button>
+        </div>
 
         <div className="setting-group">
           <button className="setting-row" onClick={() => logOut()}>

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import { deletePhoto, uploadPhoto } from '../lib/photos';
+import { useFlags } from '../lib/admin';
 import type { Photo } from '../lib/types';
 import { openSlideshow } from './slideshow';
 
@@ -11,6 +12,7 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
   const [queue, setQueue] = useState<{ name: string; pct: number }[]>([]);
+  const flags = useFlags();
 
   const upload = async (files: FileList | null) => {
     if (!files?.length || auth.status !== 'ready') return;
@@ -46,7 +48,13 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
           <span>{Math.round(q.pct * 100)}%</span>
         </div>
       ))}
-      <button className="photo-cell add" onClick={() => input.current?.click()} disabled={queue.length > 0} data-testid="photo-add">
+      <button
+        className="photo-cell add"
+        onClick={() => (flags.uploadsPaused ? toast(`사진 올리기를 잠시 멈췄어요${flags.reason ? ` (${flags.reason})` : ''}`) : input.current?.click())}
+        disabled={queue.length > 0}
+        data-testid="photo-add"
+        aria-disabled={flags.uploadsPaused}
+      >
         <Icon name="plus" size={22} stroke={2.2} />
         <span className="tiny">사진</span>
       </button>
