@@ -2,8 +2,9 @@ import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import { DataProvider } from './lib/store';
-import { BottomNav, Logo, Spinner } from './components/ui';
+import { BottomNav, Spinner } from './components/ui';
 import { ErrorBoundary, ScrollManager, StatusBanner } from './components/system';
+import { RestArt } from './components/Scene';
 import { Denied, Login, VerifyEmail } from './pages/Login';
 import Home from './pages/Home';
 import { preloadCheer } from './lib/celebrate';
@@ -58,7 +59,7 @@ export default function App() {
     return (
       <div className="app">
         <div className="center-screen" role="alert">
-          <Logo size={48} />
+          <RestArt />
           <b style={{ fontSize: 18 }}>{auth.message}</b>
           <button className="btn" onClick={() => location.reload()}>다시 시도</button>
         </div>

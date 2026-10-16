@@ -96,3 +96,8 @@ export function Art({ id, className, size = 280 }: { id: string; className?: str
     </div>
   );
 }
+
+/** 쉬는 보라 (오류·연결 끊김·끝난 링크). 오프라인에서도 보이게 기기에 미리 저장해 둔다. */
+export function RestArt() {
+  return <img className="rest-art" src="/art/bora-rest.webp" alt="" aria-hidden="true" width={480} height={495} decoding="async" />;
+}

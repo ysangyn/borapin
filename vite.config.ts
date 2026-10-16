@@ -12,7 +12,7 @@ export default defineConfig({
       injectRegister: 'auto',
       manifest: false, // public/manifest.webmanifest를 그대로 쓴다 (공유 대상 포함)
       workbox: {
-        globPatterns: ['**/*.{js,mjs,css,html,svg,png,topojson}'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,topojson}', 'art/bora-rest.webp'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/__/],

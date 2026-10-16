@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { RestArt } from '../components/Scene';
 import { Logo } from '../components/ui';
 import MapView from '../components/LazyMap';
 import { openSlideshow } from '../components/slideshow';
@@ -27,14 +28,14 @@ export default function SharedTripPage() {
   if (failed)
     return (
       <div className="center-screen">
-        <Logo size={56} />
+        <RestArt />
         <b>여행을 불러오지 못했어요</b>
         <span className="small muted">인터넷 연결을 확인한 뒤 다시 열어 주세요.</span>
         <button className="btn" onClick={() => setRound((r) => r + 1)}>다시 불러오기</button>
       </div>
     );
   if (d === undefined) return <div className="center-screen muted">불러오는 중…</div>;
-  if (d === null) return <div className="center-screen"><Logo size={56} /><b>공개가 끝났거나 없는 여행이에요</b></div>;
+  if (d === null) return <div className="center-screen"><RestArt /><b>공개가 끝났거나 없는 여행이에요</b><span className="small muted">링크를 보낸 사람에게 다시 열어 달라고 해 주세요.</span></div>;
   const abroad = d.places.every((p) => p.t === 'country');
   return (
     <div className="page" style={{ paddingTop: 20, paddingBottom: 40 }} data-testid="shared-trip">

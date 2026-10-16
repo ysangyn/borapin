@@ -3,7 +3,8 @@ import { useLocation, useNavigationType } from 'react-router-dom';
 import { sendReport } from '../lib/admin';
 import { useStore } from '../lib/store';
 import { onLateWriteError } from '../lib/writes';
-import { Logo, useToast } from './ui';
+import { useToast } from './ui';
+import { RestArt } from './Scene';
 
 /** 화면을 그리다 난 오류: 흰 화면 대신 다시 시도할 수 있는 안내 */
 export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: string }, { error: Error | null }> {
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: s
     if (!this.state.error) return this.props.children;
     return (
       <div className="center-screen" role="alert">
-        <Logo size={48} />
+        <RestArt />
         <b style={{ fontSize: 18 }}>이 화면을 여는 중에 문제가 생겼어요</b>
         <span className="small muted">기록은 안전해요. 다시 열어 보고, 계속되면 우리 공간 › 문제 신고로 알려 주세요.</span>
         <div style={{ display: 'flex', gap: 8 }}>
