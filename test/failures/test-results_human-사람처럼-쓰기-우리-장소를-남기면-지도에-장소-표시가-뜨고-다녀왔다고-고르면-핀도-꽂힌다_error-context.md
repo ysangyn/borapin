@@ -42,24 +42,22 @@ Call log:
             - /url: /ask
           - link "우리 공간" [ref=f4e14] [cursor=pointer]:
             - /url: /space
-            - generic "보라 · 영상" [ref=f4e15]:
-              - generic [ref=f4e16]: 보
-              - generic [ref=f4e17]: 영
-      - generic [ref=f4e18]:
-        - generic [ref=f4e19]:
-          - generic [ref=f4e20]: 보라 & 영상의 지도
-          - generic [ref=f4e21]: 5번의 여행, 핀 5개
-        - generic [ref=f4e22]:
-          - generic [ref=f4e23]:
-            - tablist [ref=f4e24]:
-              - tab "국내" [selected] [ref=f4e25] [cursor=pointer]
-              - tab "세계" [ref=f4e26] [cursor=pointer]
-            - link "지도 크게 보기" [ref=f4e27] [cursor=pointer]:
+            - generic "영상" [ref=f4e15]: 영
+      - generic [ref=f4e17]:
+        - generic [ref=f4e18]:
+          - generic [ref=f4e19]: 영상의 지도
+          - generic [ref=f4e20]: 3번의 여행, 핀 3개
+        - generic [ref=f4e21]:
+          - generic [ref=f4e22]:
+            - tablist [ref=f4e23]:
+              - tab "국내" [selected] [ref=f4e24] [cursor=pointer]
+              - tab "세계" [ref=f4e25] [cursor=pointer]
+            - link "지도 크게 보기" [ref=f4e26] [cursor=pointer]:
               - /url: /map
-          - generic [ref=f4e28]:
-            - generic [ref=f4e29]:
+          - generic [ref=f4e27]:
+            - generic [ref=f4e28]:
               - generic:
-                - region "Map" [ref=f4e30]
+                - region "Map" [ref=f4e29]
                 - generic [aria-hidden]:
                   - generic: 두 손가락으로 움직여 주세요
                 - generic: 흑해
@@ -92,140 +90,100 @@ Call log:
                 - generic: 타이만
                 - generic: 베링해
                 - generic: 대한해협
-                - generic: "1"
-                - generic:
-                  - generic "우리 장소 1곳": "1"
-            - generic [ref=f4e31]:
-              - button "확대" [ref=f4e32] [cursor=pointer]
-              - separator [ref=f4e35]
-              - button "축소" [ref=f4e36] [cursor=pointer]
-              - separator [ref=f4e38]
-              - button "전체 보기" [ref=f4e39] [cursor=pointer]
-          - generic [ref=f4e42]: 지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요
-          - generic [ref=f4e43]:
-            - generic [ref=f4e44]:
-              - text: "4"
-              - generic [ref=f4e45]: 다녀온 시·군
-            - generic [ref=f4e46]:
-              - text: "1"
-              - generic [ref=f4e47]: 해외 나라
-            - generic [ref=f4e48]:
-              - text: "5"
-              - generic [ref=f4e49]: 여행·나들이
-            - generic [ref=f4e50]:
+            - generic [ref=f4e30]:
+              - button "확대" [ref=f4e31] [cursor=pointer]
+              - separator [ref=f4e34]
+              - button "축소" [ref=f4e35] [cursor=pointer]
+              - separator [ref=f4e37]
+              - button "전체 보기" [ref=f4e38] [cursor=pointer]
+          - generic [ref=f4e41]: 지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요
+          - generic [ref=f4e42]:
+            - generic [ref=f4e43]:
+              - text: "3"
+              - generic [ref=f4e44]: 다녀온 시·군
+            - generic [ref=f4e45]:
               - text: "0"
-              - generic [ref=f4e51]: 예정
-        - generic [ref=f4e52]:
-          - generic [ref=f4e53]:
-            - text: 제주 여행 다녀오셨나요?
-            - generic [ref=f4e54]: 날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.
-          - button "다녀왔어요" [ref=f4e55] [cursor=pointer]
-        - generic [ref=f4e56]:
-          - generic [ref=f4e57]:
-            - heading "가고 싶은 곳" [level=2] [ref=f4e58]
-            - link "모두 보기 3" [ref=f4e59] [cursor=pointer]:
+              - generic [ref=f4e46]: 해외 나라
+            - generic [ref=f4e47]:
+              - text: "3"
+              - generic [ref=f4e48]: 여행·나들이
+            - generic [ref=f4e49]:
+              - text: "0"
+              - generic [ref=f4e50]: 예정
+        - generic [ref=f4e51]:
+          - generic [ref=f4e52]:
+            - heading "가고 싶은 곳" [level=2] [ref=f4e53]
+            - link "모두 보기 1" [ref=f4e54] [cursor=pointer]:
               - /url: /wishes
-          - generic [ref=f4e60]:
-            - generic [ref=f4e62]:
-              - link "제주 가고 싶은 곳 보기" [ref=f4e63] [cursor=pointer]:
-                - /url: /wishes/7GCdGigLBxwRxfJCN2Wc
-                - generic [ref=f4e64]:
-                  - text: 제주
-                  - generic "1순위" [ref=f4e65]: "1"
-                - generic [ref=f4e68]:
-                  - generic [ref=f4e69]: 제주
-                  - generic [ref=f4e70]:
-                    - 'generic "원하는 사람: 영상, 보라" [ref=f4e71]':
-                      - generic [ref=f4e72]: 보라
-                      - generic [ref=f4e75]: 영상
-                    - generic [ref=f4e78]: 둘 다 원해요
-                  - generic [ref=f4e79]: 가기 좋은 때 5·6, 9~11월
-              - link "예정 · 2026년쯤" [ref=f4e81] [cursor=pointer]:
-                - /url: /trips/Vpl1BmEs9ErbJWHu0apA
-            - generic [ref=f4e83]:
-              - link "강원 고성군 가고 싶은 곳 보기" [ref=f4e84] [cursor=pointer]:
-                - /url: /wishes/UD44e6PKEXpbLN5RX1mB
-                - generic [ref=f4e85]: 강원
-                - generic [ref=f4e86]:
-                  - generic [ref=f4e87]: 강원 고성군
-                  - 'generic "원하는 사람: 영상" [ref=f4e89]':
-                    - generic [ref=f4e90]: 보라
-                    - generic [ref=f4e93]: 영상
-                  - generic [ref=f4e96]: 가기 좋은 때 5·6, 9·10월
-              - link "여행 만들기" [ref=f4e98] [cursor=pointer]:
-                - /url: /record?status=planned&place=kr:51820&wish=UD44e6PKEXpbLN5RX1mB
-            - generic [ref=f4e100]:
-              - link "경남 남해군 가고 싶은 곳 보기" [ref=f4e101] [cursor=pointer]:
-                - /url: /wishes/hCVzf0jRxkHWTmqh5sjd
-                - generic [ref=f4e102]: 경남
-                - generic [ref=f4e103]:
-                  - generic [ref=f4e104]: 경남 남해군
-                  - 'generic "원하는 사람: 영상" [ref=f4e106]':
-                    - generic [ref=f4e107]: 보라
-                    - generic [ref=f4e110]: 영상
-                  - generic [ref=f4e113]: 가기 좋은 때 4~6, 10·11월
-              - link "여행 만들기" [ref=f4e115] [cursor=pointer]:
-                - /url: /record?status=planned&place=kr:48840&wish=hCVzf0jRxkHWTmqh5sjd
-        - generic [ref=f4e120]:
-          - generic [ref=f4e121]:
-            - img "서울 경복궁 경회루" [ref=f4e122]
-            - generic [ref=f4e123]: 서울 경복궁 경회루
-          - generic [ref=f4e126]:
-            - generic [ref=f4e127]: 10월에 가기 좋은 곳
-            - generic [ref=f4e128]: 서울
-            - generic [ref=f4e129]: 과거와 미래가 공존하는 K-컬처의 심장
-            - generic [ref=f4e130]: 가기 좋은 때 4~6, 9·10월
-            - generic [ref=f4e131]:
-              - button "가고 싶은 곳에 담기" [ref=f4e132] [cursor=pointer]
-              - link "볼거리 보기" [ref=f4e135] [cursor=pointer]:
+          - generic [ref=f4e57]:
+            - link "경남 남해군 가고 싶은 곳 보기" [ref=f4e58] [cursor=pointer]:
+              - /url: /wishes/F2zERATo3kopBlqUMXJW
+              - generic [ref=f4e59]: 경남
+              - generic [ref=f4e60]:
+                - generic [ref=f4e61]: 경남 남해군
+                - 'generic "원하는 사람: 영상" [ref=f4e63]': 영상
+                - generic [ref=f4e67]: 가기 좋은 때 4~6, 10·11월
+            - link "여행 만들기" [ref=f4e69] [cursor=pointer]:
+              - /url: /record?status=planned&place=kr:48840&wish=F2zERATo3kopBlqUMXJW
+        - generic [ref=f4e70]:
+          - generic [ref=f4e71]:
+            - img "서울 경복궁 경회루" [ref=f4e72]
+            - generic [ref=f4e73]: 서울 경복궁 경회루
+          - generic [ref=f4e76]:
+            - generic [ref=f4e77]: 10월에 가기 좋은 곳
+            - generic [ref=f4e78]: 서울
+            - generic [ref=f4e79]: 과거와 미래가 공존하는 K-컬처의 심장
+            - generic [ref=f4e80]: 가기 좋은 때 4~6, 9·10월
+            - generic [ref=f4e81]:
+              - button "가고 싶은 곳에 담기" [ref=f4e82] [cursor=pointer]
+              - link "볼거리 보기" [ref=f4e85] [cursor=pointer]:
                 - /url: /ask?q=%EC%84%9C%EC%9A%B8%20%EB%B3%BC%EA%B1%B0%EB%A6%AC
-        - link "교토 작년 가을 교토 단풍 여행 2025년 가을" [ref=f4e136] [cursor=pointer]:
-          - /url: /trips/HTjE3npYXNtEsiG71nYD
-          - generic [ref=f4e137]: 교토
-          - generic [ref=f4e138]:
-            - generic [ref=f4e139]: 작년 가을
-            - generic [ref=f4e140]: 교토 단풍 여행
-            - generic [ref=f4e141]: 2025년 가을
-        - textbox "찾아보기" [ref=f4e147]:
+        - link "경주시 2024년의 여행 경주 첫 벚꽃 여행 2024년쯤" [ref=f4e86] [cursor=pointer]:
+          - /url: /trips/eozOQDJ33OTNXZ1Iggnv
+          - generic [ref=f4e87]: 경주시
+          - generic [ref=f4e88]:
+            - generic [ref=f4e89]: 2024년의 여행
+            - generic [ref=f4e90]: 경주 첫 벚꽃 여행
+            - generic [ref=f4e91]: 2024년쯤
+        - textbox "찾아보기" [ref=f4e97]:
           - /placeholder: "찾아보기: 영등포 맛집, 작년 여름에 간 곳"
-        - generic [ref=f4e148]:
-          - generic [ref=f4e149]:
-            - heading "최근에 남긴 기록" [level=2] [ref=f4e150]
-            - link "전체 보기" [ref=f4e151] [cursor=pointer]:
+        - generic [ref=f4e98]:
+          - generic [ref=f4e99]:
+            - heading "최근에 남긴 기록" [level=2] [ref=f4e100]
+            - link "전체 보기" [ref=f4e101] [cursor=pointer]:
               - /url: /trips
-          - generic [ref=f4e152]:
-            - link "충북 단양 끌어다 놓기 여행 충북 단양군 · 날짜 모름" [ref=f4e153] [cursor=pointer]:
-              - /url: /trips/iiY8VwVZ65ocDVHkQLaS
-              - generic [ref=f4e154]: 충북
-              - generic [ref=f4e155]:
-                - generic [ref=f4e156]: 단양 끌어다 놓기 여행
-                - generic [ref=f4e157]: 충북 단양군 · 날짜 모름
-            - link "전북 전주시 여행 전북 전주시 · 날짜 모름 mail.bora와 함께" [ref=f4e158] [cursor=pointer]:
-              - /url: /trips/a37et1Na7xJ1WIwz1hv6
-              - generic [ref=f4e159]: 전북
-              - generic [ref=f4e160]:
-                - generic [ref=f4e161]: 전주시 여행
-                - generic [ref=f4e162]: 전북 전주시 · 날짜 모름
-                - generic [ref=f4e163]: mail.bora와 함께
-            - link "경북 경주 첫 벚꽃 여행 경북 경주시 · 2024년쯤" [ref=f4e165] [cursor=pointer]:
-              - /url: /trips/uQHr7pWRs1HITFe90uZD
-              - generic [ref=f4e166]: 경북
-              - generic [ref=f4e167]:
-                - generic [ref=f4e168]: 경주 첫 벚꽃 여행
-                - generic [ref=f4e169]: 경북 경주시 · 2024년쯤
-      - navigation "주 메뉴" [ref=f4e170]:
-        - link "홈" [ref=f4e171] [cursor=pointer]:
+          - generic [ref=f4e102]:
+            - link "충북 단양 끌어다 놓기 여행 충북 단양군 · 날짜 모름" [ref=f4e103] [cursor=pointer]:
+              - /url: /trips/2O150yNmHRq78PjLIcC6
+              - generic [ref=f4e104]: 충북
+              - generic [ref=f4e105]:
+                - generic [ref=f4e106]: 단양 끌어다 놓기 여행
+                - generic [ref=f4e107]: 충북 단양군 · 날짜 모름
+            - link "전북 전주시 여행 전북 전주시 · 날짜 모름" [ref=f4e108] [cursor=pointer]:
+              - /url: /trips/IJFtNGnJagGjp4IaGnbv
+              - generic [ref=f4e109]: 전북
+              - generic [ref=f4e110]:
+                - generic [ref=f4e111]: 전주시 여행
+                - generic [ref=f4e112]: 전북 전주시 · 날짜 모름
+            - link "경북 경주 첫 벚꽃 여행 경북 경주시 · 2024년쯤" [ref=f4e113] [cursor=pointer]:
+              - /url: /trips/eozOQDJ33OTNXZ1Iggnv
+              - generic [ref=f4e114]: 경북
+              - generic [ref=f4e115]:
+                - generic [ref=f4e116]: 경주 첫 벚꽃 여행
+                - generic [ref=f4e117]: 경북 경주시 · 2024년쯤
+      - navigation "주 메뉴" [ref=f4e118]:
+        - link "홈" [ref=f4e119] [cursor=pointer]:
           - /url: /
-        - link "여행" [ref=f4e174] [cursor=pointer]:
+        - link "여행" [ref=f4e122] [cursor=pointer]:
           - /url: /trips
-        - link "기록하기" [ref=f4e177] [cursor=pointer]:
+        - link "기록하기" [ref=f4e125] [cursor=pointer]:
           - /url: /record
-        - link "지도" [ref=f4e180] [cursor=pointer]:
+        - link "지도" [ref=f4e128] [cursor=pointer]:
           - /url: /map
-        - link "추억" [ref=f4e183] [cursor=pointer]:
+        - link "추억" [ref=f4e131] [cursor=pointer]:
           - /url: /memories
     - status
-  - iframe [aria-hidden] [ref=f4e186]
+  - iframe [aria-hidden] [ref=f4e134]
 ```
 
 # Test source
