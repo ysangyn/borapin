@@ -72,9 +72,17 @@ async function composeKorean(page: Page, steps: string[]) {
 
 /** 지도 위 경도·위도 지점을 누른다 */
 async function tapLngLat(page: Page, lng: number, lat: number) {
-  const pt = await page.evaluate(([x, y]) => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([x, y]), [lng, lat] as [number, number]);
+  const project = () => page.evaluate(([x, y]) => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([x, y]), [lng, lat] as [number, number]);
   const box = await page.getByTestId('map').first().boundingBox();
   if (!box) throw new Error('지도가 없어요');
+  let pt = await project();
+  // 홈 지도는 최근 핀 둘레만 보여 주므로, 누를 곳이 화면 밖이면 사람처럼 '전체 보기'를 먼저 누른다
+  if (pt.x < 0 || pt.y < 0 || pt.x > box.width || pt.y > box.height) {
+    await page.getByRole('button', { name: '전체 보기' }).click();
+    await page.waitForFunction(() => (window as unknown as { __map: { isMoving: () => boolean } }).__map.isMoving() === false);
+    await page.waitForTimeout(150);
+    pt = await project();
+  }
   await page.mouse.click(box.x + pt.x, box.y + pt.y);
 }
 
@@ -421,7 +429,7 @@ test.describe('사람처럼 쓰기', () => {
     await expect(map).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
     // 남한 전체는 약 5.6: 한 지역 둘레면 그보다 훨씬 가깝다
     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeGreaterThan(6.4);
-    await expect(page.getByTestId('map').first().locator('.map-label', { hasText: '고흥' })).toBeVisible();
+    await expect(page.locator('.map-label', { hasText: '고흥' }).first()).toBeVisible();
     const nearZoom = Number(await map.getAttribute('data-zoom'));
     await page.getByRole('button', { name: '전체 보기' }).click();
     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeLessThan(nearZoom - 0.2);
