@@ -9,35 +9,266 @@
 [32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
 [36m[1mi [22m[39m Running script: [1mplaywright test[22m
 
-Running 21 tests using 1 worker
+Running 30 tests using 1 worker
 
-  ✓   1 tests/app.spec.ts:57:3 › 보라핀 1단계 › 로그인 화면 (1.3s)
-  ✓   2 tests/app.spec.ts:63:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.0s)
-  ✓   3 tests/app.spec.ts:70:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.9s)
+  ✓   1 tests/app.spec.ts:57:3 › 보라핀 1단계 › 로그인 화면 (1.4s)
+  ✓   2 tests/app.spec.ts:63:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.2s)
+  ✓   3 tests/app.spec.ts:70:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.8s)
   ✓   4 tests/app.spec.ts:86:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.5s)
   ✓   5 tests/app.spec.ts:100:3 › 보라핀 1단계 › 여행 목록과 필터 (1.0s)
-  ✓   6 tests/app.spec.ts:110:3 › 보라핀 1단계 › 홈 통계와 지도 (6.8s)
-  ✓   7 tests/app.spec.ts:128:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (15.6s)
-  ✓   8 tests/app.spec.ts:191:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (8.7s)
-  ✓   9 tests/app.spec.ts:269:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (4.1s)
-  ✓  10 tests/app.spec.ts:305:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (7.3s)
-  ✓  11 tests/app.spec.ts:359:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (3.9s)
-  ✓  12 tests/app.spec.ts:403:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (2.3s)
-  ✓  13 tests/app.spec.ts:430:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 (7.5s)
-  ✓  14 tests/app.spec.ts:486:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고 (2.5s)
-  ✓  15 tests/app.spec.ts:516:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다 (2.6s)
-[36m[1mi [22m[39m To verify the email address mail.bora@example.com, follow this link: http://127.0.0.1:9099/emulator/action?mode=verifyEmail&lang=en&oobCode=fS66SNBNHKLhd5hCZeovT0e5IAxO_vupxeCpFXV9QIeRE6GXC0LtES&apiKey=fake-api-key&continueUrl=http%3A%2F%2F127.0.0.1%3A5174%2F
-  ✓  16 tests/app.spec.ts:532:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다 (2.6s)
-  ✓  17 tests/app.spec.ts:576:3 › 보라핀 1단계 › 기록 고치기와 지우기 (5.7s)
-  ✓  18 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.0s)
-  ✓  19 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (40.0s)
-  ✓  20 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (30.5s)
-  ✓  21 tests/tour.spec.ts:300:1 › 화면 오류 없음 (2ms)
+  ✓   6 tests/app.spec.ts:110:3 › 보라핀 1단계 › 홈 통계와 지도 (6.6s)
+  ✓   7 tests/app.spec.ts:128:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (15.5s)
+  ✓   8 tests/app.spec.ts:191:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (8.5s)
+  ✓   9 tests/app.spec.ts:269:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (3.7s)
+  ✓  10 tests/app.spec.ts:305:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (7.7s)
+  ✓  11 tests/app.spec.ts:359:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (3.8s)
+  ✓  12 tests/app.spec.ts:403:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (2.7s)
+  ✓  13 tests/app.spec.ts:430:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 (8.0s)
+  ✓  14 tests/app.spec.ts:486:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고 (2.4s)
+  ✓  15 tests/app.spec.ts:516:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다 (1.8s)
+[36m[1mi [22m[39m To verify the email address mail.bora@example.com, follow this link: http://127.0.0.1:9099/emulator/action?mode=verifyEmail&lang=en&oobCode=sv9IjnORqQEq9nakoMO-pdCDq6f5UsZLKOLkvtmweCxiXosRplUfZo&apiKey=fake-api-key&continueUrl=http%3A%2F%2F127.0.0.1%3A5174%2F
+  ✓  16 tests/app.spec.ts:532:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다 (2.7s)
+  ✓  17 tests/app.spec.ts:576:3 › 보라핀 1단계 › 기록 고치기와 지우기 (4.5s)
+  ✓  18 tests/human.spec.ts:105:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (1.6s)
+  ✘  19 tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (1.0m)
+  ✘  20 tests/human.spec.ts:139:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (17.0s)
+  ✓  21 tests/human.spec.ts:161:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.3s)
+  ✘  22 tests/human.spec.ts:191:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (1.0m)
+  ✓  23 tests/human.spec.ts:236:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 (13.2s)
+  ✘  24 tests/human.spec.ts:260:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (612ms)
+  ✓  25 tests/human.spec.ts:260:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (828ms)
+  ✓  26 tests/human.spec.ts:260:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (684ms)
+  ✓  27 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.1s)
+  ✓  28 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (39.8s)
+  ✓  29 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (30.8s)
+  ✓  30 tests/tour.spec.ts:300:1 › 화면 오류 없음 (3ms)
 
-  21 passed (2.9m)
-[32m[1m✔ [22m[39m Script exited successfully (code 0)
+
+  1) tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 ──────────────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test ended.
+    Browser logs:
+
+    <launching> /home/runner/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,AvoidCorsURLLoaderRestartOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-Xrw6my --remote-debugging-pipe --no-startup-window
+    <launched> pid=3705
+    [pid=3705][err] [1016/101600.901571:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+    [pid=3705][err] [1016/101600.905513:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+    [pid=3705][err] [1016/101600.907388:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+    [pid=3705][err] [1016/101600.911356:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+    [pid=3705][err] [1016/101600.920944:WARNING:media/gpu/vaapi/vaapi_wrapper.cc:1655] drmGetDevices2() has not found any devices
+    [pid=3705][err] [1016/101600.922622:WARNING:sandbox/policy/linux/sandbox_linux.cc:405] InitializeSandbox() called with multiple threads in process gpu-process.
+    [pid=3705][err] [1016/101601.141393:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101602.468564:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101605.350177:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=3705][err] [1016/101605.361979:INFO:CONSOLE:0] "[.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: http://127.0.0.1:5174/ (0)
+    [pid=3705][err] [1016/101605.381147:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=3705][err] [1016/101605.454542:INFO:CONSOLE:0] "[.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: http://127.0.0.1:5174/ (0)
+    [pid=3705][err] [1016/101605.592868:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=3705][err] [1016/101605.626157:INFO:CONSOLE:0] "[.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: http://127.0.0.1:5174/ (0)
+    [pid=3705][err] [1016/101605.625415:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+    [pid=3705][err] [1016/101605.672178:INFO:CONSOLE:0] "[.WebGL-0x21e402422000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)", source: http://127.0.0.1:5174/ (0)
+    [pid=3705][err] [1016/101606.699843:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101609.490971:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101609.719264:INFO:CONSOLE:1] "[2026-10-16T10:16:09.719Z]  @firebase/firestore: Firestore (13.0.0): WebChannelConnection RPC 'Listen' stream 0x5a65bceb transport errored. Name: undefined Message: undefined", source: http://127.0.0.1:5174/assets/data-CRO5EC77.js (1)
+    [pid=3705][err] [1016/101609.720102:INFO:CONSOLE:1] "[2026-10-16T10:16:09.720Z]  @firebase/firestore: Firestore (13.0.0): Could not reach Cloud Firestore backend. Connection failed 1 times. Most recent error: FirebaseError: [code=unavailable]: The operation could not be completed
+    [pid=3705][err] This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.", source: http://127.0.0.1:5174/assets/data-CRO5EC77.js (1)
+    [pid=3705][err] [1016/101609.749052:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101610.984697:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101611.206975:INFO:CONSOLE:1] "[2026-10-16T10:16:11.202Z]  @firebase/firestore: Firestore (13.0.0): WebChannelConnection RPC 'Listen' stream 0x52774729 transport errored. Name: undefined Message: undefined", source: http://127.0.0.1:5174/assets/data-CRO5EC77.js (1)
+    [pid=3705][err] [1016/101611.207013:INFO:CONSOLE:1] "[2026-10-16T10:16:11.206Z]  @firebase/firestore: Firestore (13.0.0): Could not reach Cloud Firestore backend. Connection failed 1 times. Most recent error: FirebaseError: [code=unavailable]: The operation could not be completed
+    [pid=3705][err] This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.", source: http://127.0.0.1:5174/assets/data-CRO5EC77.js (1)
+    [pid=3705][err] [1016/101611.236393:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101612.058105:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101613.762647:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101618.675959:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101625.530087:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101633.579309:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101634.177452:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101636.917928:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101637.768981:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101638.072963:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101639.882000:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101641.421319:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101642.134119:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101642.696536:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101642.941471:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101644.393231:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101645.681818:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101646.370928:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101646.640773:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101650.925094:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101654.067656:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101654.308266:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101655.480277:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101657.834676:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101700.560579:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101700.818286:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101702.812530:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101704.827434:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101705.382373:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101707.846294:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101708.572450:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101708.836053:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101709.720116:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101710.331379:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101711.011941:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101711.466283:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101711.604929:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101712.214898:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101712.877132:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101713.125654:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101714.139474:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101714.682979:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101715.529749:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101715.798275:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101720.082608:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101721.068125:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705][err] [1016/101721.705181:INFO:CONSOLE:3] "Service Worker registration blocked by Playwright", source:  (3)
+    [pid=3705] <gracefully close start>
+    Call log:
+      - waiting for getByTestId('save')
+        - locator resolved to <button disabled class="btn block" data-testid="save">저장하기</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        113 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      123 |     await page.getByLabel('제목').click();
+      124 |     await page.keyboard.type('경주 첫 벚꽃 여행', { delay: 30 });
+    > 125 |     await page.getByTestId('save').click();
+          |                                    ^
+      126 |     await expect(page.getByTestId('trip-title')).toHaveText('경주 첫 벚꽃 여행');
+      127 |     const url = page.url();
+      128 |     // 새로 고침해도 그대로
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:125:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-375px-손으로-입력해-기록하고-새로-고침해도-남아-있다/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/human-사람처럼-쓰기-375px-손으로-입력해-기록하고-새로-고침해도-남아-있다/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-375px-손으로-입력해-기록하고-새로-고침해도-남아-있다/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/human-사람처럼-쓰기-375px-손으로-입력해-기록하고-새로-고침해도-남아-있다/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/human.spec.ts:139:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 ─
+
+    Error: expect(locator).toBeInViewport() failed
+
+    Locator:  getByTestId('region-sheet').getByTestId('quick-pin')
+    Expected: in viewport
+    Received: viewport ratio 0.369140625
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toBeInViewport" getByTestId('region-sheet').getByTestId('quick-pin') with timeout 15000ms
+      - waiting for getByTestId('region-sheet').getByTestId('quick-pin')
+        34 × locator resolved to <button class="btn" data-testid="quick-pin">…</button>
+           - unexpected value "viewport ratio 0.369140625"
+
+
+      148 |     await expect(sheet.getByTestId('sheet-title')).toContainText('전주');
+      149 |     // 가장 많이 쓰는 버튼은 창을 열자마자 보여야 한다 (스크롤해야 보이면 안 됨)
+    > 150 |     await expect(sheet.getByTestId('quick-pin')).toBeInViewport({ ratio: 1 });
+          |                                                  ^
+      151 |     await sheet.getByTestId('quick-pin').click();
+      152 |     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
+      153 |     await sheet.getByRole('button', { name: '닫기' }).click();
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:150:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests/human.spec.ts:191:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 ──────────────────────
+
+    Test timeout of 60000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-PC-사진을-끌어다-놓아-올리고-사진이-아닌-파일은-거른다/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/human-사람처럼-쓰기-PC-사진을-끌어다-놓아-올리고-사진이-아닌-파일은-거른다/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-PC-사진을-끌어다-놓아-올리고-사진이-아닌-파일은-거른다/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/human-사람처럼-쓰기-PC-사진을-끌어다-놓아-올리고-사진이-아닌-파일은-거른다/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests/human.spec.ts:260:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 ────────────────────────
+
+    Error: 그림 {"x":198,"y":123.09375,"width":146,"height":157.890625} / 문구 {"x":28,"y":160.265625,"width":171.453125,"height":23}
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      277 |         if (!a || !r) throw new Error('그림이나 문구가 없어요');
+      278 |         const overlap = a.x < r.x + r.width && r.x < a.x + a.width && a.y < r.y + r.height && r.y < a.y + a.height;
+    > 279 |         expect(overlap, `그림 ${JSON.stringify(a)} / 문구 ${JSON.stringify(r)}`).toBe(false);
+          |                                                                              ^
+      280 |       }
+      281 |       await page.context().close();
+      282 |     });
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:279:78
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-360px-로그인-걷는-보라-그림이-문구와-겹치지-않는다/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/human-사람처럼-쓰기-360px-로그인-걷는-보라-그림이-문구와-겹치지-않는다/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-360px-로그인-걷는-보라-그림이-문구와-겹치지-않는다/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/human-사람처럼-쓰기-360px-로그인-걷는-보라-그림이-문구와-겹치지-않는다/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 ───────────────────────
+    tests/human.spec.ts:139:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 ──
+    tests/human.spec.ts:191:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 ───────────────────────
+    tests/human.spec.ts:260:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 ─────────────────────────
+  26 passed (5.5m)
+[33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
 [36m[1mi  auth:[22m[39m Stopping Authentication Emulator
 [36m[1mi  hub:[22m[39m Stopping emulator hub
 [36m[1mi  logging:[22m[39m Stopping Logging Emulator
+
+[1m[31mError:[39m[22m Script "[1mplaywright test[22m" exited with code 1
