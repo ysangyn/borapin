@@ -19,16 +19,19 @@ export function Login() {
   const [busy, setBusy] = useState(false);
   const hasVideo = !!videoById('clouds');
   return (
-    <div className="login">
-      <div className="login-hero">
-        {hasVideo ? <SceneVideo id="clouds" className="hero-media" /> : <KoreaMosaic className="login-map" />}
+    <div className={'login' + (hasVideo ? ' has-media' : '')}>
+      {/* 화면 전체에 깔리는 구름 영상 (소리 없음). 영상이 없으면 보라빛 하늘 */}
+      <div className="login-backdrop" aria-hidden="true">
+        {hasVideo && <SceneVideo id="clouds" className="login-video" />}
+      </div>
+      <header className="login-hero">
         <div className="login-brand">
           <span className="login-logo"><Logo size={30} /></span>
           <span>보라핀</span>
         </div>
         <p className="login-tag">가본 곳마다, 우리 핀 하나</p>
-      </div>
-      <div className="login-body">
+      </header>
+      <main className="login-card">
         <EmailLogin />
         <div className="login-or"><span>간편 로그인</span></div>
         <button
@@ -52,7 +55,7 @@ export function Login() {
         {err && <div className="small" style={{ color: 'var(--danger)' }} role="alert">{err}</div>}
         <div className="tiny muted" style={{ textAlign: 'center' }}>초대받은 메일 주소로만 들어올 수 있어요.</div>
         <Footer />
-      </div>
+      </main>
     </div>
   );
 }
@@ -110,7 +113,7 @@ export function VerifyEmail({ email }: { email: string | null }) {
   const [busy, setBusy] = useState(false);
   return (
     <div className="center-screen" data-testid="verify">
-      <Logo size={56} />
+      <KoreaMosaic className="auth-mosaic" />
       <div style={{ fontSize: 20, fontWeight: 800 }}>메일함을 확인해 주세요</div>
       <div className="small muted"><b style={{ color: 'var(--ink)' }}>{email}</b>로 인증 메일을 보냈어요.<br />메일의 링크를 누른 뒤 아래 버튼을 눌러 주세요.</div>
       <button
@@ -141,7 +144,7 @@ export function VerifyEmail({ email }: { email: string | null }) {
 export function Denied({ email }: { email: string | null }) {
   return (
     <div className="center-screen">
-      <Logo size={56} />
+      <KoreaMosaic className="auth-mosaic" />
       <div style={{ fontSize: 20, fontWeight: 800 }}>아직 초대되지 않은 계정이에요</div>
       <div className="small muted">{email}<br />함께 쓰는 사람에게 이 메일 주소를 추가해 달라고 해 주세요.</div>
       <button className="btn line" onClick={() => logOut()}>다른 계정으로 로그인</button>

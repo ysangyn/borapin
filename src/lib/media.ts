@@ -16,13 +16,17 @@ export interface ScenePhoto {
   lqip: string;
   credit: Credit;
 }
-export interface SceneVideo {
-  id: string;
-  name: string;
+export interface VideoFiles {
   mp4: string;
   webm: string;
   poster: string;
   lqip: string;
+}
+export interface SceneVideo extends VideoFiles {
+  id: string;
+  name: string;
+  /** 세로 화면(폰)용 9:16 자른 판 */
+  portrait?: VideoFiles;
   credit: Credit;
 }
 

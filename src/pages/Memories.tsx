@@ -13,7 +13,7 @@ import ShareCards from '../components/ShareCards';
 import { badges } from '../lib/achievements';
 import { monthGrid, yearReview } from '../lib/yearReview';
 import { placeLong } from '../lib/geo';
-import { ScenicPhoto } from '../components/Scene';
+import { Art } from '../components/Scene';
 
 export default function Memories() {
   const { trips } = useTrips();
@@ -54,7 +54,7 @@ export default function Memories() {
         <TopBar title="추억" />
         <div className="page" style={{ paddingTop: 4 }}>
           <div className="empty" data-testid="memories-empty">
-            <ScenicPhoto id="gyeongju" className="photo-banner empty-photo" alt="" />
+            <Art id="bora-walk" className="empty-art" size={260} />
             <b>다녀온 여행을 하나 남기면 추억이 시작돼요</b>
             <span className="small">기록이 쌓이면 여기에 이런 것들이 생겨요</span>
             <ul className="preview-list">

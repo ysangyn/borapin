@@ -44,7 +44,7 @@ export default function App() {
     );
   }
   if (auth.status === 'loading') return <div className="app"><Spinner /></div>;
-  if (auth.status === 'signedOut') return <div className="app"><Login /></div>;
+  if (auth.status === 'signedOut') return <div className="app bare"><Login /></div>;
   if (auth.status === 'denied') return <div className="app"><Denied email={auth.user.email} /></div>;
   if (auth.status === 'verify') return <div className="app"><VerifyEmail email={auth.user.email} /></div>;
   if (auth.status === 'error')

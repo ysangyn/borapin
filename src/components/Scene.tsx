@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { photoById, preferStill, videoById, type ScenePhoto } from '../lib/media';
+import { artById } from '../lib/art';
 
 /**
  * 여행지 사진: 흐린 미리보기가 먼저 깔리고, 화면 폭에 맞는 크기(640/1280)를 받는다.
@@ -24,14 +25,31 @@ export function ScenicPhoto({ photo, id, className, alt, eager }: { photo?: Scen
   );
 }
 
+/** 세로로 긴 화면인지 (폰을 세워 든 경우). 돌리면 바뀐다. */
+function useTall(enabled: boolean) {
+  const q = '(max-aspect-ratio: 3/4)';
+  const [tall, setTall] = useState(() => enabled && typeof window !== 'undefined' && !!window.matchMedia?.(q).matches);
+  useEffect(() => {
+    if (!enabled || !window.matchMedia) return;
+    const m = window.matchMedia(q);
+    const on = () => setTall(m.matches);
+    m.addEventListener('change', on);
+    return () => m.removeEventListener('change', on);
+  }, [enabled]);
+  return tall;
+}
+
 /**
- * 반복 풍경 영상 (구름·계곡). 정지 사진이 먼저 보이고, 화면에 보일 때만 재생한다.
+ * 반복 풍경 영상 (구름·계곡). 정지 사진이 먼저 보이고, 화면에 보일 때만 재생한다. 소리는 없다.
+ * 세로 화면에서는 세로로 자른 판을 써서 흐려지지 않게 한다.
  * 데이터 절약·움직임 줄이기 기기에서는 정지 사진만.
  */
 export function SceneVideo({ id, className, children }: { id: string; className?: string; children?: React.ReactNode }) {
   const v = videoById(id);
   const el = useRef<HTMLVideoElement>(null);
   const [still] = useState(preferStill);
+  const tall = useTall(!!v?.portrait);
+  const f = tall && v?.portrait ? v.portrait : v;
   useEffect(() => {
     const node = el.current;
     if (!node || still) return;
@@ -41,17 +59,40 @@ export function SceneVideo({ id, className, children }: { id: string; className?
     });
     io.observe(node);
     return () => io.disconnect();
-  }, [still]);
-  if (!v) return <div className={'scene ' + (className ?? '')}>{children}</div>;
+  }, [still, f]);
+  if (!v || !f) return <div className={'scene ' + (className ?? '')}>{children}</div>;
   return (
-    <div className={'scene ' + (className ?? '')} style={{ backgroundImage: `url(${v.poster}), url(${v.lqip})` }}>
+    <div className={'scene ' + (className ?? '')} style={{ backgroundImage: `url(${f.poster}), url(${f.lqip})` }}>
       {!still && (
-        <video ref={el} muted loop playsInline autoPlay preload="auto" poster={v.poster} aria-hidden="true" tabIndex={-1}>
-          <source src={v.webm} type="video/webm" />
-          <source src={v.mp4} type="video/mp4" />
+        <video key={f.mp4} ref={el} muted loop playsInline autoPlay preload="auto" poster={f.poster} aria-hidden="true" tabIndex={-1} disablePictureInPicture disableRemotePlayback>
+          <source src={f.webm} type="video/webm" />
+          <source src={f.mp4} type="video/mp4" />
         </video>
       )}
       {children}
+    </div>
+  );
+}
+
+/** 보라핀 그림 (정사각형). 흐린 미리보기 위로 선명한 그림이 뜬다. */
+export function Art({ id, className, size = 280 }: { id: string; className?: string; size?: number }) {
+  const a = artById(id);
+  const [loaded, setLoaded] = useState(false);
+  if (!a) return null;
+  return (
+    <div className={'art ' + (className ?? '')} style={{ backgroundImage: `url(${a.lqip})`, width: `min(100%, ${size}px)` }}>
+      <img
+        src={a.src.l}
+        srcSet={`${a.src.s} 540w, ${a.src.l} 1080w`}
+        sizes={`${size}px`}
+        alt={a.alt}
+        width={a.w}
+        height={a.h}
+        loading="lazy"
+        decoding="async"
+        className={loaded ? 'on' : ''}
+        onLoad={() => setLoaded(true)}
+      />
     </div>
   );
 }

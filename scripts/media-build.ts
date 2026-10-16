@@ -25,6 +25,10 @@ interface Pick {
   /** 영상: 시작 초, 길이 초 */
   start?: number;
   dur?: number;
+  /** 영상: 빠르기 (0.5면 절반 속도로 느리게, 사이 장면은 섞어서 부드럽게) */
+  speed?: number;
+  /** 영상: 지울 얼룩(렌즈 먼지 등), 1280×720 기준 사각형 */
+  clean?: { x: number; y: number; w: number; h: number }[];
   /** 영상: 세로(폰)로 자를 때 가로 위치 0(왼쪽)~1(오른쪽), 기본 가운데 */
   px?: number;
   /** 사진: 잘라낼 때 남길 쪽 */
@@ -99,13 +103,15 @@ for (const v of picks.videos) {
     const i = await info(v.title);
     const raw = path.join('/tmp', `raw-${v.id}`);
     await download(i.url, raw);
-    const S = v.start ?? 0, D = v.dur ?? 8, F = 1.2;
+    const S = v.start ?? 0, D = v.dur ?? 8, F = 1.2, K = v.speed ?? 1;
+    const slow = K < 1 ? `setpts=PTS/${K},minterpolate=fps=24:mi_mode=blend,` : 'fps=24,';
+    const clean = (v.clean ?? []).map((r) => `delogo=x=${r.x}:y=${r.y}:w=${r.w}:h=${r.h},`).join('');
     const loop = path.join('/tmp', `loop-${v.id}.mkv`);
     // [머리 0..F] [몸 F..D] [꼬리 D..D+F]: 꼬리를 머리로 서서히 녹여 맨 앞에 두면 끝→처음이 이어진다
     ff([
-      '-ss', String(S), '-t', String(D + F), '-i', raw, '-an',
+      '-ss', String(S), '-t', String((D + F) * K + 0.2), '-i', raw, '-an',
       '-filter_complex',
-      `[0:v]fps=24,scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,setsar=1,split=3[a][b][c];` +
+      `[0:v]${slow}scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,${clean}setsar=1,split=3[a][b][c];` +
         `[a]trim=0:${F},setpts=PTS-STARTPTS[head];[b]trim=${F}:${D},setpts=PTS-STARTPTS[body];[c]trim=${D}:${D + F},setpts=PTS-STARTPTS[tail];` +
         `[tail][head]blend=all_expr='A*(1-T/${F})+B*(T/${F})'[mix];[mix][body]concat=n=2:v=1[out]`,
       '-map', '[out]', '-c:v', 'ffv1', loop,
