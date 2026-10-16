@@ -825,3 +825,14 @@ a { color: var(--violet); text-decoration: none; }
 .setting-row.invite-new { background: var(--mist); }
 .wish-tabs { display: flex; }
 .wish-tabs button { flex: 1; padding: 0 6px; white-space: nowrap; }
+.plan-again { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line2); background: #fff; color: var(--ink4); display: inline-flex; align-items: center; justify-content: center; }
+.plan-again svg { fill: none; stroke: currentColor; stroke-width: 2; }
+.plan-again.on { background: var(--coral-mist); border-color: transparent; color: var(--coral-ink); }
+.plan-again.on svg { fill: var(--coral-ink); stroke: var(--coral-ink); }
+/* 지도 바로가기: 글자 대신 작은 동그라미 */
+.map-ico { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; letter-spacing: -0.02em; border: 1px solid var(--line); background: #fff; color: var(--ink2); flex: none; }
+.map-ico.naver { color: #03c75a; }
+.map-ico.google { color: #4285f4; }
+.place-hint { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding: 10px 12px; border-radius: 14px; background: var(--page); font-size: 13px; color: var(--ink2); line-height: 1.45; }
+.place-hint b { color: var(--ink3); font-size: 12px; margin-right: 4px; }
+.rel-select { margin-left: 8px; height: 26px; border-radius: 8px; border: 1px solid var(--line2); background: #fff; font-size: 12px; color: var(--ink2); padding: 0 6px; font-weight: 700; }

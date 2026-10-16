@@ -18,7 +18,7 @@ import PlaceRecRow from '../components/PlaceRecRow';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
-import { COUNTRY_BY_ID, placeLong, REGION_BY_CODE } from '../lib/geo';
+import { COUNTRY_BY_ID, placeLabel, placeLong, REGION_BY_CODE } from '../lib/geo';
 import type { Place } from '../lib/types';
 
 function mapLinks(p: Place) {
@@ -115,7 +115,7 @@ export default function TripDetail() {
         )}
 
         <div className="seg tabs" role="tablist" aria-label="여행 보기">
-          {([['info', '개요'], ['plan', '일정'], ['photos', `사진${photos.length ? ` ${photos.length}` : ''}`], ['notes', `글${notes?.length ? ` ${notes.length}` : ''}`]] as const).map(([k, label]) => (
+          {([['info', '개요'], ['plan', trip.status === 'done' ? '들른 곳' : '일정'], ['photos', `사진${photos.length ? ` ${photos.length}` : ''}`], ['notes', `글${notes?.length ? ` ${notes.length}` : ''}`]] as const).map(([k, label]) => (
             <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>
           ))}
         </div>
@@ -136,8 +136,8 @@ export default function TripDetail() {
                 return (
                   <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <b style={{ flex: 1 }}>{placeLong(p)}</b>
-                    <a className="btn sm ghost" href={l.naver} target="_blank" rel="noreferrer">네이버지도</a>
-                    <a className="btn sm ghost" href={l.google} target="_blank" rel="noreferrer">구글지도</a>
+                    <a className="map-ico naver" href={l.naver} target="_blank" rel="noreferrer" aria-label={`${placeLabel(p)} 네이버지도`} title="네이버지도">N</a>
+                    <a className="map-ico google" href={l.google} target="_blank" rel="noreferrer" aria-label={`${placeLabel(p)} 구글지도`} title="구글지도">G</a>
                   </span>
                 );
               })}

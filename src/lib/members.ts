@@ -1,3 +1,8 @@
+import type { Relation } from './types';
+
+export const RELATION_LABEL: Record<Relation, string> = { spouse: '부부', partner: '연인', family: '가족', friend: '친구', relative: '친지', other: '그 밖에' };
+export const RELATION_ICON: Record<Relation, string> = { spouse: '💍', partner: '💜', family: '🏠', friend: '🤝', relative: '🌿', other: '·' };
+
 /**
  * 지금 공간을 함께 쓰는 사람들 (이름·첫 글자·색). 로그인하면 auth가 채운다.
  * Firebase를 쓰지 않는 순수 모듈이라 통계·찾아보기·시험 코드에서도 쓴다.
@@ -5,6 +10,8 @@
 export interface Member {
   email: string;
   name: string;
+  /** 관계 (없으면 undefined) */
+  relation?: Relation;
   /** 동그라미에 쓰는 첫 글자 */
   initial: string;
   /** 동그라미 색 번호 (0~3) */
@@ -14,7 +21,7 @@ export interface Member {
 let list: Member[] = [];
 
 /** 이름 순서(가나다)로 정렬해 누가 들어와도 같은 순서로 보이게 */
-export function setMembers(people: { email: string; name: string }[]) {
+export function setMembers(people: { email: string; name: string; relation?: Relation }[]) {
   const seen = new Set<string>();
   const uniq = people.filter((p) => p.name && !seen.has(p.name) && seen.add(p.name));
   list = uniq
@@ -38,3 +45,12 @@ export function spaceTitle(names = memberNames()): string {
 export const everyoneWants = (wantedBy: string[] | undefined) => list.length >= 2 && list.every((m) => (wantedBy ?? []).includes(m.name));
 /** '둘 다 원해요' / '모두 원해요' */
 export const everyoneLabel = () => (list.length === 2 ? '둘 다 원해요' : '모두 원해요');
+
+/** 공간의 관계 한마디: 둘이고 둘 다(또는 한쪽이) 부부면 '부부', 아니면 가장 많은 관계. 아무것도 없으면 null */
+export function spaceRelation(): Relation | null {
+  const rs = list.map((m) => m.relation).filter((r): r is Relation => !!r);
+  if (!rs.length) return null;
+  const count = new Map<Relation, number>();
+  for (const r of rs) count.set(r, (count.get(r) ?? 0) + 1);
+  return [...count.entries()].sort((a, b) => b[1] - a[1])[0][0];
+}

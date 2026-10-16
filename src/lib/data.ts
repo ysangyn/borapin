@@ -23,7 +23,7 @@ import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
 import { useStore } from './store';
 import { queued } from './writes';
-import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput } from './types';
+import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation } from './types';
 import { whenSortKey } from './dates';
 
 const sp = (name: string) => collection(db, 'spaces', SPACE_ID, name);
@@ -224,6 +224,11 @@ export async function addMember(email: string, name: string) {
       ? updateDoc(ref, 'allowed', arrayUnion(e), new FieldPath('names', e), name.trim(), 'updatedAt', serverTimestamp())
       : updateDoc(ref, { allowed: arrayUnion(e), updatedAt: serverTimestamp() }),
   );
+}
+/** 관계 정하기 (부부·연인·가족·친구·친지·그 밖에), 비우면 지움 */
+export async function setMemberRelation(email: string, relation: Relation | null) {
+  const e = email.toLowerCase().trim();
+  await queued(updateDoc(doc(db, 'config', 'access'), new FieldPath('relations', e), relation ?? deleteField(), 'updatedAt', serverTimestamp()));
 }
 /** 부를 이름 바꾸기 (비우면 기본 이름으로) */
 export async function setMemberName(email: string, name: string) {

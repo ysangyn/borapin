@@ -62,7 +62,7 @@ export default function ShareLinkCard({ trip, photos, recs }: { trip: Trip; phot
       url,
       button: '여행 보기',
     }, () => toast('링크를 복사했어요'));
-    if (r === 'kakao') toast('카카오톡으로 보냈어요');
+    if (r === 'kakao') toast('카카오톡을 열었어요 · 보낼 사람을 골라 주세요');
   };
 
   return (

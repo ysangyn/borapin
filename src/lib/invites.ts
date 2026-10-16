@@ -8,7 +8,8 @@ import { db } from './firebase';
  * 링크로 온 사람은 로그인 → 코드에 자기 메일로 '썼음' 표시 → 자기 메일을 허용 목록에 넣는다 (규칙이 그 둘만 허용).
  * 코드는 7일, 한 번만. 기기엔 코드만 잠깐 남겨 두고(로그인 뒤 이어 가게) 들어오면 지운다.
  */
-export interface Invite { by: string; name?: string; createdAt?: unknown; expiresAt: number; usedBy?: string; usedAt?: number; v: 1 }
+import type { Relation } from './types';
+export interface Invite { by: string; name?: string; relation?: Relation; createdAt?: unknown; expiresAt: number; usedBy?: string; usedAt?: number; v: 1 }
 export const INVITE_DAYS = 7;
 const KEY = 'borapin:invite';
 
@@ -21,10 +22,11 @@ function randomCode(n = 20) {
   return [...buf].map((b) => chars[b % chars.length]).join('');
 }
 
-export async function createInvite(user: User, name: string): Promise<string> {
+export async function createInvite(user: User, name: string, relation: Relation | null = null): Promise<string> {
   const code = randomCode();
   const data: Omit<Invite, 'createdAt'> & { createdAt: unknown } = { by: (user.email ?? '').toLowerCase(), createdAt: serverTimestamp(), expiresAt: Date.now() + INVITE_DAYS * 86400000, v: 1 };
   if (name.trim()) data.name = name.trim().slice(0, 20);
+  if (relation) data.relation = relation;
   await setDoc(doc(db, 'invites', code), data);
   return code;
 }
@@ -60,8 +62,10 @@ export async function joinByInvite(code: string, user: User): Promise<JoinResult
   try {
     if (!inv.usedBy) await updateDoc(doc(db, 'invites', code), { usedBy: email, usedAt: Date.now() });
     const name = inv.name?.trim();
-    if (name) await updateDoc(doc(db, 'config', 'access'), 'allowed', arrayUnion(email), new FieldPath('names', email), name, 'via', code, 'updatedAt', serverTimestamp());
-    else await updateDoc(doc(db, 'config', 'access'), 'allowed', arrayUnion(email), 'via', code, 'updatedAt', serverTimestamp());
+    const fields: unknown[] = ['allowed', arrayUnion(email), 'via', code, 'updatedAt', serverTimestamp()];
+    if (name) fields.push(new FieldPath('names', email), name);
+    if (inv.relation) fields.push(new FieldPath('relations', email), inv.relation);
+    await updateDoc(doc(db, 'config', 'access'), fields[0] as string, fields[1], ...fields.slice(2));
     return 'joined';
   } catch (e) {
     console.warn('join failed', e);

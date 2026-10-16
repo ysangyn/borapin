@@ -18,9 +18,9 @@ export function whenYear(w: When): number | null {
 }
 
 /** 화면 표시: '2025.11.13–17', '2019년 1월쯤', '2019 여름', '2018년쯤', '날짜 모름' */
+/** 화면엔 '(추정)'을 붙이지 않는다 — 사진 날짜로 채운 것도 그냥 날짜로 보여 준다 (est 값은 자료에 남음) */
 export function formatWhen(w: When): string {
-  const base = formatWhenBase(w);
-  return w.est && w.p !== 'unknown' ? `${base} (추정)` : base;
+  return formatWhenBase(w);
 }
 
 function formatWhenBase(w: When): string {

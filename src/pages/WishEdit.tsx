@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import CityInfo from '../components/CityInfo';
+import PlaceHint from '../components/PlaceHint';
 
 import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, useTrips, useWishes } from '../lib/data';
@@ -165,6 +166,7 @@ export default function WishEdit() {
           </div>
         </div>
 
+        {place && place.t === 'kr' && <PlaceHint place={place} />}
         {place && place.t === 'country' && (
           <div className="field">
             <span className="label">도시 정보 <span className="muted small">(눌러서 메모에 넣기)</span></span>

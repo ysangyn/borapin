@@ -88,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         doc(db, 'config', 'access'),
         (snap) => {
           const a = (snap.data() as Access | undefined) ?? { allowed: [], admins: [] };
-          access = { allowed: a.allowed ?? [], admins: a.admins ?? [], names: a.names ?? {} };
-          setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e) })));
+          access = { allowed: a.allowed ?? [], admins: a.admins ?? [], names: a.names ?? {}, relations: a.relations ?? {} };
+          setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e), relation: access.relations?.[e] })));
           const email = (user.email || '').toLowerCase();
           const isOwner = email === OWNER_EMAIL;
           if (!isOwner && !access.allowed.includes(email)) return setState({ status: 'denied', user });

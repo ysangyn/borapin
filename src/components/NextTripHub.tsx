@@ -28,8 +28,10 @@ import type { Place, Trip, Wish } from '../lib/types';
  * 기준 장소는 하나: 예정된 여행이 있으면 그 여행, 없으면 가고 싶은 곳 1순위(둘 다 원하는 곳 먼저).
  * 질문·가는 길은 모두 그 장소에 매달린다. 가고 싶은 곳이 하나도 없으면 '3곳만 담아볼까요'가 첫 블록.
  */
-export default function NextTripHub({ wishes, trips, stats }: { wishes: Wish[]; trips: Trip[]; stats: Stats | null }) {
-  const nextTrip = useMemo(() => upcomingTrips(trips)[0] ?? null, [trips]);
+export default function NextTripHub({ wishes, trips, stats, excludeTripId = null }: { wishes: Wish[]; trips: Trip[]; stats: Stats | null; excludeTripId?: string | null }) {
+  // 홈 위 카드가 이미 맡은 여행(떠나기 전·여행 중·막 다녀옴)은 여기서 또 보여 주지 않는다
+  const upcoming = useMemo(() => upcomingTrips(trips).filter((t) => t.id !== excludeTripId), [trips, excludeTripId]);
+  const nextTrip = upcoming[0] ?? null;
   const active = useMemo(() => {
     const list = sortWishes(wishes.filter((w) => wishState(w, trips).kind === 'wish'));
     return [...list.filter(bothWant), ...list.filter((w) => !bothWant(w))];
@@ -44,7 +46,7 @@ export default function NextTripHub({ wishes, trips, stats }: { wishes: Wish[]; 
         <h2 className="h2 hub-title">다음 여행 준비</h2>
         <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{active.length ? `가고 싶은 곳 ${active.length}곳` : '여행지 뽑기'}</Link>
       </div>
-      {nextTrip ? <NextTripHero trip={nextTrip} more={upcomingTrips(trips).slice(1, 3)} wishes={active.slice(0, 2)} />
+      {nextTrip ? <NextTripHero trip={nextTrip} more={upcoming.slice(1, 3)} wishes={active.slice(0, 2)} />
         : firstWish ? <WhereNext top={active.slice(0, 3)} />
         : <WishRolling wishes={wishes} trips={trips} stats={stats} bare />}
       {anchor && <TodayAsk place={anchor.place} wish={anchor.wish} />}

@@ -25,8 +25,9 @@ service cloud.firestore {
     }
 
     function validAccess(d) {
-      return d.keys().hasOnly(['allowed', 'admins', 'names', 'updatedAt', 'via'])
+      return d.keys().hasOnly(['allowed', 'admins', 'names', 'relations', 'updatedAt', 'via'])
         && (!('names' in d) || (d.names is map && d.names.size() <= 50))
+        && (!('relations' in d) || (d.relations is map && d.relations.size() <= 50))
         && d.allowed is list && d.allowed.size() <= 50
         && d.admins is list && d.admins.size() <= 10;
     }
@@ -97,7 +98,7 @@ service cloud.firestore {
       let d = request.resource.data;
       let old = resource.data;
       return signedIn() && !isMember()
-        && d.keys().hasOnly(['allowed', 'admins', 'names', 'updatedAt', 'via'])
+        && d.keys().hasOnly(['allowed', 'admins', 'names', 'relations', 'updatedAt', 'via'])
         && d.via is string && d.via.size() >= 8 && d.via.size() <= 64
         && exists(/databases/$(database)/documents/invites/$(d.via))
         && inviteOf(d.via).data.usedBy == email()
@@ -105,7 +106,8 @@ service cloud.firestore {
         && d.admins == old.admins
         && d.allowed.hasAll(old.allowed) && d.allowed.size() == old.allowed.size() + 1 && d.allowed.size() <= 50
         && email() in d.allowed
-        && d.get('names', {}).diff(old.get('names', {})).affectedKeys().hasOnly([email()]);
+        && d.get('names', {}).diff(old.get('names', {})).affectedKeys().hasOnly([email()])
+        && d.get('relations', {}).diff(old.get('relations', {})).affectedKeys().hasOnly([email()]);
     }
 
     match /config/access {
@@ -124,9 +126,10 @@ service cloud.firestore {
       allow get: if signedIn();
       allow list: if isAdmin();
       allow create: if isAdmin()
-        && request.resource.data.keys().hasOnly(['by', 'name', 'createdAt', 'expiresAt', 'v'])
+        && request.resource.data.keys().hasOnly(['by', 'name', 'relation', 'createdAt', 'expiresAt', 'v'])
         && request.resource.data.by == email()
         && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 20))
+        && (!('relation' in request.resource.data) || request.resource.data.relation in ['spouse', 'partner', 'family', 'friend', 'relative', 'other'])
         && request.resource.data.expiresAt is int
         && request.resource.data.expiresAt <= request.time.toMillis() + 8 * 24 * 3600 * 1000
         && request.resource.data.v == 1;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
+import PlaceHint from '../components/PlaceHint';
 import { useAuth } from '../lib/auth';
 import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } from '../lib/data';
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
@@ -14,9 +15,9 @@ import { useFlags } from '../lib/admin';
 
 const PRECISIONS: { p: Precision; label: string }[] = [
   { p: 'day', label: '날짜' },
-  { p: 'month', label: '몇 월쯤' },
-  { p: 'season', label: '계절만' },
-  { p: 'year', label: '몇 년쯤' },
+  { p: 'month', label: '몇 월' },
+  { p: 'season', label: '계절' },
+  { p: 'year', label: '몇 년' },
   { p: 'unknown', label: '몰라요' },
 ];
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
@@ -168,6 +169,7 @@ export default function Record() {
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
           <PlacePicker value={places} onChange={setPlaces} />
+          <PlaceHint place={places[places.length - 1] ?? null} />
         </div>
 
         <div className="field">

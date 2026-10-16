@@ -141,6 +141,8 @@ export interface PlanItem {
   info: string;
   recId?: string | null;
   done: boolean;
+  /** 다녀온 여행에서: 다음에 또 가고 싶은 곳 */
+  again?: boolean;
   createdAt?: Timestamp | null;
   v: 1;
 }
@@ -178,4 +180,7 @@ export interface Access {
   admins: string[];
   /** 메일 → 앱에서 부르는 이름 */
   names?: Record<string, string>;
+  /** 메일 → 관계 (부부·연인·가족·친구·친지·그 밖에) */
+  relations?: Record<string, Relation>;
 }
+export type Relation = 'spouse' | 'partner' | 'family' | 'friend' | 'relative' | 'other';

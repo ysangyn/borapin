@@ -133,7 +133,7 @@ test.describe('사람처럼 쓰기', () => {
     // 언제를 안 골랐으면 저장 버튼 아래에 무엇이 빠졌는지 알려 준다
     await expect(page.getByTestId('save')).toBeDisabled();
     await expect(page.getByTestId('save-hint')).toContainText('대략 언제');
-    await page.getByRole('button', { name: '몇 년쯤' }).click();
+    await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByLabel('연도').selectOption('2024');
     await expect(page.getByTestId('save-hint')).toHaveCount(0);
     await page.getByTestId('save').click();

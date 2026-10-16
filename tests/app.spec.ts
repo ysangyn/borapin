@@ -78,7 +78,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('초대 링크: 관리자가 만들고 → 링크로 온 사람이 로그인하면 바로 들어온다 (한 번만)', async ({ page, browser }) => {
     await signIn(page, OWNER);
     await page.goto('/space');
-    await page.getByLabel('초대할 사람을 부를 이름').fill('막내');
+    await page.getByLabel('초대 이름').fill('막내');
     await page.getByTestId('invite-make').click();
     await expect(page.getByRole('status')).toContainText('초대 링크를 만들었어요');
     const row = page.getByTestId('invite-row').first();
@@ -143,7 +143,7 @@ test.describe.serial('보라핀 1단계', () => {
     await signIn(page, OWNER);
     await page.getByRole('link', { name: '기록하기', exact: true }).click();
     await pickPlace(page, 'ㄱㄹ', '강릉시');
-    await page.getByRole('button', { name: '몇 년쯤' }).click();
+    await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByLabel('연도').selectOption('2024');
     await page.getByPlaceholder('함께 간 사람 이름 (엄마, 동생…)').fill('엄마');
     await page.getByRole('button', { name: '추가', exact: true }).click();
@@ -161,7 +161,7 @@ test.describe.serial('보라핀 1단계', () => {
     await pickPlace(page, '일본', '일본');
     await page.getByPlaceholder(/도시/).fill('교토');
     await page.getByRole('button', { name: '도시 넣기' }).click();
-    await page.getByRole('button', { name: '계절만' }).click();
+    await page.getByRole('button', { name: '계절', exact: true }).click();
     await page.getByLabel('연도').selectOption('2025');
     await page.getByRole('button', { name: '가을' }).click();
     await page.getByLabel('제목').fill('교토 단풍 여행');
@@ -310,7 +310,7 @@ test.describe.serial('보라핀 1단계', () => {
     // 여행 만들기 → 예정된 여행, 카드는 '예정'
     await card.getByTestId('wish-plan').click();
     await expect(page).toHaveURL(/status=planned/);
-    await page.getByRole('button', { name: '몇 년쯤' }).click();
+    await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByTestId('save').click();
     await expect(page.getByTestId('trip-title')).toHaveText('제주 여행');
     await page.goto('/wishes');
@@ -526,11 +526,11 @@ test.describe.serial('보라핀 1단계', () => {
     ]);
     await expect(page.getByRole('status')).toContainText('사진 3장을 올렸어요', { timeout: 40_000 });
     await expect(sec.locator('.photo-cell img[data-loaded]')).toHaveCount(3);
-    // 촬영일(2019.5.3~4)로 날짜 채우기 → '(추정)'
+    // 촬영일(2019.5.3~4)로 날짜 채우기
     const sug = page.getByTestId('photo-suggest');
     await expect(sug).toContainText('2019.5.3–4');
     await sug.getByRole('button', { name: '채우기' }).click();
-    await expect(page.getByText('2019.5.3–4 (추정)')).toBeVisible();
+    await expect(page.getByText('2019.5.3–4', { exact: true }).first()).toBeVisible();
     await expect(page.getByTestId('photo-suggest')).toHaveCount(0);
     await shot(page, '12-photos');
     // 표지 사진은 개요 탭 위에
@@ -572,15 +572,20 @@ test.describe.serial('보라핀 1단계', () => {
     // 일정: 날짜가 있는 강릉 여행(사진으로 2019.5.3–4)
     await page.goto('/trips');
     await page.getByText('강릉시 여행', { exact: true }).click();
-    await page.getByRole('tab', { name: '일정' }).click();
+    // 다녀온 여행이라 '일정'이 아니라 '들른 곳', 보기는 그 지역 명소, 또 갈래요 하트
+    await page.getByRole('tab', { name: '들른 곳' }).click();
     const plan = page.getByTestId('plan-tab');
-    await plan.getByLabel('가볼 곳 추가').fill('경포대');
-    await plan.getByLabel('가볼 곳 추가').press('Enter');
-    await plan.getByLabel('가볼 곳 추가').fill('안목 커피거리');
+    await expect(plan.getByLabel('들른 곳 추가')).toHaveAttribute('placeholder', /예: 안목 커피거리/);
+    await plan.getByLabel('들른 곳 추가').fill('경포대');
+    await plan.getByLabel('들른 곳 추가').press('Enter');
+    await plan.getByLabel('들른 곳 추가').fill('안목 커피거리');
     await plan.getByRole('button', { name: '추가', exact: true }).click();
     // 우리 장소에서 바로 넣기
     await plan.getByRole('button', { name: '초당할머니순두부' }).click();
     await expect(plan.getByTestId('plan-item')).toHaveCount(3);
+    const again = plan.getByTestId('plan-item').filter({ hasText: '경포대' }).getByTestId('plan-again');
+    await again.click();
+    await expect(again).toHaveAttribute('aria-pressed', 'true');
     // ② 날짜 ③ 시간·예약
     await plan.getByRole('button', { name: /경포대/ }).click();
     await plan.getByLabel('날짜').selectOption('2019-05-04');

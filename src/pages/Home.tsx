@@ -76,7 +76,7 @@ export default function Home() {
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
           <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} nearZoom={nearZoom} />
-          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · ⛶ 를 누르면 전국이 보여요</div>
+          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6, lineHeight: 1.5 }}>지역을 누르면 바로 핀을 꽂을 수 있어요<br />⛶ 를 누르면 전국이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">
               {few ? (
@@ -119,20 +119,18 @@ export default function Home() {
         )}
 
         {/* 여행 전·중·후 카드가 있을 땐 지금 중요한 것만 크게 보이게, 둘러보기는 접어 둔다 */}
+        {/* 다음 여행 준비(다음은 어디 → 오늘의 한 질문 → 오늘의 영어 → 가는 길)는 여행 전·중·후에도 보인다 (영어·소식은 매일 쓰는 것) */}
+        {trips && wishes && <NextTripHub wishes={wishes} trips={trips} stats={stats} excludeTripId={stage?.trip.id ?? null} />}
         {stage ? (
           <details className="home-more" data-testid="home-more">
-            <summary><span>둘러보기 · 추천 · 가고 싶은 곳{memory ? ' · 추억' : ''}</span><Icon name="chev" size={16} /></summary>
+            <summary><span>이달의 추천 · 가고 싶은 곳{memory ? ' · 추억' : ''}</span><Icon name="chev" size={16} /></summary>
             <div className="home-more-body">
               {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
               {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
             </div>
           </details>
         ) : (
-          <>
-            {/* 여행과 여행 사이: 다음은 어디 → 오늘의 한 질문 → 오늘의 영어 → 가는 길, 그 아래 이달의 추천(미리 담아 두기) */}
-            {trips && wishes && <NextTripHub wishes={wishes} trips={trips} stats={stats} />}
-            {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
-          </>
+          trips && wishes && <MonthPick stats={stats} wishes={wishes} />
         )}
 
         {memory && !stage && (
