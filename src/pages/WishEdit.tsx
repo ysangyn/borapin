@@ -94,7 +94,17 @@ export default function WishEdit() {
   };
 
   const toggle = (n: string) => setWantedBy((w) => (w.includes(n) ? w.filter((x) => x !== n) : [...w, n]));
-  const dirty = !saving && (editing ? loaded && !!existing && (spotName !== (existing.spotName ?? '') || note !== (existing.note ?? '') || spots !== existing.spots.join('\n') || todos !== existing.todos.join('\n') || foods !== existing.foods.join('\n')) : !!(spotName.trim() || note.trim() || spots.trim() || todos.trim() || foods.trim()));
+  // 쓰던 내용이 있는지: 화면의 모든 칸을 처음 모습과 비교한다 (어떤 칸을 바꿔도 나갈 때 묻게)
+  const snapshot = JSON.stringify({
+    place, spotName: spotName.trim(), wantedBy: [...wantedBy].sort(), priority,
+    spots: lines(spots), todos: lines(todos), foods: lines(foods), links: lines(links), note: note.trim(),
+    months: pickMonths ? [...months].sort((a, b) => a - b) : [],
+  });
+  const [initial, setInitial] = useState<string | null>(null);
+  useEffect(() => {
+    if (loaded && initial === null) setInitial(snapshot);
+  }, [loaded, initial, snapshot]);
+  const dirty = !saving && initial !== null && snapshot !== initial;
   useLeaveGuard(dirty);
 
   const remove = () => {
@@ -123,7 +133,8 @@ export default function WishEdit() {
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
           <PlacePicker value={place ? [place] : []} onChange={(v) => setPlaces(v.slice(-1))} />
-          <input className="input" aria-label="가게·명소 이름" placeholder="특정 가게·명소가 있다면 (선택, 예: 성산일출봉)" value={spotName} onChange={(e) => setSpotName(e.target.value)} maxLength={60} />
+          <span className="tiny muted" style={{ marginTop: 4 }}>특정 장소 (선택)</span>
+          <input className="input" aria-label="가게·명소 이름" placeholder="예: 성산일출봉, 단골 카페" value={spotName} onChange={(e) => setSpotName(e.target.value)} maxLength={60} />
         </div>
 
         <div className="field">
@@ -131,7 +142,10 @@ export default function WishEdit() {
           <div className="chips">
             {COUPLE.map((n) => (
               <button key={n} type="button" className={'chip heart-chip' + (wantedBy.includes(n) ? ' on-coral' : '')} onClick={() => toggle(n)} aria-pressed={wantedBy.includes(n)}>
-                <Icon name="heart" size={14} stroke={2.2} />{n}
+                {wantedBy.includes(n)
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>
+                  : <Icon name="heart" size={14} stroke={2.2} />}
+                {n}
               </button>
             ))}
             {COUPLE.every((n) => wantedBy.includes(n)) && <span className="tag coral" style={{ alignSelf: 'center' }}>둘 다 원해요</span>}

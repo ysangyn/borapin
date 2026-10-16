@@ -171,15 +171,17 @@ export default function PlaceEdit() {
         <div className="field">
           <span className="label">한 줄 평</span>
           {writers.map((w) => (
-            <input
-              key={w}
-              className="input"
-              aria-label={`${w} 한 줄 평`}
-              placeholder={`${w}: 어땠어요?`}
-              value={reviews[w] ?? ''}
-              onChange={(e) => setReviews((r) => ({ ...r, [w]: e.target.value }))}
-              maxLength={140}
-            />
+            <label key={w} className="review-row">
+              <span className={'avatar ' + (w === '보라' ? 'bora' : 'ys')} aria-hidden="true">{w.slice(0, 1)}</span>
+              <input
+                className="input"
+                aria-label={`${w} 한 줄 평`}
+                placeholder="어땠어요?"
+                value={reviews[w] ?? ''}
+                onChange={(e) => setReviews((r) => ({ ...r, [w]: e.target.value }))}
+                maxLength={140}
+              />
+            </label>
           ))}
         </div>
 

@@ -47,6 +47,9 @@ export default function MapPage() {
             )}
           </div>
         )}
+        {stats && !sel && stats.tripsDone === 0 && (
+          <div className="chip floating map-coach" data-testid="map-coach">지역을 눌러 첫 핀을 꽂아 보세요</div>
+        )}
       </div>
 
       {sel && trips && <PlaceSheet key={JSON.stringify(sel)} place={sel} trips={trips} stats={stats} wishes={wishes ?? []} recs={recs ?? []} onClose={() => setSel(null)} />}

@@ -128,6 +128,9 @@ a { color: var(--violet); text-decoration: none; }
 .avatar + .avatar { margin-left: -10px; }
 .avatar.bora { background: #ffd8cc; color: #8a2e12; }
 .avatar.ys { background: #d9d0ff; color: #33248a; }
+.review-row { display: flex; gap: 10px; align-items: center; }
+.review-row .avatar { flex: none; width: 34px; height: 34px; }
+.review-row .input { flex: 1; min-width: 0; }
 
 /* ---------- 지도 ---------- */
 .map-wrap { position: relative; border-radius: 18px; overflow: hidden; background: #f1eff7; }
@@ -187,6 +190,7 @@ a { color: var(--violet); text-decoration: none; }
 .empty b { font-size: 16px; color: var(--ink); }
 
 .sheet-open .toast { bottom: auto; top: calc(14px + env(safe-area-inset-top, 0px)); }
+.toast-region { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 50; }
 .toast-action { border: none; background: none; color: #c9bcff; font-weight: 800; font-size: 14px; padding: 8px 4px; margin: -8px -4px; white-space: nowrap; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 20px + var(--safe-b)); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; z-index: 50; box-shadow: 0 8px 24px rgba(23, 20, 43, 0.25); display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); }
 
@@ -387,6 +391,8 @@ a { color: var(--violet); text-decoration: none; }
 .art { position: relative; aspect-ratio: 1; border-radius: 28px; overflow: hidden; background-size: cover; background-position: center; margin: 0 auto; }
 .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s; }
 .art img.on { opacity: 1; }
+.map-coach { align-self: flex-start; border: none; background: var(--night); color: #fff; font-weight: 700; }
+.empty-figure { width: 132px; height: auto; margin: 0 auto 4px; display: block; }
 .rest-art { width: 190px; height: auto; margin-bottom: -6px; }
 .art-row { display: flex; gap: 14px; align-items: center; }
 .art-row > img { width: 80px; height: auto; flex: none; }

@@ -131,8 +131,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastCtx.Provider value={show}>
       {children}
+      {/* 읽어 주는 영역은 늘 붙여 둔다 (그때그때 붙이면 화면 읽기 프로그램이 놓친다) */}
+      <div className="toast-region" role="status" aria-live="polite">
       {t && (
-        <div className="toast" role="status">
+        <div className="toast" key={t.id}>
           <span>{t.msg}</span>
           {t.action && (
             <button
@@ -147,6 +149,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           )}
         </div>
       )}
+      </div>
     </ToastCtx.Provider>
   );
 }

@@ -187,7 +187,7 @@ export default function Record() {
           {when.p === 'season' && (
             <div className="chips">
               {SEASONS.map((s) => (
-                <button key={s} type="button" className={'chip' + (when.s === s ? ' soft-on' : '')} onClick={() => setWhen({ ...when, s })}>{SEASON_LABEL[s]}</button>
+                <button key={s} type="button" aria-pressed={when.s === s} className={'chip' + (when.s === s ? ' soft-on' : '')} onClick={() => setWhen({ ...when, s })}>{SEASON_LABEL[s]}</button>
               ))}
             </div>
           )}

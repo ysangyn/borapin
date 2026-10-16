@@ -10,7 +10,7 @@ import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
 import { whenSortKey } from '../lib/dates';
-import { ScenicPhoto } from '../components/Scene';
+import { times } from '../lib/ko';
 
 type Filter = 'all' | 'kr' | 'abroad';
 
@@ -81,7 +81,7 @@ export default function Trips() {
         </div>
 
         <section>
-          <div className="small" style={{ fontWeight: 700, color: 'var(--violet)', marginBottom: 2 }}>다가오는 여행</div>
+          <h2 className="h2" style={{ marginBottom: 4 }}>다가오는 여행</h2>
           {planned.length ? (
             <div className="list">{planned.map((t) => <TripRow key={t.id} trip={t} />)}</div>
           ) : (
@@ -92,9 +92,30 @@ export default function Trips() {
           )}
         </section>
 
+        <section>
+          <h2 className="h2" style={{ marginBottom: 4 }}>다녀온 곳</h2>
+          {!trips && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
+          {trips && done.length === 0 && (
+            <div className="empty">
+              {!(q || filter !== 'all' || who) && <img className="empty-figure" src="/art/bora-login.webp" alt="" aria-hidden="true" width={540} height={584} decoding="async" />}
+              <b>{q || filter !== 'all' || who ? '조건에 맞는 기록이 없어요' : '아직 다녀온 기록이 없어요'}</b>
+              {q || filter !== 'all' || who ? (
+                <button className="btn sm ghost" onClick={() => { setQ(''); setFilter('all'); setWho(''); }}>조건 지우기</button>
+              ) : (
+                <Link to="/record" className="btn sm">기록 남기기</Link>
+              )}
+            </div>
+          )}
+          {[...byYear.entries()].map(([y, ts]) => (
+            <div key={y}>
+              <div className="year-head">{y}년 · {times(ts.length)}</div>
+              <div className="list">{ts.map((t) => <TripRow key={t.id} trip={t} />)}</div>
+            </div>
+          ))}
+        </section>
         <section data-testid="trips-wishes">
           <div className="row-between" style={{ marginBottom: 4 }}>
-            <h2 className="h2" style={{ color: '#b4472c' }}>가고 싶은 곳</h2>
+            <h2 className="h2">가고 싶은 곳</h2>
             <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{activeWishes.length ? `모두 보기 ${activeWishes.length}` : '담으러 가기'}</Link>
           </div>
           {!wishes || !trips ? null : activeWishes.length === 0 ? (
@@ -121,27 +142,6 @@ export default function Trips() {
           <Icon name="chev" size={18} />
         </Link>
 
-        <section>
-          <h2 className="h2" style={{ marginBottom: 4 }}>다녀온 곳</h2>
-          {!trips && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
-          {trips && done.length === 0 && (
-            <div className="empty">
-              {!(q || filter !== 'all' || who) && <ScenicPhoto id="jeonju" className="photo-banner empty-photo" alt="" />}
-              <b>{q || filter !== 'all' || who ? '조건에 맞는 기록이 없어요' : '아직 다녀온 기록이 없어요'}</b>
-              {q || filter !== 'all' || who ? (
-                <button className="btn sm ghost" onClick={() => { setQ(''); setFilter('all'); setWho(''); }}>조건 지우기</button>
-              ) : (
-                <Link to="/record" className="btn sm">기록 남기기</Link>
-              )}
-            </div>
-          )}
-          {[...byYear.entries()].map(([y, ts]) => (
-            <div key={y}>
-              <div className="year-head">{y} · {ts.length}번</div>
-              <div className="list">{ts.map((t) => <TripRow key={t.id} trip={t} />)}</div>
-            </div>
-          ))}
-        </section>
       </div>
     </>
   );

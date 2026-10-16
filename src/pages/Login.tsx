@@ -95,9 +95,16 @@ function EmailLogin() {
   };
   return (
     <form className="email-login" onSubmit={(e) => { e.preventDefault(); submit(); }} data-testid="email-form">
-      <div className="seg tabs" role="radiogroup" aria-label="로그인 또는 가입">
-        <button type="button" role="radio" aria-checked={mode === 'in'} className={mode === 'in' ? 'on' : ''} onClick={() => { setMode('in'); setMsg(null); }}>로그인</button>
-        <button type="button" role="radio" aria-checked={mode === 'up'} className={mode === 'up' ? 'on' : ''} onClick={() => { setMode('up'); setMsg(null); }}>처음이에요</button>
+      <div className="seg tabs" role="radiogroup" aria-label="로그인 또는 가입" onKeyDown={(e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        const next = mode === 'in' ? 'up' : 'in';
+        setMode(next);
+        setMsg(null);
+        (e.currentTarget.querySelector(`[data-mode="${next}"]`) as HTMLButtonElement | null)?.focus();
+      }}>
+        <button type="button" role="radio" data-mode="in" tabIndex={mode === 'in' ? 0 : -1} aria-checked={mode === 'in'} className={mode === 'in' ? 'on' : ''} onClick={() => { setMode('in'); setMsg(null); }}>로그인</button>
+        <button type="button" role="radio" data-mode="up" tabIndex={mode === 'up' ? 0 : -1} aria-checked={mode === 'up'} className={mode === 'up' ? 'on' : ''} onClick={() => { setMode('up'); setMsg(null); }}>처음이에요</button>
       </div>
       <input className="input" type="email" inputMode="email" autoComplete="email" aria-label="메일 주소" placeholder="메일 주소" value={email} onChange={(e) => setEmail(e.target.value)} />
       <input className="input" type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} aria-label="비밀번호" placeholder={mode === 'up' ? '비밀번호 (6자 이상)' : '비밀번호'} value={pw} onChange={(e) => setPw(e.target.value)} />

@@ -69,7 +69,7 @@ export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[]
           <input type="checkbox" checked={x.done} aria-label={`${x.t} 챙김`} onChange={(e) => edit(x, { done: e.target.checked })} />
           <span style={{ flex: 1 }}>{x.t}</span>
           <button className={'chip tiny-chip' + (x.who ? ' soft-on' : '')} onClick={() => edit(x, { who: nextWho(x.who) })} aria-label={`${x.t} 담당자`}>{x.who ?? '담당'}</button>
-          <button className="icon-btn" style={{ width: 36, height: 36 }} aria-label={`${x.t} 빼기`} onClick={() => { edit(x, null); toast(`'${x.t}' 뺐어요`, { label: '되돌리기', onClick: () => addItem(x.t) }); }}><Icon name="x" size={14} /></button>
+          <button className="icon-btn" style={{ width: 44, height: 44 }} aria-label={`${x.t} 빼기`} onClick={() => { edit(x, null); toast(`'${x.t}' 뺐어요`, { label: '되돌리기', onClick: () => addItem(x.t) }); }}><Icon name="x" size={14} /></button>
         </div>
       ))}
       {list.length > 0 && (
