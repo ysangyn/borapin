@@ -488,6 +488,9 @@ test.describe.serial('보라핀 1단계', () => {
     // 내 소식만 있으니 점은 없다
     await expect(page.getByTestId('feed-dot')).toHaveCount(0);
     await shot(page, '17-feed');
+    // 내가 피드를 보고 있는 동안 들어온 소식은 본 것으로 치므로, 먼저 홈으로 나간다
+    await page.goto('/');
+    await expect(page.getByTestId('nav-feed')).toBeVisible();
 
     // 보라가 핀을 꽂으면 → 내 화면 아래 메뉴에 새 소식 점, 피드에 들어가면 사라진다
     const bora = await browser.newPage();
@@ -501,8 +504,6 @@ test.describe.serial('보라핀 1단계', () => {
     await bora.getByTestId('save').click();
     await expect(bora.getByTestId('trip-title')).toHaveText('보라의 통영 나들이');
     await bora.close();
-    await page.goto('/');
-    await expect(page.getByTestId('nav-feed')).toBeVisible();
     await expect.poll(async () => page.evaluate(() => JSON.stringify((window as unknown as { __unseen?: unknown }).__unseen)), { timeout: 15_000, message: '점 계산 자료' }).toContain('"by":"보라"');
     const dbg = await page.evaluate(() => JSON.stringify((window as unknown as { __unseen?: unknown }).__unseen));
     await expect(page.getByTestId('feed-dot'), `새 소식 점이 없어요: ${dbg}`).toBeVisible({ timeout: 15_000 });
