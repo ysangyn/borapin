@@ -340,6 +340,16 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '10f-city-info');
     await page.getByTestId('wish-save').click();
     await expect(page.getByRole('status')).toContainText('고쳤어요');
+    // 현지어 한마디: 30문장, 묶음으로 거르기, 영어권은 오늘의 영어로
+    await page.goto('/phrases/ja?city=교토');
+    await expect(page.getByTestId('phrase-row')).toHaveCount(30);
+    await expect(page.getByTestId('phrases')).toContainText('교토에서');
+    await page.getByRole('tab', { name: '급할 때' }).click();
+    await expect(page.getByTestId('phrase-row')).toHaveCount(4);
+    await expect(page.getByTestId('phrase-row').first()).toContainText('도와주세요');
+    await shot(page, '10g-phrases');
+    await page.goto('/phrases/tr');
+    await expect(page.getByTestId('phrases')).toContainText('아직 없어요');
 
     // 홈 '다음 여행 준비'는 예정된 제주 여행을 맡고, 여행 탭에도 보인다
     await page.goto('/');

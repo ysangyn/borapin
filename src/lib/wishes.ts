@@ -5,8 +5,9 @@ import { everyoneWants } from './members';
 
 const ms = (t: { toMillis?: () => number } | null | undefined) => (t?.toMillis ? t.toMillis() : Date.now());
 
+/** 같은 곳인지: 국내는 시·군, 해외는 나라(+둘 다 도시가 있으면 도시까지) */
 export const samePlace = (a: Place, b: Place) =>
-  a.t === 'kr' ? b.t === 'kr' && a.code === b.code : b.t === 'country' && a.id === b.id;
+  a.t === 'kr' ? b.t === 'kr' && a.code === b.code : b.t === 'country' && a.id === b.id && (!a.city || !b.city || a.city === b.city);
 
 export type WishState = { kind: 'wish' } | { kind: 'planned'; trip: Trip } | { kind: 'done'; trip: Trip };
 

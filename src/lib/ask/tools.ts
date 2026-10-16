@@ -3,6 +3,7 @@
  * 기록은 폰 밖으로 나가지 않고, 여기서 고른 사실만 글로 만들어 모델에 준다.
  */
 import { computeStats, TOTAL_CELLS, TOTAL_GROUPS } from '../stats';
+import { cityFor, COST_LABEL, flyLabel, tzLabel, WALK_LABEL } from '../world';
 import { dday, formatWhen, SEASON_LABEL } from '../dates';
 import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, searchPlaces } from '../geo';
 import { candidates, THEMES } from '../recommend';
@@ -59,7 +60,15 @@ export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now 
           const p = placeArg(a);
           if (!p) { out.push('지역 정보: 지역을 모름'); break; }
           const c2 = p.t === 'kr' ? d.info.cells[p.code] : null;
-          if (!c2) { out.push(`${placeLong(p)}: 국내 여행정보 없음${p.t === 'country' ? ` (해외 · ${COUNTRY_BY_ID.get(p.id)?.continent ?? ''})` : ''}`); break; }
+          if (!c2) {
+            const w = cityFor(d.world ?? null, p);
+            if (w) {
+              out.push(`${w.city}(${COUNTRY_BY_ID.get(w.c)?.name ?? w.c}) 도시정보: ${w.line} / 가기 좋은 때 ${monthsLabel(w.best)}(${w.why}) / 볼 것 ${w.see.join(', ')} / 먹을 것 ${w.eat.join(', ')} / 돈 ${w.cur}, ${COST_LABEL[w.cost]} / 말 ${w.lang} / 콘센트 ${w.plug} / 인천에서 ${flyLabel(w.fly)}, ${tzLabel(w.tz)} / 걷기 ${WALK_LABEL[w.walk]} / 어울리는 동행 ${w.with.join('·')} / 입국 ${w.entry}(출발 전 확인) / 꼬리표 ${w.tags.join('·')}`);
+              out.push(`  ${addAction(`${w.city} 지도에서 보기`, { to: `/map?sel=${placeParam(p)}` })} ${addAction('가고 싶은 곳에 담기', { wish: p })}`);
+              break;
+            }
+            out.push(`${placeLong(p)}: 국내 여행정보 없음${p.t === 'country' ? ` (해외 · ${COUNTRY_BY_ID.get(p.id)?.continent ?? ''})` : ''}`); break;
+          }
           out.push(`${placeLong(p)} 여행정보: 테마 ${c2.main.theme} / 볼거리 ${c2.main.spots.join(', ')} / 먹거리 ${c2.main.foods.join(', ')} / 특산물 ${c2.main.goods.join(', ') || '없음'} / 교통 ${c2.main.transport.join(', ') || '없음'}${c2.main.note ? ` / 참고 ${c2.main.note}` : ''}${c2.subs.length ? ` / 구·군: ${c2.subs.slice(0, 5).map((s) => `${s.name}(${s.spots.slice(0, 2).join('·')})`).join(', ')}` : ''}`);
           out.push(`  ${addAction(`${placeLabel(p)} 지도에서 보기`, { to: `/map?sel=${placeParam(p)}` })} ${addAction('가고 싶은 곳에 담기', { wish: p })} ${addAction('여행 만들기', { to: `/record?status=planned&place=${placeParam(p)}` })}`);
           break;

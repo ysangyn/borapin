@@ -10,6 +10,7 @@ import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_COD
 import { candidates, THEMES } from '../recommend';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
+import { cityFor, COST_LABEL, flyLabel, tzLabel, WALK_LABEL, type WorldData } from '../world';
 import type { Note, Photo, PlanItem, Place, PlaceRec, Season, Trip, Wish } from '../types';
 import { festivalPeriod, isOngoing, upcomingFestivals, type FestivalData } from '../festivals';
 import { dday } from '../dates';
@@ -71,6 +72,8 @@ export interface AskData {
   photos?: Photo[];
   /** 일정 줄: 가볼 곳·날짜·시간·예약 정보 */
   plans?: PlanItem[];
+  /** 해외 도시 기본 정보 (world.json) */
+  world?: WorldData | null;
   now?: Date;
 }
 
@@ -199,13 +202,28 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
       const c = info(d, p);
       const ours = d.recs.filter((r) => samePlace(r.region, p));
       if (!c) {
-        // 해외: 기본 정보 + 가기 좋은 때 + 우리 기록
+        // 해외: 도시 자료(world.json)가 있으면 그걸로, 없으면 가기 좋은 때 + 우리 기록
         const country = p.t === 'country' ? COUNTRY_BY_ID.get(p.id) : null;
-        const lines = [seasonLine(d, p), visitsLine(d, p), ...ours.slice(0, 3).map((r) => `우리 장소: ${r.name}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`)].filter(Boolean) as string[];
+        const w = cityFor(d.world ?? null, p);
+        const oursLines = ours.slice(0, 3).map((r) => `우리 장소: ${r.name}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`);
+        if (w) {
+          const lines: string[] = [];
+          if (intent === 'foods') lines.push(`먹을 것: ${w.eat.join(', ')}`);
+          else if (intent === 'transport') lines.push(`인천에서 ${flyLabel(w.fly)} · ${tzLabel(w.tz)} · ${WALK_LABEL[w.walk]}`);
+          else if (intent === 'goods') lines.push(`돈: ${w.cur} · ${COST_LABEL[w.cost]} · 콘센트 ${w.plug}`);
+          else {
+            lines.push(w.line, `볼 것: ${w.see.join(', ')}`);
+            if (intent === 'overview') lines.push(`먹을 것: ${w.eat.join(', ')}`, `돈·말: ${w.cur} · ${w.lang} · 콘센트 ${w.plug}`, `입국: ${w.entry} (떠나기 전 확인)`);
+          }
+          const sl = seasonLine(d, p); if (sl) lines.push(sl);
+          lines.push(visitsLine(d, p), ...oursLines);
+          return { intent, text: `${w.city} · ${country?.name ?? ''}`.trim(), lines, buttons: [...placeButtons(p), ...search(`${w.city} ${intent === 'foods' ? '맛집' : '가볼만한곳'}`)], source: `보라핀 세계 도시 자료 ${d.world?.updated?.slice(0, 7).replace('-', '.') ?? ''} 기준 · 우리 기록` };
+        }
+        const lines = [seasonLine(d, p), visitsLine(d, p), ...oursLines].filter(Boolean) as string[];
         return {
           intent,
           text: `${placeName(p)}${country ? ` · ${country.continent}` : ''}`,
-          lines: [...lines, '해외 볼거리·먹거리 정보는 아직 모으는 중이에요. 아래 검색으로 이어서 볼 수 있어요.'],
+          lines: [...lines, '이 나라의 도시 정보는 아직 모으는 중이에요. 아래 검색으로 이어서 볼 수 있어요.'],
           buttons: [...placeButtons(p), ...search(`${placeName(p)} ${intent === 'foods' ? '맛집' : '가볼만한곳'}`)],
           source: '날씨: NASA POWER 월평균 · 우리 기록',
         };

@@ -17,6 +17,8 @@ import { useStudy } from '../lib/study/store';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
 import { upcomingTrips } from '../lib/stats';
+import { cityFor, flyLabel, tzLabel, useWorld } from '../lib/world';
+import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { dday, formatWhen } from '../lib/dates';
 import type { Place, Trip, Wish } from '../lib/types';
 
@@ -47,7 +49,7 @@ export default function NextTripHub({ wishes, trips, stats }: { wishes: Wish[]; 
         : <WishRolling wishes={wishes} trips={trips} stats={stats} bare />}
       {anchor && <TodayAsk place={anchor.place} wish={anchor.wish} />}
       <TodayEnglish />
-      {anchor && <WayThere place={anchor.place} months={anchor.wish?.months} />}
+      {anchor && <WayThere place={anchor.place} months={anchor.wish?.months} wishId={anchor.wish?.id ?? null} />}
     </section>
   );
 }
@@ -207,7 +209,7 @@ function TodayEnglish() {
 }
 
 /** 4. 가는 길 — 가기 좋은 때 · 축제 · 항공권 · 소식 한 줄 (바깥 링크는 여기만) */
-function WayThere({ place, months }: { place: Place; months?: number[] }) {
+function WayThere({ place, months, wishId }: { place: Place; months?: number[]; wishId?: string | null }) {
   const nav = useNavigate();
   const seasons = useSeasons();
   const fest = useFestivals();
@@ -215,15 +217,20 @@ function WayThere({ place, months }: { place: Place; months?: number[] }) {
   const f = place.t === 'kr' ? upcomingFestivals(fest, place.code, new Date(), 60)[0] : undefined;
   const flights = flightLinks(place, s?.m[0] ?? null);
   const news = useNews(place);
+  const world = useWorld();
+  const city = cityFor(world, place);
   const good = news?.[0] ?? null;
-  if (!s && !f && !flights && !good) return null;
+  if (!s && !f && !flights && !good && !city) return null;
   return (
     <div className="hub-block card white" data-testid="hub-way">
       <div className="hub-label">{placeLong(place)} 가는 길</div>
       <div className="hub-way-rows">
         {s && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="sun" size={16} /><span>가기 좋은 때 <b>{monthsLabel(s.m)}</b>{s.why ? ` · ${s.why}` : ''}</span></button>}
         {f && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="flag" size={16} /><span>{isOngoing(f) ? '지금 열리는 축제' : '다가오는 축제'} <b>{f.t}</b> · {festivalPeriod(f)}</span></button>}
-        {flights && <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label}{s ? ` · ${s.m[0]}월` : ''}</span></a>}
+        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzLabel(city.tz)}</span></button>}
+        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{city.entry}</b> · 떠나기 전 확인</span></button>}
+        {city && phraseLangFor(city.lang) && phraseLangFor(city.lang) !== 'en' && <button className="hub-way-row" onClick={() => nav(`/phrases/${phraseLangFor(city.lang)}?city=${encodeURIComponent(city.city)}`)} data-testid="hub-phrases"><Icon name="play" size={16} /><span>{LANG_LABEL[phraseLangFor(city.lang)!]} 한마디 30문장 · 인사·식당·길</span></button>}
+        {flights && <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label} · 인천에서 {city ? flyLabel(city.fly) : ''}{s ? ` · ${s.m[0]}월` : ''}</span></a>}
         {good && <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>}
       </div>
     </div>

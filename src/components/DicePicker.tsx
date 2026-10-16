@@ -12,6 +12,7 @@ import { monthsLabel, seasonFor, type SeasonData } from '../lib/seasons';
 import type { TravelInfo } from '../lib/travelinfo';
 import { quickWish } from '../lib/wishActions';
 import type { Wish } from '../lib/types';
+import WorldPicker from './WorldPicker';
 
 /** 여행지 뽑기 (v21 주사위): 조건을 골라 한 곳을 뽑는다 */
 export default function DicePicker({ stats, info, seasons, wishes }: {
@@ -73,18 +74,20 @@ export default function DicePicker({ stats, info, seasons, wishes }: {
       <select className="select" aria-label="뽑을 범위" value={scope} onChange={(e) => setScope(e.target.value)}>
         <option value="kr">국내 전체</option>
         {GROUPS.map((g) => <option key={g.id} value={g.id}>{g.id === 'jngj' ? '광주·전남' : g.name}</option>)}
-        <option value="world">해외 나라</option>
+        <option value="world">해외 도시</option>
       </select>
-      {scope !== 'world' && (
+      {scope === 'world' ? (
+        <WorldPicker stats={stats} wishes={wishes} unvisitedOnly={unvisited} />
+      ) : (
         <div className="chips">
           {THEMES.map((t) => (
             <button key={t.id} type="button" className={'chip' + (theme === t.id ? ' soft-on' : '')} onClick={() => setTheme(theme === t.id ? null : t.id)}>{t.label}</button>
           ))}
         </div>
       )}
-      <button className="btn" onClick={roll} disabled={rolling} data-testid="dice-roll"><Icon name="dice" size={18} />{face ? '다시 뽑기' : '뽑기'}</button>
-      {none && <div className="small muted">조건에 맞는 곳이 없어요. 조건을 바꿔 보세요.</div>}
-      {face && (
+      {scope !== 'world' && <button className="btn" onClick={roll} disabled={rolling} data-testid="dice-roll"><Icon name="dice" size={18} />{face ? '다시 뽑기' : '뽑기'}</button>}
+      {scope !== 'world' && none && <div className="small muted">조건에 맞는 곳이 없어요. 조건을 바꿔 보세요.</div>}
+      {scope !== 'world' && face && (
         <div className={'dice-face' + (rolling ? ' rolling' : '')} data-testid="dice-face" aria-live="polite">
           {!rolling && photoForPlace(face.place) && <ScenicPhoto photo={photoForPlace(face.place)} className="photo-banner" />}
           <div style={{ fontSize: 20, fontWeight: 800 }}>{placeLong(face.place)}</div>

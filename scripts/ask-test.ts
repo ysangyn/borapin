@@ -4,6 +4,7 @@
  */
 import travelinfo from '../src/data/travelinfo.json' with { type: 'json' };
 import seasons from '../src/data/seasons.json' with { type: 'json' };
+import world from '../src/data/world.json' with { type: 'json' };
 import { ask, type AskCtx, type AskData } from '../src/lib/ask/engine';
 import { placeParam } from '../src/lib/geo';
 import type { Note, PlaceRec, Trip, Wish } from '../src/lib/types';
@@ -29,7 +30,7 @@ const recs: PlaceRec[] = [
 const wishes: Wish[] = [{ id: 'w1', place: { t: 'kr', code: '50' }, priority: 1, spots: [], todos: [], foods: [], note: '', source: 'app', v: 1 } as Wish];
 const notes: Note[] = [{ id: 'n1', tripId: 't1', text: '바다 보며 커피 마신 날', by: { uid: 'u', name: '영상' }, v: 1 }];
 const festivals: FestivalData = { updated: '2026-10-16', cells: { '51150': [{ t: '강릉커피축제', s: '20261023', e: '20261026', id: 'f1' }], '50': [{ t: '제주 올레걷기축제', s: '20261105', e: '20261107', id: 'f2' }], '26': [{ t: '부산불꽃축제', s: '20261017', e: '20261017', id: 'f3' }] } };
-const data: AskData = { trips, wishes, recs, notes, festivals, info: travelinfo as never, seasons: seasons as never, now: new Date('2026-10-16T12:00:00+09:00') };
+const data: AskData = { trips, wishes, recs, notes, festivals, info: travelinfo as never, seasons: seasons as never, world: world as never, now: new Date('2026-10-16T12:00:00+09:00') };
 
 let ok = 0;
 const fails: string[] = [];

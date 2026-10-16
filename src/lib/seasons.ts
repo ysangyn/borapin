@@ -27,11 +27,18 @@ export function loadSeasons(): Promise<SeasonData> {
   return cache;
 }
 
+/** 해외 도시는 나라 평균보다 도시 자료(world.json)의 좋은 달이 정확하다. 자료가 실리면 여기 등록된다 */
+const CITY: Map<string, SeasonInfo> = new Map();
+export function registerCitySeasons(list: { c: string; city: string; best: number[]; why: string }[]) {
+  for (const w of list) CITY.set(`${w.c}:${w.city}`, { m: w.best, why: w.why, at: w.city });
+}
+
 export function useSeasons(): SeasonData | null {
   const [d, setD] = useState<SeasonData | null>(null);
   useEffect(() => {
     let alive = true;
-    loadSeasons().then((x) => alive && setD(x));
+    // 도시 자료도 함께 실어 두면 seasonFor가 도시 단위로 답한다 (실패해도 나라 자료로 간다)
+    Promise.all([loadSeasons(), import('./world').then((m) => m.loadWorld()).then((w) => registerCitySeasons(w.cities), () => null)]).then(([x]) => alive && setD(x));
     return () => {
       alive = false;
     };
@@ -42,7 +49,8 @@ export function useSeasons(): SeasonData | null {
 export function seasonFor(data: SeasonData | null, p: Place, override?: number[]): SeasonInfo | null {
   if (override?.length) return { m: [...override].sort((a, b) => a - b), why: '직접 고른 달' };
   if (!data) return null;
-  return (p.t === 'kr' ? data.kr[p.code] : data.world[p.id]) ?? null;
+  if (p.t === 'kr') return data.kr[p.code] ?? null;
+  return (p.city ? CITY.get(`${p.id}:${p.city}`) : null) ?? data.world[p.id] ?? null;
 }
 
 /** [3,4,5,9,10] → '3~5, 9·10월', [11,12,1,2] → '11~2월' (12월→1월은 이어진 것으로), 열두 달 → '언제든' */

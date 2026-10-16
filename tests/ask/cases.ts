@@ -92,8 +92,10 @@ export const CASES: Case[] = [
   { q: '통영 담아줘', intent: 'wishAdd' },
   // 해외
   { q: '일본', intent: 'overview', place: 'country:JPN', has: '우리는' },
-  { q: '교토 맛집', intent: 'foods', place: 'country:JPN' },
-  { q: '오사카 볼거리', intent: 'spots', place: 'country:JPN' },
+  { q: '교토 맛집', intent: 'foods', place: 'country:JPN', has: '가이세키' },
+  { q: '오사카 볼거리', intent: 'spots', place: 'country:JPN', has: '도톤보리' },
+  { q: '방콕 어떻게 가', intent: 'transport', place: 'country:THA', has: '인천에서' },
+  { q: '파리 여행', intent: 'overview', place: 'country:FRA', has: '입국' },
   { q: '파리', intent: 'overview', place: 'country:FRA' },
   { q: '괌 언제 가', intent: 'season', place: 'country:GUM' },
   // 지도

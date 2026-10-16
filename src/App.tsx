@@ -18,6 +18,7 @@ const Memories = lazy(() => import('./pages/Memories'));
 const Feed = lazy(() => import('./pages/Feed'));
 const Backdrop = lazy(() => import('./components/Backdrop'));
 const Study = lazy(() => import('./pages/Study'));
+const Phrases = lazy(() => import('./pages/Phrases'));
 const Space = lazy(() => import('./pages/Space'));
 const Wishes = lazy(() => import('./pages/Wishes'));
 const WishEdit = lazy(() => import('./pages/WishEdit'));
@@ -97,6 +98,7 @@ export default function App() {
               <Route path="/memories" element={<Memories />} />
               <Route path="/feed" element={<Feed />} />
               <Route path="/study" element={<Study />} />
+              <Route path="/phrases/:lang" element={<Phrases />} />
               <Route path="/space" element={<Space />} />
               <Route path="/wishes" element={<Wishes />} />
               <Route path="/wishes/:id" element={<WishEdit />} />

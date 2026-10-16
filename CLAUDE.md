@@ -34,3 +34,9 @@
 - 실제 기록을 지우거나 옮기는 일은 사용자 확인 뒤에만 한다.
 - 화면 글은 쉬운 우리말로. 버튼과 알림의 동사를 맞춘다 (예: '담기' → '담았어요'). 횟수는 `times()`, '로/으로'는 `withRo()`(src/lib/ko.ts).
 - 꾸밈: 장소는 위키미디어 공용의 실제 사진(media/picks.json → CI가 줄임), 사람이 나오는 순간은 보라 그림(public/art). 출처는 /credits에 자동으로 나온다.
+
+## 손으로 정리한 자료 (빌드에 고정, 바깥 서비스 없음)
+- `src/data/world.json` 세계 도시 125곳 속성(좋은 달·물가·비행시간·꼬리표·걷기·동행·통화·말·콘센트·시차·입국 메모·먹을 것·볼 것). 원본은 작업 공간 `scratchpad/world/rows.py`가 아니라 이 JSON이 기준. 고칠 땐 `tests/unit/world.test.ts`가 지킴.
+- `src/data/phrases.json` 현지어 여행 표현 10개 말 × 30문장(우리말·현지 글·한글 발음). `tests/unit/phrases.test.ts`.
+- `src/data/questions.json` 오늘의 한 질문 60개(`{place}` 자리). `tests/unit/askOfDay.test.ts`.
+- 입국 조건·물가는 바뀌니 화면엔 '기준 달'과 '떠나기 전 확인'을 같이 보여 준다. 가격 숫자는 넣지 않는다.

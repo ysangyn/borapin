@@ -6,6 +6,7 @@ import { Icon, TopBar, useToast } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { useSeasons } from '../lib/seasons';
+import { useWorld } from '../lib/world';
 import { useFestivals } from '../lib/festivals';
 import { useAllNotes, useAllPlans } from '../lib/tripExtras';
 import { usePhotos } from '../lib/photos';
@@ -39,7 +40,8 @@ export default function Ask() {
   const [text, setText] = useState('');
   const end = useRef<HTMLDivElement>(null);
   const ready = !!(trips && wishes && recs && info);
-  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [] } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans]);
+  const world = useWorld();
+  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [], world } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans, world]);
 
   const [thinking, setThinking] = useState(false);
   // 말로 묻기 (폰 브라우저의 음성 인식, 무료). 지원하는 기기에서만 단추가 보인다

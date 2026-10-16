@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
+import CityInfo from '../components/CityInfo';
 
 import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, useTrips, useWishes } from '../lib/data';
@@ -164,6 +165,17 @@ export default function WishEdit() {
           </div>
         </div>
 
+        {place && place.t === 'country' && (
+          <div className="field">
+            <span className="label">도시 정보 <span className="muted small">(눌러서 메모에 넣기)</span></span>
+            <CityInfo place={place} onAdd={(kind, text) => {
+              const cur = kind === 'foods' ? foods : spots;
+              if (lines(cur).includes(text)) return toast('이미 메모에 있어요');
+              (kind === 'foods' ? setFoods : setSpots)(cur.trim() ? `${cur.replace(/\s+$/, '')}\n${text}` : text);
+              toast(`${kind === 'foods' ? '먹을 것' : '가볼 곳'}에 넣었어요`);
+            }} />
+          </div>
+        )}
         <div className="field">
           <span className="label">가볼 곳 <span className="muted small">(한 줄에 하나)</span></span>
           <textarea className="textarea" aria-label="가볼 곳" rows={3} value={spots} onChange={(e) => setSpots(e.target.value)} placeholder={'성산일출봉\n우도'} />
