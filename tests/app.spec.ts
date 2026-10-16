@@ -606,6 +606,10 @@ test.describe.serial('보라핀 1단계', () => {
     // 준비물: 예정된 제주 여행
     await page.goto('/trips');
     await page.getByText('제주 여행', { exact: true }).click();
+    // 개요엔 준비 요약 한 줄 → 누르면 '준비' 탭 (준비물·가는 길·현지어가 한곳에)
+    await page.getByTestId('packing-summary').click();
+    await expect(page.getByRole('tab', { name: '준비' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('prep-way')).toContainText('제주공항');
     const pack = page.getByTestId('packing');
     await pack.getByRole('button', { name: '휴양' }).click();
     await expect(pack).toContainText('수영복');
