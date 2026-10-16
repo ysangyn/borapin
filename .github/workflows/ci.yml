@@ -181,7 +181,7 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa-test.json
           GCLOUD_PROJECT: borapin-test
-        run: npx tsx scripts/preview-env.ts cleanup
+        run: npx tsx scripts/preview-env.ts cleanup 2>&1 | tee -a preview-setup.txt
       - name: 열쇠 지우기
         if: always()
         run: rm -f "$RUNNER_TEMP/sa.json" "$RUNNER_TEMP/sa-test.json"
