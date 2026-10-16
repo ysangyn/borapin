@@ -122,6 +122,12 @@ test.describe('사람처럼 쓰기', () => {
     await expect(page.getByRole('button', { name: /경주시 빼기/ })).toBeVisible();
     await page.getByLabel('제목').click();
     await page.keyboard.type('경주 첫 벚꽃 여행', { delay: 30 });
+    // 언제를 안 골랐으면 저장 버튼 아래에 무엇이 빠졌는지 알려 준다
+    await expect(page.getByTestId('save')).toBeDisabled();
+    await expect(page.getByTestId('save-hint')).toContainText('대략 언제');
+    await page.getByRole('button', { name: '몇 년쯤' }).click();
+    await page.getByLabel('연도').selectOption('2024');
+    await expect(page.getByTestId('save-hint')).toHaveCount(0);
     await page.getByTestId('save').click();
     await expect(page.getByTestId('trip-title')).toHaveText('경주 첫 벚꽃 여행');
     const url = page.url();
@@ -195,6 +201,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.getByLabel('어디 검색').fill('단양');
     await page.getByRole('option', { name: /단양군/ }).first().click();
     await page.getByLabel('제목').fill('단양 끌어다 놓기 여행');
+    await page.getByRole('button', { name: '몰라요' }).click();
     await page.getByTestId('save').click();
     await expect(page.getByTestId('trip-title')).toHaveText('단양 끌어다 놓기 여행');
     await page.getByRole('tab', { name: /사진/ }).click();

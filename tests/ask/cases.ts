@@ -55,7 +55,7 @@ export const CASES: Case[] = [
   { q: '설악산', intent: 'choose' },
   { q: '중구 맛집', intent: 'choose' },
   // 우리 기록
-  { q: '강릉 몇 번 갔지?', intent: 'count', place: 'kr:51150', has: '1번' },
+  { q: '강릉 몇 번 갔지?', intent: 'count', place: 'kr:51150', has: '한 번' },
   { q: '부산 몇번 갔어', intent: 'count', place: 'kr:26' },
   { q: '강원도 몇 번 갔지', intent: 'count', has: '강원' },
   { q: '강릉 언제 갔지?', intent: 'when', place: 'kr:51150', has: '2019' },

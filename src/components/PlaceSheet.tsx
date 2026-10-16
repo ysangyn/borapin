@@ -15,6 +15,7 @@ import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
 import { ScenicPhoto } from './Scene';
+import { times } from '../lib/ko';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -101,7 +102,8 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   };
 
   return (
-    <div className="sheet" role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
+    <div className="sheet split" role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
+      <div className="sheet-scroll">
       <div className="grip" />
       {photoForPlace(place) && (
         <div style={{ position: 'relative' }}>
@@ -113,7 +115,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }} data-testid="sheet-title">{name}</div>
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           <div className="small muted">
-            {visits >= 2 ? `${visits}번 다녀왔어요` : visits === 1 ? '다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
+            {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>
         </div>
         <button className="icon-btn" aria-label="닫기" onClick={onClose}><Icon name="x" size={18} stroke={2.2} /></button>
@@ -136,7 +138,14 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
         {recsHere(recs, place).slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+      <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
+        <span style={{ flex: 1 }}>아래 '다녀왔어요'는 날짜 없이 핀만 꽂아요</span>
+        <a href={links.naver} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>네이버지도</a>
+        <a href={links.google} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>구글지도</a>
+      </div>
+      </div>
+      {/* 가장 많이 쓰는 버튼은 창 아래에 늘 보이게 (내용이 길어도 스크롤 밖) */}
+      <div className="sheet-actions">
         <button className="btn" style={{ flex: 1.15 }} disabled={busy || auth.status !== 'ready'} onClick={quickPin} data-testid="quick-pin">
           <Icon name="plus" size={17} stroke={2.4} />
           {busy ? '꽂는 중…' : done.length ? '또 다녀왔어요' : '다녀왔어요'}
@@ -151,11 +160,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
             <Icon name="heart" size={20} stroke={2.2} />
           </button>
         )}
-      </div>
-      <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
-        <span style={{ flex: 1 }}>'다녀왔어요'는 날짜 없이 핀만 꽂아요</span>
-        <a href={links.naver} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>네이버지도</a>
-        <a href={links.google} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>구글지도</a>
       </div>
     </div>
   );

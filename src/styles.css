@@ -164,6 +164,9 @@ a { color: var(--violet); text-decoration: none; }
 .info-subs summary::-webkit-details-marker { display: none; }
 .info-subs details[open] { display: flex; flex-direction: column; gap: 4px; }
 .link-btn { align-self: flex-start; border: none; background: none; padding: 8px 0; margin: -6px 0; color: var(--violet); font-weight: 700; font-size: 13px; }
+.sheet.split { display: flex; flex-direction: column; padding: 0; overflow: hidden; z-index: 35; }
+.sheet.split .sheet-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 20px 14px; }
+.sheet-actions { flex: none; display: flex; gap: 8px; padding: 10px 20px 12px; border-top: 1px solid var(--line); background: #fff; }
 .sheet .grip { width: 40px; height: 5px; border-radius: 3px; background: var(--line2); margin: 0 auto 10px; }
 
 /* ---------- 목록 행 ---------- */
@@ -225,7 +228,7 @@ a { color: var(--violet); text-decoration: none; }
 .heart svg { fill: none; stroke: currentColor; stroke-width: 2; }
 .heart.on { color: var(--coral-ink); font-weight: 700; }
 .heart.on svg { fill: var(--coral); stroke: var(--coral); }
-.rolling { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
+.rolling { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
 .rolling::-webkit-scrollbar { display: none; }
 .rolling-item { flex: 0 0 88%; scroll-snap-align: start; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 2px 12px; }
 .rolling-item .wish-card { border: none; }
@@ -358,6 +361,7 @@ a { color: var(--violet); text-decoration: none; }
   .login-card { width: 100%; max-width: 420px; border-radius: 28px; padding: 26px 28px 16px; box-shadow: 0 24px 60px rgba(23, 20, 43, 0.28); }
 }
 .login-mascot { position: absolute; right: 16px; bottom: calc(100% - 4px); width: 146px; height: auto; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(23, 20, 43, 0.18)); }
+@media (max-width: 370px) { .login-mascot { width: 118px; } }
 @media (min-width: 700px) and (min-height: 640px) { .login-mascot { right: 22px; width: 150px; } }
 .auth-mosaic { width: 150px; }
 .email-login { display: flex; flex-direction: column; gap: 10px; }
@@ -375,6 +379,8 @@ a { color: var(--violet); text-decoration: none; }
 /* ---------- 풍경 사진·영상 ---------- */
 .scene { position: relative; overflow: hidden; background-size: cover; background-position: center; }
 .scene video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* iOS 저전력 모드 등에서 자동 재생이 막혀도 재생 단추가 뜨지 않게 (정지 사진만 보인다) */
+.scene video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
 .scenic { position: relative; overflow: hidden; background-size: cover; background-position: center; }
 .scenic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s; }
 .scenic img.on { opacity: 1; }
@@ -436,14 +442,14 @@ a { color: var(--violet); text-decoration: none; }
 /* ---------- 이번 달 여행지 (큰 사진 카드) ---------- */
 .month-pick { position: relative; border-radius: 24px; overflow: hidden; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; color: #fff; isolation: isolate; }
 .month-pick-photo { position: absolute; inset: 0; z-index: -2; }
-.month-pick::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0) 30%, rgba(20, 14, 48, 0.78) 100%); }
-.month-pick-copy { display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 16px; }
+.month-pick::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0) 12%, rgba(20, 14, 48, 0.35) 45%, rgba(20, 14, 48, 0.86) 100%); }
+.month-pick-copy { display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 16px; text-shadow: 0 1px 10px rgba(20, 14, 48, 0.45); }
 .month-pick-eyebrow { font-size: 12px; font-weight: 800; opacity: 0.9; }
 .month-pick-name { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
 .month-pick-theme { font-size: 14px; font-weight: 600; opacity: 0.95; }
 .month-pick-months { font-size: 12px; opacity: 0.85; }
 .month-pick-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-.btn.glass { background: rgba(255, 255, 255, 0.2); color: #fff; backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.35); }
+.btn.glass { background: rgba(255, 255, 255, 0.2); color: #fff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.35); }
 .photo-banner { border-radius: 20px; aspect-ratio: 16 / 9; }
 .sheet-photo { margin: 0 -20px 12px; aspect-ratio: 16 / 8; }
 .sheet-photo-credit { position: absolute; right: 8px; bottom: 6px; font-size: 10px; color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }

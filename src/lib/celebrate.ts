@@ -13,6 +13,9 @@ export function confetti(origin?: { x: number; y: number }) {
   const W = window.innerWidth, H = window.innerHeight;
   c.width = W * dpr;
   c.height = H * dpr;
+  // 그리는 좌표와 화면 크기를 같게 (iOS 주소창·PC 스크롤바 때문에 늘어나지 않게)
+  c.style.width = `${W}px`;
+  c.style.height = `${H}px`;
   c.className = 'confetti';
   c.setAttribute('aria-hidden', 'true');
   document.body.appendChild(c);
@@ -76,6 +79,8 @@ export function celebrate() {
   if (typeof window === 'undefined') return;
   const img = cheerImg;
   const W = window.innerWidth, H = window.innerHeight;
+  // 연달아 축하할 일이 생겨도 한 번만
+  if (document.querySelector('.cheer')) return;
   if (img?.complete && img.naturalWidth) {
     const wrap = document.createElement('div');
     wrap.className = 'cheer';
@@ -89,7 +94,8 @@ export function celebrate() {
     setTimeout(done, 3200);
     // 보라가 든 핀 자리 (그림의 오른쪽 위)
     const w = 170, h = (w * img.naturalHeight) / img.naturalWidth;
-    confetti({ x: W / 2 - w / 2 + w * 0.79, y: H * 0.45 - h / 2 + h * 0.1 });
+    // 보라가 다 올라온 뒤에 터지게
+    setTimeout(() => confetti({ x: W / 2 - w / 2 + w * 0.79, y: H * 0.45 - h / 2 + h * 0.1 }), 360);
   } else {
     preloadCheer();
     confetti();
@@ -106,7 +112,7 @@ export function whatsNew(before: Trip[], after: Trip[]): string | null {
   const newCountries = [...b.countryVisits.keys()].filter((k) => !a.countryVisits.has(k)).length;
   const had = new Set(badges(before, a, [], []).filter((x) => x.have >= x.need).map((x) => x.id));
   const got = badges(after, b, [], []).filter((x) => x.have >= x.need && !had.has(x.id));
-  if (got.length) return `'${got[0].name}' 뱃지를 받았어요`;
+  if (got.length) return `'${got[0].name}' 배지를 받았어요`;
   if (newCountries) return `처음 가본 나라! ${b.countryVisits.size}번째 나라예요`;
   if (newCells) return `처음 가본 곳! ${b.cellVisits.size}번째 시·군이에요`;
   return null;

@@ -37,7 +37,7 @@ function formatWhenBase(w: When): string {
     case 'month':
       return w.y && w.m ? `${w.y}년 ${w.m}월쯤` : w.y ? `${w.y}년쯤` : '날짜 모름';
     case 'season':
-      return w.y && w.s ? `${w.y} ${SEASON_LABEL[w.s]}` : w.s ? `${SEASON_LABEL[w.s]}` : '날짜 모름';
+      return w.y && w.s ? `${w.y}년 ${SEASON_LABEL[w.s]}` : w.s ? `${SEASON_LABEL[w.s]}` : '날짜 모름';
     case 'year':
       return w.y ? `${w.y}년쯤` : '날짜 모름';
     default:

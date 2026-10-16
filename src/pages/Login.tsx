@@ -5,6 +5,7 @@ import KoreaMosaic from '../components/KoreaMosaic';
 import { SceneVideo } from '../components/Scene';
 import { videoById } from '../lib/media';
 import { artById } from '../lib/art';
+import { withRo } from '../lib/ko';
 import { authErrorText, logOut, resendVerification, resetPassword, signInWithEmail, signInWithGoogle, signUpWithEmail, useRecheckAuth } from '../lib/auth';
 
 const Footer = () => (
@@ -87,7 +88,7 @@ function EmailLogin() {
     if (!email.trim()) return setMsg({ text: '위에 메일 주소를 먼저 적어 주세요' });
     try {
       await resetPassword(email);
-      setMsg({ ok: true, text: `${email.trim()}로 비밀번호를 바꾸는 메일을 보냈어요` });
+      setMsg({ ok: true, text: `${withRo(email.trim())} 비밀번호를 바꾸는 메일을 보냈어요` });
     } catch (e) {
       setMsg({ text: authErrorText(e) });
     }
@@ -118,7 +119,7 @@ export function VerifyEmail({ email }: { email: string | null }) {
     <div className="center-screen" data-testid="verify">
       <KoreaMosaic className="auth-mosaic" />
       <div style={{ fontSize: 20, fontWeight: 800 }}>메일함을 확인해 주세요</div>
-      <div className="small muted"><b style={{ color: 'var(--ink)' }}>{email}</b>로 인증 메일을 보냈어요.<br />메일의 링크를 누른 뒤 아래 버튼을 눌러 주세요.</div>
+      <div className="small muted"><b style={{ color: 'var(--ink)' }}>{email}</b>{email ? withRo(email).slice(email.length) : ''} 인증 메일을 보냈어요.<br />메일의 링크를 누른 뒤 아래 버튼을 눌러 주세요.</div>
       <button
         className="btn" disabled={busy} data-testid="verified"
         onClick={async () => {

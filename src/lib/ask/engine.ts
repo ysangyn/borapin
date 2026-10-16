@@ -14,6 +14,7 @@ import type { Place, PlaceRec, Season, Trip, Wish } from '../types';
 import { dailyShuffle, samePlace } from '../wishes';
 import { findMentions, type Mention } from './gazetteer';
 import { josa } from 'es-hangul';
+import { times } from '../ko';
 
 /** 이름 뒤 조사: '강릉시는', '부산을' */
 const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (w ? josa(w, pair) : '');
@@ -156,10 +157,10 @@ function visitsLine(d: AskData, p: Place) {
   const ts = tripsAt(d.trips, p);
   if (!ts.length) return '우리는 아직 안 가본 곳이에요.';
   const last = ts[0];
-  return `우리는 ${ts.length}번 다녀왔어요 · 최근 ${formatWhen(last.when)}`;
+  return `우리는 ${times(ts.length)} 다녀왔어요 · 최근 ${formatWhen(last.when)}`;
 }
 
-const INFO_SRC = (d: AskData) => `보라핀 여행정보 · ${d.info.updated} 확인`;
+const INFO_SRC = (d: AskData) => `보라핀 여행정보 · ${d.info.updated.replace(/^(\d{4})-(\d{2}).*/, (_, y, m) => `${y}년 ${Number(m)}월`)} 기준`;
 
 function info(d: AskData, p: Place) {
   return p.t === 'kr' ? d.info.cells[p.code] : null;
@@ -184,7 +185,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
           text: `${placeName(p)}${country ? ` · ${country.continent}` : ''}`,
           lines: [...lines, '해외 볼거리·먹거리 정보는 아직 모으는 중이에요. 아래 검색으로 이어서 볼 수 있어요.'],
           buttons: [...placeButtons(p), ...search(`${placeName(p)} ${intent === 'foods' ? '맛집' : '가볼만한곳'}`)],
-          source: 'NASA POWER 기후값 · 우리 기록',
+          source: '날씨: NASA POWER 월평균 · 우리 기록',
         };
       }
       const m = c.main;
@@ -225,7 +226,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
         text: s ? (monthsLabel(s.m) === '언제든' ? `${jo(placeName(p), '은/는')} 언제 가도 좋아요` : `${jo(placeName(p), '은/는')} ${jo(monthsLabel(s.m), '이/가')} 좋아요`) : `${placeName(p)}의 가기 좋은 때 자료가 없어요`,
         lines: [s ? `${s.why}${s.at ? ` (${s.at} 기준)` : ''}` : '', ours.length ? `우리가 갔던 때: ${[...new Set(ours)].join(', ')}` : ''].filter(Boolean),
         buttons: placeButtons(p),
-        source: 'NASA POWER 월별 기후값으로 계산',
+        source: '날씨: NASA POWER 월평균으로 계산',
       };
     }
     case 'count': {
@@ -233,7 +234,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
       const ts = tripsAt(d.trips, p);
       return {
         intent,
-        text: ts.length ? `${placeName(p)}에 ${ts.length}번 다녀왔어요` : `${jo(placeName(p), '은/는')} 아직 안 가봤어요`,
+        text: ts.length ? `${placeName(p)}에 ${times(ts.length)} 다녀왔어요` : `${jo(placeName(p), '은/는')} 아직 안 가봤어요`,
         lines: ts.slice(0, 6).map((t) => `${formatWhen(t.when)} · ${t.title}`),
         buttons: ts.length ? ts.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })) : placeButtons(p),
         source: '우리 기록',
@@ -287,7 +288,7 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
       return `${placeName(c.place)} · ${c.theme ?? ''}${s ? ` · ${monthsLabel(s.m)}` : ''}`;
     }),
     buttons: picks.flatMap((c) => [{ label: `${placeLabel(c.place)} 자세히`, ask: `${placeLabel(c.place)} 볼거리` }, { label: `${placeLabel(c.place)} 담기`, wish: c.place }]).concat([{ label: '다른 곳', ask: q + ' ' }]),
-    source: `${INFO_SRC(d)} · NASA POWER 기후값`,
+    source: `${INFO_SRC(d)} · 날씨: NASA POWER 월평균`,
   };
 }
 
@@ -398,7 +399,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       if (!p && groupId) {
         const g = GROUPS.find((x) => x.id === groupId)!;
         const list = done.filter((t) => t.places.some((x) => x.t === 'kr' && REGION_BY_CODE.get(x.code)?.group === groupId));
-        a = { intent, text: `${g.id === 'jngj' ? '광주·전남' : g.name}에 ${list.length}번 다녀왔어요`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: [], source: '우리 기록' };
+        a = { intent, text: `${g.id === 'jngj' ? '광주·전남' : g.name}에 ${times(list.length)} 다녀왔어요`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: [], source: '우리 기록' };
         break;
       }
       a = answerFor(intent, p, q, d, now);

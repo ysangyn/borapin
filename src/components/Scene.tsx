@@ -47,14 +47,15 @@ function useTall(enabled: boolean) {
 export function SceneVideo({ id, className, children }: { id: string; className?: string; children?: React.ReactNode }) {
   const v = videoById(id);
   const el = useRef<HTMLVideoElement>(null);
-  const [still] = useState(preferStill);
+  const [still, setStill] = useState(preferStill);
   const tall = useTall(!!v?.portrait);
   const f = tall && v?.portrait ? v.portrait : v;
   useEffect(() => {
     const node = el.current;
     if (!node || still) return;
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) node.play().catch(() => undefined);
+      // 재생이 막히면(저전력 모드 등) 영상을 빼고 정지 사진만 남긴다
+      if (e.isIntersecting) node.play().catch(() => setStill(true));
       else node.pause();
     });
     io.observe(node);

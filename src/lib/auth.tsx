@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function authErrorText(e: unknown): string {
   const code = (e as { code?: string })?.code ?? '';
   if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(code)) return '메일 주소나 비밀번호가 맞지 않아요';
-  if (code === 'auth/email-already-in-use') return '이미 가입한 메일이에요. 로그인해 주세요. 구글로 가입했다면 구글로 시작하기를 눌러 주세요';
+  if (code === 'auth/email-already-in-use') return '이미 가입한 메일이에요. 로그인해 주세요. 구글로 가입했다면 "구글로 계속하기"를 눌러 주세요';
   if (code === 'auth/weak-password') return '비밀번호는 6자 이상으로 해 주세요';
   if (code === 'auth/invalid-email' || code === 'auth/missing-email') return '메일 주소를 확인해 주세요';
   if (code === 'auth/operation-not-allowed') return '아직 이메일 로그인이 켜지지 않았어요. 관리자에게 알려 주세요';

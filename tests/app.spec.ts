@@ -415,7 +415,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(answers.last()).toContainText('강원 강릉시는');
     await input.fill('강릉 몇 번 갔지?');
     await input.press('Enter');
-    await expect(answers.last()).toContainText('1번 다녀왔어요');
+    await expect(answers.last()).toContainText('한 번 다녀왔어요');
     await input.fill('고성 맛집');
     await input.press('Enter');
     await expect(answers.last()).toContainText('여러 곳');
@@ -464,7 +464,7 @@ test.describe.serial('보라핀 1단계', () => {
     // 공유 카드: 1080×1350 그림
     await page.goto('/memories');
     const sc = page.getByTestId('share-cards');
-    await sc.getByRole('button', { name: '나의 지도' }).click();
+    await sc.getByRole('button', { name: '우리 지도' }).click();
     await expect(sc.getByTestId('card-img')).toBeVisible();
     const size = await sc.getByTestId('card-img').evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight]);
     expect(size).toEqual([1080, 1350]);

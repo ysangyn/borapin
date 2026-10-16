@@ -117,7 +117,7 @@ jobs:
         with:
           name: site
           path: dist
-      - name: 배포 열쇠 준비 (실제 프로젝트: 호스팅 미리보기용)
+      - name: 배포 열쇠 준비 (실제 프로젝트, 호스팅 미리보기용)
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |

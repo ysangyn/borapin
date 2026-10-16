@@ -10,7 +10,7 @@ import { yearReview } from './yearReview';
 /** 공유카드 7종 (v19 계승). 인스타 4:5 (1080×1350) 그림으로 만든다. */
 export type CardKind = 'map' | 'progress' | 'year' | 'style' | 'season' | 'region' | 'quote';
 export const CARD_KINDS: { k: CardKind; label: string }[] = [
-  { k: 'map', label: '나의 지도' },
+  { k: 'map', label: '우리 지도' },
   { k: 'progress', label: '달성률' },
   { k: 'year', label: '올해의 여행' },
   { k: 'style', label: '여행 성향' },

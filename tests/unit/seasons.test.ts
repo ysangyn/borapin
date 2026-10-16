@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { monthsLabel } from '../../src/lib/seasons.ts';
+import { monthsLabel } from '../../src/lib/seasons';
 
 test('이어진 달은 물결(~), 떨어진 묶음은 쉼표로', () => {
   assert.equal(monthsLabel([3, 4, 5, 9, 10]), '3~5, 9·10월');

@@ -221,7 +221,8 @@ export default function Record() {
         <button className="btn block" disabled={!canSave} onClick={save} data-testid="save">
           {saving ? '저장 중…' : editing ? '고친 내용 저장' : '저장하기'}
         </button>
-        {!places.length && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }}>어디를 하나 이상 골라 주세요</div>}
+        {!places.length && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">어디를 하나 이상 골라 주세요</div>}
+        {places.length > 0 && !whenOk && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">대략 언제인지 골라 주세요 · 모르면 '몰라요'를 눌러요</div>}
       </div>
     </>
   );

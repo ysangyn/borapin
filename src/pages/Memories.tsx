@@ -61,7 +61,7 @@ export default function Memories() {
               <li><b>몇 년 전 오늘</b> 그날의 여행을 다시 꺼내 줘요</li>
               <li><b>지도 다시 보기</b> 해마다 지도가 채워진 순서</li>
               <li><b>한 해 결산</b> 처음 가본 곳, 가장 많이 간 곳</li>
-              <li><b>도전 뱃지</b> 핀 10개, 섬 탐험가, 사계절 여행</li>
+              <li><b>도전 배지</b> 핀 10개, 섬 탐험가, 사계절 여행</li>
             </ul>
             <Link to="/record" className="btn sm">기록 남기기</Link>
           </div>
@@ -129,7 +129,7 @@ export default function Memories() {
 
         <section data-testid="badges">
           <div className="row-between" style={{ marginBottom: 6 }}>
-            <h2 className="h2">도전 뱃지 · {earned.length}/{list.length}</h2>
+            <h2 className="h2">도전 배지 · {earned.length}/{list.length}</h2>
             {list.length > 6 && <button className="link-btn" onClick={() => setAllBadges(!allBadges)}>{allBadges ? '접기' : '모두 보기'}</button>}
           </div>
           <div className="badges">

@@ -74,8 +74,8 @@ export default function Ask() {
         {msgs.length === 0 && (
           <div className={'card' + (photoById('seorak') ? ' ask-hero' : '')} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: photoById('seorak') ? '64px 16px 16px' : undefined }}>
             {photoById('seorak') && <ScenicPhoto id="seorak" alt="" />}
-            <b style={{ fontSize: photoById('seorak') ? 20 : undefined }}>무엇이든 물어보세요</b>
-            <span className="small muted">국내 160곳 여행정보, 가기 좋은 때, 우리 기록을 바로 찾아 드려요. 인터넷이나 AI를 쓰지 않아 비용이 들지 않아요.</span>
+            <b style={{ fontSize: photoById('seorak') ? 20 : undefined }}>어디 갈지, 어디 갔었는지 물어보세요</b>
+            <span className="small muted">국내 160곳 여행정보와 가기 좋은 때, 우리 기록에서 바로 찾아 드려요.</span>
             <div className="chips">
               {STARTERS.map((s) => <button key={s} className="chip" onClick={() => send(s)} disabled={!ready}>{s}</button>)}
             </div>
