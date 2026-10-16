@@ -1,0 +1,33 @@
+
+> borapin@0.1.0 test:e2e
+> firebase emulators:exec --only auth,firestore --project demo-borapin "playwright test"
+
+[36m[1mi  emulators:[22m[39m Starting emulators: auth, firestore
+[36m[1mi  emulators:[22m[39m Detected demo project ID "demo-borapin", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+[33m[1m⚠ [22m[39m It appears you are running in a CI environment. You can avoid downloading the Firestore Emulator repeatedly by caching the /home/runner/.cache/firebase/emulators directory.
+[36m[1mi  firestore:[22m[39m downloading cloud-firestore-emulator-v1.22.0.jar...
+
+[36m[1mi  firestore:[22m[39m Firestore Emulator logging to [1mfirestore-debug.log[22m
+[32m[1m✔  firestore:[22m[39m Firestore Emulator was started in standard edition.
+[32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
+[36m[1mi [22m[39m Running script: [1mplaywright test[22m
+
+Running 9 tests using 1 worker
+
+  ✓  1 tests/app.spec.ts:44:3 › 보라핀 1단계 › 로그인 화면 (548ms)
+  ✓  2 tests/app.spec.ts:50:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (2.9s)
+  ✓  3 tests/app.spec.ts:57:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (1.7s)
+  ✓  4 tests/app.spec.ts:73:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (996ms)
+  ✓  5 tests/app.spec.ts:87:3 › 보라핀 1단계 › 여행 목록과 필터 (792ms)
+  ✓  6 tests/app.spec.ts:97:3 › 보라핀 1단계 › 홈 통계와 지도 (6.2s)
+  ✓  7 tests/app.spec.ts:115:3 › 보라핀 1단계 › v22 기록 가져오기 (2.0s)
+  ✓  8 tests/app.spec.ts:137:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다 (2.1s)
+  ✓  9 tests/app.spec.ts:153:3 › 보라핀 1단계 › 기록 고치기와 지우기 (1.8s)
+
+  9 passed (21.5s)
+[32m[1m✔ [22m[39m Script exited successfully (code 0)
+[36m[1mi  emulators:[22m[39m Shutting down emulators.
+[36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
+[36m[1mi  auth:[22m[39m Stopping Authentication Emulator
+[36m[1mi  hub:[22m[39m Stopping emulator hub
+[36m[1mi  logging:[22m[39m Stopping Logging Emulator
