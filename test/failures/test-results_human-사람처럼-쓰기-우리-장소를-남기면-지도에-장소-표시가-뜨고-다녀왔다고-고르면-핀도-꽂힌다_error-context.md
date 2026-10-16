@@ -93,6 +93,8 @@ Call log:
                 - generic: 베링해
                 - generic: 대한해협
                 - generic: "1"
+                - generic:
+                  - generic "우리 장소 1곳": "1"
             - generic [ref=f4e31]:
               - button "확대" [ref=f4e32] [cursor=pointer]
               - separator [ref=f4e35]
@@ -126,7 +128,7 @@ Call log:
           - generic [ref=f4e60]:
             - generic [ref=f4e62]:
               - link "제주 가고 싶은 곳 보기" [ref=f4e63] [cursor=pointer]:
-                - /url: /wishes/T6jDWZNFZ8MCoJCFk3NF
+                - /url: /wishes/7GCdGigLBxwRxfJCN2Wc
                 - generic [ref=f4e64]:
                   - text: 제주
                   - generic "1순위" [ref=f4e65]: "1"
@@ -139,31 +141,31 @@ Call log:
                     - generic [ref=f4e78]: 둘 다 원해요
                   - generic [ref=f4e79]: 가기 좋은 때 5·6, 9~11월
               - link "예정 · 2026년쯤" [ref=f4e81] [cursor=pointer]:
-                - /url: /trips/XTb53C6rqUG3B2KI0C9N
+                - /url: /trips/Vpl1BmEs9ErbJWHu0apA
             - generic [ref=f4e83]:
-              - link "경남 남해군 가고 싶은 곳 보기" [ref=f4e84] [cursor=pointer]:
-                - /url: /wishes/kSB3YVSdWB5w9C7tqnHR
-                - generic [ref=f4e85]: 경남
+              - link "강원 고성군 가고 싶은 곳 보기" [ref=f4e84] [cursor=pointer]:
+                - /url: /wishes/UD44e6PKEXpbLN5RX1mB
+                - generic [ref=f4e85]: 강원
                 - generic [ref=f4e86]:
-                  - generic [ref=f4e87]: 경남 남해군
+                  - generic [ref=f4e87]: 강원 고성군
                   - 'generic "원하는 사람: 영상" [ref=f4e89]':
                     - generic [ref=f4e90]: 보라
                     - generic [ref=f4e93]: 영상
-                  - generic [ref=f4e96]: 가기 좋은 때 4~6, 10·11월
+                  - generic [ref=f4e96]: 가기 좋은 때 5·6, 9·10월
               - link "여행 만들기" [ref=f4e98] [cursor=pointer]:
-                - /url: /record?status=planned&place=kr:48840&wish=kSB3YVSdWB5w9C7tqnHR
+                - /url: /record?status=planned&place=kr:51820&wish=UD44e6PKEXpbLN5RX1mB
             - generic [ref=f4e100]:
-              - link "강원 고성군 가고 싶은 곳 보기" [ref=f4e101] [cursor=pointer]:
-                - /url: /wishes/qKJXRE5918DBfOKUnTra
-                - generic [ref=f4e102]: 강원
+              - link "경남 남해군 가고 싶은 곳 보기" [ref=f4e101] [cursor=pointer]:
+                - /url: /wishes/hCVzf0jRxkHWTmqh5sjd
+                - generic [ref=f4e102]: 경남
                 - generic [ref=f4e103]:
-                  - generic [ref=f4e104]: 강원 고성군
+                  - generic [ref=f4e104]: 경남 남해군
                   - 'generic "원하는 사람: 영상" [ref=f4e106]':
                     - generic [ref=f4e107]: 보라
                     - generic [ref=f4e110]: 영상
-                  - generic [ref=f4e113]: 가기 좋은 때 5·6, 9·10월
+                  - generic [ref=f4e113]: 가기 좋은 때 4~6, 10·11월
               - link "여행 만들기" [ref=f4e115] [cursor=pointer]:
-                - /url: /record?status=planned&place=kr:51820&wish=qKJXRE5918DBfOKUnTra
+                - /url: /record?status=planned&place=kr:48840&wish=hCVzf0jRxkHWTmqh5sjd
         - generic [ref=f4e120]:
           - generic [ref=f4e121]:
             - img "서울 경복궁 경회루" [ref=f4e122]
@@ -178,7 +180,7 @@ Call log:
               - link "볼거리 보기" [ref=f4e135] [cursor=pointer]:
                 - /url: /ask?q=%EC%84%9C%EC%9A%B8%20%EB%B3%BC%EA%B1%B0%EB%A6%AC
         - link "교토 작년 가을 교토 단풍 여행 2025년 가을" [ref=f4e136] [cursor=pointer]:
-          - /url: /trips/LyA9eRGHjbvYGVwFQQXC
+          - /url: /trips/HTjE3npYXNtEsiG71nYD
           - generic [ref=f4e137]: 교토
           - generic [ref=f4e138]:
             - generic [ref=f4e139]: 작년 가을
@@ -193,36 +195,37 @@ Call log:
               - /url: /trips
           - generic [ref=f4e152]:
             - link "충북 단양 끌어다 놓기 여행 충북 단양군 · 날짜 모름" [ref=f4e153] [cursor=pointer]:
-              - /url: /trips/2gPmeuCu1iDTDXxPE4ZT
+              - /url: /trips/iiY8VwVZ65ocDVHkQLaS
               - generic [ref=f4e154]: 충북
               - generic [ref=f4e155]:
                 - generic [ref=f4e156]: 단양 끌어다 놓기 여행
                 - generic [ref=f4e157]: 충북 단양군 · 날짜 모름
-            - link "전북 전주시 여행 전북 전주시 · 날짜 모름" [ref=f4e158] [cursor=pointer]:
-              - /url: /trips/hmRUc5tsi5SkK4HUQglc
+            - link "전북 전주시 여행 전북 전주시 · 날짜 모름 mail.bora와 함께" [ref=f4e158] [cursor=pointer]:
+              - /url: /trips/a37et1Na7xJ1WIwz1hv6
               - generic [ref=f4e159]: 전북
               - generic [ref=f4e160]:
                 - generic [ref=f4e161]: 전주시 여행
                 - generic [ref=f4e162]: 전북 전주시 · 날짜 모름
-            - link "경북 경주 첫 벚꽃 여행 경북 경주시 · 2024년쯤" [ref=f4e163] [cursor=pointer]:
-              - /url: /trips/2hRfCOWzGAVkHMrosvFr
-              - generic [ref=f4e164]: 경북
-              - generic [ref=f4e165]:
-                - generic [ref=f4e166]: 경주 첫 벚꽃 여행
-                - generic [ref=f4e167]: 경북 경주시 · 2024년쯤
-      - navigation "주 메뉴" [ref=f4e168]:
-        - link "홈" [ref=f4e169] [cursor=pointer]:
+                - generic [ref=f4e163]: mail.bora와 함께
+            - link "경북 경주 첫 벚꽃 여행 경북 경주시 · 2024년쯤" [ref=f4e165] [cursor=pointer]:
+              - /url: /trips/uQHr7pWRs1HITFe90uZD
+              - generic [ref=f4e166]: 경북
+              - generic [ref=f4e167]:
+                - generic [ref=f4e168]: 경주 첫 벚꽃 여행
+                - generic [ref=f4e169]: 경북 경주시 · 2024년쯤
+      - navigation "주 메뉴" [ref=f4e170]:
+        - link "홈" [ref=f4e171] [cursor=pointer]:
           - /url: /
-        - link "여행" [ref=f4e172] [cursor=pointer]:
+        - link "여행" [ref=f4e174] [cursor=pointer]:
           - /url: /trips
-        - link "기록하기" [ref=f4e175] [cursor=pointer]:
+        - link "기록하기" [ref=f4e177] [cursor=pointer]:
           - /url: /record
-        - link "지도" [ref=f4e178] [cursor=pointer]:
+        - link "지도" [ref=f4e180] [cursor=pointer]:
           - /url: /map
-        - link "추억" [ref=f4e181] [cursor=pointer]:
+        - link "추억" [ref=f4e183] [cursor=pointer]:
           - /url: /memories
     - status
-  - iframe [aria-hidden] [ref=f4e184]
+  - iframe [aria-hidden] [ref=f4e186]
 ```
 
 # Test source
