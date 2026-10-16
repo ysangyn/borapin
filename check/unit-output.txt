@@ -6,189 +6,195 @@ TAP version 13
 # Subtest: 규칙형이 알아들은 짧은 질문은 규칙형으로 끝낸다
 ok 1 - 규칙형이 알아들은 짧은 질문은 규칙형으로 끝낸다
   ---
-  duration_ms: 1.632726
+  duration_ms: 1.06262
   type: 'test'
   ...
 # Subtest: 모르겠다·조건이 여럿·장소만 던진 긴 질문은 AI에게
 ok 2 - 모르겠다·조건이 여럿·장소만 던진 긴 질문은 AI에게
   ---
-  duration_ms: 0.25038
+  duration_ms: 0.167341
   type: 'test'
   ...
 # Subtest: 답에 사실에 없는 숫자가 있으면 지어낸 것으로 본다
 ok 3 - 답에 사실에 없는 숫자가 있으면 지어낸 것으로 본다
   ---
-  duration_ms: 0.288853
+  duration_ms: 0.225968
   type: 'test'
   ...
 # Subtest: 도구: 지명을 맞추고 여행정보·우리 기록·축제를 사실로 만든다 (단추는 id로)
 ok 4 - 도구: 지명을 맞추고 여행정보·우리 기록·축제를 사실로 만든다 (단추는 id로)
   ---
-  duration_ms: 124.945162
+  duration_ms: 67.50848
   type: 'test'
   ...
 # Subtest: 도구: 모르는 지명은 앞 대화 지역을 쓰고, 추천은 조건대로
 ok 5 - 도구: 모르는 지명은 앞 대화 지역을 쓰고, 추천은 조건대로
   ---
-  duration_ms: 2.55003
+  duration_ms: 1.596357
+  type: 'test'
+  ...
+# Subtest: 도구: 사진·일정도 사실로 만든다
+ok 6 - 도구: 사진·일정도 사실로 만든다
+  ---
+  duration_ms: 4.322375
   type: 'test'
   ...
 # Subtest: 같은 사람이 같은 여행에 같은 날 올린 사진은 한 묶음, 최신 것이 먼저
-ok 6 - 같은 사람이 같은 여행에 같은 날 올린 사진은 한 묶음, 최신 것이 먼저
+ok 7 - 같은 사람이 같은 여행에 같은 날 올린 사진은 한 묶음, 최신 것이 먼저
   ---
-  duration_ms: 2.214409
+  duration_ms: 6.92063
   type: 'test'
   ...
 # Subtest: 시각이 없는 기록은 피드에 안 나온다
-ok 7 - 시각이 없는 기록은 피드에 안 나온다
+ok 8 - 시각이 없는 기록은 피드에 안 나온다
   ---
-  duration_ms: 0.242376
+  duration_ms: 0.210334
   type: 'test'
   ...
 # Subtest: 얼마 전: 방금·분·시간·어제·일·날짜
-ok 8 - 얼마 전: 방금·분·시간·어제·일·날짜
+ok 9 - 얼마 전: 방금·분·시간·어제·일·날짜
   ---
-  duration_ms: 0.446228
+  duration_ms: 0.317535
   type: 'test'
   ...
 # Subtest: 안 본 소식 수: 마지막으로 본 뒤에 남이 남긴 것만
-ok 9 - 안 본 소식 수: 마지막으로 본 뒤에 남이 남긴 것만
+ok 10 - 안 본 소식 수: 마지막으로 본 뒤에 남이 남긴 것만
   ---
-  duration_ms: 0.436009
+  duration_ms: 0.272467
   type: 'test'
   ...
 # Subtest: 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
-ok 10 - 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
+ok 11 - 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
   ---
-  duration_ms: 1.807666
+  duration_ms: 0.732446
   type: 'test'
   ...
 # Subtest: 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
-ok 11 - 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
+ok 12 - 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
   ---
-  duration_ms: 14.888967
+  duration_ms: 10.96004
   type: 'test'
   ...
 # Subtest: 진행 중인 축제도 다가오는 축제에 들어간다
-ok 12 - 진행 중인 축제도 다가오는 축제에 들어간다
+ok 13 - 진행 중인 축제도 다가오는 축제에 들어간다
   ---
-  duration_ms: 0.256432
+  duration_ms: 0.212097
   type: 'test'
   ...
 # Subtest: 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
-ok 13 - 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
+ok 14 - 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
   ---
-  duration_ms: 0.305944
+  duration_ms: 0.171156
   type: 'test'
   ...
 # Subtest: 청도를 치면 국내 청도군이 먼저, 중국 칭다오도 뜬다
-ok 14 - 청도를 치면 국내 청도군이 먼저, 중국 칭다오도 뜬다
+ok 15 - 청도를 치면 국내 청도군이 먼저, 중국 칭다오도 뜬다
   ---
-  duration_ms: 69.485051
+  duration_ms: 46.850681
   type: 'test'
   ...
 # Subtest: 도시 본 이름(오사카·다낭)과 영문(osaka)으로도 찾는다
-ok 15 - 도시 본 이름(오사카·다낭)과 영문(osaka)으로도 찾는다
+ok 16 - 도시 본 이름(오사카·다낭)과 영문(osaka)으로도 찾는다
   ---
-  duration_ms: 74.987443
+  duration_ms: 32.518036
   type: 'test'
   ...
 # Subtest: 횟수는 열 번까지 우리말로
-ok 16 - 횟수는 열 번까지 우리말로
+ok 17 - 횟수는 열 번까지 우리말로
   ---
-  duration_ms: 1.192881
+  duration_ms: 0.658004
   type: 'test'
   ...
 # Subtest: '로/으로'는 영어 메일 주소도 읽는 소리대로
-ok 17 - '로/으로'는 영어 메일 주소도 읽는 소리대로
+ok 18 - '로/으로'는 영어 메일 주소도 읽는 소리대로
   ---
-  duration_ms: 0.70831
+  duration_ms: 0.530803
   type: 'test'
   ...
 # Subtest: 계절만 아는 날짜는 "2022년 여름"
-ok 18 - 계절만 아는 날짜는 "2022년 여름"
+ok 19 - 계절만 아는 날짜는 "2022년 여름"
   ---
-  duration_ms: 0.314721
+  duration_ms: 0.189193
   type: 'test'
   ...
 # Subtest: 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
-ok 19 - 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
+ok 20 - 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
   ---
-  duration_ms: 14.291475
+  duration_ms: 9.420459
   type: 'test'
   ...
 # Subtest: 셋 이상이면 두 사람 이름과 나머지 수
-ok 20 - 셋 이상이면 두 사람 이름과 나머지 수
+ok 21 - 셋 이상이면 두 사람 이름과 나머지 수
   ---
-  duration_ms: 0.252865
+  duration_ms: 0.203534
   type: 'test'
   ...
 # Subtest: 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
-ok 21 - 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
+ok 22 - 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
   ---
-  duration_ms: 0.324379
+  duration_ms: 0.191817
   type: 'test'
   ...
 # Subtest: 같은 이름이 두 번 들어오면 한 번만
-ok 22 - 같은 이름이 두 번 들어오면 한 번만
+ok 23 - 같은 이름이 두 번 들어오면 한 번만
   ---
-  duration_ms: 0.230854
+  duration_ms: 0.105849
   type: 'test'
   ...
 # Subtest: 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
-ok 23 - 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
+ok 24 - 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
   ---
-  duration_ms: 1.25599
+  duration_ms: 0.841639
   type: 'test'
   ...
 # Subtest: 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
-ok 24 - 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
+ok 25 - 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
   ---
-  duration_ms: 0.390144
+  duration_ms: 0.262803
   type: 'test'
   ...
 # Subtest: 열두 달 모두면 언제든
-ok 25 - 열두 달 모두면 언제든
+ok 26 - 열두 달 모두면 언제든
   ---
-  duration_ms: 0.18629
+  duration_ms: 0.092499
   type: 'test'
   ...
 # Subtest: 떠나기 전(14일 안): D-4
-ok 26 - 떠나기 전(14일 안): D-4
+ok 27 - 떠나기 전(14일 안): D-4
   ---
-  duration_ms: 1.17642
+  duration_ms: 1.064703
   type: 'test'
   ...
 # Subtest: 여행 중: 2일째
-ok 27 - 여행 중: 2일째
+ok 28 - 여행 중: 2일째
   ---
-  duration_ms: 0.16505
+  duration_ms: 0.155152
   type: 'test'
   ...
 # Subtest: 막 다녀옴(7일 안, 다녀온 것으로 바꾼 여행)
-ok 28 - 막 다녀옴(7일 안, 다녀온 것으로 바꾼 여행)
+ok 29 - 막 다녀옴(7일 안, 다녀온 것으로 바꾼 여행)
   ---
-  duration_ms: 0.200677
+  duration_ms: 0.137396
   type: 'test'
   ...
 # Subtest: 먼 예정·오래된 기록·날짜 모르는 기록은 없음
-ok 29 - 먼 예정·오래된 기록·날짜 모르는 기록은 없음
+ok 30 - 먼 예정·오래된 기록·날짜 모르는 기록은 없음
   ---
-  duration_ms: 0.232707
+  duration_ms: 0.166689
   type: 'test'
   ...
 # Subtest: 여행 중이 곧 떠남보다 먼저
-ok 30 - 여행 중이 곧 떠남보다 먼저
+ok 31 - 여행 중이 곧 떠남보다 먼저
   ---
-  duration_ms: 0.165931
+  duration_ms: 0.13381
   type: 'test'
   ...
-1..30
-# tests 30
+1..31
+# tests 31
 # suites 0
-# pass 30
+# pass 31
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 1242.209107
+# duration_ms 749.110148
