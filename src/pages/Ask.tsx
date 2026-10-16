@@ -16,6 +16,8 @@ import { askSmart } from '../lib/ask/smart';
 import type { Place } from '../lib/types';
 
 type Msg = { who: 'me'; text: string } | { who: 'bot'; a: Answer; q: string };
+/** 단추 순서: 담기 → 화면으로 → 고르기 → 이어 묻기 */
+const rank = (b: Btn) => (b.wish ? 0 : b.to ? 1 : b.choose ? 2 : 3);
 
 /** 찾아보기: 규칙형 답변기 (비용·횟수 제한 없음, 기기 안에서 처리) */
 export default function Ask() {
@@ -131,14 +133,20 @@ export default function Ask() {
               <b>{m.a.text}</b>
               {m.a.lines && m.a.lines.length > 0 && <ul>{m.a.lines.map((l, j) => <li key={j}>{l}</li>)}</ul>}
               {m.a.source && <span className="tiny muted">{m.a.source}</span>}
-              {m.a.buttons.length > 0 && (
-                <div className="chips" style={{ marginTop: 4 }}>
-                  {m.a.buttons.map((b, j) => (
-                    <button key={j} className={'chip' + (b.wish ? ' on-coral' : b.choose ? ' soft-on' : '')} onClick={() => press(b, m.q)}>
+              {m.a.buttons.some((b) => !b.url) && (
+                <div className="chips ask-actions">
+                  {[...m.a.buttons.filter((b) => !b.url)].sort((x, y) => rank(x) - rank(y)).map((b, j) => (
+                    <button key={j} className={'chip' + (b.wish ? ' on-coral' : b.choose ? ' soft-on' : b.to ? ' soft' : '')} onClick={() => press(b, m.q)}>
                       {b.wish && <Icon name="heart" size={13} stroke={2.2} />}
-                      {b.url && <Icon name="external" size={12} />}
                       {b.label}
                     </button>
+                  ))}
+                </div>
+              )}
+              {m.a.buttons.some((b) => b.url) && (
+                <div className="ask-links">
+                  {m.a.buttons.filter((b) => b.url).map((b, j) => (
+                    <button key={j} className="link-btn" onClick={() => press(b, m.q)}><Icon name="external" size={12} />{b.label}</button>
                   ))}
                 </div>
               )}

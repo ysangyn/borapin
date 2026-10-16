@@ -328,11 +328,19 @@ a { color: var(--violet); text-decoration: none; }
 .badge.on span { color: var(--ink2); }
 
 /* ---------- 찾아보기 ---------- */
-.ask-page { padding-bottom: calc(var(--nav-h) + 96px + var(--safe-b)); }
-.bubble { max-width: 88%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
-.bubble.me { align-self: flex-end; background: var(--violet); color: #fff; border-bottom-right-radius: 6px; }
-.bubble.bot { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 6px; display: flex; flex-direction: column; gap: 6px; }
-.bubble.bot ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: 14px; color: var(--ink2); }
+.ask-page { padding-bottom: calc(var(--nav-h) + 96px + var(--safe-b)); gap: 12px; }
+.bubble { max-width: 86%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
+.bubble.me { align-self: flex-end; max-width: 76%; padding: 9px 14px; font-size: 14.5px; background: var(--violet); color: #fff; border-bottom-right-radius: 6px; margin-top: 4px; }
+.bubble.bot { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 6px; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 10px; box-shadow: 0 1px 2px rgba(23, 20, 43, 0.04); }
+.bubble.bot > b { font-size: 15.5px; letter-spacing: -0.01em; line-height: 1.4; }
+.bubble.bot ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; font-size: 14px; color: var(--ink2); }
+.bubble.bot li { padding-left: 12px; position: relative; }
+.bubble.bot li::before { content: ''; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: var(--mist2, #c9c2ef); }
+.ask-actions { margin-top: 2px; }
+.ask-actions .chip { height: 34px; padding: 0 12px; font-size: 12.5px; border-radius: 12px; }
+.ask-actions .chip.soft { background: var(--page); border-color: transparent; color: var(--ink); }
+.ask-links { display: flex; gap: 14px; flex-wrap: wrap; }
+.ask-links .link-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--ink3); font-weight: 600; }
 .ask-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--safe-b) + 10px); width: calc(100% - 32px); max-width: 488px; display: flex; gap: 8px; z-index: 20; }
 .ask-bar .input { box-shadow: 0 4px 16px rgba(23, 20, 43, 0.12); }
 .ask-home { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 16px; border-radius: 16px; background: var(--page); color: var(--ink3); }
@@ -532,9 +540,9 @@ a { color: var(--violet); text-decoration: none; }
 .stage-art { width: 96px; height: auto; align-self: flex-end; margin: 0 6px -6px 0; flex: none; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25)); }
 
 /* 물어보기: 답 말풍선 옆 작은 보라 얼굴 */
-.bot-row { display: flex; gap: 8px; align-items: flex-end; max-width: 100%; }
+.bot-row { display: flex; gap: 8px; align-items: flex-start; max-width: 100%; }
 .bot-row .bubble.bot { max-width: calc(88% - 36px); }
-.bot-face { width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--violet); border: 1.5px solid #fff; box-shadow: 0 1px 4px rgba(23, 20, 43, 0.15); margin-bottom: 2px; }
+.bot-face { width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--violet); border: 1.5px solid #fff; box-shadow: 0 1px 4px rgba(23, 20, 43, 0.15); margin-top: 6px; }
 
 /* 피드 */
 .feed-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
