@@ -424,7 +424,13 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByLabel('장소 이름')).toHaveValue('초당할머니순두부');
     await expect(page.getByTestId('naver-link')).toContainText('naver.me/xYz12');
     await expect(page.getByLabel('주소')).toHaveValue('강원 강릉시 초당순두부길 77');
+    // 가리고 쓰기: 켜면 내 것을 쓰기 전엔 보라 칸이 가려지고, 쓰면 열린다 (끄면 그냥 보인다)
+    await page.getByTestId('blind-toggle').click();
+    await expect(page.getByTestId('review-hidden')).toBeVisible();
+    await expect(page.getByLabel('보라 한 줄 평')).toHaveCount(0);
     await page.getByLabel('영상 한 줄 평').fill('순두부 젤라또까지 완벽');
+    await expect(page.getByLabel('보라 한 줄 평')).toBeVisible();
+    await page.getByTestId('blind-toggle').click();
     await page.getByLabel('보라 한 줄 평').fill('아침으로 최고');
     await page.getByRole('button', { name: '또 갈래요' }).click();
     await shot(page, '11-place-edit');

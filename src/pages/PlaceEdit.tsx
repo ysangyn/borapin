@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { hideReview, useBlind } from '../lib/blind';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import { useAuth, displayName } from '../lib/auth';
@@ -73,6 +74,7 @@ export default function PlaceEdit() {
   const where = region[region.length - 1] ?? null;
   const tripOptions = useMemo(() => (trips && where ? tripsAtPlace(trips, (p) => samePlace(p, where)) : []), [trips, where]);
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
+  const [blind, setBlindOn] = useBlind();
   const writers = [...new Set([...memberNames(), me, ...Object.keys(reviews)].filter(Boolean))];
 
   const applyPaste = (text: string) => {
@@ -207,8 +209,17 @@ export default function PlaceEdit() {
         )}
 
         <div className="field">
-          <span className="label">한 줄 평</span>
-          {writers.map((w) => (
+          <span className="label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>한 줄 평
+            <button type="button" className={'tag' + (blind ? ' violet' : '')} onClick={() => setBlindOn(!blind)} aria-pressed={blind} data-testid="blind-toggle" title="켜 두면 내가 쓰기 전엔 상대 한 줄 평이 가려져요">
+              <Icon name={blind ? 'lock' : 'users'} size={12} stroke={2.4} />{blind ? '가리고 쓰는 중' : '가리고 쓰기'}
+            </button>
+          </span>
+          {writers.map((w) => hideReview(reviews, w, me, blind) ? (
+            <div key={w} className="review-row review-hidden" data-testid="review-hidden">
+              <span className={'avatar t' + Math.max(0, toneOf(w))} aria-hidden="true">{[...w][0]}</span>
+              <span className="small muted">{w}의 한 줄 평은 내 것을 쓰면 열려요</span>
+            </div>
+          ) : (
             <label key={w} className="review-row">
               <span className={'avatar t' + Math.max(0, toneOf(w))} aria-hidden="true">{[...w][0]}</span>
               <input
