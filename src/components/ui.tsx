@@ -161,6 +161,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setT({ msg, action, id });
     window.setTimeout(() => setT((cur) => (cur?.id === id ? null : cur)), action ? 5000 : 2600);
   }, []);
+  // 알림이 떠 있는 동안은 떠 있는 보라(물어봐요)를 잠시 숨겨 겹치지 않게
+  useEffect(() => {
+    document.body.classList.toggle('toast-open', !!t);
+  }, [t]);
   return (
     <ToastCtx.Provider value={show}>
       {children}
