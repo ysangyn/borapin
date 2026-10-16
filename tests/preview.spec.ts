@@ -60,6 +60,8 @@ test('메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 →
   await page.getByRole('option', { name: /강릉시/ }).first().click();
   await page.getByLabel('제목').click();
   await page.keyboard.type(TITLE);
+  await page.getByRole('button', { name: '몇 년쯤' }).click();
+  await page.getByLabel('연도').selectOption('2025');
   await page.getByTestId('save').click();
   await expect(page.getByTestId('trip-title')).toHaveText(TITLE, { timeout: 30_000 });
   await page.reload();

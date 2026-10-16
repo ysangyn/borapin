@@ -31,8 +31,10 @@ const ymd = (d: Date) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(
 const from = new Date();
 from.setFullYear(from.getFullYear() - 1);
 
+// https가 안 되면(인증서 사슬 문제 등) http로 한 번 더 (공공데이터포털은 둘 다 받는다)
+let base = BASE;
 async function page(no: number): Promise<{ items: Item[]; total: number }> {
-  const u = new URL(BASE);
+  const u = new URL(base);
   const q = { serviceKey: KEY!, MobileOS: 'ETC', MobileApp: 'borapin', _type: 'json', numOfRows: '200', pageNo: String(no), arrange: 'A', eventStartDate: ymd(from) };
   for (const [k, v] of Object.entries(q)) u.searchParams.set(k, v);
   for (let i = 0; i < 4; i++) {
@@ -53,6 +55,9 @@ async function page(no: number): Promise<{ items: Item[]; total: number }> {
       const item = raw && typeof raw === 'object' ? raw.item : undefined;
       return { items: Array.isArray(item) ? item : item ? [item] : [], total: Number(j.response?.body?.totalCount ?? 0) };
     } catch (e) {
+      const cause = (e as { cause?: { code?: string; message?: string } }).cause;
+      console.warn(`  ${no}쪽 ${i + 1}번째 시도 실패: ${(e as Error).message}${cause ? ` (${cause.code ?? ''} ${cause.message ?? ''})` : ''}`);
+      if (cause && base.startsWith('https:')) base = base.replace('https:', 'http:');
       if (i === 3) throw e;
       await new Promise((res) => setTimeout(res, 2000 * (i + 1)));
     }
