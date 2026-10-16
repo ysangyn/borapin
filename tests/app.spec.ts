@@ -227,6 +227,19 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(homeWishes).toContainText('가고 싶은 곳 3곳만 담아볼까요?');
     await expect(homeWishes.getByRole('button', { name: '담기' })).toHaveCount(3);
     await expectMapDrawn(page);
+    // 추천지 이름을 누르면 지도의 지역 창이 열려 자세히 보고 바로 기록할 수 있다
+    const firstPick = homeWishes.getByTestId('pick-detail').first();
+    const pickName = (await firstPick.getAttribute('aria-label'))!.replace(' 자세히 보기', '');
+    await firstPick.click();
+    await expect(page).toHaveURL(/\/map\?sel=/);
+    // 창 제목은 '전북 순창'처럼 시·군을 뗀 이름: 앞 두 글자(지역 이름 첫머리)로 맞춰 본다
+    await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText(pickName.split(' ').pop()!.slice(0, 2));
+    await expect(page.getByTestId('region-sheet').getByRole('link', { name: '자세히 기록' })).toBeVisible();
+    // 오늘의 추천 사진 카드에도 자세히·기록하기
+    await page.goto('/');
+    await expect(page.getByTestId('month-pick-detail')).toBeVisible();
+    await expect(page.getByTestId('month-pick-record')).toHaveAttribute('href', /\/record\?place=kr:\d+/);
+    await expectMapDrawn(page);
 
     // 지도에서 제주를 눌러 하트로 담기 → 알림의 '메모 쓰기'
     await tapLngLat(page, 126.55, 33.38);

@@ -5,7 +5,7 @@ import { ScenicPhoto } from './Scene';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import type { Stats } from '../lib/stats';
-import { placeLabel, placeLong } from '../lib/geo';
+import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { PHOTOS } from '../lib/media';
 import { isGoodNow, monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
@@ -77,7 +77,8 @@ export default function MonthPick({ stats, wishes }: { stats: Stats | null; wish
           ) : (
             <button className="btn sm coral" onClick={add}><Icon name="heart" size={15} stroke={2.2} />가고 싶은 곳에 담기</button>
           )}
-          <Link to={`/ask?q=${encodeURIComponent(`${placeLabel(place)} 볼거리`)}`} className="btn sm glass">볼거리 보기</Link>
+          <Link to={`/map?sel=${placeParam(place)}`} className="btn sm glass" data-testid="month-pick-detail">자세히</Link>
+          <Link to={`/record?place=${placeParam(place)}`} className="btn sm glass" data-testid="month-pick-record">기록하기</Link>
         </div>
       </div>
     </section>
