@@ -6,7 +6,7 @@ import { feature, mesh } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { FeatureCollection, MultiLineString } from 'geojson';
 import seas from '../data/seas.json';
-import { REGION_BY_CODE } from '../lib/geo';
+import { COUNTRY_BY_ID, REGION_BY_CODE } from '../lib/geo';
 import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
@@ -20,6 +20,23 @@ export const BOUNDS: Record<MapMode, LngLatBoundsLike> = {
   kr: [[124.6, 33.1], [130.95, 38.65]],
   world: [[-160, -45], [180, 70]],
 };
+
+const KOREA: [number, number] = [127.6, 36.2];
+
+/** 화면 맞추기: 국내는 남한 전체, 세계는 한국 + 다녀온(예정) 나라가 다 보이게 */
+function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number) {
+  if (mode === 'kr') return map.fitBounds(BOUNDS.kr, { padding: 16, duration });
+  const pts: [number, number][] = [KOREA];
+  const ids = stats ? [...stats.countryVisits.keys(), ...stats.countryPlanned] : [];
+  for (const id of ids) {
+    const c = COUNTRY_BY_ID.get(id);
+    if (c) pts.push([c.lng, c.lat]);
+  }
+  if (pts.length === 1) return map.easeTo({ center: [KOREA[0], 30], zoom: 1.6, duration });
+  const b = new maplibregl.LngLatBounds(pts[0], pts[0]);
+  pts.forEach((p) => b.extend(p));
+  map.fitBounds(b, { padding: { top: 90, bottom: 60, left: 50, right: 70 }, maxZoom: 3.2, duration });
+}
 
 const COLORS = { v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#E6E2F0', sea: '#F1EFF7', land: '#E9E6F1' };
 
@@ -76,6 +93,9 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   const [ready, setReady] = useState(false);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const statsRef = useRef(stats);
+  statsRef.current = stats;
+  const fittedRef = useRef('');
 
   // 지도 만들기
   useEffect(() => {
@@ -83,8 +103,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     const map = new maplibregl.Map({
       container: el.current,
       style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': COLORS.sea } }] },
-      bounds: BOUNDS[mode],
-      fitBoundsOptions: { padding: 16 },
+      ...(mode === 'kr' ? { bounds: BOUNDS.kr, fitBoundsOptions: { padding: 16 } } : { center: [KOREA[0], 30] as [number, number], zoom: 1.6 }),
       minZoom: 0.6,
       maxZoom: 11,
       attributionControl: false,
@@ -168,12 +187,24 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 모드 바뀌면 이동
+  // 세계 지도에서는 국내 160칸을 숨기고 한국을 나라 하나로 칠한다
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const vis = mode === 'kr' ? 'visible' : 'none';
+    for (const id of ['kr-fill', 'kr-line', 'kr-group', 'kr-planned', 'kr-sel']) map.setLayoutProperty(id, 'visibility', vis);
+  }, [mode, ready]);
+
+  // 처음 열 때, 기록이 처음 들어왔을 때, 국내/세계를 바꿀 때만 화면을 맞춘다
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || focus?.length) return;
-    map.fitBounds(BOUNDS[mode], { padding: 16, duration: 700 });
-  }, [mode, ready, focus]);
+    const key = mode + (stats ? ':s' : '');
+    if (fittedRef.current === key) return;
+    const animate = fittedRef.current !== '' && fittedRef.current.split(':')[0] !== mode;
+    fittedRef.current = key;
+    frame(map, mode, stats, animate ? 700 : 0);
+  }, [mode, ready, focus, stats]);
 
   // 색칠
   useEffect(() => {
@@ -230,7 +261,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   }, [focus, ready]);
 
   const zoom = (d: number) => mapRef.current?.easeTo({ zoom: (mapRef.current?.getZoom() ?? 3) + d, duration: 250 });
-  const fit = () => mapRef.current?.fitBounds(BOUNDS[mode], { padding: 16, duration: 600 });
+  const fit = () => mapRef.current && frame(mapRef.current, mode, statsRef.current, 600);
 
   return (
     <div className={'map-wrap ' + (className ?? '')} style={{ height }}>
