@@ -79,7 +79,9 @@ function useFeedUnseen() {
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   return useMemo(() => {
     if (!trips || !wishes || !places) return 0;
-    return unseenCount(buildFeed({ trips, wishes, recs: places, photos: [], notes: [] }), seen, me);
+    const items = buildFeed({ trips, wishes, recs: places, photos: [], notes: [] });
+    if (import.meta.env.VITE_EMULATOR === '1') (window as unknown as { __unseen?: unknown }).__unseen = { seen, me, items: items.slice(0, 5).map((i) => ({ kind: i.kind, at: i.at, by: i.by })) };
+    return unseenCount(items, seen, me);
   }, [trips, wishes, places, seen, me]);
 }
 

@@ -502,7 +502,10 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(bora.getByTestId('trip-title')).toHaveText('보라의 통영 나들이');
     await bora.close();
     await page.goto('/');
-    await expect(page.getByTestId('feed-dot')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('nav-feed')).toBeVisible();
+    await expect.poll(async () => page.evaluate(() => JSON.stringify((window as unknown as { __unseen?: unknown }).__unseen)), { timeout: 15_000, message: '점 계산 자료' }).toContain('"by":"보라"');
+    const dbg = await page.evaluate(() => JSON.stringify((window as unknown as { __unseen?: unknown }).__unseen));
+    await expect(page.getByTestId('feed-dot'), `새 소식 점이 없어요: ${dbg}`).toBeVisible({ timeout: 15_000 });
     await page.getByTestId('nav-feed').click();
     await expect(items.first()).toContainText('보라의 통영 나들이');
     await expect(items.first().locator('.feed-who')).toContainText('보라');
