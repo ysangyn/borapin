@@ -128,7 +128,7 @@ export default function Space() {
               </div>
               <a className="setting-row" href="https://console.firebase.google.com/project/borapin/usage" target="_blank" rel="noreferrer">
                 <span className="ico"><Icon name="external" size={17} /></span>
-                <span style={{ flex: 1 }}>Firebase 사용량 보기<div className="tiny muted">요금·예산·자동 차단은 2단계에 이 자리로 들어와요</div></span>
+                <span style={{ flex: 1 }}>Firebase 사용량 보기<div className="tiny muted">읽기·쓰기 횟수, 저장 용량</div></span>
                 <Icon name="chev" size={16} />
               </a>
             </div>
@@ -139,7 +139,7 @@ export default function Space() {
           {isAdmin && (
             <Link to="/admin" className="setting-row" data-testid="admin-link">
               <span className="ico"><Icon name="shield" size={17} /></span>
-              <span style={{ flex: 1 }}>관리자 화면<div className="tiny muted">요금·사용량·자동 차단·오류 신고</div></span>
+              <span style={{ flex: 1 }}>관리자 화면<div className="tiny muted">저장 공간·사진 올리기 멈춤·오류 신고</div></span>
               <Icon name="chev" size={16} />
             </Link>
           )}

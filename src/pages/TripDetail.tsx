@@ -4,12 +4,14 @@ import PlanTab from '../components/PlanTab';
 import NotesTab from '../components/NotesTab';
 import PackingCard from '../components/PackingCard';
 import ShareLinkCard from '../components/ShareLinkCard';
+import { disableShare } from '../lib/share';
 import { useNotes } from '../lib/tripExtras';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
 import { computeStats, deleteTrip, patchTrip, usePlaces, useTrips } from '../lib/data';
 import PhotoGrid from '../components/PhotoGrid';
 import { openSlideshow } from '../components/slideshow';
+import PhotoImg from '../components/PhotoImg';
 import { deletePhoto, suggestPlaces, suggestWhen, usePhotos } from '../lib/photos';
 import PlaceRecRow from '../components/PlaceRecRow';
 import { formatWhen, nightsDays } from '../lib/dates';
@@ -72,7 +74,7 @@ export default function TripDetail() {
 
         {photos.length > 0 && (
           <button className="trip-cover" onClick={() => openSlideshow(photos, 0, { onDelete: (x) => deletePhoto(x) })} aria-label="표지 사진 크게 보기">
-            <img src={photos[0].url} alt="" />
+            <PhotoImg id={photos[0].id} size="l" />
           </button>
         )}
 
@@ -158,12 +160,14 @@ export default function TripDetail() {
           <button className="btn danger block" onClick={() => setConfirm(true)}><Icon name="trash" size={17} />이 기록 지우기</button>
         ) : (
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <b>정말 지울까요? 되돌릴 수 없어요.</b>
+            <b>정말 지울까요? {photos.length ? `사진 ${photos.length}장도 함께 지워져요. ` : ''}되돌릴 수 없어요.</b>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn ghost" style={{ flex: 1 }} onClick={() => setConfirm(false)}>그대로 두기</button>
               <button
                 className="btn" style={{ flex: 1, background: 'var(--danger)' }}
                 onClick={async () => {
+                  if (trip.share?.token) await disableShare(trip, photos).catch(() => undefined);
+                  for (const p of photos) await deletePhoto(p).catch((e) => console.warn(e));
                   await deleteTrip(trip.id);
                   toast('지웠어요');
                   nav('/trips', { replace: true });

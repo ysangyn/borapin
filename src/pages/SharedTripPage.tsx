@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Logo } from '../components/ui';
 import MapView from '../components/LazyMap';
 import { openSlideshow } from '../components/slideshow';
+import PhotoImg from '../components/PhotoImg';
 import { computeStats } from '../lib/stats';
 import { placeLong } from '../lib/geo';
 import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
@@ -17,7 +18,7 @@ export default function SharedTripPage() {
     if (token) loadShared(token).then(setD, () => setD(null));
   }, [token]);
   const stats = useMemo(() => (d ? computeStats([{ id: 's', title: d.title, kind: 'trip', status: 'done', when: { p: 'unknown' }, places: d.places, companions: [], memo: '', tags: [], source: 'app', v: 1 } as Trip]) : null), [d]);
-  const photos = useMemo(() => (d?.photos ?? []).map((p, i) => ({ ...p, id: String(i), tripId: null, takenGuess: false, bytes: 0, v: 1 }) as Photo), [d]);
+  const photos = useMemo(() => (d?.photos ?? []).filter((p) => p.id).map((p) => ({ ...p, tripId: null, takenGuess: false, bytes: 0, v: 1 }) as Photo), [d]);
 
   if (d === undefined) return <div className="center-screen muted">불러오는 중…</div>;
   if (d === null) return <div className="center-screen"><Logo size={56} /><b>공개가 끝났거나 없는 여행이에요</b></div>;
@@ -30,7 +31,7 @@ export default function SharedTripPage() {
         <div className="muted">{d.when} · {d.places.map(placeLong).join(', ')}</div>
       </div>
       {photos[0] && (
-        <button className="trip-cover" onClick={() => openSlideshow(photos, 0)} aria-label="사진 크게 보기"><img src={photos[0].url} alt="" /></button>
+        <button className="trip-cover" onClick={() => openSlideshow(photos, 0)} aria-label="사진 크게 보기"><PhotoImg id={photos[0].id} size="l" /></button>
       )}
       <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={d.places} height={220} controls={false} />
       {photos.length > 1 && (
@@ -41,7 +42,7 @@ export default function SharedTripPage() {
           </div>
           <div className="photo-grid">
             {photos.map((p, i) => (
-              <button key={i} className="photo-cell" onClick={() => openSlideshow(photos, i)} aria-label={`사진 ${i + 1}`}><img src={p.thumb} alt="" loading="lazy" /></button>
+              <button key={p.id} className="photo-cell" onClick={() => openSlideshow(photos, i)} aria-label={`사진 ${i + 1}`}><PhotoImg id={p.id} /></button>
             ))}
           </div>
         </section>

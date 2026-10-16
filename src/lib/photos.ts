@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collection, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import { collection, doc, onSnapshot, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import exifr from 'exifr';
-import { db, SPACE_ID, storage } from './firebase';
+import { db, SPACE_ID } from './firebase';
+import { dataDoc, forgetPhotoUrl, MAX_DATA_BYTES, primePhotoUrl, toBytes } from './photoData';
 import { displayName } from './auth';
 import { locate } from './geodata';
 import type { Photo, Place, Trip, When } from './types';
 import { samePlace } from './wishes';
 
 const photosCol = () => collection(db, 'spaces', SPACE_ID, 'photos');
-const folder = (id: string) => `spaces/${SPACE_ID}/photos/${id}`;
 
 export function usePhotos() {
   const [items, setItems] = useState<Photo[] | null>(null);
@@ -62,46 +61,60 @@ export async function readMeta(file: File): Promise<PhotoMeta> {
   return { taken, tz, takenGuess, lat, lng, camera };
 }
 
-/** 긴 변을 maxSide로 줄인 JPEG */
-async function compress(file: File, maxSide: number, quality: number): Promise<{ blob: Blob; w: number; h: number }> {
-  let bmp: ImageBitmap;
+/** 사진 열기 (회전 정보 반영) */
+async function decode(file: File): Promise<ImageBitmap> {
   try {
-    bmp = await createImageBitmap(file, { imageOrientation: 'from-image' } as ImageBitmapOptions);
+    return await createImageBitmap(file, { imageOrientation: 'from-image' } as ImageBitmapOptions);
   } catch {
     throw new Error('이 브라우저에서 열 수 없는 사진 형식이에요 (HEIC는 휴대폰에서 올려 주세요)');
   }
+}
+
+/** 긴 변을 maxSide로 줄인 JPEG */
+async function encode(bmp: ImageBitmap, maxSide: number, quality: number): Promise<{ blob: Blob; w: number; h: number }> {
   const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
   const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
-  canvas.getContext('2d')!.drawImage(bmp, 0, 0, w, h);
-  bmp.close();
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bmp, 0, 0, w, h);
   const blob = await new Promise<Blob>((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('압축 실패'))), 'image/jpeg', quality));
   return { blob, w, h };
 }
 
-function put(path: string, blob: Blob, onProgress?: (f: number) => void): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const task = uploadBytesResumable(ref(storage, path), blob, { contentType: 'image/jpeg', cacheControl: 'public, max-age=31536000' });
-    task.on('state_changed', (s) => onProgress?.(s.bytesTransferred / s.totalBytes), reject, () => getDownloadURL(task.snapshot.ref).then(resolve, reject));
-  });
+/** 크게 보기용: 1600px부터, 문서 한도(1MB)에 맞을 때까지 조금씩 줄인다 */
+const LARGE_STEPS: [number, number][] = [[1600, 0.8], [1600, 0.7], [1280, 0.7], [1024, 0.65]];
+const LARGE_SOFT = 600 * 1024;
+
+async function encodeLarge(bmp: ImageBitmap) {
+  let last: Awaited<ReturnType<typeof encode>> | null = null;
+  for (const [side, q] of LARGE_STEPS) {
+    last = await encode(bmp, side, q);
+    if (last.blob.size <= LARGE_SOFT) return last;
+  }
+  if (last && last.blob.size <= MAX_DATA_BYTES) return last;
+  throw new Error('사진이 너무 커서 올리지 못했어요');
 }
 
-/** 사진 한 장 올리기: 촬영 정보 → 압축본·미리보기 → 저장소 → 기록 */
+/** 사진 한 장 올리기: 촬영 정보 → 압축본·미리보기 → Firestore에 한 번에 저장 */
 export async function uploadPhoto(file: File, tripId: string | null, user: User, onProgress?: (f: number) => void): Promise<Photo> {
   const meta = await readMeta(file);
-  const large = await compress(file, 2000, 0.82);
-  const small = await compress(file, 480, 0.74);
+  onProgress?.(0.1);
+  const bmp = await decode(file);
+  let large, small;
+  try {
+    large = await encodeLarge(bmp);
+    small = await encode(bmp, 400, 0.72);
+  } finally {
+    bmp.close();
+  }
+  onProgress?.(0.4);
   const id = doc(photosCol()).id;
-  const url = await put(`${folder(id)}/l.jpg`, large.blob, (f) => onProgress?.(f * 0.9));
-  const thumb = await put(`${folder(id)}/t.jpg`, small.blob);
-  onProgress?.(1);
   const place = meta.lat != null && meta.lng != null ? await locate(meta.lng, meta.lat).catch(() => null) : null;
   const data: Omit<Photo, 'id'> = {
     tripId,
-    url,
-    thumb,
     w: large.w,
     h: large.h,
     taken: meta.taken,
@@ -114,17 +127,30 @@ export async function uploadPhoto(file: File, tripId: string | null, user: User,
     bytes: large.blob.size + small.blob.size,
     v: 1,
   };
-  await setDoc(doc(photosCol(), id), {
+  const batch = writeBatch(db);
+  batch.set(dataDoc(id, 'l'), { photoId: id, tripId, kind: 'l', data: await toBytes(large.blob), size: large.blob.size, public: false, v: 1 });
+  batch.set(dataDoc(id, 't'), { photoId: id, tripId, kind: 't', data: await toBytes(small.blob), size: small.blob.size, public: false, v: 1 });
+  batch.set(doc(photosCol(), id), {
     ...JSON.parse(JSON.stringify(data)),
     createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) },
     createdAt: serverTimestamp(),
   });
+  // 올리자마자 다시 받지 않도록 화면 캐시에 먼저 넣어 둔다
+  primePhotoUrl(id, 't', small.blob);
+  primePhotoUrl(id, 'l', large.blob);
+  onProgress?.(0.6);
+  await batch.commit();
+  onProgress?.(1);
   return { id, ...data };
 }
 
 export async function deletePhoto(p: Photo) {
-  await Promise.all(['l.jpg', 't.jpg'].map((f) => deleteObject(ref(storage, `${folder(p.id)}/${f}`)).catch(() => undefined)));
-  await deleteDoc(doc(photosCol(), p.id));
+  const batch = writeBatch(db);
+  batch.delete(dataDoc(p.id, 'l'));
+  batch.delete(dataDoc(p.id, 't'));
+  batch.delete(doc(photosCol(), p.id));
+  await batch.commit();
+  forgetPhotoUrl(p.id);
 }
 
 export async function captionPhoto(id: string, caption: string) {

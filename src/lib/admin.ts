@@ -3,7 +3,7 @@ import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, 
 import type { Timestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
-/** 앱 스위치 (관리자만 바꿈). 예산이 차면 사진 올리기를 멈추는 데 쓴다. */
+/** 앱 스위치 (관리자만 바꿈). 사진 올리기를 잠시 멈추는 데 쓴다. */
 export interface Flags {
   uploadsPaused?: boolean;
   reason?: string;
@@ -16,19 +16,6 @@ export function useFlags(): Flags {
   return f;
 }
 export const setFlags = (f: Flags) => setDoc(flagsDoc(), { ...f, updatedAt: serverTimestamp() }, { merge: true });
-
-/** 구글 예산이 보내는 이번 달 비용 (나중에 붙일 작업이 config/billing에 써 준다) */
-export interface Billing {
-  costKrw?: number;
-  budgetKrw?: number;
-  forecastKrw?: number;
-  at?: Timestamp | null;
-}
-export function useBilling(): Billing | null {
-  const [b, setB] = useState<Billing | null>(null);
-  useEffect(() => onSnapshot(doc(db, 'config', 'billing'), (s) => setB(s.exists() ? (s.data() as Billing) : null), () => setB(null)), []);
-  return b;
-}
 
 // ---------- 오류 기록 · 문제 신고 ----------
 export interface Report {

@@ -11,7 +11,9 @@ export default function MapReplay({ trips }: { trips: Trip[] }) {
   const [i, setI] = useState(Math.max(0, years.length - 1));
   const [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState<MapMode>('kr');
-  useEffect(() => setI(Math.max(0, years.length - 1)), [years.length]);
+  useEffect(() => {
+    setI(Math.max(0, years.length - 1));
+  }, [years.length]);
   useEffect(() => {
     if (!playing) return;
     const t = window.setInterval(() => setI((x) => {

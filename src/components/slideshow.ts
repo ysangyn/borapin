@@ -2,6 +2,7 @@ import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 import { placeLong } from '../lib/geo';
 import { takenLabel } from '../lib/photos';
+import { BLANK, peekPhotoUrl, photoUrl } from '../lib/photoData';
 import type { Photo } from '../lib/types';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -19,12 +20,25 @@ export function openSlideshow(photos: Photo[], index = 0, opts: { autoplay?: boo
     }
     index = 0;
   }
+  // 큰 사진은 넘겨 볼 때 받는다. 받는 동안은 미리보기를 늘려서 보여 준다.
+  const srcOf = (p: Photo) => peekPhotoUrl(p.id, 'l') ?? peekPhotoUrl(p.id, 't') ?? BLANK;
+  const asked = new Set<string>();
   const lb = new PhotoSwipeLightbox({
-    dataSource: list.map((p) => ({ src: p.url, msrc: p.thumb, width: p.w, height: p.h, alt: p.caption || takenLabel(p) })),
+    dataSource: list.map((p) => ({ src: srcOf(p), msrc: peekPhotoUrl(p.id, 't'), width: p.w, height: p.h, alt: p.caption || takenLabel(p) })),
     pswpModule: () => import('photoswipe'),
     bgOpacity: 0.96,
     showHideAnimationType: 'fade',
     loop: true,
+  });
+  lb.addFilter('itemData', (item, index) => {
+    const p = list[index];
+    if (!p) return item;
+    if (!peekPhotoUrl(p.id, 'l') && !asked.has(p.id)) {
+      asked.add(p.id);
+      photoUrl(p.id, 'l').then(() => lb.pswp?.refreshSlideContent(index), () => undefined);
+      if (!peekPhotoUrl(p.id, 't')) photoUrl(p.id, 't').then(() => !peekPhotoUrl(p.id, 'l') && lb.pswp?.refreshSlideContent(index), () => undefined);
+    }
+    return { ...item, src: srcOf(p), msrc: peekPhotoUrl(p.id, 't') };
   });
   let timer = 0;
   const stop = () => {

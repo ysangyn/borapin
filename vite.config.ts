@@ -18,11 +18,6 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/__/],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.hostname === 'firebasestorage.googleapis.com',
-            handler: 'CacheFirst',
-            options: { cacheName: 'photos', expiration: { maxEntries: 600, maxAgeSeconds: 60 * 60 * 24 * 60 }, cacheableResponse: { statuses: [0, 200] } },
-          },
-          {
             // 글꼴은 쓰는 글자 묶음만 그때그때 받아 저장
             urlPattern: ({ url }) => url.pathname.endsWith('.woff2'),
             handler: 'CacheFirst',

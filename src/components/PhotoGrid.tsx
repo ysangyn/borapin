@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
-import { deletePhoto, uploadPhoto } from '../lib/photos';
+import { deletePhoto, uploadPhoto, usePhotos } from '../lib/photos';
 import { useFlags } from '../lib/admin';
 import type { Photo } from '../lib/types';
 import { openSlideshow } from './slideshow';
+import PhotoImg from './PhotoImg';
+import { FREE_DB_BYTES, usedBytes } from '../lib/usage';
 
 /** 사진 격자: 미리보기, 올리기(여러 장), 누르면 슬라이드쇼 */
 export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tripId: string | null; max?: number }) {
@@ -13,6 +15,10 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
   const input = useRef<HTMLInputElement>(null);
   const [queue, setQueue] = useState<{ name: string; pct: number }[]>([]);
   const flags = useFlags();
+  const { photos: all } = usePhotos();
+  // 무료 저장 공간(1GB)이 95% 차면 스스로 멈춘다
+  const full = all ? usedBytes(all) >= FREE_DB_BYTES * 0.95 : false;
+  const paused = flags.uploadsPaused || full;
 
   const upload = async (files: FileList | null) => {
     if (!files?.length || auth.status !== 'ready') return;
@@ -26,7 +32,7 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
       } catch (e) {
         console.warn(e);
         const msg = (e as Error).message ?? '';
-        toast(/storage\/|bucket|404/i.test(msg) ? '사진 저장소가 아직 켜지지 않았어요' : msg || '사진을 올리지 못했어요');
+        toast(/resource-exhausted|quota/i.test(msg) ? '오늘 무료 사용량을 다 써서 내일 다시 올릴 수 있어요' : msg || '사진을 올리지 못했어요');
         break;
       }
     }
@@ -40,7 +46,7 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
     <div className="photo-grid" data-testid="photo-grid">
       {shown.map((p, i) => (
         <button key={p.id} className="photo-cell" onClick={() => openSlideshow(photos, i, { onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요')) })} aria-label={`사진 ${i + 1} 크게 보기`}>
-          <img src={p.thumb} alt="" loading="lazy" decoding="async" />
+          <PhotoImg id={p.id} />
         </button>
       ))}
       {queue.map((q) => (
@@ -50,10 +56,14 @@ export default function PhotoGrid({ photos, tripId, max }: { photos: Photo[]; tr
       ))}
       <button
         className="photo-cell add"
-        onClick={() => (flags.uploadsPaused ? toast(`사진 올리기를 잠시 멈췄어요${flags.reason ? ` (${flags.reason})` : ''}`) : input.current?.click())}
+        onClick={() =>
+          paused
+            ? toast(full ? '무료 저장 공간이 거의 차서 사진 올리기를 멈췄어요' : `사진 올리기를 잠시 멈췄어요${flags.reason ? ` (${flags.reason})` : ''}`)
+            : input.current?.click()
+        }
         disabled={queue.length > 0}
         data-testid="photo-add"
-        aria-disabled={flags.uploadsPaused}
+        aria-disabled={paused}
       >
         <Icon name="plus" size={22} stroke={2.2} />
         <span className="tiny">사진</span>

@@ -10,7 +10,9 @@ export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[]
   // 누르면 바로 바뀌게 화면 먼저 고치고 저장한다
   const [list, setList] = useState<PackItem[]>(trip.packing ?? []);
   const remote = JSON.stringify(trip.packing ?? []);
-  useEffect(() => setList(JSON.parse(remote)), [remote]);
+  useEffect(() => {
+    setList(JSON.parse(remote));
+  }, [remote]);
   const [text, setText] = useState('');
   const abroad = trip.places.some((p) => p.t === 'country');
   const save = (next: PackItem[]) => {

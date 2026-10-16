@@ -46,7 +46,9 @@ export default function Ask() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [first, data]);
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), [msgs.length]);
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [msgs.length]);
 
   const press = async (b: Btn, q: string) => {
     if (b.ask) send(b.ask);

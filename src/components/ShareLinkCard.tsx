@@ -62,7 +62,7 @@ export default function ShareLinkCard({ trip, photos, recs }: { trip: Trip; phot
             <button className="btn sm" onClick={share}>보내기</button>
             <button className="btn sm ghost" onClick={copy}>복사</button>
             <a className="btn sm ghost" href={url} target="_blank" rel="noreferrer">미리 보기</a>
-            <button className="btn sm line" style={{ marginLeft: 'auto' }} disabled={busy} onClick={() => disableShare(trip).then(() => toast('공개를 껐어요'))}>공개 끄기</button>
+            <button className="btn sm line" style={{ marginLeft: 'auto' }} disabled={busy} onClick={() => disableShare(trip, photos).then(() => toast('공개를 껐어요'))}>공개 끄기</button>
           </div>
         </>
       )}

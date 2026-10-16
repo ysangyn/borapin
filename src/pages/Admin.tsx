@@ -4,10 +4,10 @@ import { Icon, TopBar, useToast } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { usePhotos } from '../lib/photos';
-import { resolveReport, setFlags, useBilling, useFlags, useReports } from '../lib/admin';
+import { resolveReport, setFlags, useFlags, useReports } from '../lib/admin';
+import { FREE_DB_BYTES, photosLeft, usedBytes } from '../lib/usage';
 
-const GB = 1024 ** 3;
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`;
+const mb = (n: number) => (n >= 1024 ** 3 ? `${(n / 1024 ** 3).toFixed(2)}GB` : `${(n / 1024 / 1024).toFixed(1)}MB`);
 
 function Meter({ value, max, label, sub }: { value: number; max: number; label: string; sub: string }) {
   const pct = Math.min(100, (value / max) * 100);
@@ -19,7 +19,7 @@ function Meter({ value, max, label, sub }: { value: number; max: number; label: 
   );
 }
 
-/** 관리자: 요금·사용량·자동 차단·오류 신고 (YUN 계정에만 보임) */
+/** 관리자: 요금제·저장 공간·사진 올리기 멈춤·오류 신고 (관리자 계정에만 보임) */
 export default function Admin() {
   const auth = useAuth();
   const toast = useToast();
@@ -28,45 +28,43 @@ export default function Admin() {
   const { wishes } = useWishes();
   const { photos } = usePhotos();
   const flags = useFlags();
-  const billing = useBilling();
   const reports = useReports();
   const [reason, setReason] = useState('');
-  const bytes = useMemo(() => (photos ?? []).reduce((n, p) => n + (p.bytes ?? 0), 0), [photos]);
+  const records = (trips?.length ?? 0) + (places?.length ?? 0) + (wishes?.length ?? 0);
+  const used = useMemo(() => usedBytes(photos ?? [], records), [photos, records]);
+  const photoBytes = useMemo(() => (photos ?? []).reduce((n, p) => n + (p.bytes ?? 0), 0), [photos]);
+  const left = useMemo(() => photosLeft(photos ?? [], records), [photos, records]);
   if (auth.status !== 'ready' || !auth.isAdmin) return <div className="center-screen">관리자만 볼 수 있어요</div>;
 
   return (
     <>
       <TopBar back title="관리자" />
       <div className="page admin" style={{ paddingTop: 4 }} data-testid="admin">
-        <section className="card white">
-          <div className="h2" style={{ fontSize: 16 }}>이번 달 요금</div>
-          {billing?.costKrw != null ? (
-            <>
-              <Meter value={billing.costKrw} max={billing.budgetKrw ?? 5000} label={won(billing.costKrw)} sub={`예산 ${won(billing.budgetKrw ?? 5000)}${billing.forecastKrw ? ` · 월말 예상 ${won(billing.forecastKrw)}` : ''}`} />
-              <div className="tiny muted">구글이 집계한 값이라 몇 시간 늦을 수 있어요.</div>
-            </>
-          ) : (
-            <div className="small" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <span>요금제 <b>Blaze</b> · 예산 알림 <b>5,000원</b> (구글 결제에서 설정)</span>
-              <span className="muted">둘이 쓰는 동안은 무료 범위 안이라 0원이에요. 구글 예산 값을 받아 여기 보여 주는 연결은 다음 단계에서 붙여요.</span>
-            </div>
-          )}
+        <section className="card white" data-testid="plan">
+          <div className="row-between" style={{ alignItems: 'center' }}>
+            <div className="h2" style={{ fontSize: 16 }}>요금제</div>
+            <span className="tag" style={{ background: 'var(--ok-mist)', color: 'var(--ok)' }}>0원</span>
+          </div>
+          <div className="small" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span><b>무료(Spark)</b> · 결제 카드를 등록하지 않아 요금이 나올 수 없어요.</span>
+            <span className="muted">한도를 넘으면 돈이 나가는 대신 그날(저장 공간은 비울 때까지) 해당 기능만 멈춰요.</span>
+          </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-            <a className="btn sm ghost" href="https://console.cloud.google.com/billing" target="_blank" rel="noreferrer">결제·예산 열기</a>
             <a className="btn sm ghost" href="https://console.firebase.google.com/project/borapin/usage" target="_blank" rel="noreferrer">Firebase 사용량</a>
           </div>
         </section>
 
         <section className="card white" data-testid="usage">
           <div className="h2" style={{ fontSize: 16 }}>무료 한도 사용량</div>
-          <Meter value={bytes} max={5 * GB} label="사진 저장" sub={`${(bytes / 1024 / 1024).toFixed(1)}MB / 5GB · ${photos?.length ?? 0}장`} />
-          <Meter value={(trips?.length ?? 0) + (places?.length ?? 0) + (wishes?.length ?? 0)} max={20000} label="기록" sub={`여행 ${trips?.length ?? 0} · 장소 ${places?.length ?? 0} · 가고 싶은 곳 ${wishes?.length ?? 0}`} />
-          <div className="tiny muted">읽기·쓰기 횟수(하루 5만·2만 회 무료)는 Firebase 사용량 화면에서 봐요.</div>
+          <Meter value={used} max={FREE_DB_BYTES} label="저장 공간" sub={`${mb(used)} / 1GB`} />
+          <div className="small">사진 {photos?.length ?? 0}장 · {mb(photoBytes)} — 앞으로 약 <b>{left.toLocaleString('ko-KR')}장</b> 더 올릴 수 있어요</div>
+          <div className="small muted">기록: 여행 {trips?.length ?? 0} · 장소 {places?.length ?? 0} · 가고 싶은 곳 {wishes?.length ?? 0}</div>
+          <div className="tiny muted">읽기 하루 5만 회·쓰기 2만 회까지 무료예요. 사진 한 장을 처음 볼 때 1회 읽고, 그다음부터는 기기에 저장된 것을 써요.</div>
         </section>
 
         <section className="card white" data-testid="cutoff">
-          <div className="h2" style={{ fontSize: 16 }}>자동 차단</div>
-          <div className="small muted">예산 80%가 되면 사진 올리기를 잠시 멈추고, 보기·기록은 그대로 둡니다. 지금은 아래 스위치로 직접 멈출 수 있어요.</div>
+          <div className="h2" style={{ fontSize: 16 }}>사진 올리기 멈춤</div>
+          <div className="small muted">저장 공간이 95% 차면 사진 올리기는 저절로 멈추고, 보기·기록은 그대로 둬요. 아래 스위치로 직접 멈출 수도 있어요.</div>
           <div className="setting-row" style={{ padding: '10px 0' }}>
             <span style={{ flex: 1 }}>
               <b>사진 올리기</b>

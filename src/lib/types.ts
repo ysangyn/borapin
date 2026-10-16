@@ -108,8 +108,7 @@ export type PlaceRecInput = Omit<PlaceRec, 'id' | 'createdAt' | 'updatedAt' | 'c
 export interface Photo {
   id: string;
   tripId: string | null;
-  url: string;
-  thumb: string;
+  /** 사진 파일은 photoData/{id}_l·_t 문서에 따로 있다 */
   w: number;
   h: number;
   /** 촬영 현지 시각 '2019-05-03T14:20' */
@@ -165,7 +164,7 @@ export interface SharedTrip {
   title: string;
   when: string;
   places: Place[];
-  photos: { url: string; thumb: string; w: number; h: number; taken: string | null; caption?: string }[];
+  photos: { id: string; w: number; h: number; taken: string | null; caption?: string }[];
   spots: { name: string; kind: string; verdict: string | null }[];
   space: string;
   updatedAt?: Timestamp | null;

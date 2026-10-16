@@ -70,10 +70,9 @@ service cloud.firestore {
     }
 
     function validPhoto(d) {
-      return d.keys().hasAll(['url', 'thumb', 'w', 'h', 'bytes', 'v'])
-        && d.url is string && d.url.size() <= 1000
-        && d.thumb is string && d.thumb.size() <= 1000
-        && d.bytes is int && d.bytes < 12 * 1024 * 1024
+      return d.keys().hasAll(['w', 'h', 'bytes', 'v'])
+        && d.w is int && d.h is int
+        && d.bytes is int && d.bytes < 2 * 1024 * 1024
         && (!('caption' in d) || (d.caption is string && d.caption.size() <= 500))
         && d.v == 1;
     }
@@ -105,11 +104,6 @@ service cloud.firestore {
     match /config/flags {
       allow read: if isMember();
       allow write: if isAdmin();
-    }
-    // 이번 달 비용: 서버 작업만 쓴다 (관리자 서비스 계정), 관리자가 읽는다
-    match /config/billing {
-      allow read: if isAdmin();
-      allow write: if false;
     }
     // 오류 기록·문제 신고: 멤버가 남기고 관리자가 보고 지운다
     match /reports/{id} {
@@ -155,6 +149,26 @@ service cloud.firestore {
       match /photos/{photoId} {
         allow read: if isMember();
         allow create, update: if isMember() && validPhoto(request.resource.data);
+        allow delete: if isMember();
+      }
+
+      // 사진 파일 (크게 보기 _l, 미리보기 _t). 공유 링크에 들어간 사진만 로그인 없이 하나씩 읽힌다.
+      match /photoData/{dataId} {
+        allow get: if isMember() || resource.data.public == true;
+        allow list: if isMember();
+        allow create: if isMember()
+          && request.resource.data.keys().hasOnly(['photoId', 'tripId', 'kind', 'data', 'size', 'public', 'v'])
+          && request.resource.data.photoId is string
+          && dataId == request.resource.data.photoId + '_' + request.resource.data.kind
+          && request.resource.data.kind in ['l', 't']
+          && request.resource.data.data is bytes
+          && request.resource.data.data.size() <= 950 * 1024
+          && request.resource.data.public == false
+          && request.resource.data.v == 1;
+        // 바꿀 수 있는 건 공개 여부뿐
+        allow update: if isMember()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['public'])
+          && request.resource.data.public is bool;
         allow delete: if isMember();
       }
 

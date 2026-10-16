@@ -306,7 +306,7 @@ test.describe.serial('보라핀 1단계', () => {
       'tests/fixtures/photo-noexif.jpg',
     ]);
     await expect(page.getByRole('status')).toContainText('사진 3장을 올렸어요', { timeout: 40_000 });
-    await expect(sec.locator('.photo-cell img')).toHaveCount(3);
+    await expect(sec.locator('.photo-cell img[data-loaded]')).toHaveCount(3);
     // 촬영일(2019.5.3~4)로 날짜 채우기 → '(추정)'
     const sug = page.getByTestId('photo-suggest');
     await expect(sug).toContainText('2019.5.3–4');
@@ -322,10 +322,16 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(cap).toContainText('강원 강릉시');
     await page.waitForTimeout(600);
     await shot(page, '12b-slideshow');
+    await expect(page.locator('.pswp__img').first()).toHaveAttribute('src', /^blob:/);
     await page.keyboard.press('Escape');
     // 추억 탭: 사진첩, 지도 다시 보기, 결산, 잔디, 뱃지
     await page.goto('/memories');
     await expect(page.getByTestId('album')).toContainText('강릉시 여행 · 3장');
+    // 새로 열면 사진 파일을 DB에서 받아 그린다
+    await page.getByTestId('album').scrollIntoViewIfNeeded();
+    const albumImgs = page.getByTestId('album').locator('img[data-loaded]');
+    await expect(albumImgs).toHaveCount(3);
+    expect(await albumImgs.first().evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBeGreaterThan(100);
     await expect(page.getByTestId('replay-year')).toBeVisible();
     await page.getByLabel('다시 보기 연도').fill('0');
     const firstYear = await page.getByTestId('replay-year').textContent();
@@ -425,8 +431,11 @@ test.describe.serial('보라핀 1단계', () => {
     const shared = anon.getByTestId('shared-trip');
     await expect(shared).toContainText('강릉시 여행');
     await expect(shared).toContainText('초당할머니순두부');
-    await expect(shared.locator('.photo-cell img')).toHaveCount(3);
+    await shared.locator('.photo-grid').scrollIntoViewIfNeeded();
+    await expect(shared.locator('.photo-cell img[data-loaded]')).toHaveCount(3);
+    await expect(shared.locator('.trip-cover img[data-loaded]')).toHaveCount(1);
     await expect(shared).not.toContainText('바다 보며 커피 마신 날');
+    const photoId = await shared.locator('.photo-cell img').first().getAttribute('data-photo');
     await anon.screenshot({ path: `${SHOTS}/15-shared-trip.png` });
 
     // 공개를 끄면 링크가 닫힌다
@@ -434,6 +443,9 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(card.getByTestId('share-on')).toBeVisible();
     await anon.reload();
     await expect(anon.getByText('공개가 끝났거나 없는 여행이에요')).toBeVisible();
+    // 공개를 끈 사진 파일은 로그인 없이 못 읽는다
+    const denied = await anon.evaluate((id) => (window as unknown as { __testPhoto: (id: string) => Promise<number> }).__testPhoto(id!).then(() => 'read', (e: Error) => e.message), photoId);
+    expect(denied).toMatch(/permission/i);
     await anon.context().close();
 
     // 공유 카드: 1080×1350 그림
@@ -467,7 +479,9 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByRole('status')).toContainText('보내 주셔서 고마워요');
     await page.getByTestId('admin-link').click();
     const admin = page.getByTestId('admin');
-    await expect(admin.getByTestId('usage')).toContainText('3장');
+    await expect(admin.getByTestId('usage')).toContainText('사진 3장');
+    await expect(admin.getByTestId('usage')).toContainText('/ 1GB');
+    await expect(admin.getByTestId('plan')).toContainText('무료(Spark)');
     await expect(admin.getByTestId('reports')).toContainText('지도가 가끔 늦게 떠요');
     // 사진 올리기 멈춤 → 여행 사진 탭에서 막힘
     await admin.getByLabel('멈추는 이유').fill('예산 점검');
