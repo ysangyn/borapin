@@ -1,132 +1,77 @@
 
 > borapin@0.1.0 test:e2e
-> firebase emulators:exec --only auth,firestore,storage --project demo-borapin "playwright test"
+> firebase emulators:exec --only auth,firestore --project demo-borapin "playwright test"
 
-[36m[1mi  emulators:[22m[39m Starting emulators: auth, firestore, storage
+[36m[1mi  emulators:[22m[39m Starting emulators: auth, firestore
 [36m[1mi  emulators:[22m[39m Detected demo project ID "demo-borapin", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
 [36m[1mi  firestore:[22m[39m Firestore Emulator logging to [1mfirestore-debug.log[22m
 [32m[1m✔  firestore:[22m[39m Firestore Emulator was started in standard edition.
 [32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
-[33m[1m⚠ [22m[39m It appears you are running in a CI environment. You can avoid downloading the Storage Emulator repeatedly by caching the /home/runner/.cache/firebase/emulators directory.
-[36m[1mi  storage:[22m[39m downloading cloud-storage-rules-runtime-v1.1.3.jar...
-
 [36m[1mi [22m[39m Running script: [1mplaywright test[22m
 
 Running 16 tests using 1 worker
 
-  ✓   1 tests/app.spec.ts:52:3 › 보라핀 1단계 › 로그인 화면 (1.2s)
+  ✓   1 tests/app.spec.ts:52:3 › 보라핀 1단계 › 로그인 화면 (516ms)
   ✓   2 tests/app.spec.ts:58:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (2.4s)
-  ✓   3 tests/app.spec.ts:65:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (1.9s)
+  ✓   3 tests/app.spec.ts:65:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (1.8s)
   ✓   4 tests/app.spec.ts:81:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.0s)
-  ✓   5 tests/app.spec.ts:95:3 › 보라핀 1단계 › 여행 목록과 필터 (851ms)
+  ✓   5 tests/app.spec.ts:95:3 › 보라핀 1단계 › 여행 목록과 필터 (818ms)
   ✓   6 tests/app.spec.ts:105:3 › 보라핀 1단계 › 홈 통계와 지도 (4.5s)
-  ✓   7 tests/app.spec.ts:123:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (9.9s)
-  ✓   8 tests/app.spec.ts:186:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (6.3s)
+  ✓   7 tests/app.spec.ts:123:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (10.3s)
+  ✓   8 tests/app.spec.ts:186:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (6.5s)
   ✓   9 tests/app.spec.ts:261:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (2.9s)
-  ✓  10 tests/app.spec.ts:297:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (5.2s)
-  ✓  11 tests/app.spec.ts:342:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (3.3s)
-  ✘  12 tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (16.0s)
-  -  13 tests/app.spec.ts:413:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기
-  -  14 tests/app.spec.ts:461:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고
-  -  15 tests/app.spec.ts:489:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다
-  -  16 tests/app.spec.ts:505:3 › 보라핀 1단계 › 기록 고치기와 지우기
+  ✓  10 tests/app.spec.ts:297:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (6.2s)
+  ✓  11 tests/app.spec.ts:348:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (3.4s)
+  ✓  12 tests/app.spec.ts:392:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (2.9s)
+  ✘  13 tests/app.spec.ts:419:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 (2.9s)
+  -  14 tests/app.spec.ts:473:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고
+  -  15 tests/app.spec.ts:503:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다
+  -  16 tests/app.spec.ts:519:3 › 보라핀 1단계 › 기록 고치기와 지우기
 
 
-  1) tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 ────────────────────────────
+  1) tests/app.spec.ts:419:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 ──────────────────────
 
-    Error: expect(locator).toContainText(expected) failed
+    Error: expect(received).toMatch(expected)
 
-    Locator: getByTestId('answer').last()
-    Expected substring: "초당 순두부"
-    Timeout: 15000ms
-    Error: element(s) not found
+    Expected pattern: /permission/i
+    Received string:  "
+    evaluation error at L157:23 for 'get' @ L157, false for 'get' @ L198, false for 'get' @ L157, false for 'get' @ L198"
 
-    Call log:
-      - Expect "toContainText" getByTestId('answer').last() with timeout 15000ms
-      - waiting for getByTestId('answer').last()
-
-
-      391 |     await expect(page).toHaveURL(/\/ask/);
-      392 |     const answers = page.getByTestId('answer');
-    > 393 |     await expect(answers.last()).toContainText('초당 순두부');
-          |                                  ^
-      394 |     await expect(answers.last()).toContainText('초당할머니순두부');
-      395 |     const input = page.getByLabel('질문');
-      396 |     await input.fill('거기 언제 가면 좋아?');
-        at /home/runner/work/borapin/borapin/tests/app.spec.ts:393:34
-
-    Error: pageerror: l is not a function
-    TypeError: l is not a function
-        at Vl (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:95501)
-        at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121489)
-        at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121399)
-        at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121701)
-        at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121399)
-    pageerror: l is not a function
-    TypeError: l is not a function
-        at Vl (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:95501)
-        at cd (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:122099)
-        at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121337)
-        at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121519)
-        at yf (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:133009)
-
-    expect(received).toEqual(expected) // deep equality
-
-    - Expected  -  1
-    + Received  + 16
-
-    - Array []
-    + Array [
-    +   "pageerror: l is not a function
-    + TypeError: l is not a function
-    +     at Vl (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:95501)
-    +     at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121489)
-    +     at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121399)
-    +     at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121701)
-    +     at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121399)",
-    +   "pageerror: l is not a function
-    + TypeError: l is not a function
-    +     at Vl (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:95501)
-    +     at cd (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:122099)
-    +     at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121337)
-    +     at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121519)
-    +     at yf (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:133009)",
-    + ]
-        at Vl (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:95501)
-        at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121489)
-        at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121399)
-        at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121701)
-        at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121399)
-        at Vl (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:95501)
-        at cd (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:122099)
-        at ad (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121337)
-        at od (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:121519)
-        at yf (http://127.0.0.1:5174/assets/index-BeDyxLT8.js:9:133009)
-        at /home/runner/work/borapin/borapin/tests/app.spec.ts:24:41
+      446 |     // 공개를 끈 사진 파일은 로그인 없이 못 읽는다
+      447 |     const denied = await anon.evaluate((id) => (window as unknown as { __testPhoto: (id: string) => Promise<number> }).__testPhoto(id!).then(() => 'read', (e: Error) => e.message), photoId);
+    > 448 |     expect(denied).toMatch(/permission/i);
+          |                    ^
+      449 |     await anon.context().close();
+      450 |
+      451 |     // 공유 카드: 1080×1350 그림
+        at /home/runner/work/borapin/borapin/tests/app.spec.ts:448:20
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/test-failed-1.png
+    test-results/app-보라핀-1단계-공유-링크-공개-로그인-없이-보기-공유-카드-엑셀-내보내기/test-failed-2.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/error-context.md
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/app-보라핀-1단계-공유-링크-공개-로그인-없이-보기-공유-카드-엑셀-내보내기/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/trace.zip
+    Error Context: test-results/app-보라핀-1단계-공유-링크-공개-로그인-없이-보기-공유-카드-엑셀-내보내기/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/app-보라핀-1단계-공유-링크-공개-로그인-없이-보기-공유-카드-엑셀-내보내기/trace.zip
     Usage:
 
-        npx playwright show-trace test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/trace.zip
+        npx playwright show-trace test-results/app-보라핀-1단계-공유-링크-공개-로그인-없이-보기-공유-카드-엑셀-내보내기/trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
   1 failed
-    tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 ─────────────────────────────
-  4 did not run
-  11 passed (59.1s)
+    tests/app.spec.ts:419:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 ───────────────────────
+  3 did not run
+  12 passed (49.9s)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
 [36m[1mi  auth:[22m[39m Stopping Authentication Emulator
-[36m[1mi  storage:[22m[39m Stopping Storage Emulator
 [36m[1mi  hub:[22m[39m Stopping emulator hub
 [36m[1mi  logging:[22m[39m Stopping Logging Emulator
 
