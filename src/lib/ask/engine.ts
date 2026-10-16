@@ -129,19 +129,22 @@ function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boole
   if (has(q, /어디였지|어디였더라|뭐였지|이름이\s*뭐|기억\s*안|찾아\s*줘|검색/) || has(q, /(마신|먹은|갔던|봤던|했던)\s*(날|곳|데)$/)) return 'find';
   if (places.length >= 2 && has(q, /비교|vs|어디가\s*(더|나아)|중에|랑.*중|차이/)) return 'compare';
   if (has(q, /또\s*(가|갈)|다시\s*가고\s*싶은\s*(맛집|가게|장소|카페)|또\s*갈래/)) return 'again';
-  if (has(q, /가고\s*싶은\s*곳/) && !places.length && !has(q, /추천/)) return 'wishList';
+  if (has(q, /가고\s*싶(은|어\s*하는|어하는|다고\s*한)\s*(곳|데|곳들)|위시\s*(리스트|목록)|찜\s*(한|목록)/) && !places.length && !has(q, /추천/)) return 'wishList';
   if (places.length && has(q, /가고\s*싶|담아|위시|찜/)) return 'wishAdd';
-  if (has(q, /몇\s*번|몇\s*회|얼마나\s*(자주|많이)?\s*(갔|다녀)/) && (places.length || hasGroup)) return 'count';
+  if (has(q, /제일\s*많이|가장\s*많이|자주\s*(간|갔|가는)|많이\s*간/) && !places.length) return 'stats';
+  if (has(q, /몇\s*번|몇\s*회|얼마나\s*(자주|많이)?\s*(갔|다녀)|간\s*적|가\s*본\s*적|가본\s*적|가\s*봤|가봤|갔었/) && (places.length || hasGroup)) return 'count';
   if (has(q, /언제\s*(갔|다녀|가봤|가 봤)|갔던\s*(때|날)|마지막(으로)?\s*(간|갔|다녀)/)) return 'when';
-  if (hasPerson && has(q, /(랑|하고|와|과|이랑)\s*(간|갔|다녀|여행)|같이\s*(간|갔)|함께\s*(간|갔)/)) return 'people';
+  if (hasPerson && has(q, /(랑|하고|와|과|이랑)\s*(어디\s*)?(간|갔|다녀|여행)|같이\s*(어디\s*)?(간|갔)|함께\s*(어디\s*)?(간|갔)/)) return 'people';
   if (has(q, /몇\s*(곳|군데|개|퍼|%)|달성|통계|얼마나\s*칠|몇\s*나라|몇\s*번\s*(여행|갔)/) && !places.length) return 'stats';
   if (hasTime && has(q, /(간|갔|다녀온|다녀왔|여행한)\s*(곳|데|여행)?|어디\s*(갔|다녀)/)) return 'time';
   if (has(q, /언제\s*가|몇\s*월(에|이)?\s*(가|좋)|가기\s*좋은|시기|성수기|날씨\s*좋/)) return 'season';
-  if (has(q, /맛집|먹거리|먹을|음식|뭐\s*먹|먹으러|식당|카페/)) return 'foods';
+  if (has(q, /맛집|먹거리|먹을|음식|뭐\s*먹|머\s*먹|먹으러|식당|카페|맛있는|먹방|밥집|맛난/)) return 'foods';
   if (has(q, /특산|기념품|선물|사\s*올|사올|쇼핑/)) return 'goods';
   if (has(q, /교통|어떻게\s*가|가는\s*(법|길|방법)|ktx|기차|버스|공항|배편|비행기/i)) return 'transport';
-  if (has(q, /추천|어디\s*(갈|가지|가면)|갈\s*만한|가\s*볼\s*만한\s*곳\s*(있|어디)|놀러|여행지/) && !(places.length === 1 && places[0].t === 'kr' && !has(q, /추천/))) return 'recommend';
-  if (has(q, /볼거리|가볼|가 볼|볼\s*만|구경|관광|명소|뭐\s*(하|해|봐)|할\s*거|코스|가\s*볼\s*곳/)) return 'spots';
+  if (has(q, /추천|어디\s*(갈|가지|가면|갈까)|갈\s*만한|가\s*볼\s*만한\s*곳\s*(있|어디)|놀러|여행지|당일치기|가까운\s*(데|곳)|근처\s*(어디|갈)|떠나고\s*싶/) && !(places.length === 1 && places[0].t === 'kr' && !has(q, /추천/))) return 'recommend';
+  // 장소 없이 테마·계절·꽃만 던지면 ('내년 봄 벚꽃', '단풍 보러', '둘 다 안 가본 섬') 추천으로
+  if (!places.length && !hasGroup && (readThemes(q).pos.length || has(q, /벚꽃|단풍|꽃놀이|눈꽃|해돋이|안\s*가\s*본|안가본/))) return 'recommend';
+  if (has(q, /볼거리|가볼|가 볼|볼\s*만|구경|관광|명소|뭐\s*(하|해|봐)|머\s*(하|해)|할\s*거|놀\s*거리|놀거리|놀\s*데|코스|가\s*볼\s*곳|갈\s*만한\s*데|갈만한데/)) return 'spots';
   if (has(q, /지도|보여|위치|어디\s*있/)) return 'map';
   if (places.length) return 'overview';
   return 'unknown';
@@ -280,12 +283,25 @@ function unknown(q: string): Omit<Answer, 'ctx'> {
   };
 }
 
+const SEASON_MONTH: Record<Season, number> = { spring: 4, summer: 7, autumn: 10, winter: 1 };
+/** 꽃·단풍 같은 '볼거리 낱말': 이 말이 든 볼거리가 있는 곳을 먼저, 때도 맞춘다 */
+const SIGHT_WORDS: { re: RegExp; month: number }[] = [{ re: /벚꽃|꽃놀이|유채|튤립/, month: 4 }, { re: /단풍|억새|핑크뮬리/, month: 10 }, { re: /눈꽃|설경|스키|얼음/, month: 1 }, { re: /해돋이|일출/, month: 1 }, { re: /해수욕|물놀이/, month: 7 }];
+
 function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, groupId?: string | null): Omit<Answer, 'ctx'> {
-  const month = monthArg ?? readMonth(q);
+  const sight = SIGHT_WORDS.find((x) => x.re.test(q));
+  const seasonQ = readSeason(q);
+  const month = monthArg ?? readMonth(q) ?? sight?.month ?? (seasonQ ? SEASON_MONTH[seasonQ] : null);
   const { pos, neg } = readThemes(q);
+  // '가까운·당일치기'는 수도권 기준(서울·경기·인천·강원·충청)으로 좁힌다
+  const near = !groupId && /가까운|근처|당일치기|당일/.test(q);
   const unvisited = /안\s*가\s*본|안가본|처음|새로운|못\s*가\s*본/.test(q);
   const stats = computeStats(d.trips);
   let list = candidates({ scope: groupId ?? 'kr', unvisitedOnly: unvisited, theme: pos[0] ?? null, stats, info: d.info, wishes: [] });
+  if (near) list = list.filter((c) => c.place.t === 'kr' && ['seoul', 'gyeonggi', 'incheon', 'gangwon', 'chungnam', 'chungbuk', 'daejeon', 'sejong'].includes(REGION_BY_CODE.get(c.place.code)?.group ?? ''));
+  if (sight) {
+    const hit = list.filter((c) => sight.re.test([c.theme ?? '', ...(c.spots ?? [])].join(' ')));
+    if (hit.length >= 2) list = hit;
+  }
   if (neg.length) {
     const res = neg.map((n) => THEMES.find((t) => t.id === n)!.re);
     list = list.filter((c) => !(c.place.t === 'kr' && res.some((re) => re.test([c.theme, ...(c.spots ?? [])].join(' ')))));
@@ -293,7 +309,8 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   if (month) list = list.filter((c) => seasonFor(d.seasons, c.place)?.m.includes(month));
   const picks = dailyShuffle(list, q).slice(0, 3);
   const themeLabel = pos.map((p) => THEMES.find((t) => t.id === p)!.label).join('·');
-  const head = [month ? `${month}월에` : '', themeLabel ? `${themeLabel} 보러` : '', unvisited ? '안 가본' : ''].filter(Boolean).join(' ');
+  const sightWord = sight ? (q.match(sight.re)?.[0] ?? '') : '';
+  const head = [near ? '수도권에서 가까운' : '', month ? `${month}월에` : '', sightWord ? `${sightWord} 보러` : themeLabel ? `${themeLabel} 보러` : '', unvisited ? '안 가본' : ''].filter(Boolean).join(' ');
   if (!picks.length) return { intent: 'recommend', text: '조건에 맞는 곳을 찾지 못했어요', lines: ['조건을 하나 빼고 다시 물어보세요.'], buttons: [{ label: '안 가본 곳 추천', ask: '안 가본 곳 추천' }] };
   return {
     intent: 'recommend',
@@ -399,7 +416,12 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const s = computeStats(d.trips);
       const y = now.getFullYear();
       const thisYear = done.filter((t) => t.when.y === y).length;
-      a = { intent, text: `지금까지 ${s.tripsDone}번의 여행, 핀 ${s.pins}개`, lines: [`시·군 ${s.cellVisits.size}/${TOTAL_CELLS} (${Math.round((s.cellVisits.size / TOTAL_CELLS) * 100)}%)`, `광역 ${s.groupsVisited.size}/${TOTAL_GROUPS}`, `나라 ${s.countryVisits.size}곳 · 대륙 ${s.continents.size}곳`, `올해 ${thisYear}번`], buttons: [{ label: '지도 보기', to: '/map' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
+      const top = [...s.cellVisits.entries()].sort((x, y) => y[1] - x[1]).slice(0, 3).map(([code, n]) => `${placeLong({ t: 'kr', code })} ${times(n)}`);
+      if (has(q, /제일\s*많이|가장\s*많이|자주|많이\s*간/)) {
+        a = { intent, text: top.length ? `제일 많이 간 곳은 ${top[0]}` : '아직 기록이 없어요', lines: top.slice(1).map((t, i) => `${i + 2}위 ${t}`), buttons: [{ label: '지도 보기', to: '/map' }], source: '우리 기록' };
+        break;
+      }
+      a = { intent, text: `지금까지 ${s.tripsDone}번의 여행, 핀 ${s.pins}개`, lines: [`시·군 ${s.cellVisits.size}/${TOTAL_CELLS} (${Math.round((s.cellVisits.size / TOTAL_CELLS) * 100)}%)`, `광역 ${s.groupsVisited.size}/${TOTAL_GROUPS}`, `나라 ${s.countryVisits.size}곳 · 대륙 ${s.continents.size}곳`, `올해 ${thisYear}번`, top.length ? `자주 간 곳: ${top.join(', ')}` : ''].filter(Boolean), buttons: [{ label: '지도 보기', to: '/map' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
       break;
     }
     case 'recommend': {
