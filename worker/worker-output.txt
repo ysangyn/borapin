@@ -10,20 +10,25 @@ Getting User settings...
 │ Ysangyn@naver.com's Account │ 6a524c87edafc6c27dcf934b95d27316 │
 └─────────────────────────────┴──────────────────────────────────┘
 🔓 To see token permissions visit https://dash.cloudflare.com/profile/api-tokens
+KV id: b261294de63e4cc9986690421c61ef29
 
  ⛅️ wrangler 4.151.1
 ────────────────────
-Resource location: remote 
 
-🌀 Creating namespace with title "QUOTA"
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+Total Upload: 9.61 KiB / gzip: 3.80 KiB
+Worker Startup Time: 4 ms
+Your Worker has access to the following bindings:
+Binding                                                                 Resource                  
+env.QUOTA (b261294de63e4cc9986690421c61ef29)                            KV Namespace              
+env.AI                                                                  AI                        
+env.PER_USER (20 requests/60s)                                          Rate Limit                
+env.FIREBASE_PROJECTS ("borapin,borapin-test")                          Environment Variable      
+env.MODEL ("@cf/meta/llama-3.3-70b-instruct-fp8-f...")                  Environment Variable      
+env.DAILY_LIMIT ("80")                                                  Environment Variable      
 
-[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mA KV namespace with the title "QUOTA" already exists.[0m
-
-  
-  You can list existing namespaces with their IDs by running:
-    wrangler kv namespace list
-  
-  Or choose a different namespace name.
-
-
-🪵  Logs were written to "/home/runner/.config/.wrangler/logs/wrangler-2026-10-16_15-26-15_255.log"
+Uploaded borapin-ask (1.91 sec)
+Deployed borapin-ask triggers (0.46 sec)
+  https://borapin-ask.ysangyn.workers.dev
+Current Version ID: 271f69cd-2934-498e-aa69-0fb6c4b74531
+{"ok":true,"model":"@cf/meta/llama-3.3-70b-instruct-fp8-fast"}
