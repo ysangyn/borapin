@@ -38,6 +38,8 @@ export default defineConfig({
       manifest: false, // public/manifest.webmanifest를 그대로 쓴다 (공유 대상 포함)
       workbox: {
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,topojson}', 'art/bora-rest.webp'],
+        // 설치용 큰 아이콘은 설치할 때 브라우저가 따로 받는다
+        globIgnores: ['icons/bora-512.png', 'icons/bora-maskable-512.png'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/__/],
