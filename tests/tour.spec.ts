@@ -159,7 +159,7 @@ async function seed(page: Page) {
   const batch = db.batch();
   await db.doc('config/access').set({ allowed: [OWNER, BORA], admins: [OWNER], updatedAt: Timestamp.now() });
   for (const [i, t] of TRIPS.entries()) {
-    batch.set(sp.collection('trips').doc(t.id), { ...t, source: 'app', createdBy: i % 3 === 0 ? byB : by, createdAt: ts(`2025-0${(i % 9) + 1}-10`), updatedAt: Timestamp.now(), v: 1 });
+    batch.set(sp.collection('trips').doc(t.id), { ...t, companions: ['보라', '영상', ...t.companions], source: 'app', createdBy: i % 3 === 0 ? byB : by, createdAt: ts(`2025-0${(i % 9) + 1}-10`), updatedAt: Timestamp.now(), v: 1 });
   }
   for (const w of WISHES) batch.set(sp.collection('wishes').doc(w.id), { ...w, source: 'app', createdBy: by, createdAt: ts('2025-06-01'), updatedAt: Timestamp.now(), v: 1 });
   for (const r of RECS) batch.set(sp.collection('places').doc(r.id), { ...r, createdBy: by, createdAt: ts('2025-06-01'), updatedAt: Timestamp.now(), v: 1 });
@@ -212,7 +212,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm03-trip-info');
   await page.getByRole('tab', { name: /사진/ }).click();
   await snap(page, 'm04-trip-photos');
-  await page.getByRole('tab', { name: /기록/ }).click();
+  await page.getByRole('tab', { name: /글/ }).click();
   await snap(page, 'm05-trip-notes');
   await page.goto('/trips/t11');
   await snap(page, 'm06-planned-info');

@@ -41,6 +41,8 @@ export interface Trip {
   share?: { token: string } | null;
   /** 날짜 채우기 놀이: 사람마다 '언제였을까' 답 */
   guesses?: Record<string, { y?: number; s?: Season }>;
+  /** 날짜 채우기 놀이에서 정한 여행 (다시 묻지 않음) */
+  dateGameDone?: boolean;
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
@@ -174,4 +176,6 @@ export interface SharedTrip {
 export interface Access {
   allowed: string[];
   admins: string[];
+  /** 메일 → 앱에서 부르는 이름 */
+  names?: Record<string, string>;
 }

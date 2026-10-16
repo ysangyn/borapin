@@ -14,12 +14,25 @@ import type { Photo, PlaceKind, SharedTrip, Trip, Verdict } from '../lib/types';
 export default function SharedTripPage() {
   const { token } = useParams();
   const [d, setD] = useState<SharedTrip | null | undefined>(undefined);
+  const [failed, setFailed] = useState(false);
+  const [round, setRound] = useState(0);
   useEffect(() => {
-    if (token) loadShared(token).then(setD, () => setD(null));
-  }, [token]);
+    if (!token) return;
+    setFailed(false);
+    loadShared(token).then(setD, (e: { code?: string }) => (e?.code === 'permission-denied' ? setD(null) : setFailed(true)));
+  }, [token, round]);
   const stats = useMemo(() => (d ? computeStats([{ id: 's', title: d.title, kind: 'trip', status: 'done', when: { p: 'unknown' }, places: d.places, companions: [], memo: '', tags: [], source: 'app', v: 1 } as Trip]) : null), [d]);
   const photos = useMemo(() => (d?.photos ?? []).filter((p) => p.id).map((p) => ({ ...p, tripId: null, takenGuess: false, bytes: 0, v: 1 }) as Photo), [d]);
 
+  if (failed)
+    return (
+      <div className="center-screen">
+        <Logo size={56} />
+        <b>여행을 불러오지 못했어요</b>
+        <span className="small muted">인터넷 연결을 확인한 뒤 다시 열어 주세요.</span>
+        <button className="btn" onClick={() => setRound((r) => r + 1)}>다시 불러오기</button>
+      </div>
+    );
   if (d === undefined) return <div className="center-screen muted">불러오는 중…</div>;
   if (d === null) return <div className="center-screen"><Logo size={56} /><b>공개가 끝났거나 없는 여행이에요</b></div>;
   const abroad = d.places.every((p) => p.t === 'country');
@@ -33,7 +46,7 @@ export default function SharedTripPage() {
       {photos[0] && (
         <button className="trip-cover" onClick={() => openSlideshow(photos, 0)} aria-label="사진 크게 보기"><PhotoImg id={photos[0].id} size="l" /></button>
       )}
-      <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={d.places} height={220} controls={false} />
+      <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={d.places} height={220} controls={false} interactive={false} />
       {photos.length > 1 && (
         <section>
           <div className="row-between" style={{ marginBottom: 6 }}>
@@ -47,11 +60,11 @@ export default function SharedTripPage() {
           </div>
         </section>
       )}
-      {d.spots.length > 0 && (
+      {(d.spots ?? []).length > 0 && (
         <section>
           <h2 className="h2" style={{ fontSize: 17, marginBottom: 4 }}>들른 곳</h2>
           <div className="list">
-            {d.spots.map((s, i) => (
+            {(d.spots ?? []).map((s, i) => (
               <div key={i} className="rec-row">
                 <span className={`kind-badge k-${s.kind}`}>{KIND_LABEL[s.kind as PlaceKind] ?? s.kind}</span>
                 <b style={{ flex: 1 }}>{s.name}</b>
@@ -61,7 +74,7 @@ export default function SharedTripPage() {
           </div>
         </section>
       )}
-      <a href="/" className="btn soft block">보라핀 · 가본 곳마다, 우리 핀 하나</a>
+      <div className="shared-foot"><Logo size={20} /><span>보라핀으로 남긴 여행이에요 · 가본 곳마다, 우리 핀 하나</span></div>
     </div>
   );
 }

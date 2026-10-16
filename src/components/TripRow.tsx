@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { josa } from 'es-hangul';
 import type { Trip } from '../lib/types';
 import { dday, formatWhen, nightsDays } from '../lib/dates';
 import { placeLabel, placeLong, REGION_BY_CODE, COUNTRY_BY_ID, areaShort } from '../lib/geo';
@@ -33,7 +34,7 @@ export default function TripRow({ trip }: { trip: Trip }) {
           <span className="chips" style={{ gap: 4 }}>
             {trip.status === 'planned' && <span className="tag violet">{dday(trip.when) ?? '예정'}</span>}
             {trip.kind === 'outing' && <span className="tag">나들이</span>}
-            {others.length > 0 && <span className="tag coral">{others.join('·')}와 함께</span>}
+            {others.length > 0 && <span className="tag coral">{josa(others.join('·'), '와/과')} 함께</span>}
           </span>
         )}
       </span>

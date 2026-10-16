@@ -19,14 +19,31 @@ export function buildShared(trip: Trip, photos: Photo[], recs: PlaceRec[]): Omit
   };
 }
 
-/** 공개 사본에 들어간 사진만 로그인 없이 읽히게 하고, 빠진 사진은 다시 닫는다 */
+/** 칸 순서와 상관없이 같은지 */
+function stable(x: unknown): string {
+  if (Array.isArray(x)) return '[' + x.map(stable).join(',') + ']';
+  if (x && typeof x === 'object') return '{' + Object.keys(x).sort().map((k) => JSON.stringify(k) + ':' + stable((x as Record<string, unknown>)[k])).join(',') + '}';
+  return JSON.stringify(x ?? null);
+}
+const same = (a: unknown, b: unknown) => stable(a) === stable(b);
+
+/**
+ * 공개 사본을 맞춘다. 바뀐 게 없으면 아무것도 쓰지 않는다(열 때마다 읽기 1회).
+ * 바뀌었으면 사본에 든 사진은 모두 공개로 다시 표시하고(앞서 실패한 것도 다시 시도), 빠진 사진은 닫는다.
+ */
 async function publish(token: string, trip: Trip, photos: Photo[], recs: PlaceRec[]) {
   const prev = await getDoc(shareDoc(token)).catch(() => null);
-  const before = new Set<string>(prev?.exists() ? ((prev.data() as SharedTrip).photos ?? []).map((p) => p.id).filter(Boolean) : []);
+  const old = prev?.exists() ? (prev.data() as SharedTrip) : null;
   const data = buildShared(trip, photos, recs);
+  if (old) {
+    const { updatedAt: _u, ...rest } = old;
+    void _u;
+    if (same(rest, data)) return;
+  }
+  const before = new Set<string>((old?.photos ?? []).map((p) => p.id).filter(Boolean));
   const now = new Set(data.photos.map((p) => p.id));
   const exists = new Set(photos.map((p) => p.id));
-  await setPhotosPublic([...now].filter((id) => !before.has(id)), true);
+  await setPhotosPublic([...now], true);
   await setDoc(shareDoc(token), { ...data, updatedAt: serverTimestamp() });
   await setPhotosPublic([...before].filter((id) => !now.has(id) && exists.has(id)), false);
 }

@@ -23,8 +23,8 @@ function bboxSize(geom: unknown): number {
 export function loadGeo() {
   if (!geoPromise) {
     geoPromise = Promise.all([
-      fetch('/data/kr-cells.topojson').then((r) => r.json() as Promise<Topology>),
-      fetch('/data/world.topojson').then((r) => r.json() as Promise<Topology>),
+      fetch('/data/kr-cells.topojson').then((r) => (r.ok ? (r.json() as Promise<Topology>) : Promise.reject(new Error(`경계 ${r.status}`)))),
+      fetch('/data/world.topojson').then((r) => (r.ok ? (r.json() as Promise<Topology>) : Promise.reject(new Error(`경계 ${r.status}`)))),
     ]).then(([krT, wT]) => {
       const krObj = krT.objects[Object.keys(krT.objects)[0]] as GeometryCollection<{ cell: string }>;
       const wObj = wT.objects[Object.keys(wT.objects)[0]] as GeometryCollection;
@@ -35,6 +35,10 @@ export function loadGeo() {
       for (const f of kr.features) SIZES.set(`kr:${f.properties?.cell}`, bboxSize(f.geometry));
       for (const f of world.features) SIZES.set(`w:${f.properties?.ADM0_A3}`, bboxSize(f.geometry));
       return { kr, krMesh, world };
+    });
+    // 실패하면 다음에 다시 받을 수 있게 비운다
+    geoPromise.catch(() => {
+      geoPromise = null;
     });
   }
   return geoPromise;

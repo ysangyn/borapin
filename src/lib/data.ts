@@ -1,60 +1,49 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
-  addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
-  onSnapshot,
+  getDoc,
+  getDocs,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
   writeBatch,
+  runTransaction,
   arrayRemove,
   arrayUnion,
+  type DocumentReference,
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
-import type { PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput } from './types';
+import { useStore } from './store';
+import { queued } from './writes';
+import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput } from './types';
 import { whenSortKey } from './dates';
 
-const tripsCol = () => collection(db, 'spaces', SPACE_ID, 'trips');
-const wishesCol = () => collection(db, 'spaces', SPACE_ID, 'wishes');
-const placesCol = () => collection(db, 'spaces', SPACE_ID, 'places');
-
-function useCollection<T>(col: () => ReturnType<typeof collection>) {
-  const [items, setItems] = useState<T[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(
-    () =>
-      onSnapshot(
-        col(),
-        (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as T)),
-        (e) => setError(e.message),
-      ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-  return { items, error };
-}
+const sp = (name: string) => collection(db, 'spaces', SPACE_ID, name);
+const tripsCol = () => sp('trips');
+const wishesCol = () => sp('wishes');
+const placesCol = () => sp('places');
 
 export function useTrips() {
-  const { items, error } = useCollection<Trip>(tripsCol);
-  const sorted = useMemo(
-    () => (items ? [...items].sort((a, b) => whenSortKey(b.when) - whenSortKey(a.when)) : null),
-    [items],
-  );
+  const { trips, error } = useStore();
+  const sorted = useMemo(() => (trips ? [...trips].sort((a, b) => whenSortKey(b.when) - whenSortKey(a.when)) : null), [trips]);
   return { trips: sorted, error };
 }
 
 export function useWishes() {
-  const { items, error } = useCollection<Wish>(wishesCol);
-  return { wishes: items, error };
+  const { wishes, error } = useStore();
+  return { wishes, error };
 }
 
 export function usePlaces() {
-  const { items, error } = useCollection<PlaceRec>(placesCol);
-  const sorted = useMemo(() => (items ? [...items].sort((a, b) => (b.createdAt?.toMillis?.() ?? Date.now()) - (a.createdAt?.toMillis?.() ?? Date.now())) : null), [items]);
+  const { places, error } = useStore();
+  const sorted = useMemo(() => (places ? [...places].sort((a, b) => (b.createdAt?.toMillis?.() ?? Date.now()) - (a.createdAt?.toMillis?.() ?? Date.now())) : null), [places]);
   return { places: sorted, error };
 }
 
@@ -63,105 +52,169 @@ function clean<T extends object>(o: T): T {
   return JSON.parse(JSON.stringify(o));
 }
 
+const author = (user: User) => ({ uid: user.uid, email: user.email ?? '', name: displayName(user) });
+
+/**
+ * 고친 칸만 보낸다. 둘이 동시에 다른 칸을 고쳐도 서로 지우지 않고,
+ * 비운 선택 칸은 실제로 지운다(deleteField).
+ * mapKeys에 든 칸(예: reviews)은 안쪽 이름별로 따로 보낸다.
+ */
+export function changedFields(before: object, after: object, mapKeys: string[] = []): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const a = before as Record<string, unknown>;
+  const b = after as Record<string, unknown>;
+  const same = (x: unknown, y: unknown) => JSON.stringify(x ?? null) === JSON.stringify(y ?? null);
+  for (const k of Object.keys(b)) {
+    const nv = b[k];
+    if (mapKeys.includes(k) && nv && typeof nv === 'object') {
+      const ov = (a[k] ?? {}) as Record<string, unknown>;
+      const nm = nv as Record<string, unknown>;
+      for (const sub of new Set([...Object.keys(ov), ...Object.keys(nm)])) {
+        if (same(ov[sub], nm[sub])) continue;
+        out[`${k}.${sub}`] = nm[sub] === undefined || nm[sub] === '' ? deleteField() : nm[sub];
+      }
+      continue;
+    }
+    if (same(a[k], nv)) continue;
+    if (nv === undefined || nv === '') out[k] = k in a ? deleteField() : undefined;
+    else out[k] = JSON.parse(JSON.stringify(nv));
+    if (out[k] === undefined) delete out[k];
+  }
+  return out;
+}
+
+async function patch(ref: DocumentReference, fields: Record<string, unknown>) {
+  if (!Object.keys(fields).length) return;
+  await queued(updateDoc(ref, { ...fields, updatedAt: serverTimestamp() }));
+}
+
+// ---------- 여행 ----------
 export async function createTrip(input: TripInput, user: User): Promise<string> {
-  const ref = await addDoc(tripsCol(), {
-    ...clean(input),
-    createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) },
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    v: 1,
-  });
+  const ref = doc(tripsCol());
+  await queued(setDoc(ref, { ...clean(input), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
   return ref.id;
+}
+
+/** 고친 칸만 저장 */
+export async function updateTrip(id: string, before: Trip, input: TripInput) {
+  await patch(doc(tripsCol(), id), changedFields(before, input));
+}
+
+/** 여행 일부만 고치기 (사진으로 날짜·장소 채우기 등) */
+export async function patchTrip(id: string, fields: Partial<TripInput> | Record<string, unknown>) {
+  await queued(updateDoc(doc(tripsCol(), id), { ...clean(fields as object), updatedAt: serverTimestamp() }));
+}
+
+/**
+ * 준비물 고치기: 서버의 최신 목록에 바꾼 점만 더한다(둘이 동시에 체크해도 서로 안 지워짐).
+ * 오프라인이면 기기에 있는 목록으로 저장해 두고 연결되면 올린다.
+ */
+export async function mutatePacking(trip: Trip, fn: (list: PackItem[]) => PackItem[]) {
+  const ref = doc(tripsCol(), trip.id);
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    await queued(updateDoc(ref, { packing: fn(trip.packing ?? []), updatedAt: serverTimestamp() }));
+    return;
+  }
+  await runTransaction(db, async (tx) => {
+    const s = await tx.get(ref);
+    const cur = ((s.data()?.packing as PackItem[] | undefined) ?? []).filter(Boolean);
+    tx.update(ref, { packing: fn(cur), updatedAt: serverTimestamp() });
+  });
+}
+
+/** 방금 만든 여행 되돌리기 (딸린 것이 없을 때) */
+export async function deleteTrip(id: string) {
+  await queued(deleteDoc(doc(tripsCol(), id)));
+}
+
+/** 여행 하나와 딸린 것(사진·일정·글) 모두 지우기. 우리 장소·가고 싶은 곳은 남기고 연결만 푼다. */
+export async function deleteTripAll(trip: Trip, onStep?: (done: number, total: number) => void) {
+  const byTrip = async (name: string) => (await getDocs(query(sp(name), where('tripId', '==', trip.id)))).docs;
+  const [photos, plans, notes, recs, wishes] = await Promise.all(['photos', 'plans', 'notes', 'places', 'wishes'].map(byTrip));
+  const ops: ((b: ReturnType<typeof writeBatch>) => void)[] = [];
+  for (const p of photos) {
+    ops.push((b) => b.delete(doc(sp('photoData'), `${p.id}_l`)));
+    ops.push((b) => b.delete(doc(sp('photoData'), `${p.id}_t`)));
+    ops.push((b) => b.delete(p.ref));
+  }
+  for (const d of [...plans, ...notes]) ops.push((b) => b.delete(d.ref));
+  for (const d of [...recs, ...wishes]) ops.push((b) => b.update(d.ref, { tripId: null }));
+  if (trip.share?.token) ops.push((b) => b.delete(doc(db, 'shares', trip.share!.token)));
+  ops.push((b) => b.delete(doc(tripsCol(), trip.id)));
+  for (let i = 0; i < ops.length; i += 400) {
+    const b = writeBatch(db);
+    ops.slice(i, i + 400).forEach((op) => op(b));
+    await b.commit();
+    onStep?.(Math.min(ops.length, i + 400), ops.length);
+  }
 }
 
 // ---------- 우리 장소 ----------
 export async function createPlace(input: PlaceRecInput, user: User): Promise<string> {
-  const ref = await addDoc(placesCol(), {
-    ...clean(input),
-    createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) },
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    v: 1,
-  });
+  const ref = doc(placesCol());
+  await queued(setDoc(ref, { ...clean(input), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
   return ref.id;
 }
-export async function updatePlace(id: string, patch: Partial<PlaceRecInput>) {
-  await updateDoc(doc(placesCol(), id), { ...clean(patch), updatedAt: serverTimestamp() });
+export async function updatePlace(id: string, before: PlaceRec, input: PlaceRecInput) {
+  await patch(doc(placesCol(), id), changedFields(before, input, ['reviews']));
 }
 export async function deletePlace(id: string) {
-  await deleteDoc(doc(placesCol(), id));
+  await queued(deleteDoc(doc(placesCol(), id)));
+}
+/** 지운 장소 되돌리기 */
+export async function restorePlace(p: PlaceRec) {
+  const { id, ...rest } = p;
+  await queued(setDoc(doc(placesCol(), id), clean(rest)));
 }
 
 // ---------- 가고 싶은 곳 ----------
 export async function createWish(input: WishInput, user: User): Promise<string> {
-  const ref = await addDoc(wishesCol(), {
-    ...clean(input),
-    createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) },
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    v: 1,
-  });
+  const ref = doc(wishesCol());
+  await queued(setDoc(ref, { ...clean(input), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
   return ref.id;
 }
 
-export async function updateWish(id: string, patch: Partial<WishInput>) {
-  await updateDoc(doc(wishesCol(), id), { ...clean(patch), updatedAt: serverTimestamp() });
+export async function updateWish(id: string, fields: Partial<WishInput>) {
+  await queued(updateDoc(doc(wishesCol(), id), { ...clean(fields), updatedAt: serverTimestamp() }));
+}
+/** 편집 화면: 고친 칸만 */
+export async function saveWishEdits(id: string, before: Wish, input: WishInput) {
+  await patch(doc(wishesCol(), id), changedFields(before, input));
 }
 
 export async function deleteWish(id: string) {
-  await deleteDoc(doc(wishesCol(), id));
+  await queued(deleteDoc(doc(wishesCol(), id)));
+}
+/** 지운 가고 싶은 곳 되돌리기 */
+export async function restoreWish(w: Wish) {
+  const { id, ...rest } = w;
+  await queued(setDoc(doc(wishesCol(), id), clean(rest)));
 }
 
 /** 다녀온 뒤 '또 가고 싶어요': 새로 담은 것처럼 되돌린다 */
 export async function reviveWish(id: string) {
-  await updateDoc(doc(wishesCol(), id), { tripId: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  await queued(updateDoc(doc(wishesCol(), id), { tripId: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
 }
 
-export async function updateTrip(id: string, input: TripInput) {
-  await updateDoc(doc(tripsCol(), id), { ...clean(input), updatedAt: serverTimestamp() });
-}
-
-/** 여행 일부만 고치기 (사진으로 날짜·장소 채우기 등) */
-export async function patchTrip(id: string, patch: Partial<TripInput>) {
-  await updateDoc(doc(tripsCol(), id), { ...clean(patch), updatedAt: serverTimestamp() });
-}
-
-export async function deleteTrip(id: string) {
-  await deleteDoc(doc(tripsCol(), id));
-}
-
+// ---------- 멤버 ----------
 export async function setAccessList(field: 'allowed' | 'admins', email: string, add: boolean) {
-  await updateDoc(doc(db, 'config', 'access'), {
-    [field]: add ? arrayUnion(email.toLowerCase().trim()) : arrayRemove(email.toLowerCase().trim()),
-    updatedAt: serverTimestamp(),
-  });
+  await queued(
+    updateDoc(doc(db, 'config', 'access'), {
+      [field]: add ? arrayUnion(email.toLowerCase().trim()) : arrayRemove(email.toLowerCase().trim()),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 }
 
-export async function renameSpace(name: string) {
-  await setDoc(doc(db, 'spaces', SPACE_ID), { name, updatedAt: serverTimestamp() }, { merge: true });
+/** 한 번만 읽기 (백업 등) */
+export async function readAll(name: 'photos' | 'plans' | 'notes') {
+  return (await getDocs(sp(name))).docs.map((d) => ({ id: d.id, ...d.data() }));
 }
-
-/** 한꺼번에 쓰기 (가져오기용). 문서 id를 정해 두어 여러 번 가져와도 겹치지 않는다. */
-export async function batchWrite(
-  items: { coll: 'trips' | 'wishes'; id: string; data: Record<string, unknown> }[],
-  user: User,
-) {
-  for (let i = 0; i < items.length; i += 400) {
-    const b = writeBatch(db);
-    for (const it of items.slice(i, i + 400)) {
-      const ref = doc(it.coll === 'trips' ? tripsCol() : wishesCol(), it.id);
-      b.set(ref, {
-        ...clean(it.data),
-        ...(it.coll === 'trips'
-          ? { createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) }, updatedAt: serverTimestamp() }
-          : {}),
-        createdAt: serverTimestamp(),
-        v: 1,
-      });
-    }
-    await b.commit();
-  }
-}
+export const getTripOnce = async (id: string) => {
+  const s = await getDoc(doc(tripsCol(), id));
+  return s.exists() ? ({ id: s.id, ...s.data() } as Trip) : null;
+};
 
 // 통계·집계는 Firebase 없이도 쓰도록 stats.ts에 있다 (찾아보기 채점 등)
 export * from './stats';
+export type { PlaceRec, Wish };

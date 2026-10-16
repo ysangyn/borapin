@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 const PATHS: Record<string, string> = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
@@ -74,13 +74,38 @@ export function BottomNav() {
   );
 }
 
-export function TopBar({ title, back, right }: { title?: ReactNode; back?: boolean; right?: ReactNode }) {
+/**
+ * 뒤로 가기. 앱 안에서 온 화면이면 그 화면으로, 바깥(링크·공유·새 탭)에서 바로 열었으면 상위 화면으로.
+ */
+export function useGoBack() {
   const nav = useNavigate();
+  const loc = useLocation();
+  return useCallback((fallback = '/') => {
+    if (loc.key !== 'default') nav(-1);
+    else nav(fallback, { replace: true });
+  }, [nav, loc.key]);
+}
+
+/** 쓰던 내용이 있으면 새로고침·창 닫기 전에 묻는다 */
+export function useLeaveGuard(dirty: boolean) {
+  useEffect(() => {
+    if (!dirty) return;
+    const h = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', h);
+    return () => window.removeEventListener('beforeunload', h);
+  }, [dirty]);
+}
+
+export function TopBar({ title, back, right, backTo = '/', confirmLeave }: { title?: ReactNode; back?: boolean; right?: ReactNode; backTo?: string; confirmLeave?: boolean }) {
+  const goBack = useGoBack();
   return (
     <div className="topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {back && (
-          <button className="back" aria-label="뒤로" onClick={() => (window.history.length > 1 ? nav(-1) : nav('/'))}>
+          <button className="back" aria-label="뒤로" onClick={() => { if (!confirmLeave || window.confirm('저장하지 않은 내용이 있어요. 그래도 나갈까요?')) goBack(backTo); }}>
             <Icon name="back" size={22} stroke={2.2} />
           </button>
         )}

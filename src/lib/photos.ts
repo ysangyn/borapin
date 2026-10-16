@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collection, doc, onSnapshot, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, count, doc, getAggregateFromServer, onSnapshot, query, serverTimestamp, sum, updateDoc, where, writeBatch } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import exifr from 'exifr';
 import { db, SPACE_ID } from './firebase';
 import { dataDoc, forgetPhotoUrl, MAX_DATA_BYTES, primePhotoUrl, toBytes } from './photoData';
+import { queued } from './writes';
 import { displayName } from './auth';
 import { locate } from './geodata';
 import type { Photo, Place, Trip, When } from './types';
@@ -11,10 +11,32 @@ import { samePlace } from './wishes';
 
 const photosCol = () => collection(db, 'spaces', SPACE_ID, 'photos');
 
+const byTaken = (a: Photo, b: Photo) => (a.taken ?? '').localeCompare(b.taken ?? '');
+
+/** 한 여행의 사진만 (여행 상세) */
+export function useTripPhotos(tripId: string | undefined) {
+  const [state, setState] = useState<{ tripId?: string; items: Photo[] | null }>({ items: null });
+  useEffect(() => {
+    if (!tripId) return;
+    return onSnapshot(
+      query(photosCol(), where('tripId', '==', tripId)),
+      (snap) => setState({ tripId, items: snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Photo).sort(byTaken) }),
+      () => setState({ tripId, items: [] }),
+    );
+  }, [tripId]);
+  return state.tripId === tripId ? state.items : null;
+}
+
+/** 저장 공간 확인용: 사진 수와 용량을 서버에서 세기만 한다 (사진 목록을 받지 않음) */
+export async function photoUsage(): Promise<{ count: number; bytes: number }> {
+  const r = await getAggregateFromServer(photosCol(), { bytes: sum('bytes'), n: count() });
+  return { count: r.data().n, bytes: r.data().bytes ?? 0 };
+}
+
 export function usePhotos() {
   const [items, setItems] = useState<Photo[] | null>(null);
-  useEffect(() => onSnapshot(photosCol(), (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Photo))), []);
-  const sorted = useMemo(() => (items ? [...items].sort((a, b) => (a.taken ?? '').localeCompare(b.taken ?? '')) : null), [items]);
+  useEffect(() => onSnapshot(photosCol(), (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Photo)), () => setItems([])), []);
+  const sorted = useMemo(() => (items ? [...items].sort(byTaken) : null), [items]);
   return { photos: sorted };
 }
 
@@ -31,6 +53,8 @@ export interface PhotoMeta {
 export async function readMeta(file: File): Promise<PhotoMeta> {
   let taken: string | null = null, tz: string | null = null, camera: string | null = null;
   let lat: number | null = null, lng: number | null = null;
+  // 사진을 올릴 때만 필요해 그때 불러온다
+  const exifr = (await import('exifr')).default;
   try {
     const t = await exifr.parse(file, { pick: ['DateTimeOriginal', 'CreateDate', 'OffsetTimeOriginal', 'Make', 'Model'], reviveValues: false });
     const raw: string | undefined = t?.DateTimeOriginal ?? t?.CreateDate;
@@ -120,8 +144,9 @@ export async function uploadPhoto(file: File, tripId: string | null, user: User,
     taken: meta.taken,
     tz: meta.tz,
     takenGuess: meta.takenGuess,
-    lat: meta.lat,
-    lng: meta.lng,
+    // 위치는 100m 단위로만 남긴다 (시·군 찾기는 원래 값으로 이미 했음)
+    lat: meta.lat != null ? Math.round(meta.lat * 1e3) / 1e3 : null,
+    lng: meta.lng != null ? Math.round(meta.lng * 1e3) / 1e3 : null,
     place,
     camera: meta.camera,
     bytes: large.blob.size + small.blob.size,
@@ -154,7 +179,7 @@ export async function deletePhoto(p: Photo) {
 }
 
 export async function captionPhoto(id: string, caption: string) {
-  await updateDoc(doc(photosCol(), id), { caption: caption.trim() });
+  await queued(updateDoc(doc(photosCol(), id), { caption: caption.trim().slice(0, 500) }));
 }
 
 // ---------- 사진으로 여행 채우기 ----------

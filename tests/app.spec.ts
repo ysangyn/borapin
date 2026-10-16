@@ -368,13 +368,13 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '13-plan');
 
     // 기록: 쓴 사람이 보인다
-    await page.getByRole('tab', { name: /기록/ }).click();
+    await page.getByRole('tab', { name: /글/ }).click();
     const notes = page.getByTestId('notes-tab');
-    await notes.getByLabel('여행 기록 쓰기').fill('바다 보며 커피 마신 날');
+    await notes.getByLabel('글 쓰기').fill('바다 보며 커피 마신 날');
     await notes.getByRole('button', { name: '남기기' }).click();
     await expect(notes.getByTestId('note')).toContainText('바다 보며 커피 마신 날');
     await expect(notes.getByTestId('note')).toContainText('영상');
-    await expect(page.getByRole('tab', { name: '기록 1' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '글 1' })).toBeVisible();
 
     // 준비물: 예정된 제주 여행
     await page.goto('/trips');
@@ -518,6 +518,51 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('headline')).toHaveText(/번의 여행/);
   });
 
+  test('이메일로 가입하고 메일 인증 뒤 들어온다', async ({ page }) => {
+    const MAIL = 'mail.bora@example.com';
+    // 주인이 먼저 이 메일을 함께 쓰는 사람에 넣는다
+    await signIn(page, OWNER);
+    await page.goto('/space');
+    await page.getByLabel('추가할 계정').fill(MAIL);
+    await page.getByRole('button', { name: '추가', exact: true }).click();
+    await expect(page.getByText(MAIL).first()).toBeVisible();
+    await page.getByRole('button', { name: '로그아웃' }).click();
+    // 가입
+    await page.getByTestId('email-open').click();
+    const form = page.getByTestId('email-form');
+    await form.getByRole('radio', { name: '처음이에요' }).click();
+    await form.getByLabel('메일 주소').fill(MAIL);
+    await form.getByLabel('비밀번호').fill('borapin-1234');
+    await form.getByTestId('email-submit').click();
+    await expect(page.getByTestId('verify')).toContainText(MAIL);
+    await shot(page, '10b-verify');
+    // 인증 전에는 못 들어온다
+    await page.getByTestId('verified').click();
+    await expect(page.getByTestId('verify')).toContainText('아직 인증되지 않았어요');
+    // 메일 속 링크를 누른 것처럼 (에뮬레이터에서 인증 코드를 적용)
+    const host = process.env.FIREBASE_AUTH_EMULATOR_HOST ?? '127.0.0.1:9099';
+    const codes = (await (await fetch(`http://${host}/emulator/v1/projects/demo-borapin/oobCodes`)).json()) as { oobCodes: { email: string; oobCode: string; requestType: string }[] };
+    const code = codes.oobCodes.reverse().find((c) => c.email === MAIL && c.requestType === 'VERIFY_EMAIL');
+    expect(code).toBeTruthy();
+    const r = await fetch(`http://${host}/identitytoolkit.googleapis.com/v1/accounts:update?key=fake`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ oobCode: code!.oobCode }) });
+    expect(r.ok).toBeTruthy();
+    await page.getByTestId('verified').click();
+    await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 15_000 });
+    // 다시 로그인: 틀린 비밀번호 → 맞는 비밀번호
+    await page.goto('/space');
+    await page.getByRole('button', { name: '로그아웃' }).click();
+    await page.getByTestId('email-open').click();
+    await page.getByLabel('메일 주소').fill(MAIL);
+    await page.getByLabel('비밀번호').fill('wrong-pass');
+    await page.getByTestId('email-submit').click();
+    await expect(page.getByTestId('email-form')).toContainText('메일 주소나 비밀번호가 맞지 않아요');
+    await page.getByLabel('비밀번호').fill('borapin-1234');
+    await page.getByTestId('email-submit').click();
+    await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 15_000 });
+    await page.goto('/space');
+    await page.getByRole('button', { name: '로그아웃' }).click();
+  });
+
   test('기록 고치기와 지우기', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/trips');
@@ -528,7 +573,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByLabel('제목').fill('엄마랑 강릉');
     await page.getByTestId('save').click();
     await expect(page.getByTestId('trip-title')).toHaveText('엄마랑 강릉');
-    await page.getByRole('button', { name: '이 기록 지우기' }).click();
+    await page.getByRole('button', { name: '이 여행 지우기' }).click();
     await page.getByRole('button', { name: '지우기', exact: true }).click();
     await expect(page).toHaveURL(/\/trips$/);
     await expect(page.getByTestId('trip-row')).toHaveCount(3);

@@ -13,6 +13,10 @@ import type { TravelInfo } from '../travelinfo';
 import type { Place, PlaceRec, Season, Trip, Wish } from '../types';
 import { dailyShuffle, samePlace } from '../wishes';
 import { findMentions, type Mention } from './gazetteer';
+import { josa } from 'es-hangul';
+
+/** 이름 뒤 조사: '강릉시는', '부산을' */
+const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (w ? josa(w, pair) : '');
 
 export type Intent =
   | 'overview' | 'spots' | 'foods' | 'goods' | 'transport' | 'season'
@@ -218,7 +222,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
       const ours = tripsAt(d.trips, p).filter((t) => t.when.m || t.when.s).map((t) => (t.when.m ? `${t.when.m}월` : SEASON_LABEL[t.when.s!]));
       return {
         intent,
-        text: s ? `${placeName(p)}은(는) ${monthsLabel(s.m)}이 좋아요` : `${placeName(p)}의 가기 좋은 때 자료가 없어요`,
+        text: s ? `${jo(placeName(p), '은/는')} ${jo(monthsLabel(s.m), '이/가')} 좋아요` : `${placeName(p)}의 가기 좋은 때 자료가 없어요`,
         lines: [s ? `${s.why}${s.at ? ` (${s.at} 기준)` : ''}` : '', ours.length ? `우리가 갔던 때: ${[...new Set(ours)].join(', ')}` : ''].filter(Boolean),
         buttons: placeButtons(p),
         source: 'NASA POWER 월별 기후값으로 계산',
@@ -229,7 +233,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
       const ts = tripsAt(d.trips, p);
       return {
         intent,
-        text: ts.length ? `${placeName(p)}에 ${ts.length}번 다녀왔어요` : `${placeName(p)}은(는) 아직 안 가봤어요`,
+        text: ts.length ? `${placeName(p)}에 ${ts.length}번 다녀왔어요` : `${jo(placeName(p), '은/는')} 아직 안 가봤어요`,
         lines: ts.slice(0, 6).map((t) => `${formatWhen(t.when)} · ${t.title}`),
         buttons: ts.length ? ts.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })) : placeButtons(p),
         source: '우리 기록',
@@ -240,7 +244,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
       const ts = tripsAt(d.trips, p);
       return {
         intent,
-        text: ts.length ? `${placeName(p)}에는 ${formatWhen(ts[0].when)}에 마지막으로 갔어요` : `${placeName(p)}은(는) 아직 기록이 없어요`,
+        text: ts.length ? `${placeName(p)}에는 ${formatWhen(ts[0].when)}에 마지막으로 갔어요` : `${jo(placeName(p), '은/는')} 아직 기록이 없어요`,
         lines: ts.map((t) => `${formatWhen(t.when)} · ${t.title}`).slice(0, 8),
         buttons: ts.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })),
         source: '우리 기록',
@@ -309,7 +313,11 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
     if (m.entry.places.length === 1) places.push(m.entry.places[0]);
     else ambiguous.push(m);
   }
-  const followUp = /거기|그곳|그\s*지역|여기|그럼|그러면/.test(q) || (!places.length && !groupId && !ambiguous.length);
+  // '거기·그곳'처럼 가리키면 앞 질문의 장소를 이어 쓴다.
+  // 장소 없이 '어디 가면 좋아?·추천'처럼 새로 고르는 질문은 앞 장소를 잇지 않는다.
+  const refers = /거기|그곳|그\s*지역|여기|그럼|그러면/.test(q);
+  const freshPick = /어디\s*(갈|가지|가면|가볼|가 볼|좋)|추천|갈\s*만한|놀러|여행지/.test(q);
+  const followUp = refers || (!places.length && !groupId && !ambiguous.length && !freshPick);
   if (!places.length && !groupId && !ambiguous.length && followUp && ctx.place) places = [ctx.place];
 
   const intent = intentOf(q, places.length ? places : ambiguous.length ? [ambiguous[0].entry.places[0]] : [], person != null, hasTime, groupId != null);
@@ -319,7 +327,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
     const m = ambiguous[0];
     return {
       intent: 'choose',
-      text: `'${m.entry.label}'은(는) 여러 곳이에요. 어디를 말씀하시는 거예요?`,
+      text: `'${m.entry.label}'${josa.pick(m.entry.label, '은/는')} 여러 곳이에요. 어디를 말씀하시는 거예요?`,
       buttons: m.entry.places.slice(0, 8).map((p) => ({ label: placeName(p), choose: p })),
       ctx: { ...ctx, intent },
     };
@@ -336,7 +344,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         const s = seasonFor(d.seasons, pl);
         return `${placeName(pl)}: ${c ? c.main.theme : ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''} · 우리 ${tripsAt(d.trips, pl).length}번${c ? ` · 먹거리 ${c.main.foods.slice(0, 2).join(', ')}` : ''}`;
       };
-      a = { intent, text: `${placeLabel(x)}와(과) ${placeLabel(y)} 비교`, lines: [row(x), row(y)], buttons: [{ label: `${placeLabel(x)} 자세히`, ask: `${placeLabel(x)} 볼거리` }, { label: `${placeLabel(y)} 자세히`, ask: `${placeLabel(y)} 볼거리` }], source: INFO_SRC(d) };
+      a = { intent, text: `${jo(placeLabel(x), '와/과')} ${placeLabel(y)} 비교`, lines: [row(x), row(y)], buttons: [{ label: `${placeLabel(x)} 자세히`, ask: `${placeLabel(x)} 볼거리` }, { label: `${placeLabel(y)} 자세히`, ask: `${placeLabel(y)} 볼거리` }], source: INFO_SRC(d) };
       break;
     }
     case 'again': {
@@ -353,14 +361,14 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       break;
     }
     case 'wishAdd': {
-      a = p ? { intent, text: `${placeName(p)}을(를) 가고 싶은 곳에 담을까요?`, lines: [seasonLine(d, p) ?? ''].filter(Boolean), buttons: [{ label: '가고 싶은 곳에 담기', wish: p }, { label: '볼거리 먼저', ask: `${placeLabel(p)} 볼거리` }] } : unknown(q);
+      a = p ? { intent, text: `${jo(placeName(p), '을/를')} 가고 싶은 곳에 담을까요?`, lines: [seasonLine(d, p) ?? ''].filter(Boolean), buttons: [{ label: '가고 싶은 곳에 담기', wish: p }, { label: '볼거리 먼저', ask: `${placeLabel(p)} 볼거리` }] } : unknown(q);
       break;
     }
     case 'people': {
       const list = done.filter((t) => t.companions.some((c) => c.includes(person!) || person!.includes(c)));
       a = list.length
-        ? { intent, text: `${person}와(과) 간 여행 ${list.length}번`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: list.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
-        : { intent, text: `${person}와(과) 간 기록을 찾지 못했어요`, lines: ['기록할 때 "누구와"에 이름을 넣으면 여기서 찾을 수 있어요.'], buttons: [{ label: '기록 남기기', to: '/record' }] };
+        ? { intent, text: `${jo(person, '와/과')} 간 여행 ${list.length}번`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: list.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
+        : { intent, text: `${jo(person, '와/과')} 간 기록을 찾지 못했어요`, lines: ['기록할 때 "누구와"에 이름을 넣으면 여기서 찾을 수 있어요.'], buttons: [{ label: '기록 남기기', to: '/record' }] };
       break;
     }
     case 'time': {
@@ -383,7 +391,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       break;
     }
     case 'map': {
-      a = p ? { intent, text: `${placeName(p)}을(를) 지도에서 볼게요`, buttons: [{ label: '지도 열기', to: `/map?sel=${placeParam(p)}` }] } : { intent, text: '우리 지도', buttons: [{ label: '지도 열기', to: '/map' }] };
+      a = p ? { intent, text: `${jo(placeName(p), '을/를')} 지도에서 볼게요`, buttons: [{ label: '지도 열기', to: `/map?sel=${placeParam(p)}` }] } : { intent, text: '우리 지도', buttons: [{ label: '지도 열기', to: '/map' }] };
       break;
     }
     case 'count':

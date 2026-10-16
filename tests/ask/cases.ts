@@ -39,6 +39,10 @@ export const CASES: Case[] = [
   { q: '거기 맛집은?', intent: 'foods', place: 'kr:51150', after: '강릉 볼거리' },
   { q: '언제 가면 좋아?', intent: 'season', place: 'kr:51150', after: '강릉 볼거리' },
   { q: '교통은?', intent: 'transport', place: 'kr:26', after: '부산 맛집' },
+  // 앞 장소와 상관없는 새 추천 질문은 앞 장소를 잇지 않는다
+  { q: '11월에 어디 가면 좋아?', intent: 'recommend', has: '11월', after: '강릉 몇 번 갔지?' },
+  { q: '안 가본 곳 추천해줘', intent: 'recommend', after: '강릉 볼거리' },
+  { q: '그럼 거기 언제 가면 좋아?', intent: 'season', place: 'kr:51150', after: '강릉 맛집' },
   // 가기 좋은 때
   { q: '제주 언제 가면 좋아?', intent: 'season', place: 'kr:50', has: '월' },
   { q: '강릉 몇 월에 가면 좋아', intent: 'season', place: 'kr:51150' },

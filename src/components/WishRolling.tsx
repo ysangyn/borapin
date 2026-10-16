@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { josa } from 'es-hangul';
 import { Link, useNavigate } from 'react-router-dom';
 import WishCard from './WishCard';
 import { Icon, useToast } from './ui';
@@ -36,7 +37,8 @@ export default function WishRolling({ wishes, trips, stats }: { wishes: Wish[]; 
     const t = window.setInterval(() => {
       if (Date.now() < paused.current || !box.current) return;
       const next = (idx + 1) % items.length;
-      box.current.scrollTo({ left: next * box.current.clientWidth * 0.9, behavior: 'smooth' });
+      const child = box.current.children[next] as HTMLElement | undefined;
+      if (child) box.current.scrollTo({ left: child.offsetLeft - box.current.offsetLeft - 20, behavior: 'smooth' });
     }, 6000);
     return () => window.clearInterval(t);
   }, [items.length, idx]);
@@ -44,13 +46,23 @@ export default function WishRolling({ wishes, trips, stats }: { wishes: Wish[]; 
   const onScroll = () => {
     const el = box.current;
     if (!el) return;
-    setIdx(Math.round(el.scrollLeft / (el.clientWidth * 0.9)));
+    // 왼쪽에 가장 가까운 카드가 지금 카드
+    let best = 0, dist = Infinity;
+    [...el.children].forEach((c, i) => {
+      const d = Math.abs((c as HTMLElement).offsetLeft - el.offsetLeft - 20 - el.scrollLeft);
+      if (d < dist) { dist = d; best = i; }
+    });
+    setIdx(best);
   };
 
   const add = async (c: (typeof picks)[number]) => {
     if (auth.status !== 'ready') return;
-    const id = await quickWish(c.place, auth.user);
-    toast(`${c.name}을(를) 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    try {
+      const { id, already } = await quickWish(c.place, auth.user, wishes);
+      toast(already ? '이미 담겨 있어요' : `${josa(c.name, '을/를')} 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    } catch {
+      toast('담지 못했어요. 다시 해 주세요');
+    }
   };
 
   return (

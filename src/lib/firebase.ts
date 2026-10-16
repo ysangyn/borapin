@@ -25,8 +25,9 @@ export const app = initializeApp(
 );
 export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
-  // 오프라인에서도 기록·사진을 볼 수 있게 기기에 캐시(최대 300MB, 오래 안 본 것부터 비움). 테스트에서는 메모리만 사용.
-  localCache: USE_EMULATOR
+  // 오프라인에서도 기록·사진을 볼 수 있게 기기에 캐시(최대 300MB, 오래 안 본 것부터 비움).
+  // 테스트와 공유 링크(로그인 없이 보는 사람)는 기기에 남기지 않는다 — 공개를 끄면 바로 못 보게.
+  localCache: USE_EMULATOR || location.pathname.startsWith('/s/')
     ? memoryLocalCache()
     : persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 300 * 1024 * 1024 }),
 });

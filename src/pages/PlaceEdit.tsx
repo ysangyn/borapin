@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Icon, TopBar, useToast } from '../components/ui';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import { useAuth, displayName } from '../lib/auth';
-import { createPlace, deletePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
+import { createPlace, deletePlace, restorePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
 import { formatWhen } from '../lib/dates';
 import { parsePlaceParam } from '../lib/geo';
 import { KINDS, parseNaverShare, placeRecLinks, VERDICTS } from '../lib/placeRecs';
@@ -15,7 +15,7 @@ export default function PlaceEdit() {
   const { id } = useParams();
   const editing = Boolean(id && id !== 'new');
   const [sp] = useSearchParams();
-  const nav = useNavigate();
+  const goBack = useGoBack();
   const toast = useToast();
   const auth = useAuth();
   const { places } = usePlaces();
@@ -89,15 +89,15 @@ export default function PlaceEdit() {
       tripId: tripId || null,
       reviews: Object.fromEntries(Object.entries(reviews).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v)),
       verdict,
-      naverUrl: naverUrl.trim() || undefined,
+      naverUrl: /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : undefined,
       address: address.trim() || undefined,
       memo: memo.trim() || undefined,
     };
     try {
-      if (editing && id) await updatePlace(id, input);
+      if (editing && id && existing) await updatePlace(id, existing, input);
       else await createPlace(input, auth.user);
       toast(editing ? '고쳤어요' : '장소를 남겼어요');
-      nav(-1);
+      goBack(tripParam ? `/trips/${tripParam}` : '/places');
     } catch (e) {
       console.warn(e);
       toast('저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -105,11 +105,32 @@ export default function PlaceEdit() {
     }
   };
 
-  const links = where && name ? placeRecLinks({ name, region: where, naverUrl }) : null;
+  const links = where && name ? placeRecLinks({ name, region: where, naverUrl: /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : undefined }) : null;
+  const dirty = !saving && (editing ? loaded && !!existing && (name !== existing.name || memo !== (existing.memo ?? '') || JSON.stringify(reviews) !== JSON.stringify(existing.reviews ?? {})) : !!(name.trim() || memo.trim() || Object.values(reviews).some((v) => v.trim())));
+  useLeaveGuard(dirty);
+
+  const remove = () => {
+    if (!existing) return;
+    const copy = existing;
+    deletePlace(copy.id).catch(() => toast('지우지 못했어요. 다시 해 주세요'));
+    toast('장소를 지웠어요', { label: '되돌리기', onClick: () => void restorePlace(copy) });
+    goBack('/places');
+  };
+
+  if (editing && !loaded) {
+    if (places && !existing)
+      return (
+        <>
+          <TopBar back backTo="/places" title="장소" />
+          <div className="empty" style={{ margin: 20 }}><b>이 장소를 찾을 수 없어요</b><span className="small">지워졌거나 주소가 바뀌었어요.</span></div>
+        </>
+      );
+    return <Spinner />;
+  }
 
   return (
     <>
-      <TopBar back title={editing ? '장소' : '장소 남기기'} />
+      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소' : '장소 남기기'} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         {!editing && (
           <div className="field">
@@ -198,7 +219,7 @@ export default function PlaceEdit() {
           ) : (
             <div className="card" style={{ display: 'flex', gap: 8 }}>
               <button className="btn ghost" style={{ flex: 1 }} onClick={() => setConfirm(false)}>그대로 두기</button>
-              <button className="btn" style={{ flex: 1, background: 'var(--danger)' }} onClick={() => deletePlace(existing.id).then(() => { toast('지웠어요'); nav(-1); })}>지우기</button>
+              <button className="btn" style={{ flex: 1, background: 'var(--danger)' }} onClick={remove}>지우기</button>
             </div>
           )
         )}

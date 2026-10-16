@@ -18,7 +18,12 @@ export interface TravelInfo {
 
 let cache: Promise<TravelInfo> | null = null;
 export function loadTravelInfo(): Promise<TravelInfo> {
-  if (!cache) cache = import('../data/travelinfo.json').then((m) => m.default as unknown as TravelInfo);
+  if (!cache) {
+    cache = import('../data/travelinfo.json').then((m) => m.default as unknown as TravelInfo);
+    cache.catch(() => {
+      cache = null;
+    });
+  }
   return cache;
 }
 

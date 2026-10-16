@@ -25,7 +25,8 @@ service cloud.firestore {
     }
 
     function validAccess(d) {
-      return d.keys().hasOnly(['allowed', 'admins', 'updatedAt'])
+      return d.keys().hasOnly(['allowed', 'admins', 'names', 'updatedAt'])
+        && (!('names' in d) || (d.names is map && d.names.size() <= 50))
         && d.allowed is list && d.allowed.size() <= 50
         && d.admins is list && d.admins.size() <= 10;
     }
@@ -164,7 +165,10 @@ service cloud.firestore {
           && request.resource.data.data is bytes
           && request.resource.data.data.size() <= 950 * 1024
           && request.resource.data.public == false
-          && request.resource.data.v == 1;
+          && request.resource.data.v == 1
+          // 관리자가 사진 올리기를 멈췄으면 옛 버전 앱에서도 올리지 못하게
+          && !(exists(/databases/$(database)/documents/config/flags)
+               && get(/databases/$(database)/documents/config/flags).data.get('uploadsPaused', false) == true);
         // 바꿀 수 있는 건 공개 여부뿐
         allow update: if isMember()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['public'])

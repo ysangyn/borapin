@@ -24,7 +24,10 @@ export default function Memories() {
     ys.add(thisYear);
     return [...ys].sort((a, b) => b - a);
   }, [trips, thisYear]);
-  const [year, setYear] = useState(thisYear);
+  // 결산은 기록이 있는 가장 최근 해부터
+  const latestYear = useMemo(() => (trips ?? []).filter((t) => t.status === 'done' && t.when.y && t.when.y <= thisYear).reduce((m, t) => Math.max(m, t.when.y!), 0) || thisYear, [trips, thisYear]);
+  const [pickedYear, setYear] = useState<number | null>(null);
+  const year = pickedYear ?? latestYear;
   const memory = useMemo(() => (trips ? pickMemory(trips) : null), [trips]);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   const review = useMemo(() => (trips ? yearReview(trips, year) : null), [trips, year]);
@@ -32,22 +35,48 @@ export default function Memories() {
   const list = useMemo(() => (trips && stats ? badges(trips, stats, photos ?? [], recs ?? []) : []), [trips, stats, photos, recs]);
   const albums = useMemo(() => {
     if (!photos || !trips) return [];
-    return trips.map((t) => ({ trip: t, photos: photos.filter((p) => p.tripId === t.id) })).filter((a) => a.photos.length > 0);
+    const by = new Map<string, typeof photos>();
+    for (const p of photos) if (p.tripId) by.set(p.tripId, [...(by.get(p.tripId) ?? []), p]);
+    return trips.filter((t) => by.has(t.id)).map((t) => ({ trip: t, photos: by.get(t.id)! }));
   }, [photos, trips]);
   const earned = list.filter((b) => b.have >= b.need);
+  const doneCount = (trips ?? []).filter((t) => t.status === 'done').length;
+  const [allBadges, setAllBadges] = useState(false);
+  // 받은 뱃지 먼저, 그다음 거의 다 된 것부터
+  const badgeOrder = [...list].sort((a, b) => { const ao = a.have >= a.need, bo = b.have >= b.need; return Number(bo) - Number(ao) || (ao ? 0 : b.have / b.need - a.have / a.need); });
+  const badgeShown = allBadges ? badgeOrder : badgeOrder.slice(0, 6);
+
+  if (!trips) return (<><TopBar title="추억" /><div className="page"><div className="skeleton-list" aria-busy="true"><i /><i /><i /></div></div></>);
+  if (doneCount === 0)
+    return (
+      <>
+        <TopBar title="추억" />
+        <div className="page" style={{ paddingTop: 4 }}>
+          <div className="empty" data-testid="memories-empty">
+            <b>다녀온 여행을 하나 남기면 추억이 시작돼요</b>
+            <span className="small">기록이 쌓이면 여기에 이런 것들이 생겨요</span>
+            <ul className="preview-list">
+              <li><b>몇 년 전 오늘</b> 그날의 여행을 다시 꺼내 줘요</li>
+              <li><b>지도 다시 보기</b> 해마다 지도가 채워진 순서</li>
+              <li><b>한 해 결산</b> 처음 가본 곳, 가장 많이 간 곳</li>
+              <li><b>도전 뱃지</b> 핀 10개, 섬 탐험가, 사계절 여행</li>
+            </ul>
+            <Link to="/record" className="btn sm">기록 남기기</Link>
+          </div>
+        </div>
+      </>
+    );
   const maxCell = Math.max(1, ...(grid?.rows.flatMap(([, r]) => r) ?? [1]));
 
   return (
     <>
       <TopBar title="추억" />
       <div className="page" style={{ paddingTop: 4 }}>
-        {memory ? (
+        {memory && (
           <section className="card" data-testid="memory-card">
             <div className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</div>
             <div className="list"><TripRow trip={memory.trip} /></div>
           </section>
-        ) : (
-          <div className="empty"><b>꺼내 볼 추억이 아직 없어요</b><span className="small">지난 여행 3개만 추가해 보세요.</span><Link to="/record" className="btn sm">기록 남기기</Link></div>
         )}
 
         {trips && <DateGame trips={trips} />}
@@ -97,9 +126,12 @@ export default function Memories() {
         )}
 
         <section data-testid="badges">
-          <h2 className="h2" style={{ marginBottom: 6 }}>도전 뱃지 · {earned.length}/{list.length}</h2>
+          <div className="row-between" style={{ marginBottom: 6 }}>
+            <h2 className="h2">도전 뱃지 · {earned.length}/{list.length}</h2>
+            {list.length > 6 && <button className="link-btn" onClick={() => setAllBadges(!allBadges)}>{allBadges ? '접기' : '모두 보기'}</button>}
+          </div>
           <div className="badges">
-            {list.map((b) => {
+            {badgeShown.map((b) => {
               const ok = b.have >= b.need;
               return (
                 <div key={b.id} className={'badge' + (ok ? ' on' : '')} title={b.desc}>
@@ -125,7 +157,7 @@ export default function Memories() {
           {albums.map(({ trip, photos: ps }) => (
             <div key={trip.id} style={{ marginBottom: 14 }}>
               <Link to={`/trips/${trip.id}?tab=photos`} className="year-head" style={{ display: 'block', color: 'inherit' }}>{trip.title} · {ps.length}장</Link>
-              <PhotoGrid photos={ps} tripId={trip.id} max={6} />
+              <PhotoGrid photos={ps} tripId={trip.id} max={6} readOnly />
             </div>
           ))}
         </section>

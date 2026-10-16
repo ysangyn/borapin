@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Icon, TopBar, useToast } from '../components/ui';
+import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 
 import { useAuth, displayName } from '../lib/auth';
-import { createWish, deleteWish, updateWish, useTrips, useWishes } from '../lib/data';
+import { createWish, deleteWish, restoreWish, saveWishEdits, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { parsePlaceParam, placeParam } from '../lib/geo';
 import { COUPLE, lines, wishState } from '../lib/wishes';
@@ -15,6 +15,7 @@ export default function WishEdit() {
   const editing = Boolean(id && id !== 'new');
   const [sp] = useSearchParams();
   const nav = useNavigate();
+  const goBack = useGoBack();
   const toast = useToast();
   const auth = useAuth();
   const seasons = useSeasons();
@@ -76,14 +77,15 @@ export default function WishEdit() {
       source: existing?.source ?? 'app',
     };
     try {
-      if (editing && id) {
-        await updateWish(id, input);
+      if (editing && id && existing) {
+        await saveWishEdits(id, existing, input);
         toast('고쳤어요');
+        goBack('/wishes');
       } else {
         await createWish(input, auth.user);
         toast('가고 싶은 곳에 담았어요');
+        nav('/wishes', { replace: true });
       }
-      nav('/wishes', { replace: true });
     } catch (e) {
       console.warn(e);
       toast('저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -92,10 +94,31 @@ export default function WishEdit() {
   };
 
   const toggle = (n: string) => setWantedBy((w) => (w.includes(n) ? w.filter((x) => x !== n) : [...w, n]));
+  const dirty = !saving && (editing ? loaded && !!existing && (spotName !== (existing.spotName ?? '') || note !== (existing.note ?? '') || spots !== existing.spots.join('\n') || todos !== existing.todos.join('\n') || foods !== existing.foods.join('\n')) : !!(spotName.trim() || note.trim() || spots.trim() || todos.trim() || foods.trim()));
+  useLeaveGuard(dirty);
+
+  const remove = () => {
+    if (!existing) return;
+    const copy = existing;
+    deleteWish(copy.id).catch(() => toast('빼지 못했어요. 다시 해 주세요'));
+    toast('가고 싶은 곳에서 뺐어요', { label: '되돌리기', onClick: () => void restoreWish(copy) });
+    nav('/wishes', { replace: true });
+  };
+
+  if (editing && !loaded) {
+    if (wishes && !existing)
+      return (
+        <>
+          <TopBar back backTo="/wishes" title="가고 싶은 곳" />
+          <div className="empty" style={{ margin: 20 }}><b>이곳을 찾을 수 없어요</b><span className="small">이미 빠졌거나 주소가 바뀌었어요.</span></div>
+        </>
+      );
+    return <Spinner />;
+  }
 
   return (
     <>
-      <TopBar back title={editing ? '가고 싶은 곳' : '가고 싶은 곳 담기'} />
+      <TopBar back backTo="/wishes" confirmLeave={dirty} title={editing ? '가고 싶은 곳' : '가고 싶은 곳 담기'} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
@@ -181,7 +204,7 @@ export default function WishEdit() {
           ) : (
             <div className="card" style={{ display: 'flex', gap: 8 }}>
               <button className="btn ghost" style={{ flex: 1 }} onClick={() => setConfirm(false)}>그대로 두기</button>
-              <button className="btn" style={{ flex: 1, background: 'var(--danger)' }} onClick={() => deleteWish(existing.id).then(() => { toast('뺐어요'); nav('/wishes', { replace: true }); })}>빼기</button>
+              <button className="btn" style={{ flex: 1, background: 'var(--danger)' }} onClick={remove}>빼기</button>
             </div>
           )
         )}

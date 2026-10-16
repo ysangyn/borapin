@@ -1,57 +1,90 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
-import { BottomNav, Spinner } from './components/ui';
-import { Denied, Login } from './pages/Login';
+import { DataProvider } from './lib/store';
+import { BottomNav, Logo, Spinner } from './components/ui';
+import { ErrorBoundary, ScrollManager, StatusBanner } from './components/system';
+import { Denied, Login, VerifyEmail } from './pages/Login';
 import Home from './pages/Home';
-import Trips from './pages/Trips';
-import TripDetail from './pages/TripDetail';
-import Record from './pages/Record';
-import MapPage from './pages/MapPage';
-import Memories from './pages/Memories';
-import Space from './pages/Space';
-import Wishes from './pages/Wishes';
-import WishEdit from './pages/WishEdit';
-import Places from './pages/Places';
-import PlaceEdit from './pages/PlaceEdit';
-import Ask from './pages/Ask';
-import SharedTripPage from './pages/SharedTripPage';
-import Admin from './pages/Admin';
+
+// 홈 말고는 그 화면에 갈 때 불러온다 (첫 화면이 빨리 뜨게)
+const Trips = lazy(() => import('./pages/Trips'));
+const TripDetail = lazy(() => import('./pages/TripDetail'));
+const Record = lazy(() => import('./pages/Record'));
+const MapPage = lazy(() => import('./pages/MapPage'));
+const Memories = lazy(() => import('./pages/Memories'));
+const Space = lazy(() => import('./pages/Space'));
+const Wishes = lazy(() => import('./pages/Wishes'));
+const WishEdit = lazy(() => import('./pages/WishEdit'));
+const Places = lazy(() => import('./pages/Places'));
+const PlaceEdit = lazy(() => import('./pages/PlaceEdit'));
+const Ask = lazy(() => import('./pages/Ask'));
+const Admin = lazy(() => import('./pages/Admin'));
+const SharedTripPage = lazy(() => import('./pages/SharedTripPage'));
+const Legal = lazy(() => import('./pages/Legal'));
 
 export default function App() {
   const auth = useAuth();
   const loc = useLocation();
-  // 링크 공개된 여행은 로그인 없이 본다
-  if (loc.pathname.startsWith('/s/')) {
+  // 링크 공개된 여행과 약관·개인정보 처리방침은 로그인 없이 본다
+  if (loc.pathname.startsWith('/s/') || loc.pathname === '/privacy' || loc.pathname === '/terms') {
     return (
       <div className="app">
-        <Routes><Route path="/s/:token" element={<SharedTripPage />} /></Routes>
+        <ErrorBoundary resetKey={loc.pathname}>
+          <Suspense fallback={<Spinner />}>
+            <Routes>
+              <Route path="/s/:token" element={<SharedTripPage />} />
+              <Route path="/privacy" element={<Legal kind="privacy" />} />
+              <Route path="/terms" element={<Legal kind="terms" />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </div>
     );
   }
   if (auth.status === 'loading') return <div className="app"><Spinner /></div>;
   if (auth.status === 'signedOut') return <div className="app"><Login /></div>;
   if (auth.status === 'denied') return <div className="app"><Denied email={auth.user.email} /></div>;
+  if (auth.status === 'verify') return <div className="app"><VerifyEmail email={auth.user.email} /></div>;
+  if (auth.status === 'error')
+    return (
+      <div className="app">
+        <div className="center-screen" role="alert">
+          <Logo size={48} />
+          <b style={{ fontSize: 18 }}>{auth.message}</b>
+          <button className="btn" onClick={() => location.reload()}>다시 시도</button>
+        </div>
+      </div>
+    );
   const hideNav = loc.pathname.startsWith('/record') || loc.pathname.endsWith('/edit') || /^\/(wishes|places)\/./.test(loc.pathname);
   return (
-    <div className="app">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/trips" element={<Trips />} />
-        <Route path="/trips/:id" element={<TripDetail />} />
-        <Route path="/trips/:id/edit" element={<Record />} />
-        <Route path="/record" element={<Record />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/memories" element={<Memories />} />
-        <Route path="/space" element={<Space />} />
-        <Route path="/wishes" element={<Wishes />} />
-        <Route path="/wishes/:id" element={<WishEdit />} />
-        <Route path="/ask" element={<Ask />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/places" element={<Places />} />
-        <Route path="/places/:id" element={<PlaceEdit />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      {!hideNav && <BottomNav />}
-    </div>
+    <DataProvider>
+      <div className={'app' + (hideNav ? ' no-nav' : '')}>
+        <ScrollManager />
+        <StatusBanner />
+        <ErrorBoundary resetKey={loc.pathname}>
+          <Suspense fallback={<Spinner />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/trips" element={<Trips />} />
+              <Route path="/trips/:id" element={<TripDetail />} />
+              <Route path="/trips/:id/edit" element={<Record />} />
+              <Route path="/record" element={<Record />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/memories" element={<Memories />} />
+              <Route path="/space" element={<Space />} />
+              <Route path="/wishes" element={<Wishes />} />
+              <Route path="/wishes/:id" element={<WishEdit />} />
+              <Route path="/ask" element={<Ask />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/places" element={<Places />} />
+              <Route path="/places/:id" element={<PlaceEdit />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+        {!hideNav && <BottomNav />}
+      </div>
+    </DataProvider>
   );
 }

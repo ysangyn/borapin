@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatars, Icon, Logo } from '../components/ui';
+import { Avatars, Icon, Logo, useToast } from '../components/ui';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
 import PlaceSheet from '../components/PlaceSheet';
 import type { Place } from '../lib/types';
-import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, usePlaces, useTrips, useWishes } from '../lib/data';
+import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTAL_GROUPS, upcomingTrips, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import WishRolling from '../components/WishRolling';
 import { pickMemory } from '../lib/memories';
@@ -23,8 +23,10 @@ export default function Home() {
   const [q, setQ] = useState('');
   const nav = useNavigate();
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
-  const planned = trips?.filter((t) => t.status === 'planned') ?? [];
-  const recent = trips?.filter((t) => t.status === 'done').slice(0, 3) ?? [];
+  const toast = useToast();
+  const planned = useMemo(() => (trips ? upcomingTrips(trips) : []), [trips]);
+  const overdue = useMemo(() => (trips ? overdueTrips(trips) : []), [trips]);
+  const recent = useMemo(() => (trips ? recentlyAdded(trips, 3) : []), [trips]);
   const memory = useMemo(() => (trips ? pickMemory(trips) : null), [trips]);
   const few = stats ? stats.cellVisits.size < 8 : true;
 
@@ -41,7 +43,7 @@ export default function Home() {
         <div>
           <div className="small muted">보라 &amp; 영상의 지도</div>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }} data-testid="headline">
-            {stats ? (stats.tripsDone ? `${stats.tripsDone}번의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : '…'}
+            {stats ? (stats.tripsDone ? `${stats.tripsDone}번의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
           </div>
         </div>
 
@@ -76,6 +78,13 @@ export default function Home() {
           )}
         </div>
 
+        {overdue[0] && (
+          <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
+            <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
+            <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'))}>다녀왔어요</button>
+          </div>
+        )}
+
         {planned.length > 0 && (
           <section>
             <div className="small" style={{ fontWeight: 700, color: 'var(--violet)', marginBottom: 4 }}>다가오는 여행</div>
@@ -104,7 +113,7 @@ export default function Home() {
 
         <section>
           <div className="row-between" style={{ marginBottom: 2 }}>
-            <h2 className="h2">최근 기록</h2>
+            <h2 className="h2">최근에 남긴 기록</h2>
             <Link to="/trips" className="small" style={{ fontWeight: 600 }}>전체 보기</Link>
           </div>
           {trips && recent.length === 0 && (

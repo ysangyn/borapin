@@ -8,9 +8,10 @@ import type { Trip } from '../lib/types';
 /** 공유카드 7종: 골라서 미리 보고, 휴대폰 공유창으로 보내거나 저장 */
 export default function ShareCards({ trips, year }: { trips: Trip[]; year: number }) {
   const info = useTravelInfo();
-  const notes = useAllNotes();
   const toast = useToast();
   const [kind, setKind] = useState<CardKind | null>(null);
+  // 글은 '메모 인용' 카드를 고를 때만 받는다 (읽기 횟수 절약)
+  const notes = useAllNotes(kind === 'quote');
   const [img, setImg] = useState<{ url: string; blob: Blob } | null>(null);
   const [busy, setBusy] = useState(false);
 

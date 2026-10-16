@@ -1,5 +1,6 @@
 import type { Place, Trip } from './types';
 import { COUNTRY_BY_ID, GROUPS, REGION_BY_CODE } from './geo';
+import { isUpcoming, whenSortKey } from './dates';
 
 // ---------- 통계 ----------
 export interface Stats {
@@ -81,4 +82,22 @@ export function companionSuggestions(trips: Trip[]): string[] {
   const base = ['보라', '영상'];
   const rest = [...count.entries()].filter(([n]) => !base.includes(n)).sort((a, b) => b[1] - a[1]).map(([n]) => n);
   return [...base, ...rest];
+}
+
+/** 다가오는 여행: 가까운 날부터, 날짜 모르는 계획은 뒤로. 날짜가 지난 계획은 뺀다 */
+export function upcomingTrips(trips: Trip[], now = new Date()): Trip[] {
+  return trips
+    .filter((t) => t.status === 'planned' && (t.when.p === 'unknown' || isUpcoming(t.when, now)))
+    .sort((a, b) => (a.when.y ? whenSortKey(a.when) : 9e9) - (b.when.y ? whenSortKey(b.when) : 9e9));
+}
+
+/** 날짜가 지났는데 아직 '예정'인 여행 (다녀왔는지 물어볼 것) */
+export function overdueTrips(trips: Trip[], now = new Date()): Trip[] {
+  return trips.filter((t) => t.status === 'planned' && t.when.p !== 'unknown' && !!t.when.y && !isUpcoming(t.when, now));
+}
+
+/** 최근에 남긴 기록 순서 (날짜를 모르는 기록도 방금 남겼으면 위로) */
+export function recentlyAdded(trips: Trip[], n = 3): Trip[] {
+  const ms = (t: Trip) => (t.createdAt && typeof t.createdAt.toMillis === 'function' ? t.createdAt.toMillis() : Date.now());
+  return trips.filter((t) => t.status === 'done').sort((a, b) => ms(b) - ms(a)).slice(0, n);
 }

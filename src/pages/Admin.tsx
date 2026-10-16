@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
-import { usePhotos } from '../lib/photos';
+import { photoUsage } from '../lib/photos';
 import { resolveReport, setFlags, useFlags, useReports } from '../lib/admin';
-import { FREE_DB_BYTES, photosLeft, usedBytes } from '../lib/usage';
+import { FREE_DB_BYTES, photosLeft, usedBytes, type PhotoTotals } from '../lib/usage';
 
 const mb = (n: number) => (n >= 1024 ** 3 ? `${(n / 1024 ** 3).toFixed(2)}GB` : `${(n / 1024 / 1024).toFixed(1)}MB`);
 
@@ -26,14 +26,18 @@ export default function Admin() {
   const { trips } = useTrips();
   const { places } = usePlaces();
   const { wishes } = useWishes();
-  const { photos } = usePhotos();
+  // 사진 목록을 받지 않고 서버에서 수와 용량만 센다
+  const [totals, setTotals] = useState<PhotoTotals | null>(null);
+  useEffect(() => {
+    photoUsage().then(setTotals, () => setTotals({ count: 0, bytes: 0 }));
+  }, []);
   const flags = useFlags();
   const reports = useReports();
   const [reason, setReason] = useState('');
   const records = (trips?.length ?? 0) + (places?.length ?? 0) + (wishes?.length ?? 0);
-  const used = useMemo(() => usedBytes(photos ?? [], records), [photos, records]);
-  const photoBytes = useMemo(() => (photos ?? []).reduce((n, p) => n + (p.bytes ?? 0), 0), [photos]);
-  const left = useMemo(() => photosLeft(photos ?? [], records), [photos, records]);
+  const t = totals ?? { count: 0, bytes: 0 };
+  const used = useMemo(() => usedBytes(t, records), [t, records]);
+  const left = useMemo(() => photosLeft(t, records), [t, records]);
   if (auth.status !== 'ready' || !auth.isAdmin) return <div className="center-screen">관리자만 볼 수 있어요</div>;
 
   return (
@@ -57,9 +61,9 @@ export default function Admin() {
         <section className="card white" data-testid="usage">
           <div className="h2" style={{ fontSize: 16 }}>무료 한도 사용량</div>
           <Meter value={used} max={FREE_DB_BYTES} label="저장 공간" sub={`${mb(used)} / 1GB`} />
-          <div className="small">사진 {photos?.length ?? 0}장 · {mb(photoBytes)} — 앞으로 약 <b>{left.toLocaleString('ko-KR')}장</b> 더 올릴 수 있어요</div>
+          <div className="small">{totals ? <>사진 {t.count}장 · {mb(t.bytes)} — 앞으로 약 <b>{left.toLocaleString('ko-KR')}장</b> 더 올릴 수 있어요</> : '세는 중…'}</div>
           <div className="small muted">기록: 여행 {trips?.length ?? 0} · 장소 {places?.length ?? 0} · 가고 싶은 곳 {wishes?.length ?? 0}</div>
-          <div className="tiny muted">읽기 하루 5만 회·쓰기 2만 회까지 무료예요. 사진 한 장을 처음 볼 때 1회 읽고, 그다음부터는 기기에 저장된 것을 써요.</div>
+          <div className="tiny muted">읽기 하루 5만 회·쓰기 2만 회까지 무료예요(한국 시간 오후 4~5시에 다시 차요). 사진은 기기마다 처음 볼 때만 받고, 그다음부터는 기기에 저장된 것을 써요.</div>
         </section>
 
         <section className="card white" data-testid="cutoff">
@@ -71,9 +75,9 @@ export default function Admin() {
               <div className="tiny muted">{flags.uploadsPaused ? `멈춤${flags.reason ? ` · ${flags.reason}` : ''}` : '켜짐'}</div>
             </span>
             {flags.uploadsPaused ? (
-              <button className="btn sm" onClick={() => setFlags({ uploadsPaused: false, reason: '' }).then(() => toast('사진 올리기를 다시 켰어요'))} data-testid="uploads-on">다시 켜기</button>
+              <button className="btn sm" onClick={() => setFlags({ uploadsPaused: false, reason: '' }).then(() => toast('사진 올리기를 다시 켰어요'), () => toast('바꾸지 못했어요'))} data-testid="uploads-on">다시 켜기</button>
             ) : (
-              <button className="btn sm line" onClick={() => setFlags({ uploadsPaused: true, reason: reason.trim() || '관리자가 멈춤' }).then(() => toast('사진 올리기를 멈췄어요'))} data-testid="uploads-off">멈추기</button>
+              <button className="btn sm line" onClick={() => setFlags({ uploadsPaused: true, reason: reason.trim() || '관리자가 멈춤' }).then(() => toast('사진 올리기를 멈췄어요'), () => toast('바꾸지 못했어요'))} data-testid="uploads-off">멈추기</button>
             )}
           </div>
           {!flags.uploadsPaused && <input className="input" aria-label="멈추는 이유" placeholder="멈추는 이유 (선택)" value={reason} onChange={(e) => setReason(e.target.value)} />}
@@ -94,14 +98,13 @@ export default function Admin() {
               <div className="small" style={{ whiteSpace: 'pre-wrap' }}>{r.message}</div>
               {r.detail && <details><summary className="tiny muted">자세히</summary><pre className="tiny" style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{r.detail}</pre></details>}
               <div className="tiny muted">{r.path}</div>
-              <button className="link-btn" onClick={() => resolveReport(r.id)}>해결함</button>
+              <button className="link-btn" onClick={() => resolveReport(r.id).catch(() => toast('지우지 못했어요'))}>해결함 · 목록에서 지우기</button>
             </div>
           ))}
         </section>
 
         <section className="setting-group">
-          <Link to="/space" className="setting-row"><span className="ico"><Icon name="users" size={17} /></span><span style={{ flex: 1 }}>멤버·초대</span><Icon name="chev" size={16} /></Link>
-          <Link to="/space" className="setting-row"><span className="ico"><Icon name="download" size={17} /></span><span style={{ flex: 1 }}>백업·엑셀</span><Icon name="chev" size={16} /></Link>
+          <Link to="/space" className="setting-row"><span className="ico"><Icon name="users" size={17} /></span><span style={{ flex: 1 }}>함께 쓰는 사람 · 백업은 우리 공간에서</span><Icon name="chev" size={16} /></Link>
         </section>
       </div>
     </>

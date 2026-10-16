@@ -51,7 +51,7 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
           onChange={(e) => setQ(e.target.value)}
           aria-label="어디 검색"
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && hits[0]) {
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing && hits[0]) {
               e.preventDefault();
               add(hits[0].place);
             }
@@ -74,10 +74,11 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
           <input
             className="input"
             placeholder={`${COUNTRY_BY_ID.get(cityFor)?.name ?? ''}의 도시 (선택, 예: 교토)`}
+            aria-label="도시 이름"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 addCity();
               }

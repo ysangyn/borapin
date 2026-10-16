@@ -12,6 +12,7 @@ import { recsAt } from '../lib/placeRecs';
 import { samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
+import { confetti, whatsNew } from '../lib/celebrate';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -52,28 +53,33 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   // 시트가 열려 있으면 알림을 위로 올려 버튼을 가리지 않게
   useEffect(() => {
     document.body.classList.add('sheet-open');
-    return () => document.body.classList.remove('sheet-open');
-  }, []);
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', esc);
+    return () => {
+      document.body.classList.remove('sheet-open');
+      window.removeEventListener('keydown', esc);
+    };
+  }, [onClose]);
 
   const quickPin = async () => {
     if (auth.status !== 'ready' || busy) return;
     setBusy(true);
     try {
-      const id = await createTrip(
-        {
-          title: `${placeLabel(place)} 여행`,
-          kind: 'trip',
-          status: 'done',
-          when: { p: 'unknown' },
-          places: [place],
-          companions: ['보라', '영상'],
-          memo: '',
-          tags: [],
-          source: 'app',
-        },
-        auth.user,
-      );
-      toast(`${placeLabel(place)}에 핀을 꽂았어요`, { label: '되돌리기', onClick: () => void deleteTrip(id) });
+      const input = {
+        title: `${placeLabel(place)} 여행`,
+        kind: 'trip' as const,
+        status: 'done' as const,
+        when: { p: 'unknown' as const },
+        places: [place],
+        companions: ['보라', '영상'],
+        memo: '',
+        tags: [],
+        source: 'app' as const,
+      };
+      const news = whatsNew(trips, [...trips, { ...input, id: 'new', v: 1 }]);
+      const id = await createTrip(input, auth.user);
+      if (news) confetti();
+      toast(`${placeLabel(place)}에 핀을 꽂았어요${news ? ` · ${news}` : ''}`, { label: '되돌리기', onClick: () => void deleteTrip(id) });
     } catch (e) {
       console.warn(e);
       toast('저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -84,12 +90,16 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
 
   const addWish = async () => {
     if (auth.status !== 'ready') return;
-    const id = await quickWish(place, auth.user);
-    toast(`가고 싶은 곳에 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    try {
+      const { id, already } = await quickWish(place, auth.user, wishes);
+      toast(already ? '이미 담겨 있어요' : '가고 싶은 곳에 담았어요', { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    } catch {
+      toast('담지 못했어요. 다시 해 주세요');
+    }
   };
 
   return (
-    <div className="sheet" role="dialog" aria-label={name} data-testid="region-sheet">
+    <div className="sheet" role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
       <div className="grip" />
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
@@ -107,7 +117,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       {here.length > 0 && (
         <div className="list" style={{ marginTop: 4 }}>
           {here.slice(0, 3).map((t) => <TripRow key={t.id} trip={t} />)}
-          {here.length > 3 && <div className="tiny muted" style={{ padding: '4px 0' }}>외 {here.length - 3}건 · 여행 탭에서 '{placeLabel(place)}'로 찾아보세요</div>}
+          {here.length > 3 && <Link to={`/trips?q=${encodeURIComponent(placeLabel(place))}`} className="small" style={{ padding: '6px 0', fontWeight: 700 }}>{here.length - 3}건 더 보기</Link>}
         </div>
       )}
 
@@ -124,7 +134,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
           <Icon name="plus" size={17} stroke={2.4} />
           {busy ? '꽂는 중…' : done.length ? '또 다녀왔어요' : '다녀왔어요'}
         </button>
-        <Link to={`/record?place=${placeParam}`} className="btn soft" style={{ flex: 1 }}>날짜·메모까지</Link>
+        <Link to={`/record?place=${placeParam}`} className="btn soft" style={{ flex: 1 }}>자세히 기록</Link>
         {wish ? (
           <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 52, padding: 0 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>

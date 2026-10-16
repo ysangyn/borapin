@@ -56,8 +56,12 @@ export default function Ask() {
     else if (b.to) nav(b.to);
     else if (b.url) window.open(b.url, '_blank', 'noopener');
     else if (b.wish && auth.status === 'ready') {
-      const id = await quickWish(b.wish, auth.user);
-      toast('가고 싶은 곳에 담았어요', { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+      try {
+        const { id, already } = await quickWish(b.wish, auth.user, wishes ?? []);
+        toast(already ? '이미 담겨 있어요' : '가고 싶은 곳에 담았어요', { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+      } catch {
+        toast('담지 못했어요. 다시 해 주세요');
+      }
     }
   };
 

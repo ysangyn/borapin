@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
+import { josa } from 'es-hangul';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
 import WishCard, { wishTitle } from '../components/WishCard';
 import DicePicker from '../components/DicePicker';
 import { useAuth } from '../lib/auth';
-import { computeStats, deleteWish, reviveWish, useTrips, useWishes } from '../lib/data';
+import { computeStats, deleteWish, restoreWish, reviveWish, useTrips, useWishes } from '../lib/data';
 import { placeLong } from '../lib/geo';
 import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
@@ -40,8 +41,12 @@ export default function Wishes() {
 
   const addPick = async (place: Parameters<typeof quickWish>[0], name: string) => {
     if (auth.status !== 'ready') return;
-    const id = await quickWish(place, auth.user);
-    toast(`${name}을(를) 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    try {
+      const { id, already } = await quickWish(place, auth.user, wishes ?? []);
+      toast(already ? '이미 담겨 있어요' : `${josa(name, '을/를')} 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    } catch {
+      toast('담지 못했어요. 다시 해 주세요');
+    }
   };
 
   return (
@@ -52,16 +57,20 @@ export default function Wishes() {
         right={<Link to="/wishes/new" className="btn sm coral" data-testid="wish-new"><Icon name="plus" size={16} stroke={2.4} />담기</Link>}
       />
       <div className="page" style={{ paddingTop: 4 }}>
+        {(!wishes || !trips) && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
         {wishes && active.length > 0 && (
-          <div className="chips" role="tablist">
-            <button className={'chip' + (filter === 'all' ? ' on' : '')} onClick={() => setFilter('all')}>전체 {active.length}</button>
-            <button className={'chip' + (filter === 'both' ? ' on' : '')} onClick={() => setFilter('both')}>둘 다 원해요 {active.filter((x) => bothWant(x.w)).length}</button>
-            <button className={'chip' + (filter === 'kr' ? ' on' : '')} onClick={() => setFilter('kr')}>국내</button>
-            <button className={'chip' + (filter === 'abroad' ? ' on' : '')} onClick={() => setFilter('abroad')}>해외</button>
+          <div className="chips" role="group" aria-label="걸러 보기">
+            <button className={'chip' + (filter === 'all' ? ' on' : '')} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>전체 {active.length}</button>
+            <button className={'chip' + (filter === 'both' ? ' on' : '')} aria-pressed={filter === 'both'} onClick={() => setFilter('both')}>둘 다 원해요 {active.filter((x) => bothWant(x.w)).length}</button>
+            <button className={'chip' + (filter === 'kr' ? ' on' : '')} aria-pressed={filter === 'kr'} onClick={() => setFilter('kr')}>국내</button>
+            <button className={'chip' + (filter === 'abroad' ? ' on' : '')} aria-pressed={filter === 'abroad'} onClick={() => setFilter('abroad')}>해외</button>
           </div>
         )}
+        {wishes && active.length > 0 && shown.length === 0 && (
+          <div className="small muted" style={{ textAlign: 'center' }}>이 조건에 맞는 곳이 없어요 · <button className="link-btn" style={{ display: 'inline' }} onClick={() => setFilter('all')}>전체 보기</button></div>
+        )}
 
-        {wishes && active.length === 0 && (
+        {wishes && trips && active.length === 0 && (
           <div className="card coral-soft" style={{ display: 'flex', flexDirection: 'column', gap: 10 }} data-testid="wish-empty">
             <b style={{ fontSize: 17 }}>가고 싶은 곳 3곳만 담아볼까요?</b>
             <span className="small muted">지도에서 지역을 누르거나, 아래 추천과 여행지 뽑기로 담을 수 있어요.</span>
@@ -108,8 +117,8 @@ export default function Wishes() {
               {done.map(({ w }) => (
                 <div key={w.id} className="wish-card done">
                   <span className="t" style={{ flex: 1 }}>{wishTitle(w)}</span>
-                  <button className="btn sm ghost" onClick={() => reviveWish(w.id).then(() => toast('다시 가고 싶은 곳에 담았어요'))}>또 가고 싶어요</button>
-                  <button className="btn sm line" onClick={() => deleteWish(w.id).then(() => toast('지웠어요'))}>지우기</button>
+                  <button className="btn sm ghost" onClick={() => reviveWish(w.id).then(() => toast('다시 가고 싶은 곳에 담았어요'), () => toast('바꾸지 못했어요'))}>또 가고 싶어요</button>
+                  <button className="btn sm line" onClick={() => { deleteWish(w.id).catch(() => toast('지우지 못했어요')); toast('목록에서 지웠어요', { label: '되돌리기', onClick: () => void restoreWish(w) }); }}>지우기</button>
                 </div>
               ))}
             </div>

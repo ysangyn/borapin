@@ -259,7 +259,9 @@ export async function drawCard(kind: CardKind, d: CardData): Promise<Blob> {
     frame(ctx, '그날의 한 줄', d.space);
     const fromNotes = d.notes.map((n) => ({ text: n.text, trip: d.trips.find((t) => t.id === n.tripId), by: n.by.name }));
     const fromMemo = done.filter((t) => t.memo).map((t) => ({ text: t.memo, trip: t, by: '' }));
-    const q = [...fromNotes, ...fromMemo].find((x) => x.text && x.trip) ?? null;
+    const inYear = (x: { trip?: Trip }) => x.trip?.when.y === d.year;
+    const all = [...fromNotes, ...fromMemo].filter((x) => x.text && x.trip);
+    const q = all.find(inYear) ?? all[0] ?? null;
     ctx.fillStyle = C.lav;
     font(ctx, 260, 800);
     ctx.fillText('“', 60, 520);
@@ -277,15 +279,16 @@ export async function drawCard(kind: CardKind, d: CardData): Promise<Blob> {
 }
 
 /** 휴대폰 공유창으로 보내고, 안 되면 내려받는다 */
-export async function shareOrSave(blob: Blob, name: string): Promise<'shared' | 'saved'> {
+export async function shareOrSave(blob: Blob, name: string): Promise<'shared' | 'saved' | 'cancelled'> {
   const file = new File([blob], name, { type: blob.type });
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
   if (nav.canShare?.({ files: [file] })) {
     try {
       await nav.share({ files: [file], title: '보라핀' });
       return 'shared';
-    } catch {
-      /* 취소하면 저장으로 */
+    } catch (e) {
+      // 사람이 공유창을 닫았으면 아무것도 하지 않는다
+      if ((e as Error)?.name === 'AbortError') return 'cancelled';
     }
   }
   const a = document.createElement('a');
@@ -294,5 +297,6 @@ export async function shareOrSave(blob: Blob, name: string): Promise<'shared' | 
   document.body.appendChild(a);
   a.click();
   a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   return 'saved';
 }

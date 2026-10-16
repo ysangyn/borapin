@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { josa } from 'es-hangul';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Avatars, Icon, TopBar } from '../components/ui';
 import TripRow from '../components/TripRow';
 import WishCard from '../components/WishCard';
@@ -8,6 +9,7 @@ import { sortWishes, wishState } from '../lib/wishes';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
+import { whenSortKey } from '../lib/dates';
 
 type Filter = 'all' | 'kr' | 'abroad';
 
@@ -16,7 +18,8 @@ export default function Trips() {
   const { wishes } = useWishes();
   const [filter, setFilter] = useState<Filter>('all');
   const [who, setWho] = useState<string>('');
-  const [q, setQ] = useState('');
+  const [sp] = useSearchParams();
+  const [q, setQ] = useState(() => sp.get('q') ?? '');
   const seasons = useSeasons();
   const { places: recs } = usePlaces();
   const activeWishes = useMemo(
@@ -45,7 +48,8 @@ export default function Trips() {
     });
   }, [trips, filter, who, q]);
 
-  const planned = list.filter((t) => t.status === 'planned');
+  // 다가오는 여행은 가까운 날부터 (날짜 모르는 계획은 맨 뒤)
+  const planned = list.filter((t) => t.status === 'planned').sort((a, b) => (a.when.y ? whenSortKey(a.when) : 9e9) - (b.when.y ? whenSortKey(b.when) : 9e9));
   const done = list.filter((t) => t.status === 'done');
   const byYear = new Map<string, Trip[]>();
   for (const t of done) {
@@ -66,12 +70,12 @@ export default function Trips() {
           <span style={{ position: 'absolute', left: 12, top: 13, color: 'var(--ink3)' }}><Icon name="search" size={18} stroke={2} /></span>
           <input className="input" style={{ paddingLeft: 38 }} placeholder="여행, 장소, 메모, 함께 간 사람 찾기" value={q} onChange={(e) => setQ(e.target.value)} aria-label="여행 찾기" />
         </div>
-        <div className="chips" role="tablist">
-          <button className={'chip' + (filter === 'all' ? ' on' : '')} onClick={() => setFilter('all')}>전체 {counts.all}</button>
-          <button className={'chip' + (filter === 'kr' ? ' on' : '')} onClick={() => setFilter('kr')}>국내 {counts.kr}</button>
-          <button className={'chip' + (filter === 'abroad' ? ' on' : '')} onClick={() => setFilter('abroad')}>해외 {counts.abroad}</button>
+        <div className="chips" role="group" aria-label="걸러 보기">
+          <button className={'chip' + (filter === 'all' ? ' on' : '')} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>전체 {counts.all}</button>
+          <button className={'chip' + (filter === 'kr' ? ' on' : '')} aria-pressed={filter === 'kr'} onClick={() => setFilter('kr')}>국내 {counts.kr}</button>
+          <button className={'chip' + (filter === 'abroad' ? ' on' : '')} aria-pressed={filter === 'abroad'} onClick={() => setFilter('abroad')}>해외 {counts.abroad}</button>
           {people.map((p) => (
-            <button key={p} className={'chip' + (who === p ? ' soft-on' : '')} onClick={() => setWho(who === p ? '' : p)}>{p}와</button>
+            <button key={p} className={'chip' + (who === p ? ' soft-on' : '')} aria-pressed={who === p} onClick={() => setWho(who === p ? '' : p)}>{josa(p, '와/과')}</button>
           ))}
         </div>
 
@@ -92,7 +96,7 @@ export default function Trips() {
             <h2 className="h2" style={{ color: '#b4472c' }}>가고 싶은 곳</h2>
             <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{activeWishes.length ? `모두 보기 ${activeWishes.length}` : '담으러 가기'}</Link>
           </div>
-          {activeWishes.length === 0 ? (
+          {!wishes || !trips ? null : activeWishes.length === 0 ? (
             <Link to="/wishes" className="trip-row" style={{ color: 'var(--ink2)' }}>
               <span className="trip-tile wish"><Icon name="heart" size={20} stroke={2.2} /></span>
               <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -118,10 +122,15 @@ export default function Trips() {
 
         <section>
           <h2 className="h2" style={{ marginBottom: 4 }}>다녀온 곳</h2>
+          {!trips && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
           {trips && done.length === 0 && (
             <div className="empty">
               <b>{q || filter !== 'all' || who ? '조건에 맞는 기록이 없어요' : '아직 다녀온 기록이 없어요'}</b>
-              {!q && <Link to="/record" className="btn sm">기록 남기기</Link>}
+              {q || filter !== 'all' || who ? (
+                <button className="btn sm ghost" onClick={() => { setQ(''); setFilter('all'); setWho(''); }}>조건 지우기</button>
+              ) : (
+                <Link to="/record" className="btn sm">기록 남기기</Link>
+              )}
             </div>
           )}
           {[...byYear.entries()].map(([y, ts]) => (

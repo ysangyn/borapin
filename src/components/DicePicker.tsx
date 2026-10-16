@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { josa } from 'es-hangul';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
@@ -47,9 +48,15 @@ export default function DicePicker({ stats, info, seasons, wishes }: {
 
   const add = async () => {
     if (!face || auth.status !== 'ready') return;
-    const id = await quickWish(face.place, auth.user);
-    toast(`${face.name}을(를) 가고 싶은 곳에 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    const f = face;
     setFace(null);
+    try {
+      const { id, already } = await quickWish(f.place, auth.user, wishes);
+      toast(already ? '이미 담겨 있어요' : `${josa(f.name, '을/를')} 가고 싶은 곳에 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+    } catch {
+      setFace(f);
+      toast('담지 못했어요. 다시 해 주세요');
+    }
   };
 
   const season = face ? seasonFor(seasons, face.place) : null;

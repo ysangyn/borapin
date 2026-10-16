@@ -36,12 +36,16 @@ export default function Places() {
       <div className="page" style={{ paddingTop: 4 }}>
         <input className="input" aria-label="장소 찾기" placeholder="이름, 지역, 한 줄 평 찾기" value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="chips">
-          <button className={'chip' + (kind === null ? ' on' : '')} onClick={() => setKind(null)}>전체 {places?.length ?? 0}</button>
+          <button className={'chip' + (kind === null ? ' on' : '')} aria-pressed={kind === null} onClick={() => setKind(null)}>전체 {places?.length ?? 0}</button>
           <button className={'chip' + (kind === 'again' ? ' on-coral' : '')} onClick={() => setKind('again')}>또 갈래요</button>
           {KINDS.map((k) => (
             <button key={k.k} className={'chip' + (kind === k.k ? ' on' : '')} onClick={() => setKind(k.k)}>{k.label}</button>
           ))}
         </div>
+        {!places && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
+        {places && places.length > 0 && groups.length === 0 && (
+          <div className="small muted" style={{ textAlign: 'center' }}>찾는 장소가 없어요 · <button className="link-btn" style={{ display: 'inline' }} onClick={() => { setQ(''); setKind(null); }}>조건 지우기</button></div>
+        )}
         {places && places.length === 0 && (
           <div className="empty">
             <b>아직 남긴 장소가 없어요</b>

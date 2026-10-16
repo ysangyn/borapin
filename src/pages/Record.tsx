@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Icon, TopBar, useToast } from '../components/ui';
+import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import { useAuth } from '../lib/auth';
 import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } from '../lib/data';
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
 import { parsePlaceParam, placeLabel } from '../lib/geo';
 import type { Place, Precision, Season, TripInput, TripKind, TripStatus, When } from '../lib/types';
+import { confetti, whatsNew } from '../lib/celebrate';
 
 const PRECISIONS: { p: Precision; label: string }[] = [
   { p: 'day', label: '날짜' },
@@ -23,6 +24,7 @@ export default function Record() {
   const editing = Boolean(id);
   const [sp] = useSearchParams();
   const nav = useNavigate();
+  const goBack = useGoBack();
   const toast = useToast();
   const auth = useAuth();
   const { trips } = useTrips();
@@ -61,7 +63,11 @@ export default function Record() {
 
   const autoTitle = places.length ? `${placeLabel(places[0])} ${kind === 'outing' ? '나들이' : '여행'}` : '';
   const whenOk = when.p === 'unknown' || (when.p === 'day' ? !!(when.y && when.m && when.d) : when.p === 'month' ? !!(when.y && when.m) : when.p === 'season' ? !!when.s : !!when.y);
-  const canSave = places.length > 0 && whenOk && !saving;
+  const endBeforeStart = when.p === 'day' && !!when.d2 && toInputDate(when.y2 ?? when.y, when.m2 ?? when.m, when.d2) < toInputDate(when.y, when.m, when.d);
+  const canSave = places.length > 0 && whenOk && !endBeforeStart && !saving;
+  // 쓰던 내용이 있는지 (나갈 때 묻기)
+  const dirty = !saving && (editing ? loaded && !!existing && (title !== existing.title || memo !== existing.memo || JSON.stringify(places) !== JSON.stringify(existing.places) || JSON.stringify(when) !== JSON.stringify(existing.when)) : !!memo.trim() || !!title.trim());
+  useLeaveGuard(dirty);
 
   const setP = (p: Precision) => setWhen((w) => ({ p, y: w.y ?? (p === 'unknown' ? undefined : thisYear), m: p === 'day' || p === 'month' ? w.m : undefined, d: p === 'day' ? w.d : undefined, d2: p === 'day' ? w.d2 : undefined, m2: p === 'day' ? w.m2 : undefined, y2: p === 'day' ? w.y2 : undefined, s: p === 'season' ? w.s : undefined }));
 
@@ -87,15 +93,17 @@ export default function Record() {
       source: existing?.source ?? 'app',
     };
     try {
-      if (editing && id) {
-        await updateTrip(id, input);
+      if (editing && id && existing) {
+        await updateTrip(id, existing, input);
         toast('고쳤어요');
-        nav(`/trips/${id}`, { replace: true });
+        goBack(`/trips/${id}`);
       } else {
+        const news = status === 'done' && trips ? whatsNew(trips, [...trips, { ...input, id: 'new', v: 1 }]) : null;
         const newId = await createTrip(input, auth.user);
         const wishId = sp.get('wish');
         if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
-        toast(status === 'planned' ? '여행 계획을 담았어요' : '기록했어요');
+        if (news) confetti();
+        toast(status === 'planned' ? '여행 계획을 담았어요' : `기록했어요${news ? ` · ${news}` : ''}`);
         nav(`/trips/${newId}`, { replace: true });
       }
     } catch (e) {
@@ -107,20 +115,31 @@ export default function Record() {
 
   const years = Array.from({ length: thisYear + 3 - 1980 }, (_, i) => thisYear + 2 - i);
 
+  if (editing && !loaded) {
+    if (trips && !existing)
+      return (
+        <>
+          <TopBar back backTo="/trips" title="기록 고치기" />
+          <div className="empty" style={{ margin: 20 }}><b>이 기록을 찾을 수 없어요</b><span className="small">지워졌거나 주소가 바뀌었어요.</span></div>
+        </>
+      );
+    return <Spinner />;
+  }
+
   return (
     <>
-      <TopBar back title={editing ? '기록 고치기' : '기록 남기기'} />
+      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? '기록 고치기' : '기록 남기기'} />
       <div className="page" style={{ paddingTop: 4, gap: 20 }}>
         <div className="small muted" style={{ marginTop: -8 }}>어디, 대략 언제만 있으면 저장돼요.</div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <div className="seg" role="radiogroup" aria-label="종류">
-            <button className={kind === 'trip' ? 'on' : ''} onClick={() => setKind('trip')}>여행</button>
-            <button className={kind === 'outing' ? 'on' : ''} onClick={() => setKind('outing')}>나들이</button>
+            <button role="radio" aria-checked={kind === 'trip'} className={kind === 'trip' ? 'on' : ''} onClick={() => setKind('trip')}>여행</button>
+            <button role="radio" aria-checked={kind === 'outing'} className={kind === 'outing' ? 'on' : ''} onClick={() => setKind('outing')}>나들이</button>
           </div>
           <div className="seg" role="radiogroup" aria-label="상태">
-            <button className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀왔어요</button>
-            <button className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 예정</button>
+            <button role="radio" aria-checked={status === 'done'} className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀왔어요</button>
+            <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 예정</button>
           </div>
         </div>
 
@@ -133,7 +152,7 @@ export default function Record() {
           <span className="label">{status === 'planned' ? '언제쯤' : '대략 언제'}<span className="req">*</span></span>
           <div className="chips">
             {PRECISIONS.map((x) => (
-              <button key={x.p} type="button" className={'chip' + (when.p === x.p ? ' on' : '')} onClick={() => setP(x.p)}>{x.label}</button>
+              <button key={x.p} type="button" aria-pressed={when.p === x.p} className={'chip' + (when.p === x.p ? ' on' : '')} onClick={() => setP(x.p)}>{x.label}</button>
             ))}
           </div>
           {when.p === 'day' && (
@@ -150,6 +169,7 @@ export default function Record() {
               />
             </div>
           )}
+          {endBeforeStart && <div className="tiny" style={{ color: 'var(--danger)' }}>끝나는 날이 시작하는 날보다 빨라요</div>}
           {(when.p === 'month' || when.p === 'season' || when.p === 'year') && (
             <div style={{ display: 'flex', gap: 8 }}>
               <select className="select" aria-label="연도" value={when.y ?? ''} onChange={(e) => setWhen({ ...when, y: e.target.value ? +e.target.value : undefined })}>
@@ -177,13 +197,13 @@ export default function Record() {
           <span className="label">누구와</span>
           <div className="chips">
             {suggestions.map((c) => (
-              <button key={c} type="button" className={'chip' + (companions.includes(c) ? ' soft-on' : '')} onClick={() => toggleCompanion(c)}>
+              <button key={c} type="button" aria-pressed={companions.includes(c)} className={'chip' + (companions.includes(c) ? ' soft-on' : '')} onClick={() => toggleCompanion(c)}>
                 {companions.includes(c) && <Icon name="check" size={13} stroke={2.6} />}{c}
               </button>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <input className="input" aria-label="함께 간 사람 이름" placeholder="함께 간 사람 이름 (엄마, 동생…)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addName(); } }} />
+            <input className="input" aria-label="함께 간 사람 이름" placeholder="함께 간 사람 이름 (엄마, 동생…)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addName(); } }} />
             <button type="button" className="btn soft sm" style={{ height: 46 }} onClick={addName}>추가</button>
           </div>
         </div>
@@ -194,8 +214,8 @@ export default function Record() {
         </div>
 
         <div className="field">
-          <span className="label">한 줄 메모</span>
-          <textarea className="textarea" aria-label="한 줄 메모" placeholder="안 써도 돼요" value={memo} onChange={(e) => setMemo(e.target.value)} maxLength={10000} />
+          <span className="label">메모</span>
+          <textarea className="textarea" aria-label="메모" placeholder="안 써도 돼요" value={memo} onChange={(e) => setMemo(e.target.value)} maxLength={10000} />
         </div>
 
         <button className="btn block" disabled={!canSave} onClick={save} data-testid="save">

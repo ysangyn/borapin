@@ -75,12 +75,17 @@ export interface MapViewProps {
   className?: string;
   controlsTop?: number;
   legendBottom?: number;
+  /** false면 손가락·마우스로 움직이지 않는 그림 지도 (여행 상세·공유 미리보기) */
+  interactive?: boolean;
 }
 
-export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, flyTo, className, controlsTop = 12, legendBottom = 12 }: MapViewProps) {
+export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, flyTo, className, controlsTop = 12, legendBottom = 12, interactive = true }: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
+  // 같은 장소 목록이면 다시 맞추지 않게 (상대가 다른 여행을 고쳐도 지도가 튀지 않게)
+  const focusKey = focus ? JSON.stringify(focus) : '';
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const statsRef = useRef(stats);
@@ -149,7 +154,13 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       minZoom: 0.6,
       maxZoom: 11,
       attributionControl: false,
-      cooperativeGestures: cooperative ? { windowsHelpText: 'Ctrl을 누른 채 스크롤해 확대하세요', macHelpText: '⌘를 누른 채 스크롤해 확대하세요', mobileHelpText: '두 손가락으로 움직여 주세요' } as unknown as boolean : false,
+      cooperativeGestures: !!cooperative,
+      interactive,
+      locale: {
+        'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl을 누른 채 스크롤하면 확대돼요',
+        'CooperativeGesturesHandler.MacHelpText': '⌘를 누른 채 스크롤하면 확대돼요',
+        'CooperativeGesturesHandler.MobileHelpText': '두 손가락으로 움직여 주세요',
+      },
       dragRotate: false,
       pitchWithRotate: false,
       renderWorldCopies: false,
@@ -158,7 +169,14 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     mapRef.current = map;
     let cancelled = false;
     map.on('load', async () => {
-      const g = await loadGeo();
+      let g: Awaited<ReturnType<typeof loadGeo>>;
+      try {
+        g = await loadGeo();
+      } catch (e) {
+        console.warn(e);
+        if (!cancelled) setFailed(true);
+        return;
+      }
       if (cancelled) return;
       map.addSource('world', { type: 'geojson', data: g.world, promoteId: 'ADM0_A3' });
       map.addSource('kr', { type: 'geojson', data: g.kr, promoteId: 'cell' });
@@ -258,7 +276,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     const animate = fittedRef.current !== '' && fittedRef.current.split(':')[0] !== mode;
     fittedRef.current = key;
     frame(map, mode, stats, animate ? 700 : 0);
-  }, [mode, ready, focus, stats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, ready, focusKey, stats]);
 
   // 색칠
   useEffect(() => {
@@ -269,10 +288,14 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     const focusSet = focus ? new Set(focus.map((p) => (p.t === 'kr' ? p.code : p.id))) : null;
     for (const [code, n] of stats.cellVisits) if (!focusSet || focusSet.has(code)) map.setFeatureState({ source: 'kr', id: code }, { visits: n });
     for (const code of stats.cellPlanned) if (!focusSet || focusSet.has(code)) map.setFeatureState({ source: 'kr', id: code }, { planned: true });
-    for (const [id, n] of stats.countryVisits) if (!focusSet || focusSet.has(id)) map.setFeatureState({ source: 'world', id }, { visits: n });
-    for (const id of stats.countryPlanned) if (!focusSet || focusSet.has(id)) map.setFeatureState({ source: 'world', id }, { planned: true });
-    if (!focusSet && (stats.cellVisits.size || stats.cellPlanned.size)) map.setFeatureState({ source: 'world', id: 'KOR' }, { visits: 1 });
-  }, [stats, ready, focus]);
+    // 국내 지도에서는 이웃 나라를 칠하지 않는다 (우리나라 칸에 눈이 가게)
+    if (mode === 'world') {
+      for (const [id, n] of stats.countryVisits) if (!focusSet || focusSet.has(id)) map.setFeatureState({ source: 'world', id }, { visits: n });
+      for (const id of stats.countryPlanned) if (!focusSet || focusSet.has(id)) map.setFeatureState({ source: 'world', id }, { planned: true });
+      if (!focusSet && (stats.cellVisits.size || stats.cellPlanned.size)) map.setFeatureState({ source: 'world', id: 'KOR' }, { visits: 1 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats, ready, focusKey, mode]);
 
   // 선택 표시
   useEffect(() => {
@@ -360,6 +383,12 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     <div className={'map-wrap ' + (className ?? '')} style={{ height }}>
       <div ref={el} style={{ position: 'absolute', inset: 0 }} data-testid="map" />
       <div ref={labelBox} className="map-labels" aria-hidden="true" />
+      {failed && (
+        <div className="map-failed" role="alert">
+          <span>지도를 불러오지 못했어요</span>
+          <button className="btn sm" onClick={() => location.reload()}>다시 불러오기</button>
+        </div>
+      )}
       {controls && (
         <div className="map-ctrls" style={{ top: controlsTop }}>
           <button aria-label="확대" onClick={() => zoom(1)}><Icon name="plus" size={18} stroke={2.2} /></button>

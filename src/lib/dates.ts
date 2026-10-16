@@ -62,7 +62,7 @@ export function toInputDate(y?: number, m?: number, d?: number): string {
 
 export function fromInputDate(v: string): { y?: number; m?: number; d?: number } {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
-  if (!m) return {};
+  if (!m) return { y: undefined, m: undefined, d: undefined };
   return { y: +m[1], m: +m[2], d: +m[3] };
 }
 
@@ -102,3 +102,8 @@ export const dayLabel = (day: string, days: string[]) => {
   return `${i >= 0 ? `${i + 1}일째 · ` : ''}${m}.${d} (${wd})`;
 };
 
+
+/** 기기 시간대 기준 오늘 'YYYY-MM-DD' (파일 이름 등) */
+export function localDate(d = new Date()): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}

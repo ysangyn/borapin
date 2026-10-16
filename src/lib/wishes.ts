@@ -1,4 +1,5 @@
 import type { Place, Trip, Wish } from './types';
+import { localDate } from './dates';
 
 export const COUPLE = ['보라', '영상'] as const;
 
@@ -43,7 +44,8 @@ export function sortWishes(list: Wish[]): Wish[] {
 
 /** 날마다 같은 순서가 나오는 섞기 (홈 롤링·추천이 열 때마다 바뀌지 않게) */
 export function dailyShuffle<T>(arr: T[], salt = ''): T[] {
-  const day = new Date().toISOString().slice(0, 10) + salt;
+  // 기기 시간대의 날짜로 (한국에서 오전 9시에 바뀌지 않게)
+  const day = localDate() + salt;
   let h = 2166136261;
   for (const ch of day) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   const rnd = () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296;

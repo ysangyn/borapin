@@ -1,15 +1,14 @@
 import { useState } from 'react';
+import { josa } from 'es-hangul';
 import { Icon, useToast } from './ui';
-import { addPlan, dayLabel, deletePlan, tripDays, updatePlan, usePlan } from '../lib/tripExtras';
+import { addPlan, dayLabel, deletePlan, restorePlan, tripDays, updatePlan, usePlan } from '../lib/tripExtras';
 import { placeRecLinks, recsAt } from '../lib/placeRecs';
 import type { PlaceRec, PlanItem, Trip } from '../lib/types';
 
 /** 일정은 필요한 만큼만: ① 가볼 곳 목록 → ② 날짜별 배치 → ③ 시간·예약 정보 */
 export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }) {
-  const remoteItems = usePlan(trip.id);
-  // 체크는 누르면 바로 보이게 (저장은 뒤에서)
-  const [doneOver, setDoneOver] = useState<Record<string, boolean>>({});
-  const items = remoteItems?.map((i) => (i.id in doneOver ? { ...i, done: doneOver[i.id] } : i)) ?? null;
+  // 기기에 먼저 저장돼 누르면 바로 보이고, 상대가 바꾼 것도 그대로 보인다
+  const items = usePlan(trip.id);
   const toast = useToast();
   const [name, setName] = useState('');
   const [open, setOpen] = useState<string | null>(null);
@@ -86,16 +85,17 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
               return (
                 <div key={it.id} className={'plan-row' + (it.done ? ' done' : '')} data-testid="plan-item">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <input type="checkbox" checked={it.done} onChange={(e) => { const v = e.target.checked; setDoneOver((o) => ({ ...o, [it.id]: v })); updatePlan(it.id, { done: v }); }} aria-label={`${it.name} 다녀옴`} />
+                    <input type="checkbox" checked={it.done} onChange={(e) => updatePlan(it.id, { done: e.target.checked }).catch(() => toast('저장하지 못했어요'))} aria-label={`${it.name} 다녀옴`} />
                     <button className="plan-name" onClick={() => setOpen(isOpen ? null : it.id)} aria-expanded={isOpen}>
                       {it.time && <span className="tag violet">{it.time}</span>}
                       <span>{it.name}</span>
                       {it.info && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.info}</span>}
                     </button>
-                    {links && <a href={links.naver} target="_blank" rel="noreferrer" className="tag" aria-label={`${it.name} 네이버지도`}>지도</a>}
+                    {links && <a href={links.naver} target="_blank" rel="noreferrer" className="btn sm ghost" aria-label={`${it.name} 네이버지도`}>지도</a>}
                   </div>
                   {isOpen && (
                     <div className="plan-more">
+                      <input className="input" style={{ gridColumn: '1 / -1' }} aria-label="이름 고치기" defaultValue={it.name} maxLength={80} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== it.name) updatePlan(it.id, { name: v }); }} />
                       {days.length > 0 && (
                         <select className="select" aria-label="날짜" value={it.day ?? ''} onChange={(e) => updatePlan(it.id, { day: e.target.value || null })}>
                           <option value="">날짜 없이</option>
@@ -104,7 +104,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
                       )}
                       <input className="input" type="time" aria-label="시간" value={it.time ?? ''} onChange={(e) => updatePlan(it.id, { time: e.target.value || null })} />
                       <input className="input" aria-label="예약·메모" placeholder="예약번호, 메모" defaultValue={it.info} onBlur={(e) => e.target.value !== it.info && updatePlan(it.id, { info: e.target.value.trim() })} maxLength={200} />
-                      <button className="btn sm line" onClick={() => deletePlan(it.id).then(() => toast('뺐어요'))}><Icon name="trash" size={15} />빼기</button>
+                      <button className="btn sm line" onClick={() => { const copy = it; setOpen(null); deletePlan(copy.id).catch(() => toast('빼지 못했어요')); toast(`'${copy.name}'${josa.pick(copy.name, '을/를')} 일정에서 뺐어요`, { label: '되돌리기', onClick: () => void restorePlan(copy) }); }}><Icon name="trash" size={15} />일정에서 빼기</button>
                     </div>
                   )}
                 </div>

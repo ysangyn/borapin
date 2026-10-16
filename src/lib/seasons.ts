@@ -18,7 +18,12 @@ export interface SeasonData {
 
 let cache: Promise<SeasonData> | null = null;
 export function loadSeasons(): Promise<SeasonData> {
-  if (!cache) cache = import('../data/seasons.json').then((m) => m.default as unknown as SeasonData);
+  if (!cache) {
+    cache = import('../data/seasons.json').then((m) => m.default as unknown as SeasonData);
+    cache.catch(() => {
+      cache = null;
+    });
+  }
   return cache;
 }
 
