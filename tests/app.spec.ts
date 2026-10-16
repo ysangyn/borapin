@@ -207,7 +207,10 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '1순위' }).click();
     await page.getByLabel('가볼 곳').fill('성산일출봉\n우도');
     await page.getByTestId('wish-save').click();
-    await expect(page).toHaveURL(/\/wishes$/);
+    // 저장하면 들어왔던 화면(홈)으로 돌아간다
+    await expect(page.getByRole('status')).toContainText('고쳤어요');
+    await expect(page).toHaveURL(/:5174\/$/);
+    await page.goto('/wishes');
     const card = page.getByTestId('wish-card').filter({ hasText: '제주' });
     await expect(card).toContainText('둘 다 원해요');
     await expect(card).toContainText('가볼 곳 성산일출봉 외 1');
