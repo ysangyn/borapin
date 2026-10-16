@@ -109,7 +109,15 @@ export async function patchTrip(id: string, fields: Partial<TripInput> | Record<
  * 준비물 고치기: 서버의 최신 목록에 바꾼 점만 더한다(둘이 동시에 체크해도 서로 안 지워짐).
  * 오프라인이면 기기에 있는 목록으로 저장해 두고 연결되면 올린다.
  */
-export async function mutatePacking(trip: Trip, fn: (list: PackItem[]) => PackItem[]) {
+const packingQueue = new Map<string, Promise<unknown>>();
+export function mutatePacking(trip: Trip, fn: (list: PackItem[]) => PackItem[]): Promise<void> {
+  // 같은 여행의 고치기는 한 줄로 세워 차례로 (빨리 여러 번 눌러도 서로 부딪히지 않게)
+  const prev = packingQueue.get(trip.id) ?? Promise.resolve();
+  const next = prev.catch(() => undefined).then(() => mutatePackingNow(trip, fn));
+  packingQueue.set(trip.id, next);
+  return next;
+}
+async function mutatePackingNow(trip: Trip, fn: (list: PackItem[]) => PackItem[]) {
   const ref = doc(tripsCol(), trip.id);
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     await queued(updateDoc(ref, { packing: fn(trip.packing ?? []), updatedAt: serverTimestamp() }));

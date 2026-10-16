@@ -17,7 +17,7 @@ test.beforeEach(({ page }) => {
     if (m.type() === 'error' && !IGNORED.some((r) => r.test(m.text()))) problems.push(`console: ${m.text().slice(0, 300)}`);
   });
   page.on('response', (r) => {
-    if (r.status() === 404) problems.push(`404: ${r.url()}`);
+    if (r.status() === 404 || r.status() === 400 || r.status() >= 500) problems.push(`${r.status()}: ${r.url().slice(0, 160)}`);
   });
 });
 test.afterEach(() => {
