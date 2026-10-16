@@ -11,96 +11,54 @@
 
 Running 42 tests using 1 worker
 
-  ✓   1 tests/app.spec.ts:65:3 › 보라핀 1단계 › 로그인 화면 (2.2s)
-  ✓   2 tests/app.spec.ts:71:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (3.8s)
-  ✓   3 tests/app.spec.ts:78:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (2.1s)
-  ✓   4 tests/app.spec.ts:105:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.5s)
-  ✓   5 tests/app.spec.ts:121:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.9s)
-  ✓   6 tests/app.spec.ts:135:3 › 보라핀 1단계 › 여행 목록과 필터 (1.1s)
-  ✓   7 tests/app.spec.ts:145:3 › 보라핀 1단계 › 홈 통계와 지도 (6.2s)
-  ✓   8 tests/app.spec.ts:163:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (14.7s)
-  ✘   9 tests/app.spec.ts:226:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (24.9s)
-  -  10 tests/app.spec.ts:352:3 › 보라핀 1단계 › 홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다
-  -  11 tests/app.spec.ts:407:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임
-  -  12 tests/app.spec.ts:443:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩
-  -  13 tests/app.spec.ts:497:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물
-  -  14 tests/app.spec.ts:541:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기
-  -  15 tests/app.spec.ts:568:3 › 보라핀 1단계 › 피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점
-  -  16 tests/app.spec.ts:630:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기
-  -  17 tests/app.spec.ts:691:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고
-  -  18 tests/app.spec.ts:721:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다
-  -  19 tests/app.spec.ts:765:3 › 보라핀 1단계 › 기록 고치기와 지우기
-  ✓  20 tests/human.spec.ts:113:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.2s)
-  ✓  21 tests/human.spec.ts:122:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (3.4s)
-  ✓  22 tests/human.spec.ts:153:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (4.0s)
-  ✓  23 tests/human.spec.ts:175:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.0s)
-  ✓  24 tests/human.spec.ts:205:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (5.4s)
+  ✓   1 tests/app.spec.ts:65:3 › 보라핀 1단계 › 로그인 화면 (1.4s)
+  ✓   2 tests/app.spec.ts:71:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.4s)
+  ✓   3 tests/app.spec.ts:78:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (2.4s)
+  ✓   4 tests/app.spec.ts:105:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (3.9s)
+  ✓   5 tests/app.spec.ts:121:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (2.5s)
+  ✓   6 tests/app.spec.ts:135:3 › 보라핀 1단계 › 여행 목록과 필터 (1.4s)
+  ✓   7 tests/app.spec.ts:145:3 › 보라핀 1단계 › 홈 통계와 지도 (7.2s)
+  ✓   8 tests/app.spec.ts:163:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (16.9s)
+  ✓   9 tests/app.spec.ts:226:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (14.2s)
+  ✓  10 tests/app.spec.ts:362:3 › 보라핀 1단계 › 홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다 (6.7s)
+  ✓  11 tests/app.spec.ts:417:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (5.4s)
+  ✓  12 tests/app.spec.ts:459:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (7.8s)
+  ✓  13 tests/app.spec.ts:513:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (3.8s)
+  ✓  14 tests/app.spec.ts:557:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (2.7s)
+  ✓  15 tests/app.spec.ts:584:3 › 보라핀 1단계 › 피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점 (7.0s)
+  ✓  16 tests/app.spec.ts:646:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 (8.0s)
+  ✓  17 tests/app.spec.ts:707:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고 (2.5s)
+[36m[1mi [22m[39m To verify the email address mail.bora@example.com, follow this link: http://127.0.0.1:9099/emulator/action?mode=verifyEmail&lang=en&oobCode=MRIlfzOgIzCtafZdCwjoxfIVRyVnhDjQzY2NNUzDgF3Jfv0iFJgEo2&apiKey=fake-api-key&continueUrl=http%3A%2F%2F127.0.0.1%3A5174%2F
+  ✓  18 tests/app.spec.ts:737:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다 (2.8s)
+  ✓  19 tests/app.spec.ts:781:3 › 보라핀 1단계 › 기록 고치기와 지우기 (4.6s)
+  ✓  20 tests/human.spec.ts:113:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.3s)
+  ✓  21 tests/human.spec.ts:122:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (3.9s)
+  ✓  22 tests/human.spec.ts:153:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (5.0s)
+  ✓  23 tests/human.spec.ts:175:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.3s)
+  ✓  24 tests/human.spec.ts:205:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (4.4s)
   ✓  25 tests/human.spec.ts:253:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 (12.7s)
-  ✓  26 tests/human.spec.ts:276:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.5s)
+  ✓  26 tests/human.spec.ts:276:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.8s)
   ✓  27 tests/human.spec.ts:307:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.2s)
-  ✓  28 tests/human.spec.ts:340:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (4.8s)
-  ✓  29 tests/human.spec.ts:374:3 › 사람처럼 쓰기 › 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히 (1.9s)
-  ✓  30 tests/human.spec.ts:412:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (997ms)
-  ✓  31 tests/human.spec.ts:431:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (3.7s)
-  ✓  32 tests/human.spec.ts:453:3 › 사람처럼 쓰기 › 홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드 (2.3s)
-  ✓  33 tests/human.spec.ts:485:3 › 사람처럼 쓰기 › 기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다 (2.0s)
-  ✓  34 tests/human.spec.ts:504:3 › 사람처럼 쓰기 › 피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다 (2.0s)
-  ✓  35 tests/human.spec.ts:520:3 › 사람처럼 쓰기 › 오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다 (1.4s)
-  ✓  36 tests/human.spec.ts:544:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (619ms)
-  ✓  37 tests/human.spec.ts:544:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (629ms)
-  ✓  38 tests/human.spec.ts:544:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (642ms)
-  ✓  39 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (16.9s)
-  ✓  40 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (39.2s)
-  ✓  41 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (32.8s)
+  ✓  28 tests/human.spec.ts:340:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (6.7s)
+  ✓  29 tests/human.spec.ts:374:3 › 사람처럼 쓰기 › 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히 (2.2s)
+  ✓  30 tests/human.spec.ts:412:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (1.7s)
+  ✓  31 tests/human.spec.ts:431:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (4.5s)
+  ✓  32 tests/human.spec.ts:453:3 › 사람처럼 쓰기 › 홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드 (3.8s)
+  ✓  33 tests/human.spec.ts:485:3 › 사람처럼 쓰기 › 기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다 (2.2s)
+  ✓  34 tests/human.spec.ts:504:3 › 사람처럼 쓰기 › 피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다 (2.2s)
+  ✓  35 tests/human.spec.ts:520:3 › 사람처럼 쓰기 › 오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다 (1.5s)
+  ✓  36 tests/human.spec.ts:544:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (691ms)
+  ✓  37 tests/human.spec.ts:544:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (727ms)
+  ✓  38 tests/human.spec.ts:544:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (693ms)
+  ✓  39 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.2s)
+  ✓  40 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (40.6s)
+  ✓  41 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (35.4s)
   ✓  42 tests/tour.spec.ts:300:1 › 화면 오류 없음 (1ms)
 
-
-  1) tests/app.spec.ts:226:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 ─────────────────────
-
-    Error: expect(locator).toBeVisible() failed
-
-    Locator: getByTestId('world-picker')
-    Expected: visible
-    Timeout: 15000ms
-    Error: element(s) not found
-
-    Call log:
-      - Expect "toBeVisible" getByTestId('world-picker') with timeout 15000ms
-      - waiting for getByTestId('world-picker')
-
-
-      310 |     await page.getByLabel('뽑을 범위').selectOption('world');
-      311 |     const wp = page.getByTestId('world-picker');
-    > 312 |     await expect(wp).toBeVisible();
-          |                      ^
-      313 |     await wp.getByLabel('떠날 달').selectOption('1');
-      314 |     const before = Number((await wp.getByTestId('world-count').textContent())!.match(/\d+/)![0]);
-      315 |     await wp.getByRole('button', { name: '가볍게' }).click();
-        at /home/runner/work/borapin/borapin/tests/app.spec.ts:312:22
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-가고-싶은-곳-지도에서-담기-고치기-여행-만들기-깃발-뽑기/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/app-보라핀-1단계-가고-싶은-곳-지도에서-담기-고치기-여행-만들기-깃발-뽑기/error-context.md
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-가고-싶은-곳-지도에서-담기-고치기-여행-만들기-깃발-뽑기/trace.zip
-    Usage:
-
-        npx playwright show-trace test-results/app-보라핀-1단계-가고-싶은-곳-지도에서-담기-고치기-여행-만들기-깃발-뽑기/trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  1 failed
-    tests/app.spec.ts:226:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 ──────────────────────
-  10 did not run
-  31 passed (3.5m)
-[33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
+  42 passed (4.5m)
+[32m[1m✔ [22m[39m Script exited successfully (code 0)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
 [36m[1mi  auth:[22m[39m Stopping Authentication Emulator
 [36m[1mi  hub:[22m[39m Stopping emulator hub
 [36m[1mi  logging:[22m[39m Stopping Logging Emulator
-
-[1m[31mError:[39m[22m Script "[1mplaywright test[22m" exited with code 1
