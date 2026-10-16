@@ -199,6 +199,22 @@ service cloud.firestore {
         allow create, update: if inSpace(spaceId) && validWish(request.resource.data);
         allow delete: if inSpace(spaceId);
       }
+
+      // 피드 하트: 문서 하나 = 피드 항목 하나, by = { uid: 이름 }. 자기 uid 칸만 넣고 뺀다
+      match /hearts/{itemKey} {
+        allow read: if inSpace(spaceId);
+        allow create: if inSpace(spaceId)
+          && request.resource.data.keys().hasOnly(['by', 'v', 'at'])
+          && request.resource.data.by is map
+          && request.resource.data.by.keys().hasOnly([request.auth.uid])
+          && request.resource.data.v == 1;
+        allow update: if inSpace(spaceId)
+          && request.resource.data.keys().hasOnly(['by', 'v', 'at'])
+          && request.resource.data.by is map
+          && request.resource.data.by.size() <= 20
+          && request.resource.data.by.diff(resource.data.by).affectedKeys().hasOnly([request.auth.uid]);
+        allow delete: if false;
+      }
     }
 
     // 그 밖의 모든 경로는 막는다

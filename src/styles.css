@@ -605,3 +605,12 @@ a { color: var(--violet); text-decoration: none; }
 
 .denied-mail { display: flex; gap: 8px; align-items: center; background: var(--page); border-radius: 12px; padding: 6px 6px 6px 12px; }
 .denied-mail code { font-size: 14px; font-weight: 700; color: var(--ink); }
+
+/* 피드 하트 */
+.feed-foot { display: flex; align-items: center; justify-content: space-between; }
+.feed-heart-row { display: inline-flex; align-items: center; gap: 6px; }
+.feed-heart { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--ink3); display: inline-flex; align-items: center; justify-content: center; }
+.feed-heart svg { fill: none; stroke: currentColor; stroke-width: 2; transition: transform 0.15s; }
+.feed-heart.on { color: var(--coral); }
+.feed-heart.on svg { fill: var(--coral); stroke: var(--coral); transform: scale(1.1); }
+.feed-heart:active svg { transform: scale(0.9); }

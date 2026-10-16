@@ -12,7 +12,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { Bytes, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
+import { Bytes, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
 
 const OWNER = 'ysangyn@gmail.com';
 const BORA = 'bora@example.com';
@@ -153,6 +153,17 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertFails(deleteDoc(doc(db, 'spaces/main/notes/n-owner')));
     await assertFails(updateDoc(doc(db, 'spaces/main/notes/n-bora'), { text: '고쳐 쓰기' }));
     await assertSucceeds(deleteDoc(doc(db, 'spaces/main/notes/n-bora')));
+  });
+  test('피드 하트: 자기 이름으로만 누르고 뗀다, 남의 하트는 못 건드린다', async () => {
+    const db = as.bora();
+    await assertSucceeds(setDoc(doc(db, 'spaces/main/hearts/note_n1'), { by: { bora: '보라' }, v: 1 }));
+    await assertFails(setDoc(doc(db, 'spaces/main/hearts/note_n2'), { by: { owner: '영상' }, v: 1 }));
+    await assertFails(setDoc(doc(db, 'spaces/main/hearts/note_n3'), { by: { bora: '보라', owner: '영상' }, v: 1 }));
+    const own = as.owner();
+    await assertSucceeds(updateDoc(doc(own, 'spaces/main/hearts/note_n1'), { 'by.owner': '영상' }));
+    await assertFails(updateDoc(doc(own, 'spaces/main/hearts/note_n1'), { 'by.bora': deleteField() }));
+    await assertSucceeds(updateDoc(doc(db, 'spaces/main/hearts/note_n1'), { 'by.bora': deleteField() }));
+    await assertFails(setDoc(doc(as.stranger(), 'spaces/main/hearts/note_n9'), { by: { stranger: '손님' }, v: 1 }));
   });
   test('사진 파일은 올리고, 공개 여부만 바꿀 수 있다', async () => {
     const db = as.bora();

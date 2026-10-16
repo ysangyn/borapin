@@ -518,6 +518,20 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(items.first()).toContainText('보라의 통영 나들이');
     await expect(items.first().locator('.feed-who')).toContainText('보라');
     await expect(page.getByTestId('feed-dot')).toHaveCount(0);
+    // 하트: 내가 누르면 '나', 보라가 보면 '영상'으로 보이고, 보라 화면 아래 메뉴에 점
+    await items.first().getByTestId('feed-heart').click();
+    await expect(items.first().getByTestId('feed-heart')).toHaveAttribute('aria-pressed', 'true');
+    await expect(items.first().getByTestId('feed-heart-names')).toHaveText('나');
+    const bora2 = await browser.newPage();
+    await signIn(bora2, 'bora@example.com');
+    await expect(bora2.getByTestId('feed-dot')).toBeVisible({ timeout: 15_000 });
+    await bora2.getByTestId('nav-feed').click();
+    await expect(bora2.getByTestId('feed-item').first().getByTestId('feed-heart-names')).toHaveText('영상');
+    await expect(bora2.getByTestId('feed-dot')).toHaveCount(0);
+    await bora2.close();
+    // 다시 누르면 뺀다
+    await items.first().getByTestId('feed-heart').click();
+    await expect(items.first().getByTestId('feed-heart')).toHaveAttribute('aria-pressed', 'false');
     // 추억 돌아보기로 넘어갈 수 있다
     await page.getByTestId('to-memories').click();
     await expect(page).toHaveURL(/\/memories$/);

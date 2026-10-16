@@ -15,6 +15,7 @@ import { openSlideshow } from '../components/slideshow';
 import { wishTitle } from '../components/WishCard';
 import QuickUpload from '../components/QuickUpload';
 import { photoForPlace } from '../lib/media';
+import { heartKey, toggleHeart, useHearts, type Heart } from '../lib/hearts';
 
 /** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로 */
 export default function Feed() {
@@ -24,14 +25,15 @@ export default function Feed() {
   const { places: recs } = usePlaces();
   const { wishes } = useWishes();
   const notes = useAllNotes();
+  const hearts = useHearts();
   const ready = !!(trips && photos && recs && wishes && notes);
   const items = useMemo(() => (ready ? buildFeed({ trips: trips!, photos: photos!, notes: notes!, recs: recs!, wishes: wishes! }) : null), [ready, trips, photos, notes, recs, wishes]);
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
 
   // 들어와서 봤으면 '새 소식' 표시를 지운다
   useEffect(() => {
-    if (items) markFeedSeen(items[0]?.at ?? Date.now());
-  }, [items]);
+    if (items && hearts) markFeedSeen(Math.max(items[0]?.at ?? 0, Date.now()));
+  }, [items, hearts]);
 
   return (
     <>
@@ -50,7 +52,7 @@ export default function Feed() {
         )}
         {items && items.length > 0 && (
           <ol className="feed-list">
-            {items.map((it) => <li key={keyOf(it)}><FeedRow item={it} me={me} /></li>)}
+            {items.map((it) => <li key={keyOf(it)}><FeedRow item={it} me={me} heart={hearts?.get(heartKey(it))} onHeart={auth.status === 'ready' ? () => toggleHeart(heartKey(it), hearts?.get(heartKey(it)), auth.user).catch((e) => console.warn(e)) : undefined} uid={auth.status === 'ready' ? auth.user.uid : ''} /></li>)}
           </ol>
         )}
       </div>
@@ -70,8 +72,25 @@ function Who({ name, me }: { name: string; me: string }) {
   );
 }
 
-function FeedRow({ item, me }: { item: FeedItem; me: string }) {
+function HeartBtn({ heart, uid, onHeart }: { heart?: Heart; uid: string; onHeart?: () => void }) {
+  const names = Object.entries(heart?.by ?? {});
+  const mine = !!(uid && heart?.by[uid]);
+  const others = names.filter(([u]) => u !== uid).map(([, n]) => n);
+  return (
+    <span className="feed-heart-row">
+      <button type="button" className={'feed-heart' + (mine ? ' on' : '')} aria-pressed={mine} aria-label={mine ? '하트 빼기' : '하트'} onClick={onHeart} disabled={!onHeart} data-testid="feed-heart">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>
+      </button>
+      {names.length > 0 && <span className="tiny muted" data-testid="feed-heart-names">{[...(mine ? ['나'] : []), ...others].join(', ')}</span>}
+    </span>
+  );
+}
+
+function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string; heart?: Heart; uid: string; onHeart?: () => void }) {
   const when = <span className="tiny muted feed-when">{ago(item.at)}</span>;
+  const foot = (link: string, label: string) => (
+    <div className="feed-foot"><Link to={link} className="tiny feed-link">{label}</Link><HeartBtn heart={heart} uid={uid} onHeart={onHeart} /></div>
+  );
   if (item.kind === 'photos') {
     const shown = item.photos.slice(0, 4);
     return (
@@ -86,7 +105,7 @@ function FeedRow({ item, me }: { item: FeedItem; me: string }) {
           ))}
         </div>
         {item.captions[0] && <p className="feed-text">{item.captions[0]}</p>}
-        <Link to={`/trips/${item.trip.id}`} className="tiny feed-link">여행 보기</Link>
+        {foot(`/trips/${item.trip.id}`, '여행 보기')}
       </article>
     );
   }
@@ -105,7 +124,7 @@ function FeedRow({ item, me }: { item: FeedItem; me: string }) {
         ) : (
           <p className="feed-text quote">{item.note.text}</p>
         )}
-        <Link to={`/trips/${item.trip.id}`} className="tiny feed-link">여행 보기</Link>
+        {foot(`/trips/${item.trip.id}`, '여행 보기')}
       </article>
     );
   }
@@ -114,7 +133,7 @@ function FeedRow({ item, me }: { item: FeedItem; me: string }) {
       <article className="feed-item" data-testid="feed-item" data-kind="place">
         <header><Who name={item.by} me={me} /><span className="small">{placeLabel(item.rec.region)}에 {KIND_LABEL[item.rec.kind]} 남김</span>{when}</header>
         <p className="feed-text"><b>{item.rec.name}</b>{item.rec.verdict ? <span className="tag" style={{ marginLeft: 6 }}>{VERDICT_LABEL[item.rec.verdict]}</span> : null}{item.review ? <span className="muted"> · “{item.review}”</span> : null}</p>
-        <Link to={`/places/${item.rec.id}`} className="tiny feed-link">장소 보기</Link>
+        {foot(`/places/${item.rec.id}`, '장소 보기')}
       </article>
     );
   }
@@ -123,7 +142,7 @@ function FeedRow({ item, me }: { item: FeedItem; me: string }) {
       <article className="feed-item" data-testid="feed-item" data-kind="wish">
         <header><Who name={item.by} me={me} /><span className="small">가고 싶은 곳에 담음</span>{when}</header>
         <p className="feed-text"><b>{wishTitle(item.wish)}</b>{item.wish.spotName ? <span className="muted"> · {placeLong(item.wish.place)}</span> : null}</p>
-        <Link to={`/wishes/${item.wish.id}`} className="tiny feed-link">보기</Link>
+        {foot(`/wishes/${item.wish.id}`, '보기')}
       </article>
     );
   }
@@ -131,7 +150,7 @@ function FeedRow({ item, me }: { item: FeedItem; me: string }) {
     <article className="feed-item" data-testid="feed-item" data-kind="trip">
       <header><Who name={item.by} me={me} /><span className="small">{item.trip.status === 'planned' ? '여행 계획을 만듦' : '핀을 꽂음'}</span>{when}</header>
       <p className="feed-text"><b>{item.trip.title}</b><span className="muted"> · {item.trip.places.map(placeLabel).join(', ')}</span></p>
-      <Link to={`/trips/${item.trip.id}`} className="tiny feed-link">여행 보기</Link>
+      {foot(`/trips/${item.trip.id}`, '여행 보기')}
     </article>
   );
 }

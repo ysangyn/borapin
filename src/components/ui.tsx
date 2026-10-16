@@ -5,6 +5,7 @@ import { useStore } from '../lib/store';
 import { displayName, useAuth } from '../lib/auth';
 import { buildFeed, unseenCount } from '../lib/feed';
 import { feedSeenAt, onFeedSeen } from '../lib/feedSeen';
+import { unseenHearts, useHearts } from '../lib/hearts';
 
 const PATHS: Record<string, string> = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
@@ -77,12 +78,15 @@ function useFeedUnseen() {
   const [seen, setSeen] = useState(feedSeenAt);
   useEffect(() => onFeedSeen(() => setSeen(feedSeenAt())), []);
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
+  const uid = auth.status === 'ready' ? auth.user.uid : '';
+  const hearts = useHearts();
   return useMemo(() => {
     if (!trips || !wishes || !places) return 0;
     const items = buildFeed({ trips, wishes, recs: places, photos: [], notes: [] });
+    const fromHearts = unseenHearts(hearts, seen, uid);
     if (import.meta.env.VITE_EMULATOR === '1') (window as unknown as { __unseen?: unknown }).__unseen = { seen, me, items: items.slice(0, 5).map((i) => ({ kind: i.kind, at: i.at, by: i.by })) };
-    return unseenCount(items, seen, me);
-  }, [trips, wishes, places, seen, me]);
+    return unseenCount(items, seen, me) + fromHearts;
+  }, [trips, wishes, places, seen, me, hearts, uid]);
 }
 
 export function BottomNav() {
