@@ -15,16 +15,18 @@ import type { Wish } from '../lib/types';
 import WorldPicker from './WorldPicker';
 
 /** 여행지 뽑기 (v21 주사위): 조건을 골라 한 곳을 뽑는다 */
-export default function DicePicker({ stats, info, seasons, wishes }: {
+export default function DicePicker({ stats, info, seasons, wishes, initialScope = 'kr' }: {
   stats: Stats | null;
   info: TravelInfo | null;
   seasons: SeasonData | null;
   wishes: Wish[];
+  /** 처음 열 범위: 국내('kr') 또는 해외 도시('world') */
+  initialScope?: string;
 }) {
   const auth = useAuth();
   const toast = useToast();
   const nav = useNavigate();
-  const [scope, setScope] = useState<string>('kr');
+  const [scope, setScope] = useState<string>(initialScope);
   const [theme, setTheme] = useState<string | null>(null);
   const [unvisited, setUnvisited] = useState(true);
   const [rolling, setRolling] = useState(false);
@@ -66,7 +68,7 @@ export default function DicePicker({ stats, info, seasons, wishes }: {
   return (
     <div className="card white dice" data-testid="dice">
       <div className="row-between" style={{ alignItems: 'center' }}>
-        <b style={{ display: 'flex', gap: 6, alignItems: 'center' }}><Icon name="dice" size={18} />여행지 뽑기</b>
+        <b style={{ display: 'flex', gap: 6, alignItems: 'center' }}><Icon name={scope === 'world' ? 'globe' : 'dice'} size={18} />{scope === 'world' ? '해외 도시 고르기' : '여행지 뽑기'}</b>
         <label className="tiny" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <input type="checkbox" checked={unvisited} onChange={(e) => setUnvisited(e.target.checked)} />안 가본 곳만
         </label>

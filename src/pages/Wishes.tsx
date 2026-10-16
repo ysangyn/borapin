@@ -27,7 +27,7 @@ export default function Wishes() {
   const toast = useToast();
   const nav = useNavigate();
   const [filter, setFilter] = useState<Filter>('all');
-  const [dice, setDice] = useState(false);
+  const [dice, setDice] = useState<false | 'kr' | 'world'>(false);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   const withState = useMemo(
@@ -118,9 +118,12 @@ export default function Wishes() {
         )}
 
         {dice ? (
-          <DicePicker stats={stats} info={info} seasons={seasons} wishes={wishes ?? []} />
+          <DicePicker stats={stats} info={info} seasons={seasons} wishes={wishes ?? []} initialScope={dice} />
         ) : (
-          <button className="btn ghost block" onClick={() => setDice(true)} data-testid="dice-open"><Icon name="dice" size={18} />여행지 뽑기</button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn ghost" style={{ flex: 1 }} onClick={() => setDice('kr')} data-testid="dice-open"><Icon name="dice" size={18} />여행지 뽑기</button>
+            <button className="btn ghost" style={{ flex: 1 }} onClick={() => setDice('world')} data-testid="world-open"><Icon name="globe" size={18} />해외 도시 고르기</button>
+          </div>
         )}
 
         {done.length > 0 && (
