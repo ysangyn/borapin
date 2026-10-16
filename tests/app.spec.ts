@@ -436,6 +436,8 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(shared.locator('.trip-cover img[data-loaded]')).toHaveCount(1);
     await expect(shared).not.toContainText('바다 보며 커피 마신 날');
     const photoId = await shared.locator('.photo-cell img').first().getAttribute('data-photo');
+    // 로그인 없이도 지도가 그려진다
+    await expectMapDrawn(anon);
     await anon.screenshot({ path: `${SHOTS}/15-shared-trip.png` });
 
     // 공개를 끄면 링크가 닫힌다

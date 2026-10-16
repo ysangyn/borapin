@@ -49,7 +49,7 @@ export default function MapReplay({ trips }: { trips: Trip[] }) {
         <button className="btn sm" onClick={() => { if (i >= years.length - 1) setI(0); setPlaying(!playing); }} data-testid="replay-play" aria-label={playing ? '멈추기' : '재생'}>
           {playing ? '❚❚' : '▶'}
         </button>
-        <input type="range" min={0} max={years.length - 1} value={i} onChange={(e) => { setPlaying(false); setI(+e.target.value); }} aria-label="다시 보기 연도" style={{ flex: 1 }} />
+        <input type="range" min={0} max={years.length - 1} value={i} onChange={(e) => { setPlaying(false); setI(+e.target.value); }} aria-label="다시 보기 연도" style={{ flex: 1, accentColor: 'var(--violet)' }} />
       </div>
     </div>
   );
