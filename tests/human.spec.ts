@@ -406,6 +406,28 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    // 방금 남긴 핀(고흥) 둘레가 보여야 한다
+    await page.goto('/record');
+    await page.getByLabel('어디 검색').fill('고흥');
+    await page.getByRole('option', { name: /고흥군/ }).first().click();
+    await page.getByRole('button', { name: '몰라요' }).click();
+    await page.getByTestId('save').click();
+    await expect(page.getByTestId('trip-title')).toBeVisible();
+    await page.goto('/');
+    const map = page.getByTestId('map').first();
+    await expect(map).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
+    // 남한 전체는 약 5.6: 한 지역 둘레면 그보다 훨씬 가깝다
+    await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeGreaterThan(6.4);
+    await expect(page.getByTestId('map').first().locator('.map-label', { hasText: '고흥' })).toBeVisible();
+    const nearZoom = Number(await map.getAttribute('data-zoom'));
+    await page.getByRole('button', { name: '전체 보기' }).click();
+    await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeLessThan(nearZoom - 0.2);
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);

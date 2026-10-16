@@ -18,15 +18,12 @@ import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../l
  * '이번 달 가볼 만한 곳' 큰 사진 카드: 미리 고른 여행지 사진 중
  * 이번 달이 좋은 곳 → 안 가본 곳 → 아직 안 담은 곳을 먼저, 날마다 한 곳.
  */
-export default function MonthPick({ stats, wishes }: { stats: Stats | null; wishes: Wish[] }) {
+/** 오늘의 추천 사진 한 장 (홈 지도도 이곳 둘레를 보여 준다) */
+export function useMonthPick(stats: Stats | null, wishes: Wish[]) {
   const seasons = useSeasons();
   const festData = useFestivals();
-  const info = useTravelInfo();
-  const auth = useAuth();
-  const toast = useToast();
-  const nav = useNavigate();
   const month = new Date().getMonth() + 1;
-  const pick = useMemo(() => {
+  return useMemo(() => {
     const list = PHOTOS.filter((p) => p.place?.t === 'kr');
     if (!list.length) return null;
     const score = (p: (typeof list)[number]) => {
@@ -38,6 +35,17 @@ export default function MonthPick({ stats, wishes }: { stats: Stats | null; wish
     const shuffled = dailyShuffle(list, 'month-pick');
     return [...shuffled].sort((a, b) => score(b) - score(a))[0];
   }, [seasons, stats, wishes, month, festData]);
+}
+
+export default function MonthPick({ stats, wishes }: { stats: Stats | null; wishes: Wish[] }) {
+  const seasons = useSeasons();
+  const festData = useFestivals();
+  const info = useTravelInfo();
+  const auth = useAuth();
+  const toast = useToast();
+  const nav = useNavigate();
+  const month = new Date().getMonth() + 1;
+  const pick = useMonthPick(stats, wishes);
   if (!pick?.place) return null;
   const place = pick.place;
   const s = seasonFor(seasons, place);

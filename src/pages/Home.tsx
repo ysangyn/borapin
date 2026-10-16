@@ -10,7 +10,7 @@ import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTA
 import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
 import WishRolling from '../components/WishRolling';
-import MonthPick from '../components/MonthPick';
+import MonthPick, { useMonthPick } from '../components/MonthPick';
 import { pickMemory } from '../lib/memories';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
@@ -33,6 +33,12 @@ export default function Home() {
   const recent = useMemo(() => (trips ? recentlyAdded(trips, 3) : []), [trips]);
   const memory = useMemo(() => (trips ? pickMemory(trips) : null), [trips]);
   const few = stats ? stats.cellVisits.size < 8 : true;
+  // 홈 지도는 최근 핀 둘레를 가까이, 기록이 없으면 오늘의 추천 둘레를
+  const pick = useMonthPick(stats, wishes ?? []);
+  const near = useMemo(() => {
+    const fromTrips = (recent[0]?.places ?? []).filter((p) => p.t === 'kr');
+    return fromTrips.length ? fromTrips : pick?.place ? [pick.place] : [];
+  }, [recent, pick]);
 
   return (
     <>
@@ -51,7 +57,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="card" style={{ padding: 12 }}>
+        <div className="card map-card" style={{ padding: 12 }}>
           <div className="row-between" style={{ alignItems: 'center', marginBottom: 8 }}>
             <div className="seg dark" role="tablist">
               <button role="tab" aria-selected={mode === 'kr'} className={mode === 'kr' ? 'on' : ''} onClick={() => { setMode('kr'); setSel(null); }}>국내</button>
@@ -59,7 +65,7 @@ export default function Home() {
             </div>
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
-          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} />
+          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} />
           <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">
@@ -101,9 +107,9 @@ export default function Home() {
           </section>
         )}
 
-        {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
-
         {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
+
+        {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
 
         {memory && (
           <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
@@ -123,10 +129,13 @@ export default function Home() {
             <Link to="/trips" className="small" style={{ fontWeight: 600 }}>전체 보기</Link>
           </div>
           {trips && recent.length === 0 && (
-            <div className="empty">
-              <b>아직 기록이 없어요</b>
-              <span className="small">위 지도에서 다녀온 곳을 누르면 바로 핀이 꽂혀요.<br />날짜·메모는 나중에 적어도 돼요.</span>
-              <Link to="/record" className="btn sm">기록 남기기</Link>
+            <div className="card art-row" data-testid="home-empty">
+              <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} decoding="async" />
+              <span>
+                <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>아직 기록이 없어요</b>
+                <span className="small muted" style={{ display: 'block', marginBottom: 10 }}>위 지도에서 다녀온 곳을 누르면 바로 핀이 꽂혀요. 날짜·메모는 나중에 적어도 돼요.</span>
+                <Link to="/record" className="btn sm">기록 남기기</Link>
+              </span>
             </div>
           )}
           <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>

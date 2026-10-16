@@ -22,9 +22,17 @@ export const BOUNDS: Record<MapMode, LngLatBoundsLike> = {
 
 const KOREA: [number, number] = [127.6, 36.2];
 
-/** 화면 맞추기: 국내는 남한 전체, 세계는 한국 + 다녀온(예정) 나라가 다 보이게 */
-function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number) {
-  if (mode === 'kr') return map.fitBounds(BOUNDS.kr, { padding: 16, duration });
+/** 화면 맞추기: 국내는 남한 전체(가까이 볼 곳이 있으면 그 둘레), 세계는 한국 + 다녀온(예정) 나라가 다 보이게 */
+function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number, near?: Place[]) {
+  if (mode === 'kr') {
+    const pts = (near ?? []).flatMap((p) => (p.t === 'kr' ? [REGION_BY_CODE.get(p.code)] : [])).filter((r): r is NonNullable<typeof r> => !!r);
+    if (pts.length) {
+      const b = new maplibregl.LngLatBounds([pts[0].lng, pts[0].lat], [pts[0].lng, pts[0].lat]);
+      pts.forEach((r) => b.extend([r.lng, r.lat]));
+      return map.fitBounds(b, { padding: { top: 56, bottom: 48, left: 56, right: 72 }, maxZoom: 7.3, duration });
+    }
+    return map.fitBounds(BOUNDS.kr, { padding: 16, duration });
+  }
   const pts: [number, number][] = [KOREA];
   const ids = stats ? [...stats.countryVisits.keys(), ...stats.countryPlanned] : [];
   for (const id of ids) {
@@ -37,7 +45,7 @@ function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number)
   map.fitBounds(b, { padding: { top: 90, bottom: 60, left: 50, right: 70 }, maxZoom: 3.2, duration });
 }
 
-const COLORS = { v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#E6E2F0', sea: '#F1EFF7', land: '#E9E6F1' };
+const COLORS = { v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0' };
 
 function fillExpr() {
   return [
@@ -77,6 +85,8 @@ export interface MapViewProps {
   spots?: MapSpot[];
   /** 이 장소로 화면 이동 (색칠은 그대로) */
   flyTo?: Place | null;
+  /** 처음 열 때 이 장소들 둘레를 가까이 (홈: 최근 핀·이달의 추천). 비어 있으면 남한 전체 */
+  near?: Place[];
   className?: string;
   controlsTop?: number;
   legendBottom?: number;
@@ -84,7 +94,7 @@ export interface MapViewProps {
   interactive?: boolean;
 }
 
-export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, spots, flyTo, className, controlsTop = 12, legendBottom = 12, interactive = true }: MapViewProps) {
+export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, spots, flyTo, near, className, controlsTop = 12, legendBottom = 12, interactive = true }: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -95,6 +105,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   onSelectRef.current = onSelect;
   const statsRef = useRef(stats);
   statsRef.current = stats;
+  const nearRef = useRef(near);
+  nearRef.current = near;
   const modeRef = useRef(mode);
   modeRef.current = mode;
   const labelBox = useRef<HTMLDivElement>(null);
@@ -246,6 +258,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         if (!el.current) return;
         const n = map.queryRenderedFeatures({ layers: ['kr-fill', 'world-fill'] }).length;
         el.current.dataset.features = String(n);
+        el.current.dataset.zoom = map.getZoom().toFixed(2);
       });
       setReady(true);
     });
@@ -280,7 +293,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     if (fittedRef.current === key) return;
     const animate = fittedRef.current !== '' && fittedRef.current.split(':')[0] !== mode;
     fittedRef.current = key;
-    frame(map, mode, stats, animate ? 700 : 0);
+    frame(map, mode, stats, animate ? 700 : 0, nearRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, ready, focusKey, stats]);
 
@@ -400,6 +413,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   }, [focus, ready]);
 
   const zoom = (d: number) => mapRef.current?.easeTo({ zoom: (mapRef.current?.getZoom() ?? 3) + d, duration: 250 });
+  // 맞춤 단추는 늘 전체(남한 전체 · 다녀온 나라 전부)
   const fit = () => mapRef.current && frame(mapRef.current, mode, statsRef.current, 600);
 
   return (
