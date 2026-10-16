@@ -640,3 +640,8 @@ a { color: var(--violet); text-decoration: none; }
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 0.45; } }
 .app { z-index: 1; }
 @media (min-width: 900px) { .app { box-shadow: 0 0 0 1px var(--line), 0 24px 60px rgba(23, 20, 43, 0.12); } }
+
+/* 지역 소식 */
+.news-strip { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.news-row { display: flex; flex-direction: column; gap: 1px; padding: 7px 0; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.news-title { font-size: 14px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

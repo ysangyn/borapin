@@ -19,6 +19,7 @@ import { ScenicPhoto } from './Scene';
 import { times } from '../lib/ko';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 import { quickTripInput } from '../lib/tripActions';
+import NewsStrip from './NewsStrip';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -128,6 +129,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       </div>
 
       {place.t === 'kr' && <RegionInfo code={place.code} />}
+      {place.t === 'kr' && <NewsStrip place={place} />}
 
       {here.length > 0 && (
         <div className="list" style={{ marginTop: 4 }}>

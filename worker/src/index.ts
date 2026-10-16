@@ -116,17 +116,52 @@ function extractJson(s: string): unknown {
   }
 }
 
+interface NewsItem { title: string; link: string; source: string; at: string }
+const decode = (t: string) => t.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+async function news(q: string): Promise<Response> {
+  const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ko&gl=KR&ceid=KR:ko`;
+  const cache = caches.default;
+  const key = new Request(feed);
+  const hit = await cache.match(key);
+  if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+  const r = await fetch(feed, { headers: { 'user-agent': 'borapin/1.0' } });
+  if (!r.ok) return json({ items: [], error: `rss ${r.status}` }, 200);
+  const xml = await r.text();
+  const items: NewsItem[] = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const b = m[1];
+    const title = decode(/<title>([\s\S]*?)<\/title>/.exec(b)?.[1] ?? '');
+    const link = decode(/<link>([\s\S]*?)<\/link>/.exec(b)?.[1] ?? '');
+    const source = decode(/<source[^>]*>([\s\S]*?)<\/source>/.exec(b)?.[1] ?? '');
+    const at = /<pubDate>([\s\S]*?)<\/pubDate>/.exec(b)?.[1] ?? '';
+    if (title && link) items.push({ title: title.replace(/\s*-\s*[^-]+$/, ''), link, source, at: at ? new Date(at).toISOString() : '' });
+    if (items.length >= 8) break;
+  }
+  const res = json({ items, q, cachedAt: new Date().toISOString() });
+  res.headers.set('cache-control', 'public, max-age=21600');
+  await cache.put(key, res.clone());
+  return res;
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, model: env.MODEL });
-    if (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname)) return json({ error: 'not found' }, 404);
+    const isNews = req.method === 'GET' && url.pathname === '/news';
+    if (!isNews && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
     const who = token ? await verifyIdToken(token, env.FIREBASE_PROJECTS.split(',').map((s) => s.trim())) : null;
     if (!who) return json({ error: 'unauthorized' }, 401);
+
+    // 여행 소식: 구글 뉴스 RSS(키 없음)를 6시간 캐시해 지역별 머리기사 5개만 준다 (AI 한도와 무관)
+    if (isNews) {
+      const q = (url.searchParams.get('q') ?? '').trim().slice(0, 40);
+      if (!q) return json({ error: 'empty' }, 400);
+      return news(q);
+    }
 
     const rl = await env.PER_USER.limit({ key: who.uid });
     if (!rl.success) return json({ error: 'too many requests', retry: 60 }, 429);

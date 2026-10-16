@@ -6,11 +6,13 @@ import WishCard, { wishTitle } from '../components/WishCard';
 import DicePicker from '../components/DicePicker';
 import { useAuth } from '../lib/auth';
 import { computeStats, deleteWish, restoreWish, reviveWish, useTrips, useWishes } from '../lib/data';
-import { placeLong } from '../lib/geo';
+import { placeLabel, placeLong } from '../lib/geo';
+import type { Place } from '../lib/types';
 import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
 import { bothWant, sortWishes, wishState } from '../lib/wishes';
+import NewsStrip from '../components/NewsStrip';
 import { quickWish } from '../lib/wishActions';
 import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
 
@@ -85,6 +87,10 @@ export default function Wishes() {
         <div className="list">
           {shown.map(({ w, s }) => <WishCard key={w.id} wish={w} state={s} seasons={seasons} />)}
         </div>
+        {/* 가고 싶은 곳 소식: 둘 다 원하는 곳·우선순위 순으로 국내 세 곳의 요즘 뉴스 */}
+        {wishes && active.length > 0 && filter === 'all' && (
+          <WishNews places={sortWishes(active.map((x) => x.w)).map((w) => w.place).filter((p): p is Place & { t: 'kr' } => p.t === 'kr').slice(0, 3)} />
+        )}
 
         {(active.length < 3 || dice) && picks.length > 0 && (
           <section>
@@ -133,5 +139,19 @@ export default function Wishes() {
         )}
       </div>
     </>
+  );
+}
+
+/** 가고 싶은 곳 소식 (뒷단이 있을 때만 보인다) */
+function WishNews({ places }: { places: Place[] }) {
+  if (!places.length) return null;
+  return (
+    <section data-testid="wish-news">
+      <h2 className="h2" style={{ marginBottom: 2 }}>가고 싶은 곳 소식</h2>
+      <div className="small muted" style={{ marginBottom: 6 }}>담아 둔 곳의 요즘 여행 뉴스예요. 축제·새 명소 소식이 뜨면 여기서 먼저 봐요.</div>
+      <div className="card white" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {places.map((p) => <NewsStrip key={placeLabel(p)} place={p} max={2} title={placeLabel(p)} />)}
+      </div>
+    </section>
   );
 }
