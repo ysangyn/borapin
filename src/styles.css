@@ -140,7 +140,7 @@ a { color: var(--violet); text-decoration: none; }
 .map-label.on { color: #33248a; font-weight: 800; }
 .sea-label { font-size: 11px; font-weight: 600; color: #8e88a8; letter-spacing: 0.25em; white-space: nowrap; pointer-events: none; text-shadow: 0 0 3px #f1eff7, 0 0 3px #f1eff7; }
 .sea-label.big { font-size: 12px; letter-spacing: 0.4em; }
-.map-legend { position: absolute; left: 12px; background: rgba(255, 255, 255, 0.94); border-radius: 12px; padding: 7px 10px; font-size: 11px; color: var(--ink2); display: flex; flex-direction: column; gap: 4px; z-index: 5; }
+.map-legend { position: absolute; left: 12px; background: #fff; box-shadow: 0 2px 8px rgba(23, 20, 43, 0.08); border-radius: 12px; padding: 7px 10px; font-size: 11px; color: var(--ink2); display: flex; flex-direction: column; gap: 4px; z-index: 5; }
 .map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .map-top { position: absolute; left: 0; right: 0; top: 0; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; z-index: 6; pointer-events: none; }
 .map-top > * { pointer-events: auto; }
