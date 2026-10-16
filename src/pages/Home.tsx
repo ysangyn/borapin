@@ -40,12 +40,12 @@ export default function Home() {
   const few = stats ? stats.cellVisits.size < 8 : true;
   // 홈 지도는 최근 핀 둘레를 가까이, 기록이 없으면 오늘의 추천 둘레를
   const pick = useMonthPick(stats, wishes ?? []);
-  const near = useMemo(() => {
+  // 최근 핀(국내)이 있으면 그 시·군이 보이게 가까이, 없으면(기록 없음·최근이 해외) 추천 둘레를 도 단위로만
+  const { near, nearZoom } = useMemo(() => {
     const fromTrips = (recent[0]?.places ?? []).filter((p) => p.t === 'kr');
-    return fromTrips.length ? fromTrips : pick?.place ? [pick.place] : [];
+    if (fromTrips.length) return { near: fromTrips, nearZoom: 7.3 };
+    return { near: pick?.place ? [pick.place] : [], nearZoom: 6.3 };
   }, [recent, pick]);
-  // 기록이 없을 땐 추천 둘레를 도 단위로만 (전국이 어디쯤인지 감이 오게), 기록이 있으면 최근 핀의 시·군이 보이게
-  const nearZoom = recent.length ? 7.3 : 6.3;
 
   return (
     <>
