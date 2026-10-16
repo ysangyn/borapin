@@ -12,6 +12,9 @@ import { usePlaceSpots } from '../lib/placeSpots';
 import WishRolling from '../components/WishRolling';
 import MonthPick, { useMonthPick } from '../components/MonthPick';
 import { pickMemory } from '../lib/memories';
+import { tripStage } from '../lib/stage';
+import StageCard from '../components/StageCard';
+import { usePhotos } from '../lib/photos';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 import { spaceTitle } from '../lib/members';
@@ -32,6 +35,8 @@ export default function Home() {
   const overdue = useMemo(() => (trips ? overdueTrips(trips) : []), [trips]);
   const recent = useMemo(() => (trips ? recentlyAdded(trips, 3) : []), [trips]);
   const memory = useMemo(() => (trips ? pickMemory(trips) : null), [trips]);
+  const stage = useMemo(() => (trips ? tripStage(trips) : null), [trips]);
+  const { photos } = usePhotos();
   const few = stats ? stats.cellVisits.size < 8 : true;
   // 홈 지도는 최근 핀 둘레를 가까이, 기록이 없으면 오늘의 추천 둘레를
   const pick = useMonthPick(stats, wishes ?? []);
@@ -56,6 +61,8 @@ export default function Home() {
             {stats ? (stats.tripsDone ? `${stats.tripsDone}번의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
           </div>
         </div>
+
+        {stage && <StageCard stage={stage} photos={photos} />}
 
         <div className="card map-card" style={{ padding: 12 }}>
           <div className="row-between" style={{ alignItems: 'center', marginBottom: 8 }}>
@@ -100,10 +107,10 @@ export default function Home() {
           </div>
         )}
 
-        {planned.length > 0 && (
+        {planned.some((t) => t.id !== stage?.trip.id) && (
           <section>
             <div className="small" style={{ fontWeight: 700, color: 'var(--violet)', marginBottom: 4 }}>다가오는 여행</div>
-            <div className="list">{planned.slice(0, 2).map((t) => <TripRow key={t.id} trip={t} />)}</div>
+            <div className="list">{planned.filter((t) => t.id !== stage?.trip.id).slice(0, 2).map((t) => <TripRow key={t.id} trip={t} />)}</div>
           </section>
         )}
 

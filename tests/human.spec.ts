@@ -436,6 +436,32 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    const d = new Date(); d.setDate(d.getDate() + 5);
+    const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    await page.goto('/record?status=planned');
+    await page.getByLabel('어디 검색').fill('속초');
+    await page.getByRole('option', { name: /속초시/ }).first().click();
+    await page.getByLabel('제목').fill('속초 단풍 여행');
+    await page.getByRole('button', { name: '날짜', exact: true }).click();
+    await page.getByLabel('시작 날짜').fill(ymd);
+    await page.getByTestId('save').click();
+    await expect(page.getByTestId('trip-title')).toHaveText('속초 단풍 여행');
+    await page.goto('/');
+    const card = page.getByTestId('stage-card');
+    await expect(card).toHaveAttribute('data-stage', 'before');
+    await expect(card).toContainText('속초 단풍 여행');
+    await expect(card).toContainText('D-5');
+    await expect(card).toContainText('준비물');
+    // 다가오는 여행 목록에 같은 여행이 또 나오지 않는다
+    await expect(page.getByTestId('trip-row').filter({ hasText: '속초 단풍 여행' })).toHaveCount(0);
+    await card.click();
+    await expect(page).toHaveURL(/\/trips\/[^/]+$/);
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);
