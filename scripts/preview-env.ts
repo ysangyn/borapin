@@ -6,10 +6,13 @@
  *
  * seed: 시험 계정 3개(주인 역할·함께 쓰는 사람·초대 안 된 사람)를 메일 인증된 상태로 만들고, 함께 쓰는 사람 목록을 넣는다.
  * cleanup: 시험이 만든 기록(여행·장소·사진·일정·글·공유·신고·설정)과 시험 계정을 모두 지운다.
+ * rules: 실제와 같은 firestore.rules를 시험용 프로젝트에 올린다 (Admin SDK로, 배포 도구 없이)
  */
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getSecurityRules } from 'firebase-admin/security-rules';
+import fs from 'node:fs';
 
 const PROJECT = 'borapin-test';
 if ((process.env.GCLOUD_PROJECT ?? PROJECT) !== PROJECT) throw new Error('시험용 프로젝트(borapin-test)에서만 돌릴 수 있어요');
@@ -56,10 +59,17 @@ async function cleanup() {
   console.log(`시험 기록을 모두 지우고 시험 계정 ${users.users.length}개를 지웠어요`);
 }
 
+async function rules() {
+  const source = fs.readFileSync('firestore.rules', 'utf8');
+  const r = await getSecurityRules().releaseFirestoreRulesetFromSource(source);
+  console.log(`보안 규칙을 올렸어요 (${r.name})`);
+}
+
 const cmd = process.argv[2];
-if (cmd === 'seed') await seed();
+if (cmd === 'rules') await rules();
+else if (cmd === 'seed') await seed();
 else if (cmd === 'cleanup') await cleanup();
 else {
-  console.error('사용: preview-env.ts seed | cleanup');
+  console.error('사용: preview-env.ts rules | seed | cleanup');
   process.exit(2);
 }

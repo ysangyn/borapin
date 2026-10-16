@@ -161,13 +161,14 @@ jobs:
         if: steps.testkey.outputs.ok == 'true'
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa-test.json
-        run: npx firebase deploy --only firestore --project borapin-test --non-interactive --force
+          GCLOUD_PROJECT: borapin-test
+        run: npx tsx scripts/preview-env.ts rules 2>&1 | tee preview-setup.txt
       - name: 시험 계정 준비
         if: steps.testkey.outputs.ok == 'true'
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa-test.json
           GCLOUD_PROJECT: borapin-test
-        run: npx tsx scripts/preview-env.ts cleanup && npx tsx scripts/preview-env.ts seed
+        run: (npx tsx scripts/preview-env.ts cleanup && npx tsx scripts/preview-env.ts seed) 2>&1 | tee -a preview-setup.txt
       - name: 미리보기 주소에서 화면 시험 (진짜 Firebase)
         if: steps.testkey.outputs.ok == 'true'
         env:
@@ -188,7 +189,7 @@ jobs:
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh preview preview-verify.txt preview-output.txt test-results
+        run: scripts/push-report.sh preview preview-verify.txt preview-setup.txt preview-output.txt test-results
 
   deploy:
     name: 4. borapin.web.app 배포와 확인
