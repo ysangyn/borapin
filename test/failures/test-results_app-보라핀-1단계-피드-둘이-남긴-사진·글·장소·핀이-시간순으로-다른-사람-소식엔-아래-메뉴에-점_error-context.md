@@ -56,32 +56,32 @@ Call log:
 - button "가고 싶은 곳에 담기"
 - link "자세히":
   - /url: /map?sel=kr:11
-- link "기록하기":
+- link "여기 기록하기":
   - /url: /record?place=kr:11
 - heading "가고 싶은 곳" [level=2]
 - link "모두 보기 2":
   - /url: /wishes
 - link "제주 가고 싶은 곳 보기":
-  - /url: /wishes/V717LokvG8yvGG2u6Iky
+  - /url: /wishes/NLJlMT80UuYkDsMTfwe3
   - text: 제주 1 제주 보라 영상 둘 다 원해요 가기 좋은 때 5·6, 9~11월
 - link "예정 · 2026년쯤":
-  - /url: /trips/4pvNkQEvZFnXliKoZ1AC
-- link "강원 고성군 가고 싶은 곳 보기":
-  - /url: /wishes/iGzLZzqEnkGup6LiOeZG
-  - text: 강원 강원 고성군 보라 영상 가기 좋은 때 5·6, 9·10월
+  - /url: /trips/oAiM5FcwZoBZscSM7zHL
+- link "강원 동해시 가고 싶은 곳 보기":
+  - /url: /wishes/E04G5PDqcyKbfzMd5Z1r
+  - text: 강원 강원 동해시 보라 영상 가기 좋은 때 4~6, 9·10월
 - link "여행 만들기":
-  - /url: /record?status=planned&place=kr:51820&wish=iGzLZzqEnkGup6LiOeZG
+  - /url: /record?status=planned&place=kr:51170&wish=E04G5PDqcyKbfzMd5Z1r
 - link "교토 작년 가을 교토 단풍 여행 2025년 가을":
-  - /url: /trips/X8Pwfy7WPS4ALDRsNhH5
+  - /url: /trips/UG6ScRQZHhb8bUvEPhRj
 - heading "최근에 남긴 기록" [level=2]
 - link "전체 보기":
   - /url: /trips
 - link "경남 보라의 통영 나들이 경남 통영시 · 날짜 모름":
-  - /url: /trips/euz5g3zYS9MAEGjI0Jge
+  - /url: /trips/6TflrFFdixv8V6qcWjee
 - link "부산 부산 여행 부산 · 날짜 모름":
-  - /url: /trips/yaAPduQjQ0ORyGjXsYJS
+  - /url: /trips/8kFXM9TG7N1BBIrPlQ56
 - link "일본 교토 단풍 여행 일본 교토 · 2025년 가을":
-  - /url: /trips/X8Pwfy7WPS4ALDRsNhH5
+  - /url: /trips/UG6ScRQZHhb8bUvEPhRj
 - navigation "주 메뉴":
   - link "홈":
     - /url: /
