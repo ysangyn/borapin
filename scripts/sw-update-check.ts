@@ -33,6 +33,11 @@ if (phase === 'before') {
     process.exit(0);
   }
   const old = fs.readFileSync(path.join(dir, 'old-version.txt'), 'utf8');
+  // 버전 표시가 생기기 전 빌드(2026-10-16 이전)는 비교할 수 없다: 한 번만 건너뛴다
+  if (!old) {
+    console.log('배포 전 버전이 버전 표시가 없는 옛 빌드라 이번에는 건너뜁니다 (다음 배포부터 비교)');
+    process.exit(0);
+  }
   const ctx = await chromium.launchPersistentContext(dir, { locale: 'ko-KR', executablePath: process.env.CHROMIUM_PATH || undefined });
   const page = await ctx.newPage();
   await page.goto(base, { waitUntil: 'load' });

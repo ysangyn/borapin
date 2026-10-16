@@ -226,8 +226,10 @@ jobs:
       - name: 실제 주소 파일·버전 확인
         run: npx tsx scripts/verify-deploy.ts https://borapin.web.app "${GITHUB_SHA::7}" 2>&1 | tee live-verify.txt
       - name: 옛 버전이 새 버전으로 바뀌는지 (서비스 워커)
+        if: always()
         run: npx tsx scripts/sw-update-check.ts after https://borapin.web.app "${GITHUB_SHA::7}" 2>&1 | tee -a sw-output.txt
       - name: 실제 주소 화면 확인 (로그인 화면, 구글 창 열림, 지도 파일)
+        if: always()
         run: |
           export WORKER_PATH="/assets/$(basename dist/assets/maplibre-gl-worker-*.mjs)"
           COMMIT="${GITHUB_SHA::7}" npx playwright test -c playwright.live.config.ts 2>&1 | tee live-output.txt
