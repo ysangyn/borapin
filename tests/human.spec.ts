@@ -371,7 +371,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
-  test('홈 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 위에서부터 나란히', async ({ browser }) => {
+  test('가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 위에서부터 나란히', async ({ browser }) => {
     const page = await phone(browser);
     // 긴 이름의 '지금 축제'를 제주에 하나 넣어 둔다 (실제 축제 자료는 매주 바뀌므로)
     const d = new Date(); const ymd = (x: Date) => x.toISOString().slice(0, 10).replace(/-/g, '');
@@ -388,8 +388,12 @@ test.describe('사람처럼 쓰기', () => {
     await page.getByRole('button', { name: '1순위', exact: true }).click();
     await page.getByTestId('wish-save').click();
     await expect(page).not.toHaveURL(/wishes\/new/);
+    // 홈 '다음 여행 준비'에 영월이 올라오고(예정 여행이 없을 때), 카드 모양은 가고 싶은 곳 목록에서 본다
     await page.goto('/');
-    const card = page.getByTestId('home-wishes').getByTestId('wish-card').filter({ hasText: '영월' }).first();
+    const hub = page.getByTestId('next-hub');
+    if (await hub.isVisible() && (await hub.getAttribute('data-anchor')) === 'wish') await expect(hub.getByTestId('hub-first')).toContainText('영월');
+    await page.goto('/wishes');
+    const card = page.getByTestId('wish-card').filter({ hasText: '영월' }).first();
     await expect(card).toBeVisible();
     const tag = card.getByTestId('wish-festival');
     await expect(tag).toBeVisible();

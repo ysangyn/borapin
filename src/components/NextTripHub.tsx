@@ -215,8 +215,7 @@ function WayThere({ place, months }: { place: Place; months?: number[] }) {
   const f = place.t === 'kr' ? upcomingFestivals(fest, place.code, new Date(), 60)[0] : undefined;
   const flights = flightLinks(place, s?.m[0] ?? null);
   const news = useNews(place);
-  // 여행 준비 칸이니 사건·재난 기사는 거른다 (안전 정보는 묻기에서)
-  const good = news?.find((n) => !/사고|사망|화재|실종|범죄|폭행|추락|침몰|감염|확진|지진|태풍|폭우|홍수|산불|붕괴|테러|피해/.test(n.title)) ?? null;
+  const good = news?.[0] ?? null;
   if (!s && !f && !flights && !good) return null;
   return (
     <div className="hub-block card white" data-testid="hub-way">

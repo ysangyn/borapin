@@ -66,11 +66,25 @@ export function fromInputDate(v: string): { y?: number; m?: number; d?: number }
   return { y: +m[1], m: +m[2], d: +m[3] };
 }
 
+/** 대략 적은 기간의 마지막 날: '2026년' → 12.31, '10월쯤' → 10.31, '가을' → 11.30, '겨울' → 이듬해 2월 말 */
+function periodEndKey(w: When): number {
+  const y = w.y2 ?? w.y!;
+  if (w.p === 'day' && w.m && w.d) return y * 10000 + (w.m2 ?? w.m) * 100 + (w.d2 ?? w.d);
+  const lastDay = (yy: number, mm: number) => new Date(yy, mm, 0).getDate();
+  if (w.p === 'month' && w.m) { const m = w.m2 ?? w.m; return y * 10000 + m * 100 + lastDay(y, m); }
+  if (w.p === 'season' && w.s) {
+    const end: Record<Season, [number, number]> = { spring: [0, 5], summer: [0, 8], autumn: [0, 11], winter: [1, 2] };
+    const [plus, m] = end[w.s];
+    return (y + plus) * 10000 + m * 100 + lastDay(y + plus, m);
+  }
+  return y * 10000 + 1231;
+}
+
+/** 예정 여행이 아직 안 지났는지: 대략 적었으면 그 기간이 끝날 때까지 '다가오는' 여행으로 본다 */
 export function isUpcoming(w: When, now = new Date()): boolean {
   if (!w.y) return true;
-  const key = whenSortKey({ ...w, y: w.y2 ?? w.y, m: w.m2 ?? w.m, d: w.d2 ?? w.d });
   const today = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
-  return key >= today;
+  return periodEndKey(w) >= today;
 }
 
 /** 예정된 여행의 D-day: 'D-12' · 'D-day' · '여행 중 2일째' · null(날짜 모름/지남) */

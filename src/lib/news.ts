@@ -3,6 +3,7 @@ import { auth } from './firebase';
 import { ASK_URL, aiAvailable } from './ask/smart';
 import { placeLabel } from './geo';
 import type { Place } from './types';
+import { isTravelNews } from './newsFilter';
 
 /** 여행 소식 한 줄 (구글 뉴스 RSS, 뒷단이 6시간 캐시) */
 export interface NewsItem { title: string; link: string; source: string; at: string }
@@ -13,6 +14,8 @@ const KEY = 'borapin:news:';
 
 /** 지역별 검색어: '강릉 여행' — 광역시·도 이름이 겹치는 곳은 시·군 이름으로 */
 export const newsQuery = (p: Place) => `${placeLabel(p)} 여행`;
+
+export { isTravelNews } from './newsFilter';
 
 export async function fetchNews(p: Place): Promise<NewsItem[]> {
   const q = newsQuery(p);
@@ -31,7 +34,7 @@ export async function fetchNews(p: Place): Promise<NewsItem[]> {
   const r = await fetch(`${ASK_URL}/news?q=${encodeURIComponent(q)}`, { headers: { authorization: `Bearer ${token}` } });
   if (!r.ok) return [];
   const j = (await r.json()) as { items?: NewsItem[] };
-  const items = (j.items ?? []).slice(0, 5);
+  const items = (j.items ?? []).filter(isTravelNews).slice(0, 5);
   const entry = { at: Date.now(), items };
   mem.set(q, entry);
   try { localStorage.setItem(KEY + q, JSON.stringify(entry)); } catch { /* */ }

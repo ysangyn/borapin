@@ -6,6 +6,8 @@
 import type { User } from 'firebase/auth';
 import { ask, type Answer, type AskCtx, type AskData, type Btn, type Intent } from './engine';
 import { lastPlace, runTools, type ToolCall } from './tools';
+import { ensurePlan } from './plan';
+import { findMentions } from './gazetteer';
 import { memberNames } from '../members';
 import { grounded, rulesConfident } from './confidence';
 import { placeLong } from '../geo';
@@ -43,7 +45,8 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
       ...history.slice(-2).map((h) => `앞 대화: Q ${h.q} / A ${h.a.slice(0, 80)}`),
     ].filter(Boolean).join('\n');
     const plan = await post('/plan', token, { question, context });
-    const calls = (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[];
+    const mention = findMentions(question, d.info)[0]?.entry.label ?? null;
+    const calls = ensurePlan(question, (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[], mention);
     const facts = runTools(calls, d, ctx.place ?? null, now);
     const factText = [facts.text, facts.actions.length ? `actions: ${facts.actions.map((x) => `${x.id}=${x.btn.label}`).join(', ')}` : ''].filter(Boolean).join('\n');
     const ans = await post('/answer', token, { question, context, facts: factText });
