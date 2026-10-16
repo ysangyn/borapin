@@ -39,7 +39,7 @@ export default function Home() {
       <div className="topbar">
         <span className="brand"><Logo />보라핀</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link to="/ask" className="icon-btn" aria-label="찾아보기"><Icon name="search" size={20} stroke={2} /></Link>
+          <Link to="/ask" className="icon-btn" aria-label="보라에게 물어봐"><Icon name="search" size={20} stroke={2} /></Link>
           <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
         </div>
       </div>
@@ -82,6 +82,11 @@ export default function Home() {
           )}
         </div>
 
+        <form className="ask-home" onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/ask?q=${encodeURIComponent(q.trim())}`); }} data-testid="home-ask">
+          <img src="/art/bora-face.webp" alt="" width={30} height={30} decoding="async" />
+          <input aria-label="보라에게 물어봐" placeholder="보라에게 물어봐: 영등포 맛집, 작년 여름에 간 곳" value={q} onChange={(e) => setQ(e.target.value)} />
+        </form>
+
         {overdue[0] && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
             <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
@@ -111,11 +116,6 @@ export default function Home() {
             <Icon name="chev" size={18} />
           </Link>
         )}
-
-        <form className="ask-home" onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/ask?q=${encodeURIComponent(q.trim())}`); }} data-testid="home-ask">
-          <Icon name="search" size={18} stroke={2} />
-          <input aria-label="찾아보기" placeholder="찾아보기: 영등포 맛집, 작년 여름에 간 곳" value={q} onChange={(e) => setQ(e.target.value)} />
-        </form>
 
         <section>
           <div className="row-between" style={{ marginBottom: 2 }}>

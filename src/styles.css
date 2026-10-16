@@ -336,6 +336,7 @@ a { color: var(--violet); text-decoration: none; }
 .ask-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--safe-b) + 10px); width: calc(100% - 32px); max-width: 488px; display: flex; gap: 8px; z-index: 20; }
 .ask-bar .input { box-shadow: 0 4px 16px rgba(23, 20, 43, 0.12); }
 .ask-home { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 16px; border-radius: 16px; background: var(--page); color: var(--ink3); }
+.ask-home img { width: 30px; height: 30px; border-radius: 50%; background: var(--violet); flex: none; }
 .ask-home input { flex: 1; border: none; background: none; font-size: 15px; outline: none; color: var(--ink); }
 .share-preview { border-radius: 18px; overflow: hidden; background: var(--page); aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 24px rgba(23, 20, 43, 0.12); }
 .share-preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -499,3 +500,15 @@ a { color: var(--violet); text-decoration: none; }
 .ask-hero .muted { color: rgba(255, 255, 255, 0.85); }
 .empty-photo { width: calc(100% + 32px); margin: -26px -16px 4px; border-radius: 20px 20px 0 0; aspect-ratio: 16 / 8; }
 .legal .credits { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+
+/* 우하단 떠 있는 보라: 얼굴 + 말풍선, 누르면 물어보기 */
+.ask-fab { position: fixed; right: 14px; bottom: calc(var(--nav-h) + var(--safe-b) + 14px); z-index: 18; display: flex; align-items: flex-end; gap: 4px; text-decoration: none; }
+.ask-fab img { width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 6px 18px rgba(23, 20, 43, 0.22); background: var(--violet); transition: transform 0.15s; }
+.ask-fab:active img { transform: scale(0.94); }
+.ask-fab-bubble { position: relative; margin-bottom: 30px; padding: 6px 10px; border-radius: 12px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 800; box-shadow: 0 4px 14px rgba(23, 20, 43, 0.14); white-space: nowrap; }
+.ask-fab-bubble::after { content: ''; position: absolute; right: -5px; bottom: 7px; width: 10px; height: 10px; background: #fff; transform: rotate(45deg); border-radius: 2px; }
+.sheet-open .ask-fab { display: none; }
+@media (min-width: 560px) { .ask-fab { right: calc(50% - 260px + 14px); } }
+/* 물어보기 머리: 보라 얼굴 + '보라에게 물어봐' */
+.ask-head { display: flex; align-items: center; gap: 12px; }
+.ask-head img { width: 56px; height: 56px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(23, 20, 43, 0.15); }

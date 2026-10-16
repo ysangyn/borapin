@@ -69,12 +69,15 @@ export default function Ask() {
 
   return (
     <>
-      <TopBar back title="찾아보기" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); }}>처음으로</button> : undefined} />
+      <TopBar back title="보라에게 물어봐" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); }}>처음으로</button> : undefined} />
       <div className="page ask-page" style={{ paddingTop: 4 }} data-testid="ask">
         {msgs.length === 0 && (
           <div className={'card' + (photoById('seorak') ? ' ask-hero' : '')} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: photoById('seorak') ? '64px 16px 16px' : undefined }}>
             {photoById('seorak') && <ScenicPhoto id="seorak" alt="" label="top" />}
-            <b style={{ fontSize: photoById('seorak') ? 20 : undefined }}>어디 갈지, 어디 갔었는지 물어보세요</b>
+            <div className="ask-head">
+              <img src="/art/bora-face.webp" alt="" width={56} height={56} decoding="async" />
+              <b style={{ fontSize: photoById('seorak') ? 20 : undefined }}>어디 갈지, 어디 갔었는지 물어보세요</b>
+            </div>
             <span className="small muted">국내 160곳 여행정보와 가기 좋은 때, 우리 기록에서 바로 찾아 드려요.</span>
             <div className="chips">
               {STARTERS.map((s) => <button key={s} className="chip" onClick={() => send(s)} disabled={!ready}>{s}</button>)}

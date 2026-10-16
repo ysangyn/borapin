@@ -387,6 +387,25 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    const fab = page.getByTestId('ask-fab');
+    await expect(fab).toBeVisible();
+    await expect(fab).toBeInViewport({ ratio: 1 });
+    // 아래 메뉴와 겹치지 않는다
+    const f = (await fab.boundingBox())!;
+    const nav = (await page.getByRole('navigation', { name: '주 메뉴' }).boundingBox())!;
+    expect(f.y + f.height).toBeLessThanOrEqual(nav.y + 1);
+    await fab.click();
+    await expect(page).toHaveURL(/\/ask/);
+    await expect(page.getByText('보라에게 물어봐')).toBeVisible();
+    await expect(page.getByTestId('ask-fab')).toHaveCount(0);
+    await page.goto('/map');
+    await expect(page.getByTestId('ask-fab')).toHaveCount(0);
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);

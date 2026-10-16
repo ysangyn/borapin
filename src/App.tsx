@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import { DataProvider } from './lib/store';
 import { BottomNav, Spinner } from './components/ui';
@@ -93,7 +93,18 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
         {!hideNav && <BottomNav />}
+        {!hideNav && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && <AskFab />}
       </div>
     </DataProvider>
+  );
+}
+
+/** 우하단에 떠 있는 보라 얼굴 + 말풍선: 누르면 물어보기(챗봇)로 */
+function AskFab() {
+  return (
+    <Link to="/ask" className="ask-fab" aria-label="보라에게 물어봐" data-testid="ask-fab">
+      <span className="ask-fab-bubble" aria-hidden="true">물어봐요</span>
+      <img src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />
+    </Link>
   );
 }

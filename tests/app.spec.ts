@@ -426,7 +426,7 @@ test.describe.serial('보라핀 1단계', () => {
 
   test('찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기', async ({ page }) => {
     await signIn(page, OWNER);
-    const box = page.getByTestId('home-ask').getByLabel('찾아보기');
+    const box = page.getByTestId('home-ask').getByLabel('보라에게 물어봐');
     await box.fill('강릉 맛집');
     await box.press('Enter');
     await expect(page).toHaveURL(/\/ask/);
