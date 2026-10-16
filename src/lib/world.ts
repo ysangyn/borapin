@@ -58,7 +58,12 @@ export function cityFor(data: WorldData | null, p: Place): WorldCity | null {
 
 export const COST_LABEL: Record<1 | 2 | 3, string> = { 1: '물가 가벼움', 2: '물가 보통', 3: '물가 비쌈' };
 export const WALK_LABEL: Record<1 | 2 | 3, string> = { 1: '느긋하게', 2: '적당히 걷기', 3: '많이 걷기' };
-export const flyLabel = (h: number) => (h < 1 ? '1시간 안' : h <= 3 ? `${h}시간쯤` : `${Math.round(h)}시간쯤`);
+/** 2.5 → '2시간 반쯤', 2.7 → '3시간쯤', 0.8 → '1시간 안' */
+export const flyLabel = (h: number) => {
+  if (h < 1) return '1시간 안';
+  const half = Math.round(h * 2) / 2;
+  return Number.isInteger(half) ? `${half}시간쯤` : `${Math.floor(half)}시간 반쯤`;
+};
 export const tzLabel = (tz: number) => (tz === 0 ? '시차 없음' : `한국보다 ${Math.abs(tz)}시간 ${tz < 0 ? '느려요' : '빨라요'}`);
 
 /** 고르기 조건 — 비워 두면 그 축은 안 본다 */

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { josa } from 'es-hangul';
 import { Icon } from './ui';
 import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { monthsLabel } from '../lib/seasons';
@@ -25,7 +26,7 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
         <div><dt>비행</dt><dd>인천에서 {flyLabel(w.fly)} · {tzLabel(w.tz)}</dd></div>
         <div><dt>돈</dt><dd>{w.cur} · {COST_LABEL[w.cost]}</dd></div>
         <div><dt>말·콘센트</dt><dd>{w.lang} · {w.plug}</dd></div>
-        <div><dt>걷기</dt><dd>{WALK_LABEL[w.walk]}{w.with.length ? ` · ${w.with.join('·')}와 좋아요` : ''}</dd></div>
+        <div><dt>걷기</dt><dd>{WALK_LABEL[w.walk]}{w.with.length ? ` · ${josa(w.with.join('·'), '와/과')} 좋아요` : ''}</dd></div>
         <div><dt>입국</dt><dd>{w.entry}{updated ? <span className="tiny muted"> · {updated.slice(0, 7).replace('-', '.')} 기준, 떠나기 전 확인</span> : null}</dd></div>
       </dl>
       {phraseLink(w)}

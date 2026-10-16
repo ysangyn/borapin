@@ -751,7 +751,7 @@ a { color: var(--violet); text-decoration: none; }
 .city-facts dt { color: var(--ink3); font-weight: 700; }
 .city-facts dd { margin: 0; color: var(--ink); line-height: 1.4; }
 .city-picks { display: flex; flex-direction: column; gap: 6px; }
-.city-picks .chip { height: 32px; padding: 0 11px; font-size: 13px; }
+.city-picks .chip { height: 32px; padding: 0 11px; font-size: 13px; background: #fff; border-color: var(--line2); }
 /* 현지어 한마디 */
 .phrase-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'ko play' 'native play' 'sound play'; gap: 2px 10px; align-items: center; width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: #fff; color: inherit; font: inherit; text-align: left; }
 .phrase-ko { grid-area: ko; font-size: 13px; color: var(--ink3); font-weight: 700; }

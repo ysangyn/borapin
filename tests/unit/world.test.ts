@@ -52,3 +52,12 @@ test('장소에서 도시 자료 찾기, 같은 곳 비교는 도시까지 본�
   assert.equal(samePlace({ t: 'country', id: 'JPN', city: '교토' }, { t: 'country', id: 'JPN' }), true);
   assert.equal(samePlace({ t: 'country', id: 'JPN', city: '교토' }, { t: 'country', id: 'JPN', city: '교토' }), true);
 });
+
+test('비행시간 글', async () => {
+  const { flyLabel } = await import('../../src/lib/world');
+  assert.equal(flyLabel(0.8), '1시간 안');
+  assert.equal(flyLabel(2.8), '3시간쯤');
+  assert.equal(flyLabel(2.7), '2시간 반쯤');
+  assert.equal(flyLabel(2.5), '2시간 반쯤');
+  assert.equal(flyLabel(13), '13시간쯤');
+});
