@@ -77,10 +77,10 @@ function NextTripHero({ trip, more, wishes }: { trip: Trip; more: Trip[]; wishes
               <span className="tiny muted">{t.when.p === 'unknown' ? '날짜 미정' : formatWhen(t.when)}</span>
             </Link>
           ))}
-          {wishes.slice(0, Math.max(0, 2 - more.length)).map((w) => (
+          {wishes.slice(0, Math.max(0, 2 - more.length)).map((w, i) => (
             <Link key={w.id} to={`/wishes/${w.id}`} className="hub-other">
               <span className="hub-other-name">{wishTitle(w)}</span>
-              <span className="tiny muted">그다음은 여기 · {bothWant(w) ? everyoneLabel() : (w.wantedBy ?? []).join('·') || '아직 하트가 없어요'}</span>
+              <span className="tiny muted">{i === 0 && more.length === 0 ? '그다음은 여기 · ' : ''}{bothWant(w) ? everyoneLabel() : (w.wantedBy ?? []).join('·') || '아직 하트가 없어요'}</span>
             </Link>
           ))}
         </div>

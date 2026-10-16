@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, doc, documentId, limit, onSnapshot, orderBy, query, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
@@ -26,11 +26,20 @@ export async function answerAsk(day: string, q: Question, place: Place, text: st
   return queued(updateDoc(ref, { [`answers.${user.uid}`]: me }));
 }
 
-/** 최근 며칠의 질문·답 (피드와 새 소식 점에 쓴다) */
+/** 최근 며칠의 질문·답 (피드와 새 소식 점에 쓴다). 날짜 문서를 하나씩 구독한다 (질의 없이, 규칙·캐시에 단순하게) */
 export function useRecentAsks(days = 7): { day: string; doc: AskDoc }[] | null {
   const [data, setData] = useState<{ day: string; doc: AskDoc }[] | null>(null);
-  useEffect(() => onSnapshot(query(collection(db, 'spaces', SPACE_ID, 'asks'), orderBy(documentId(), 'desc'), limit(days)),
-    (s) => setData(s.docs.map((x) => ({ day: x.id, doc: x.data() as AskDoc }))), () => setData([])), [days]);
+  const today = ymd(new Date());
+  useEffect(() => {
+    const keys: string[] = [];
+    for (let i = 0; i < days; i++) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(ymd(d)); }
+    const got = new Map<string, AskDoc | null>();
+    const emit = () => setData(keys.filter((k) => got.get(k)).map((k) => ({ day: k, doc: got.get(k)! })));
+    const offs = keys.map((k) => onSnapshot(doc(db, 'spaces', SPACE_ID, 'asks', k),
+      (s) => { got.set(k, (s.data() as AskDoc | undefined) ?? null); if (got.size === keys.length) emit(); },
+      () => { got.set(k, null); if (got.size === keys.length) emit(); }));
+    return () => offs.forEach((f) => f());
+  }, [days, today]);
   return data;
 }
 

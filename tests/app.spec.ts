@@ -391,6 +391,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(ask.getByTestId('hub-answer-other')).toContainText('보라');
     await expect(ask.getByTestId('hub-ask-waiting')).toHaveCount(0);
     // 상대의 답은 새 소식: 아래 메뉴에 점, 피드에 '오늘의 질문에 답함'
+    await expect.poll(async () => page.evaluate(() => JSON.stringify((window as unknown as { __unseen?: unknown }).__unseen)), { timeout: 15_000, message: '점 계산 자료에 질문 답' }).toContain('"kind":"ask"');
     await expect(page.getByTestId('feed-dot')).toBeVisible({ timeout: 15_000 });
     await page.getByTestId('nav-feed').click();
     const askItem = page.locator('[data-testid="feed-item"][data-kind="ask"]').first();
