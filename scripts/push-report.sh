@@ -11,7 +11,7 @@ else
   git -C "$dir" init -q -b ci-report
   git -C "$dir" remote add origin "$repo_url"
 fi
-if [ "$sub" = "test" ]; then rm -rf "$dir"/*; fi
+rm -rf "${dir:?}/$sub"
 mkdir -p "$dir/$sub"
 for f in "$@"; do [ -e "$f" ] && cp -r "$f" "$dir/$sub/"; done
 echo "${GITHUB_SHA}" > "$dir/commit.txt"

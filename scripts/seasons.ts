@@ -21,24 +21,29 @@ const RAW = path.join(ROOT, 'data/climate.json');
 const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 export interface Climate {
-  /** 달마다 낮 최고기온 평균(℃) */
+  /** 달마다 낮 최고기온 평균(℃) = 평균기온 + 하루 기온 폭의 절반 */
   tmax: number[];
+  /** 달마다 평균기온(℃) */
+  t2m?: number[];
   /** 달마다 하루 강수량 평균(mm) */
   prcp: number[];
 }
 
 async function fetchClimate(lat: number, lng: number): Promise<Climate> {
-  const url = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M_MAX,PRECTOTCORR&community=RE&latitude=${lat.toFixed(3)}&longitude=${lng.toFixed(3)}&format=JSON`;
+  const url = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M,T2M_RANGE,PRECTOTCORR&community=RE&latitude=${lat.toFixed(3)}&longitude=${lng.toFixed(3)}&format=JSON`;
   for (let attempt = 1; ; attempt++) {
     try {
       const r = await fetch(url, { headers: { 'User-Agent': 'borapin-data-build (github.com/ysangyn/borapin)' } });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const j = (await r.json()) as { properties: { parameter: Record<string, Record<string, number>> } };
       const p = j.properties.parameter;
-      const tmax = MON.map((m) => p.T2M_MAX[m]);
+      // 주의: 월별 T2M_MAX는 '그달 가장 더운 순간'이라 쓰지 않는다
+      const t2m = MON.map((m) => p.T2M[m]);
+      const range = MON.map((m) => p.T2M_RANGE[m]);
       const prcp = MON.map((m) => p.PRECTOTCORR[m]);
-      if (tmax.some((x) => typeof x !== 'number' || x < -90) || prcp.some((x) => typeof x !== 'number' || x < 0)) throw new Error('값이 비었어요');
-      return { tmax, prcp };
+      if ([...t2m, ...range].some((x) => typeof x !== 'number' || x < -90) || prcp.some((x) => typeof x !== 'number' || x < 0)) throw new Error('값이 비었어요');
+      const r1 = (x: number) => Math.round(x * 10) / 10;
+      return { tmax: t2m.map((t, i) => r1(t + range[i] / 2)), t2m: t2m.map(r1), prcp: prcp.map(r1) };
     } catch (e) {
       if (attempt >= 4) throw new Error(`${lat},${lng}: ${(e as Error).message}`);
       await new Promise((res) => setTimeout(res, 1500 * attempt));
@@ -128,6 +133,13 @@ async function main() {
   if (failed.length) {
     console.log(`받지 못한 곳 ${failed.length}개:`);
     failed.slice(0, 20).forEach((f) => console.log('  - ' + f));
+  }
+  // 상식 점검: 서울 1월 낮 기온은 영하~5℃, 8월은 27~33℃여야 한다
+  const seoul = cache['kr:11'];
+  console.log('서울 낮 최고(월별):', seoul.tmax.join(' '), '→', JSON.stringify(kr['11']));
+  if (!(seoul.tmax[0] > -4 && seoul.tmax[0] < 6 && seoul.tmax[7] > 26 && seoul.tmax[7] < 34)) {
+    console.error('✗ 서울 기온이 상식과 달라요. 계산 방법을 확인하세요.');
+    process.exit(1);
   }
   if (Object.keys(kr).length < regions.length) process.exit(1);
 }

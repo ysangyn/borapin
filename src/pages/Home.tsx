@@ -6,7 +6,7 @@ import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
 import PlaceSheet from '../components/PlaceSheet';
 import type { Place } from '../lib/types';
-import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips, useWishes } from '../lib/data';
+import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import WishRolling from '../components/WishRolling';
 import { pickMemory } from '../lib/memories';
@@ -16,6 +16,7 @@ import { placeLabel } from '../lib/geo';
 export default function Home() {
   const { trips } = useTrips();
   const { wishes } = useWishes();
+  const { places: recs } = usePlaces();
   const flags = useWishFlags(wishes, trips);
   const [mode, setMode] = useState<MapMode>('kr');
   const [sel, setSel] = useState<Place | null>(null);
@@ -109,7 +110,7 @@ export default function Home() {
           <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
         </section>
       </div>
-      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} wishes={wishes ?? []} onClose={() => setSel(null)} />}
+      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} wishes={wishes ?? []} recs={recs ?? []} onClose={() => setSel(null)} />}
     </>
   );
 }

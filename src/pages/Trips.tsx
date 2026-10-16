@@ -5,7 +5,7 @@ import TripRow from '../components/TripRow';
 import WishCard from '../components/WishCard';
 import { useSeasons } from '../lib/seasons';
 import { sortWishes, wishState } from '../lib/wishes';
-import { useTrips, useWishes } from '../lib/data';
+import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
 
@@ -18,6 +18,7 @@ export default function Trips() {
   const [who, setWho] = useState<string>('');
   const [q, setQ] = useState('');
   const seasons = useSeasons();
+  const { places: recs } = usePlaces();
   const activeWishes = useMemo(
     () => (wishes && trips ? sortWishes(wishes).map((w) => ({ w, s: wishState(w, trips) })).filter((x) => x.s.kind !== 'done') : []),
     [wishes, trips],
@@ -103,6 +104,17 @@ export default function Trips() {
             <div className="list">{activeWishes.slice(0, 3).map(({ w, s }) => <WishCard key={w.id} wish={w} state={s} seasons={seasons} compact />)}</div>
           )}
         </section>
+
+        <Link to="/places" className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'inherit' }} data-testid="trips-places">
+          <span className="kind-badge k-food" style={{ width: 40, height: 40 }}><Icon name="pin" size={18} /></span>
+          <span style={{ flex: 1 }}>
+            <b>우리 장소</b>
+            <span className="tiny muted" style={{ display: 'block' }}>
+              {recs?.length ? `${recs.length}곳 · 또 갈래요 ${recs.filter((r) => r.verdict === 'again').length}곳` : '맛집·카페·명소를 둘의 한 줄 평과 함께'}
+            </span>
+          </span>
+          <Icon name="chev" size={18} />
+        </Link>
 
         <section>
           <h2 className="h2" style={{ marginBottom: 4 }}>다녀온 곳</h2>

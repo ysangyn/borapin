@@ -15,12 +15,13 @@ import {
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
-import type { Place, Trip, TripInput, Wish, WishInput } from './types';
+import type { Place, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput } from './types';
 import { whenSortKey } from './dates';
 import { COUNTRY_BY_ID, REGION_BY_CODE, GROUPS } from './geo';
 
 const tripsCol = () => collection(db, 'spaces', SPACE_ID, 'trips');
 const wishesCol = () => collection(db, 'spaces', SPACE_ID, 'wishes');
+const placesCol = () => collection(db, 'spaces', SPACE_ID, 'places');
 
 function useCollection<T>(col: () => ReturnType<typeof collection>) {
   const [items, setItems] = useState<T[] | null>(null);
@@ -52,6 +53,12 @@ export function useWishes() {
   return { wishes: items, error };
 }
 
+export function usePlaces() {
+  const { items, error } = useCollection<PlaceRec>(placesCol);
+  const sorted = useMemo(() => (items ? [...items].sort((a, b) => (b.createdAt?.toMillis?.() ?? Date.now()) - (a.createdAt?.toMillis?.() ?? Date.now())) : null), [items]);
+  return { places: sorted, error };
+}
+
 function clean<T extends object>(o: T): T {
   // Firestore는 undefined 값을 받지 않는다
   return JSON.parse(JSON.stringify(o));
@@ -66,6 +73,24 @@ export async function createTrip(input: TripInput, user: User): Promise<string> 
     v: 1,
   });
   return ref.id;
+}
+
+// ---------- 우리 장소 ----------
+export async function createPlace(input: PlaceRecInput, user: User): Promise<string> {
+  const ref = await addDoc(placesCol(), {
+    ...clean(input),
+    createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) },
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    v: 1,
+  });
+  return ref.id;
+}
+export async function updatePlace(id: string, patch: Partial<PlaceRecInput>) {
+  await updateDoc(doc(placesCol(), id), { ...clean(patch), updatedAt: serverTimestamp() });
+}
+export async function deletePlace(id: string) {
+  await deleteDoc(doc(placesCol(), id));
 }
 
 // ---------- 가고 싶은 곳 ----------

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import PlaceSheet from '../components/PlaceSheet';
-import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips, useWishes } from '../lib/data';
+import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import { CONTINENTS, parsePlaceParam } from '../lib/geo';
 import type { Place } from '../lib/types';
@@ -11,6 +11,7 @@ import type { Place } from '../lib/types';
 export default function MapPage() {
   const { trips } = useTrips();
   const { wishes } = useWishes();
+  const { places: recs } = usePlaces();
   const [sp] = useSearchParams();
   const initial = useMemo(() => parsePlaceParam(sp.get('sel'))[0] ?? null, [sp]);
   const [mode, setMode] = useState<MapMode>(initial?.t === 'country' ? 'world' : 'kr');
@@ -48,7 +49,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} wishes={wishes ?? []} onClose={() => setSel(null)} />}
+      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} wishes={wishes ?? []} recs={recs ?? []} onClose={() => setSel(null)} />}
     </div>
   );
 }

@@ -233,3 +233,18 @@ a { color: var(--violet); text-decoration: none; }
 .dice { display: flex; flex-direction: column; gap: 10px; }
 .dice-face { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 16px; background: var(--coral-mist); }
 .dice-face.rolling { opacity: 0.6; }
+
+/* ---------- 우리 장소 ---------- */
+.rec-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; color: inherit; }
+.rec-row + .rec-row { border-top: 1px solid var(--line); }
+.rec-name { font-size: 15px; }
+.kind-badge { flex: none; min-width: 44px; height: 26px; padding: 0 8px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; background: var(--mist); color: #33248a; }
+.kind-badge.k-food { background: #fff1ec; color: #b13f1b; }
+.kind-badge.k-cafe { background: #f6efe6; color: #7a4a1d; }
+.kind-badge.k-sight { background: var(--mist); color: #33248a; }
+.kind-badge.k-stay { background: #e9f4f1; color: #1d6b57; }
+.kind-badge.k-shop { background: #eef1fb; color: #2d4a9a; }
+.kind-badge.k-etc { background: var(--page); color: var(--ink2); }
+.tag.verdict.v-again { background: var(--coral-mist); color: var(--coral-ink); }
+.tag.verdict.v-meh { background: #f2f1f5; color: var(--ink3); }
+.sheet-recs { margin-top: 12px; display: flex; flex-direction: column; }

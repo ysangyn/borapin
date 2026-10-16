@@ -258,6 +258,42 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('trips-wishes')).toContainText('제주');
   });
 
+  test('우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/trips');
+    await page.getByText('강릉시 여행', { exact: true }).click();
+    await page.getByTestId('trip-places').getByRole('link', { name: '+ 장소 남기기' }).click();
+    await expect(page.getByRole('button', { name: /강릉시 빼기/ })).toBeVisible();
+    await page.getByLabel('네이버지도 공유 글').fill('[네이버지도]\n초당할머니순두부\n강원 강릉시 초당순두부길 77\nhttps://naver.me/xYz12');
+    await expect(page.getByLabel('장소 이름')).toHaveValue('초당할머니순두부');
+    await expect(page.getByLabel('네이버지도 링크')).toHaveValue('https://naver.me/xYz12');
+    await expect(page.getByLabel('주소')).toHaveValue('강원 강릉시 초당순두부길 77');
+    await page.getByLabel('영상 한 줄 평').fill('순두부 젤라또까지 완벽');
+    await page.getByLabel('보라 한 줄 평').fill('아침으로 최고');
+    await page.getByRole('button', { name: '또 갈래요' }).click();
+    await shot(page, '11-place-edit');
+    await page.getByTestId('place-save').click();
+    const tp = page.getByTestId('trip-places');
+    await expect(tp).toContainText('초당할머니순두부');
+    await expect(tp).toContainText('또 갈래요');
+    await expect(tp).toContainText('순두부 젤라또까지 완벽');
+
+    // 지도에서 강릉을 누르면 우리 장소가 모여 보인다
+    await page.goto('/');
+    await expectMapDrawn(page);
+    await tapLngLat(page, 128.86, 37.73);
+    const sheet = page.getByTestId('region-sheet');
+    await expect(sheet.getByTestId('sheet-title')).toHaveText('강원 강릉시');
+    await expect(sheet).toContainText('우리 장소 · 1');
+    await expect(sheet.getByTestId('place-rec')).toContainText('초당할머니순두부');
+
+    // 우리 장소 목록과 '또 갈래요' 거르기
+    await page.goto('/places');
+    await page.getByRole('button', { name: '또 갈래요' }).click();
+    await expect(page.getByTestId('place-rec')).toHaveCount(1);
+    await shot(page, '11b-places');
+  });
+
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();

@@ -72,6 +72,30 @@ export interface Wish {
 
 export type WishInput = Omit<Wish, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'v'>;
 
+export type PlaceKind = 'food' | 'cafe' | 'sight' | 'stay' | 'shop' | 'etc';
+export type Verdict = 'again' | 'once' | 'meh';
+
+/** 우리 장소: 여행에서 기억에 남은 맛집·카페·명소 */
+export interface PlaceRec {
+  id: string;
+  name: string;
+  kind: PlaceKind;
+  /** 어느 지역 (국내 시·군 / 해외 나라·도시) */
+  region: Place;
+  tripId?: string | null;
+  /** 둘의 한 줄 평 */
+  reviews: Record<string, string>;
+  verdict: Verdict | null;
+  naverUrl?: string;
+  address?: string;
+  memo?: string;
+  createdBy?: { uid: string; email: string; name: string };
+  createdAt?: Timestamp | null;
+  updatedAt?: Timestamp | null;
+  v: 1;
+}
+export type PlaceRecInput = Omit<PlaceRec, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'v'>;
+
 export interface Access {
   allowed: string[];
   admins: string[];

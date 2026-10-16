@@ -56,6 +56,18 @@ service cloud.firestore {
         && d.v == 1;
     }
 
+    function validPlace(d) {
+      return d.keys().hasAll(['name', 'kind', 'region', 'v'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
+        && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
+        && d.region is map
+        && (!('reviews' in d) || (d.reviews is map && d.reviews.size() <= 10))
+        && (!('verdict' in d) || d.verdict == null || d.verdict in ['again', 'once', 'meh'])
+        && (!('naverUrl' in d) || (d.naverUrl is string && d.naverUrl.size() <= 500))
+        && (!('memo' in d) || (d.memo is string && d.memo.size() <= 5000))
+        && d.v == 1;
+    }
+
     match /config/access {
       allow read: if isMember();
       allow create: if isOwner() && validAccess(request.resource.data);
@@ -76,6 +88,12 @@ service cloud.firestore {
       match /trips/{tripId} {
         allow read: if isMember();
         allow create, update: if isMember() && validTrip(request.resource.data);
+        allow delete: if isMember();
+      }
+
+      match /places/{placeId} {
+        allow read: if isMember();
+        allow create, update: if isMember() && validPlace(request.resource.data);
         allow delete: if isMember();
       }
 

@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
-import { computeStats, deleteTrip, useTrips } from '../lib/data';
+import { computeStats, deleteTrip, usePlaces, useTrips } from '../lib/data';
+import PlaceRecRow from '../components/PlaceRecRow';
 import { formatWhen, nightsDays } from '../lib/dates';
 import { COUNTRY_BY_ID, placeLong, REGION_BY_CODE } from '../lib/geo';
 import type { Place } from '../lib/types';
@@ -21,6 +22,7 @@ function mapLinks(p: Place) {
 export default function TripDetail() {
   const { id } = useParams();
   const { trips } = useTrips();
+  const { places: recs } = usePlaces();
   const nav = useNavigate();
   const toast = useToast();
   const [confirm, setConfirm] = useState(false);
@@ -75,7 +77,17 @@ export default function TripDetail() {
           <div className="kv"><span className="k">남긴 사람</span><span className="muted small">{trip.createdBy?.name ?? '-'}{trip.source === 'v22' ? ' · v22에서 가져옴' : ''}</span></div>
         </div>
 
-        {trip.status === 'planned' && <div className="card small">사진·일정·준비물은 다음 단계에서 열려요.</div>}
+        <section data-testid="trip-places">
+          <div className="row-between" style={{ marginBottom: 2 }}>
+            <h2 className="h2" style={{ fontSize: 17 }}>장소</h2>
+            <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 700 }}>+ 장소 남기기</Link>
+          </div>
+          {(recs ?? []).filter((r) => r.tripId === trip.id).length === 0 ? (
+            <div className="tiny muted">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요.</div>
+          ) : (
+            <div className="list">{(recs ?? []).filter((r) => r.tripId === trip.id).map((r) => <PlaceRecRow key={r.id} rec={r} />)}</div>
+          )}
+        </section>
 
         {!confirm ? (
           <button className="btn danger block" onClick={() => setConfirm(true)}><Icon name="trash" size={17} />이 기록 지우기</button>

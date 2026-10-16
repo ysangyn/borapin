@@ -6,7 +6,9 @@ import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
 import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/geo';
-import type { Place, Trip, Wish } from '../lib/types';
+import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
+import PlaceRecRow from './PlaceRecRow';
+import { recsAt } from '../lib/placeRecs';
 import { quickWish, samePlace as samePlaceW } from '../lib/wishes';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 
@@ -18,15 +20,18 @@ function mapLinks(p: Place) {
   return { naver: `https://map.naver.com/p/search/${enc}`, google: `https://www.google.com/maps/search/?api=1&query=${enc}` };
 }
 
+const recsHere = (recs: PlaceRec[], p: Place) => recsAt(recs, p);
+
 const samePlace = (sel: Place) => (p: Place) =>
   sel.t === 'kr' ? p.t === 'kr' && p.code === sel.code : p.t === 'country' && p.id === sel.id;
 
 /** 지도에서 지역을 누르면 뜨는 아래 시트: 그곳 기록 보기 + 바로 핀 꽂기 */
-export default function PlaceSheet({ place, trips, stats, wishes = [], onClose }: {
+export default function PlaceSheet({ place, trips, stats, wishes = [], recs = [], onClose }: {
   place: Place;
   trips: Trip[];
   stats: Stats | null;
   wishes?: Wish[];
+  recs?: PlaceRec[];
   onClose: () => void;
 }) {
   const nav = useNavigate();
@@ -104,6 +109,14 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], onClose }
           {here.length > 3 && <div className="tiny muted" style={{ padding: '4px 0' }}>외 {here.length - 3}건 · 여행 탭에서 '{placeLabel(place)}'로 찾아보세요</div>}
         </div>
       )}
+
+      <div className="sheet-recs">
+        <div className="row-between" style={{ alignItems: 'center' }}>
+          <span className="small" style={{ fontWeight: 800 }}>우리 장소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
+          <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 700 }} data-testid="sheet-place-new">+ 장소 남기기</Link>
+        </div>
+        {recsHere(recs, place).slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
+      </div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <button className="btn" style={{ flex: 1.15 }} disabled={busy || auth.status !== 'ready'} onClick={quickPin} data-testid="quick-pin">
