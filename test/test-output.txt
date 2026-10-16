@@ -9,16 +9,16 @@
 [32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
 [36m[1mi [22m[39m Running script: [1mplaywright test[22m
 
-Running 33 tests using 1 worker
+Running 36 tests using 1 worker
 
-  ✓   1 tests/app.spec.ts:57:3 › 보라핀 1단계 › 로그인 화면 (1.2s)
+  ✓   1 tests/app.spec.ts:57:3 › 보라핀 1단계 › 로그인 화면 (1.3s)
   ✓   2 tests/app.spec.ts:63:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.4s)
-  ✘   3 tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (1.5s)
-  -   4 tests/app.spec.ts:94:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만)
-  -   5 tests/app.spec.ts:110:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만)
-  -   6 tests/app.spec.ts:124:3 › 보라핀 1단계 › 여행 목록과 필터
-  -   7 tests/app.spec.ts:134:3 › 보라핀 1단계 › 홈 통계와 지도
-  -   8 tests/app.spec.ts:152:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름
+  ✓   3 tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (2.5s)
+  ✓   4 tests/app.spec.ts:94:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (3.2s)
+  ✓   5 tests/app.spec.ts:110:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.9s)
+  ✓   6 tests/app.spec.ts:124:3 › 보라핀 1단계 › 여행 목록과 필터 (1.3s)
+  ✓   7 tests/app.spec.ts:134:3 › 보라핀 1단계 › 홈 통계와 지도 (7.5s)
+  ✘   8 tests/app.spec.ts:152:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (17.3s)
   -   9 tests/app.spec.ts:215:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기
   -  10 tests/app.spec.ts:293:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임
   -  11 tests/app.spec.ts:329:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩
@@ -28,94 +28,144 @@ Running 33 tests using 1 worker
   -  15 tests/app.spec.ts:510:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고
   -  16 tests/app.spec.ts:540:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다
   -  17 tests/app.spec.ts:584:3 › 보라핀 1단계 › 기록 고치기와 지우기
-  ✓  18 tests/human.spec.ts:105:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.6s)
-  ✓  19 tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (4.8s)
-  ✓  20 tests/human.spec.ts:145:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (4.0s)
-  ✓  21 tests/human.spec.ts:167:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.2s)
+  ✓  18 tests/human.spec.ts:105:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (3.6s)
+  ✓  19 tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (4.6s)
+  ✘  20 tests/human.spec.ts:145:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (16.9s)
+  ✓  21 tests/human.spec.ts:167:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.4s)
   ✓  22 tests/human.spec.ts:197:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (3.9s)
   ✓  23 tests/human.spec.ts:243:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 (12.3s)
-  ✘  24 tests/human.spec.ts:266:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.0m)
-  ✓  25 tests/human.spec.ts:297:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.4s)
-  ✓  26 tests/human.spec.ts:330:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (6.0s)
-  ✓  27 tests/human.spec.ts:365:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (647ms)
-  ✓  28 tests/human.spec.ts:365:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (671ms)
-  ✓  29 tests/human.spec.ts:365:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (631ms)
-  ✓  30 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.2s)
-  ✓  31 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (41.0s)
-  ✓  32 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (30.6s)
-  ✓  33 tests/tour.spec.ts:300:1 › 화면 오류 없음 (2ms)
+  ✓  24 tests/human.spec.ts:266:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.5s)
+  ✓  25 tests/human.spec.ts:297:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.3s)
+  ✓  26 tests/human.spec.ts:330:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (6.5s)
+  ✓  27 tests/human.spec.ts:364:3 › 사람처럼 쓰기 › 홈 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 위에서부터 나란히 (2.0s)
+  ✓  28 tests/human.spec.ts:390:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (1.1s)
+  ✘  29 tests/human.spec.ts:409:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (17.8s)
+  ✓  30 tests/human.spec.ts:432:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (868ms)
+  ✓  31 tests/human.spec.ts:432:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (724ms)
+  ✓  32 tests/human.spec.ts:432:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (702ms)
+  ✓  33 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.2s)
+  ✓  34 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (40.6s)
+  ✓  35 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (30.5s)
+  ✓  36 tests/tour.spec.ts:300:1 › 화면 오류 없음 (3ms)
 
 
-  1) tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 ───────────────────
+  1) tests/app.spec.ts:152:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 ────────────────────────
 
-    Error: locator.fill: Error: strict mode violation: getByLabel('부를 이름') resolved to 2 elements:
-        1) <button class="link-btn" aria-label="ysangyn@gmail.com 부를 이름 바꾸기">이름 바꾸기</button> aka getByRole('button', { name: 'ysangyn@gmail.com 부를 이름 바꾸기' })
-        2) <input value="" class="input" maxlength="20" aria-label="부를 이름" placeholder="앱에서 부를 이름 (예: 보라)"/> aka getByRole('textbox', { name: '부를 이름' })
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('region-sheet').getByTestId('sheet-title')
+    Expected: "부산"
+    Timeout: 15000ms
+    Error: element(s) not found
 
     Call log:
-      - waiting for getByLabel('부를 이름')
+      - Expect "toHaveText" getByTestId('region-sheet').getByTestId('sheet-title') with timeout 15000ms
+      - waiting for getByTestId('region-sheet').getByTestId('sheet-title')
 
 
-      79 |     await expect(page.getByTestId('avatars').first()).toHaveAttribute('aria-label', '영상');
-      80 |     await page.getByLabel('추가할 계정').fill('bora@example.com');
-    > 81 |     await page.getByLabel('부를 이름').fill('보라');
-         |                                    ^
-      82 |     await page.getByRole('button', { name: '추가', exact: true }).click();
-      83 |     await expect(page.getByText('bora@example.com', { exact: false }).first()).toBeVisible();
-      84 |     await expect(page.getByTestId('space-title')).toHaveText('보라 & 영상');
-        at /home/runner/work/borapin/borapin/tests/app.spec.ts:81:36
+      156 |     await tapLngLat(page, 129.06, 35.2);
+      157 |     const sheet = page.getByTestId('region-sheet');
+    > 158 |     await expect(sheet.getByTestId('sheet-title')).toHaveText('부산');
+          |                                                    ^
+      159 |     await expect(sheet).toContainText('아직 안 가본 곳');
+      160 |     // 여행정보: 볼거리·먹거리, 더보기로 구·군
+      161 |     const info = sheet.getByTestId('region-info');
+        at /home/runner/work/borapin/borapin/tests/app.spec.ts:158:52
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-초대-안-된-계정은-막고-이름과-함께-추가하면-들어와-같은-공간을-본다/test-failed-1.png
+    test-results/app-보라핀-1단계-지도에서-지역을-눌러-바로-핀-꽂기-되돌리기-확대하면-이름/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: test-results/app-보라핀-1단계-초대-안-된-계정은-막고-이름과-함께-추가하면-들어와-같은-공간을-본다/error-context.md
+    Error Context: test-results/app-보라핀-1단계-지도에서-지역을-눌러-바로-핀-꽂기-되돌리기-확대하면-이름/error-context.md
 
     attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-초대-안-된-계정은-막고-이름과-함께-추가하면-들어와-같은-공간을-본다/trace.zip
+    test-results/app-보라핀-1단계-지도에서-지역을-눌러-바로-핀-꽂기-되돌리기-확대하면-이름/trace.zip
     Usage:
 
-        npx playwright show-trace test-results/app-보라핀-1단계-초대-안-된-계정은-막고-이름과-함께-추가하면-들어와-같은-공간을-본다/trace.zip
+        npx playwright show-trace test-results/app-보라핀-1단계-지도에서-지역을-눌러-바로-핀-꽂기-되돌리기-확대하면-이름/trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  2) tests/human.spec.ts:266:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 ─────────
+  2) tests/human.spec.ts:145:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 ─
 
-    Test timeout of 60000ms exceeded.
+    Error: expect(locator).toContainText(expected) failed
 
-    Error: locator.click: Test ended.
+    Locator: getByTestId('region-sheet').getByTestId('sheet-title')
+    Expected substring: "전주"
+    Timeout: 15000ms
+    Error: element(s) not found
+
     Call log:
-      - waiting for getByRole('button', { name: '보라', exact: true })
+      - Expect "toContainText" getByTestId('region-sheet').getByTestId('sheet-title') with timeout 15000ms
+      - waiting for getByTestId('region-sheet').getByTestId('sheet-title')
 
 
-      288 |     // '누가 원해요'만 바꿔도 묻는다 (취소하면 그대로 머문다)
-      289 |     await page.getByRole('link', { name: /남해군.*가고 싶은 곳 보기/ }).first().click();
-    > 290 |     await page.getByRole('button', { name: '보라', exact: true }).click();
-          |                                                                 ^
-      291 |     await back.click();
-      292 |     await expect.poll(() => asked).toContain('저장하지 않은 내용');
-      293 |     await expect(page).toHaveURL(/\/wishes\/[^/]+$/);
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:290:65
+      152 |     await tapLngLat(page, 127.15, 35.82);
+      153 |     const sheet = page.getByTestId('region-sheet');
+    > 154 |     await expect(sheet.getByTestId('sheet-title')).toContainText('전주');
+          |                                                    ^
+      155 |     // 가장 많이 쓰는 버튼은 창을 열자마자 보여야 한다 (스크롤해야 보이면 안 됨)
+      156 |     await expect(sheet.getByTestId('quick-pin')).toBeInViewport({ ratio: 1 });
+      157 |     await sheet.getByTestId('quick-pin').click();
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:154:52
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-가고-싶은-곳-누가-원해요·참고-링크만-바꿔도-저장하지-않고-나가면-한-번-묻는다/test-failed-1.png
+    test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: test-results/human-사람처럼-쓰기-가고-싶은-곳-누가-원해요·참고-링크만-바꿔도-저장하지-않고-나가면-한-번-묻는다/error-context.md
+    Error Context: test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/error-context.md
 
     attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-가고-싶은-곳-누가-원해요·참고-링크만-바꿔도-저장하지-않고-나가면-한-번-묻는다/trace.zip
+    test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/trace.zip
     Usage:
 
-        npx playwright show-trace test-results/human-사람처럼-쓰기-가고-싶은-곳-누가-원해요·참고-링크만-바꿔도-저장하지-않고-나가면-한-번-묻는다/trace.zip
+        npx playwright show-trace test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다/trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  2 failed
-    tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 ────────────────────
-    tests/human.spec.ts:266:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 ──────────
-  14 did not run
-  17 passed (3.4m)
+  3) tests/human.spec.ts:409:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 ─────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('map').first().locator('.map-label').filter({ hasText: '고흥' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByTestId('map').first().locator('.map-label').filter({ hasText: '고흥' }) with timeout 15000ms
+      - waiting for getByTestId('map').first().locator('.map-label').filter({ hasText: '고흥' })
+
+
+      422 |     // 남한 전체는 약 5.6: 한 지역 둘레면 그보다 훨씬 가깝다
+      423 |     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeGreaterThan(6.4);
+    > 424 |     await expect(page.getByTestId('map').first().locator('.map-label', { hasText: '고흥' })).toBeVisible();
+          |                                                                                            ^
+      425 |     const nearZoom = Number(await map.getAttribute('data-zoom'));
+      426 |     await page.getByRole('button', { name: '전체 보기' }).click();
+      427 |     await expect.poll(async () => Number(await map.getAttribute('data-zoom')), { timeout: 10_000 }).toBeLessThan(nearZoom - 0.2);
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:424:92
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-홈-지도는-최근-핀-둘레를-가까이-보여-주고-맞춤-단추를-누르면-남한-전체로/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/human-사람처럼-쓰기-홈-지도는-최근-핀-둘레를-가까이-보여-주고-맞춤-단추를-누르면-남한-전체로/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/human-사람처럼-쓰기-홈-지도는-최근-핀-둘레를-가까이-보여-주고-맞춤-단추를-누르면-남한-전체로/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/human-사람처럼-쓰기-홈-지도는-최근-핀-둘레를-가까이-보여-주고-맞춤-단추를-누르면-남한-전체로/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    tests/app.spec.ts:152:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 ─────────────────────────
+    tests/human.spec.ts:145:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 ──
+    tests/human.spec.ts:409:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 ──────────────
+  9 did not run
+  24 passed (3.5m)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
