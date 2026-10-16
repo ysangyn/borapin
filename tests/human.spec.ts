@@ -294,6 +294,70 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/places/new');
+    // 네이버지도 입력 칸은 하나뿐
+    await expect(page.getByLabel(/네이버/)).toHaveCount(1);
+    // 고른 종류에만 눌림·체크 표시
+    const food = page.getByRole('button', { name: '맛집', exact: true });
+    const cafe = page.getByRole('button', { name: '카페', exact: true });
+    await expect(food).toHaveAttribute('aria-pressed', 'true');
+    await expect(food.locator('.chip-check')).toBeVisible();
+    await cafe.click();
+    await expect(cafe).toHaveAttribute('aria-pressed', 'true');
+    await expect(food).toHaveAttribute('aria-pressed', 'false');
+    await expect(food.locator('.chip-check')).toHaveCount(0);
+    const again = page.getByRole('button', { name: '또 갈래요', exact: true });
+    await again.click();
+    await expect(again).toHaveAttribute('aria-pressed', 'true');
+    await expect(again.locator('.chip-check')).toBeVisible();
+    // 공유 글을 붙여 넣으면 이름·주소가 채워지고, 링크는 한 줄로 보인다 (입력 칸은 사라짐)
+    await page.getByLabel('네이버지도 공유 글').fill('[네이버지도]\n칠곡 가산산성 카페\n경북 칠곡군 가산면 1\nhttps://naver.me/chilgok1');
+    await expect(page.getByLabel('장소 이름')).toHaveValue('칠곡 가산산성 카페');
+    await expect(page.getByLabel('주소')).toHaveValue('경북 칠곡군 가산면 1');
+    await expect(page.getByTestId('naver-link')).toContainText('naver.me/chilgok1');
+    await expect(page.getByLabel('네이버지도 공유 글')).toHaveCount(0);
+    // 링크를 빼면 다시 붙여 넣을 수 있다
+    await page.getByRole('button', { name: '네이버지도 링크 빼기' }).click();
+    await expect(page.getByLabel('네이버지도 공유 글')).toBeVisible();
+    await page.getByLabel('네이버지도 공유 글').fill('https://naver.me/chilgok2');
+    await expect(page.getByTestId('naver-link')).toContainText('naver.me/chilgok2');
+    await page.context().close();
+  });
+
+  test('우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
+    const before = (await page.getByTestId('headline').textContent()) ?? '';
+    // 여행 없이 장소만 (칠곡)
+    await page.goto('/places/new');
+    await page.getByLabel('장소 이름').fill('칠곡 호국평화기념관');
+    await page.getByLabel('어디 검색').fill('칠곡');
+    await page.getByRole('option', { name: /칠곡군/ }).first().click();
+    await page.getByTestId('place-save').click();
+    await page.goto('/');
+    await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
+    const spot = page.locator('[data-testid="place-spot"][data-code="47850"]');
+    await expect(spot).toHaveCount(1);
+    await expect(spot).toContainText('1');
+    // 핀은 아직 없다 (다녀왔다고 하지 않았으니)
+    await expect(page.getByTestId('headline')).toHaveText(before);
+    // 장소를 하나 더 남기며 '여기 다녀왔어요'를 고르면 핀도 꽂힌다
+    await page.goto('/places/new');
+    await page.getByLabel('장소 이름').fill('칠곡 가산수피아');
+    await page.getByLabel('어디 검색').fill('칠곡');
+    await page.getByRole('option', { name: /칠곡군/ }).first().click();
+    await page.getByLabel('여기 다녀왔어요 (지도에 핀도 꽂기)').check();
+    await page.getByTestId('place-save').click();
+    await page.goto('/');
+    await expect(page.locator('[data-testid="place-spot"][data-code="47850"]')).toContainText('2');
+    await expect(page.getByTestId('headline')).not.toHaveText(before);
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);
