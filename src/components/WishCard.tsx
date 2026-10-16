@@ -8,6 +8,7 @@ import { bothWant, type WishState } from '../lib/wishes';
 import { everyoneLabel, memberNames } from '../lib/members';
 import type { Wish } from '../lib/types';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
+import { photoForPlace } from '../lib/media';
 
 export function wishTitle(w: Wish) {
   return w.spotName ? `${w.spotName}` : placeLong(w.place);
@@ -57,10 +58,11 @@ export default function WishCard({ wish, state, seasons, compact }: {
   return (
     <div className={'wish-card' + (compact ? ' compact' : '')} data-testid="wish-card">
       <Link to={`/wishes/${wish.id}`} className="wish-main" aria-label={`${wishTitle(wish)} 가고 싶은 곳 보기`}>
-        <span className="trip-tile wish">
-          {tileText({ places: [wish.place] } as never)}
+        {(() => { const ph = photoForPlace(wish.place); return (
+        <span className={'trip-tile wish' + (ph ? ' photo' : '')} style={ph ? { backgroundImage: `url(${ph.lqip}), url(${ph.src.s})` } : undefined}>
+          {ph ? <img src={ph.src.s} alt="" loading="lazy" decoding="async" /> : tileText({ places: [wish.place] } as never)}
           <FlagBadge priority={wish.priority} />
-        </span>
+        </span>); })()}
         <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <span className="t">{wishTitle(wish)}{wish.spotName && <span className="muted small"> · {placeLabel(wish.place)}</span>}</span>
           <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
