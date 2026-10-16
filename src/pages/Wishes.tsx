@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ScenicPhoto } from '../components/Scene';
 import { josa } from 'es-hangul';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
@@ -72,10 +71,12 @@ export default function Wishes() {
         )}
 
         {wishes && trips && active.length === 0 && (
-          <div className="card coral-soft" style={{ display: 'flex', flexDirection: 'column', gap: 10 }} data-testid="wish-empty">
-            <ScenicPhoto id="jeju" className="photo-banner" alt="" />
-            <b style={{ fontSize: 17 }}>가고 싶은 곳 3곳만 담아볼까요?</b>
-            <span className="small muted">지도에서 지역을 누르거나, 아래 추천과 여행지 뽑기로 담을 수 있어요.</span>
+          <div className="card coral-soft art-row" data-testid="wish-empty">
+            <img src="/art/bora-think.webp" alt="" aria-hidden="true" width={360} height={675} decoding="async" />
+            <span>
+              <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>가고 싶은 곳 3곳만 담아볼까요?</b>
+              <span className="small muted">지도에서 지역을 누르거나, 아래 추천과 여행지 뽑기로 담을 수 있어요.</span>
+            </span>
           </div>
         )}
 

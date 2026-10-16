@@ -156,7 +156,7 @@ export default function TripDetail() {
             )}
           </div>
           {tripPhotos && tripPhotos.length === 0 && (
-            <div className="photo-empty" data-testid="photos-empty">
+            <div className="art-row" style={{ padding: '2px 4px 14px' }} data-testid="photos-empty">
               <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} loading="lazy" decoding="async" />
               <span className="small">
                 <b style={{ display: 'block', fontSize: 15, marginBottom: 2 }}>그날의 사진을 올려 주세요</b>
