@@ -12,6 +12,7 @@ import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
 import { bothWant, sortWishes, wishState } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
+import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
 
 type Filter = 'all' | 'both' | 'kr' | 'abroad';
 
@@ -36,7 +37,8 @@ export default function Wishes() {
   const shown = active.filter(({ w }) =>
     filter === 'both' ? bothWant(w) : filter === 'kr' ? w.place.t === 'kr' : filter === 'abroad' ? w.place.t === 'country' : true,
   );
-  const picks = useMemo(() => monthlyPicks(3, stats, info, seasons, wishes ?? []), [stats, info, seasons, wishes]);
+  const festivals = useFestivals();
+  const picks = useMemo(() => monthlyPicks(3, stats, info, seasons, wishes ?? [], festivals), [stats, info, seasons, wishes, festivals]);
   const month = new Date().getMonth() + 1;
 
   const addPick = async (place: Parameters<typeof quickWish>[0], name: string) => {
@@ -90,12 +92,14 @@ export default function Wishes() {
             <div className="list">
               {picks.map((c) => {
                 const season = seasonFor(seasons, c.place);
+                const fest = c.place.t === 'kr' ? upcomingFestivals(festivals, c.place.code, new Date(), 40)[0] : undefined;
                 return (
                   <div key={placeLong(c.place)} className="wish-card" data-testid="pick">
                     <div className="wish-main" style={{ cursor: 'default' }}>
                       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span className="t">{placeLong(c.place)}</span>
                         {c.theme && <span className="tiny" style={{ color: '#33248a' }}>{c.theme}</span>}
+                        {fest && <span className="tiny" style={{ color: 'var(--coral-ink)', fontWeight: 700 }}>축제 · {fest.t} {festivalPeriod(fest)}</span>}
                         {season && <span className="tiny muted">가기 좋은 때 {monthsLabel(season.m)}</span>}
                       </span>
                     </div>

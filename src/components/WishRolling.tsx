@@ -12,6 +12,7 @@ import { useTravelInfo } from '../lib/travelinfo';
 import { rollingOrder, wishState } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import type { Trip, Wish } from '../lib/types';
+import { useFestivals } from '../lib/festivals';
 
 /** 홈 '가고 싶은 곳' 롤링: 둘 다 원하는 곳 → 이번 달이 좋은 곳 → 랜덤. 비어 있으면 이번 달 추천 3곳. */
 export default function WishRolling({ wishes, trips, stats }: { wishes: Wish[]; trips: Trip[]; stats: Stats | null }) {
@@ -29,7 +30,8 @@ export default function WishRolling({ wishes, trips, stats }: { wishes: Wish[]; 
     const order = rollingOrder(active.map((x) => x.w), (w) => isGoodNow(seasonFor(seasons, w.place, w.months)));
     return order.map((w) => active.find((x) => x.w.id === w.id)!);
   }, [wishes, trips, seasons]);
-  const picks = useMemo(() => (items.length ? [] : monthlyPicks(3, stats, info, seasons, wishes)), [items.length, stats, info, seasons, wishes]);
+  const festivals = useFestivals();
+  const picks = useMemo(() => (items.length ? [] : monthlyPicks(3, stats, info, seasons, wishes, festivals)), [items.length, stats, info, seasons, wishes, festivals]);
 
   // 6초마다 다음 카드 (손으로 넘기면 15초 쉬기)
   useEffect(() => {

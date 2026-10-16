@@ -4,6 +4,7 @@ import type { TravelInfo } from './travelinfo';
 import { isGoodNow, type SeasonData } from './seasons';
 import { dailyShuffle } from './wishes';
 import type { Place, Wish } from './types';
+import { upcomingFestivals, type FestivalData } from './festivals';
 
 /** 여행지 뽑기 테마: 여행정보 DB의 테마·볼거리·먹거리 글자에서 찾는다 */
 export const THEMES: { id: string; label: string; re: RegExp }[] = [
@@ -63,10 +64,12 @@ export function candidates(opts: {
 }
 
 /** 이번 달 추천 n곳: 안 가본 곳 중 이번 달이 좋은 곳을 먼저, 날마다 같은 순서 */
-export function monthlyPicks(n: number, stats: Stats | null, info: TravelInfo | null, seasons: SeasonData | null, wishes: Wish[]): Candidate[] {
+/** 이번 달 추천: 곧 축제가 있는 곳 → 날씨가 좋은 곳 → 나머지 (안 가본 곳, 날마다 섞어서) */
+export function monthlyPicks(n: number, stats: Stats | null, info: TravelInfo | null, seasons: SeasonData | null, wishes: Wish[], festivals: FestivalData | null = null): Candidate[] {
   const all = candidates({ scope: 'kr', unvisitedOnly: true, theme: null, stats, info, wishes });
   const shuffled = dailyShuffle(all, 'picks');
-  const good = shuffled.filter((c) => c.place.t === 'kr' && isGoodNow(seasons?.kr[c.place.code] ?? null));
-  const rest = shuffled.filter((c) => !good.includes(c));
-  return [...good, ...rest].slice(0, n);
+  const fest = shuffled.filter((c) => c.place.t === 'kr' && upcomingFestivals(festivals, c.place.code, new Date(), 40).length > 0);
+  const good = shuffled.filter((c) => !fest.includes(c) && c.place.t === 'kr' && isGoodNow(seasons?.kr[c.place.code] ?? null));
+  const rest = shuffled.filter((c) => !fest.includes(c) && !good.includes(c));
+  return [...fest, ...good, ...rest].slice(0, n);
 }
