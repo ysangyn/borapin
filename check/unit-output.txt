@@ -6,69 +6,93 @@ TAP version 13
 # Subtest: 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
 ok 1 - 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
   ---
-  duration_ms: 0.731653
+  duration_ms: 0.738964
   type: 'test'
   ...
 # Subtest: 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
 ok 2 - 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
   ---
-  duration_ms: 11.367757
+  duration_ms: 8.459338
   type: 'test'
   ...
 # Subtest: 진행 중인 축제도 다가오는 축제에 들어간다
 ok 3 - 진행 중인 축제도 다가오는 축제에 들어간다
   ---
-  duration_ms: 0.283247
+  duration_ms: 0.196648
   type: 'test'
   ...
 # Subtest: 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
 ok 4 - 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
   ---
-  duration_ms: 0.195174
+  duration_ms: 0.143283
   type: 'test'
   ...
 # Subtest: 횟수는 열 번까지 우리말로
 ok 5 - 횟수는 열 번까지 우리말로
   ---
-  duration_ms: 0.687907
+  duration_ms: 0.712075
   type: 'test'
   ...
 # Subtest: '로/으로'는 영어 메일 주소도 읽는 소리대로
 ok 6 - '로/으로'는 영어 메일 주소도 읽는 소리대로
   ---
-  duration_ms: 0.421315
+  duration_ms: 0.454181
   type: 'test'
   ...
 # Subtest: 계절만 아는 날짜는 "2022년 여름"
 ok 7 - 계절만 아는 날짜는 "2022년 여름"
   ---
-  duration_ms: 0.200462
+  duration_ms: 0.205594
+  type: 'test'
+  ...
+# Subtest: 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
+ok 8 - 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
+  ---
+  duration_ms: 9.967807
+  type: 'test'
+  ...
+# Subtest: 셋 이상이면 두 사람 이름과 나머지 수
+ok 9 - 셋 이상이면 두 사람 이름과 나머지 수
+  ---
+  duration_ms: 0.184946
+  type: 'test'
+  ...
+# Subtest: 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
+ok 10 - 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
+  ---
+  duration_ms: 0.145259
+  type: 'test'
+  ...
+# Subtest: 같은 이름이 두 번 들어오면 한 번만
+ok 11 - 같은 이름이 두 번 들어오면 한 번만
+  ---
+  duration_ms: 0.107833
   type: 'test'
   ...
 # Subtest: 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
-ok 8 - 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
+ok 12 - 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
   ---
-  duration_ms: 0.864713
+  duration_ms: 0.857155
   type: 'test'
   ...
 # Subtest: 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
-ok 9 - 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
+ok 13 - 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
   ---
-  duration_ms: 0.247263
+  duration_ms: 0.223955
   type: 'test'
   ...
 # Subtest: 열두 달 모두면 언제든
-ok 10 - 열두 달 모두면 언제든
+ok 14 - 열두 달 모두면 언제든
   ---
-  duration_ms: 0.102164
+  duration_ms: 0.117913
   type: 'test'
   ...
-1..10
-# tests 10
+1..14
+# tests 14
 # suites 0
-# pass 10
+# pass 14
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 218.906037
+# duration_ms 366.354366
