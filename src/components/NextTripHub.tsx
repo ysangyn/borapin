@@ -7,7 +7,7 @@ import { useAuth } from '../lib/auth';
 import { updateWish, type Stats } from '../lib/data';
 import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
-import { bothWant, sortWishes, wishState } from '../lib/wishes';
+import { bothWant, samePlace, sortWishes, wishState } from '../lib/wishes';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useFestivals, upcomingFestivals, festivalPeriod, isOngoing } from '../lib/festivals';
 import { flightLinks } from '../lib/flights';
@@ -150,7 +150,7 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
     finally { setBusy(false); }
   };
   // 답을 가고 싶은 곳 메모(먹을 것·가볼 곳·해볼 것)에 넣기 — 메모를 둘 가고 싶은 곳이 있을 때만
-  const canSave = !!q.save && !!wish;
+  const canSave = !!q.save && !!wish && samePlace(wish.place, place);
   const saveToWish = async (t: string) => {
     if (!q.save || !wish) return;
     const list = wish[q.save] ?? [];
@@ -195,7 +195,9 @@ function TodayEnglish() {
         {sum && sum.streak > 0 && <span className="tag violet">{sum.streak}일째</span>}
         {doneToday && <span className="tag"><Icon name="check" size={12} stroke={2.4} />오늘 했어요</span>}
       </div>
-      {first ? (
+      {!data ? (
+        <div className="skeleton-text" aria-busy="true" style={{ width: '70%' }} />
+      ) : first ? (
         <>
           <div className="hub-en">{first.en}</div>
           <div className="small muted">{first.ko}</div>
