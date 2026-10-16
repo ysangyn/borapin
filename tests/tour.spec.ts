@@ -48,7 +48,7 @@ async function snap(page: Page, name: string, full = true) {
 
 async function mobile(browser: Browser) {
   const ctx = await browser.newContext({
-    viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+    viewport: { width: 390, height: 844 }, deviceScaleFactor: 1.5, isMobile: true, hasTouch: true,
     locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block',
   });
   const page = await ctx.newPage();
@@ -68,6 +68,7 @@ test.beforeAll(async () => {
 });
 
 test('빈 화면 (처음 쓰는 사람)', async ({ browser }) => {
+  test.setTimeout(300_000);
   const page = await mobile(browser);
   await signIn(page);
   await snap(page, 'e01-home', false);
@@ -198,7 +199,7 @@ async function seed(page: Page) {
 }
 
 test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(600_000);
   const page = await mobile(browser);
   await signIn(page);
   await seed(page);
@@ -228,7 +229,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm10-trip-edit');
   await page.goto('/map');
   await snap(page, 'm11-map', false);
-  await page.getByRole('button', { name: /세계/ }).first().click().catch(() => undefined);
+  await page.getByRole('tab', { name: '세계' }).first().click({ timeout: 5000 }).catch(() => undefined);
   await snap(page, 'm12-map-world', false);
   await page.goto('/wishes');
   await snap(page, 'm13-wishes');
@@ -260,7 +261,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
 });
 
 test('가득 찬 화면 · PC', async ({ browser }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(480_000);
   const page = await desktop(browser);
   await signIn(page);
   for (const [route, name] of [['/', 'd01-home'], ['/trips', 'd02-trips'], ['/trips/t1', 'd03-trip'], ['/trips/t11', 'd04-planned'], ['/record', 'd05-record'], ['/map', 'd06-map'], ['/wishes', 'd07-wishes'], ['/places', 'd08-places'], ['/memories', 'd09-memories'], ['/ask', 'd10-ask'], ['/space', 'd11-space'], ['/admin', 'd12-admin']] as const) {

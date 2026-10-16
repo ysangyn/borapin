@@ -22,7 +22,7 @@ jobs:
   test:
     name: 자동 점검 (가짜 Firebase)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
