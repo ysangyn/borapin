@@ -463,6 +463,12 @@ test.describe('사람처럼 쓰기', () => {
     await expect(card).toContainText('준비물');
     // 다가오는 여행 목록에 같은 여행이 또 나오지 않는다
     await expect(page.getByTestId('trip-row').filter({ hasText: '속초 단풍 여행' })).toHaveCount(0);
+    // 지금 중요한 것만 크게: 추천·가고 싶은 곳은 접혀 있고, 펼치면 보인다
+    const more = page.getByTestId('home-more');
+    await expect(more).toBeVisible();
+    await expect(page.getByTestId('month-pick')).toBeHidden();
+    await more.locator('summary').click();
+    await expect(page.getByTestId('month-pick')).toBeVisible();
     await card.click();
     await expect(page).toHaveURL(/\/trips\/[^/]+$/);
     await page.context().close();

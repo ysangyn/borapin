@@ -614,3 +614,11 @@ a { color: var(--violet); text-decoration: none; }
 .feed-heart.on { color: var(--coral); }
 .feed-heart.on svg { fill: var(--coral); stroke: var(--coral); transform: scale(1.1); }
 .feed-heart:active svg { transform: scale(0.9); }
+
+/* 홈 둘러보기(접힘) */
+.home-more { border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+.home-more summary { list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; font-weight: 700; color: var(--ink2); cursor: pointer; }
+.home-more summary::-webkit-details-marker { display: none; }
+.home-more summary svg { transition: transform 0.2s; transform: rotate(90deg); }
+.home-more[open] summary svg { transform: rotate(-90deg); }
+.home-more-body { display: flex; flex-direction: column; gap: 18px; padding: 0 12px 14px; }

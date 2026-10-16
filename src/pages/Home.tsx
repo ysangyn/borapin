@@ -116,11 +116,23 @@ export default function Home() {
           </section>
         )}
 
-        {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
+        {/* 여행 전·중·후 카드가 있을 땐 지금 중요한 것만 크게 보이게, 둘러보기는 접어 둔다 */}
+        {stage ? (
+          <details className="home-more" data-testid="home-more">
+            <summary><span>둘러보기 · 추천 · 가고 싶은 곳{memory ? ' · 추억' : ''}</span><Icon name="chev" size={16} /></summary>
+            <div className="home-more-body">
+              {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
+              {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
+            </div>
+          </details>
+        ) : (
+          <>
+            {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
+            {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
+          </>
+        )}
 
-        {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
-
-        {memory && (
+        {memory && !stage && (
           <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
             <span className="trip-tile">{placeLabel(memory.trip.places[0]).slice(0, 4)}</span>
             <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
