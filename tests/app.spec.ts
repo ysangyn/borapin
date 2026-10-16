@@ -298,6 +298,7 @@ test.describe.serial('보라핀 1단계', () => {
     await signIn(page, OWNER);
     await page.goto('/trips');
     await page.getByText('강릉시 여행', { exact: true }).click();
+    await page.getByRole('tab', { name: /사진/ }).click();
     const sec = page.getByTestId('trip-photos');
     await sec.getByTestId('photo-input').setInputFiles([
       'tests/fixtures/photo-gangneung.jpg',
@@ -325,6 +326,50 @@ test.describe.serial('보라핀 1단계', () => {
     // 추억 탭 사진첩
     await page.goto('/memories');
     await expect(page.getByTestId('album')).toContainText('강릉시 여행 · 3장');
+  });
+
+  test('여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물', async ({ page }) => {
+    await signIn(page, OWNER);
+    // 일정: 날짜가 있는 강릉 여행(사진으로 2019.5.3–4)
+    await page.goto('/trips');
+    await page.getByText('강릉시 여행', { exact: true }).click();
+    await page.getByRole('tab', { name: '일정' }).click();
+    const plan = page.getByTestId('plan-tab');
+    await plan.getByLabel('가볼 곳 추가').fill('경포대');
+    await plan.getByLabel('가볼 곳 추가').press('Enter');
+    await plan.getByLabel('가볼 곳 추가').fill('안목 커피거리');
+    await plan.getByRole('button', { name: '추가', exact: true }).click();
+    // 우리 장소에서 바로 넣기
+    await plan.getByRole('button', { name: '초당할머니순두부' }).click();
+    await expect(plan.getByTestId('plan-item')).toHaveCount(3);
+    // ② 날짜 ③ 시간·예약
+    await plan.getByRole('button', { name: /경포대/ }).click();
+    await plan.getByLabel('날짜').selectOption('2019-05-04');
+    await plan.getByLabel('시간').fill('18:30');
+    await expect(plan).toContainText('2일째 · 5.4 (토)');
+    await expect(plan.getByTestId('plan-item').filter({ hasText: '경포대' })).toContainText('18:30');
+    await shot(page, '13-plan');
+
+    // 기록: 쓴 사람이 보인다
+    await page.getByRole('tab', { name: /기록/ }).click();
+    const notes = page.getByTestId('notes-tab');
+    await notes.getByLabel('여행 기록 쓰기').fill('바다 보며 커피 마신 날');
+    await notes.getByRole('button', { name: '남기기' }).click();
+    await expect(notes.getByTestId('note')).toContainText('바다 보며 커피 마신 날');
+    await expect(notes.getByTestId('note')).toContainText('영상');
+    await expect(page.getByRole('tab', { name: '기록 1' })).toBeVisible();
+
+    // 준비물: 예정된 제주 여행
+    await page.goto('/trips');
+    await page.getByText('제주 여행', { exact: true }).click();
+    const pack = page.getByTestId('packing');
+    await pack.getByRole('button', { name: '휴양' }).click();
+    await expect(pack).toContainText('수영복');
+    await pack.getByLabel('수영복 챙김').check();
+    await expect(pack).toContainText(/1\/\d+ 챙김/);
+    await pack.getByLabel('선크림 담당자').click();
+    await expect(pack.getByLabel('선크림 담당자')).toHaveText('보라');
+    await shot(page, '13b-packing');
   });
 
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {

@@ -83,7 +83,8 @@ export function bestMonths(c: Climate): { m: number[]; why: string } {
   }
   if (m.length >= 2) {
     const wet = m.filter((x) => c.prcp[x - 1] > 3.5).length * 2 > m.length;
-    why = wet ? '덥지도 춥지도 않아요' : '선선하고 비가 적어요';
+    const warm = m.reduce((acc, x) => acc + c.tmax[x - 1], 0) / m.length >= 26.5;
+    why = warm ? (wet ? '덜 덥고 지내기 좋아요' : '비가 적은 건기예요') : wet ? '덥지도 춥지도 않아요' : '선선하고 비가 적어요';
   } else if (hotAll) {
     // 1년 내내 더운 곳: 비가 가장 적은 달(건기)
     const order = c.prcp.map((p, i) => [p, i + 1] as const).sort((a, b) => a[0] - b[0]);

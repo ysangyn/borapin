@@ -35,6 +35,8 @@ export interface Trip {
   companions: string[];
   memo: string;
   tags: string[];
+  /** 준비물 (예정된 여행) */
+  packing?: PackItem[];
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
@@ -121,6 +123,37 @@ export interface Photo {
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
   v: 1;
+}
+
+/** 일정 한 줄: 가볼 곳 → (원하면) 날짜 → (원하면) 시간·예약 정보 */
+export interface PlanItem {
+  id: string;
+  tripId: string;
+  name: string;
+  order: number;
+  day: string | null;
+  time: string | null;
+  info: string;
+  recId?: string | null;
+  done: boolean;
+  createdAt?: Timestamp | null;
+  v: 1;
+}
+
+/** 여행에 남기는 글. 누가 썼는지 보인다. */
+export interface Note {
+  id: string;
+  tripId: string;
+  text: string;
+  by: { uid: string; name: string };
+  createdAt?: Timestamp | null;
+  v: 1;
+}
+
+export interface PackItem {
+  t: string;
+  who: string | null;
+  done: boolean;
 }
 
 export interface Access {

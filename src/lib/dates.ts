@@ -72,3 +72,16 @@ export function isUpcoming(w: When, now = new Date()): boolean {
   const today = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
   return key >= today;
 }
+
+/** 예정된 여행의 D-day: 'D-12' · 'D-day' · '여행 중 2일째' · null(날짜 모름/지남) */
+export function dday(w: When, now = new Date()): string | null {
+  if (w.p !== 'day' || !w.y || !w.m || !w.d) return null;
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = Date.UTC(w.y, w.m - 1, w.d);
+  const end = w.d2 ? Date.UTC(w.y2 ?? w.y, (w.m2 ?? w.m) - 1, w.d2) : start;
+  const n = Math.round((start - today) / 86400000);
+  if (n > 0) return `D-${n}`;
+  if (n === 0) return 'D-day';
+  if (today <= end) return `여행 중 ${Math.round((today - start) / 86400000) + 1}일째`;
+  return null;
+}

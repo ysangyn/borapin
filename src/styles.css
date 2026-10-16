@@ -261,3 +261,19 @@ a { color: var(--violet); text-decoration: none; }
 .pswp__caption-bp b { font-size: 13px; opacity: 0.9; }
 .pswp__button--play.on svg { opacity: 0.6; }
 .pswp__button--play, .pswp__button--delete { display: flex; align-items: center; justify-content: center; }
+
+/* ---------- 여행 상세 탭 ---------- */
+.seg.tabs { display: flex; width: 100%; position: sticky; top: 0; z-index: 4; }
+.seg.tabs button { flex: 1; }
+.plan-row { padding: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+.plan-row + .plan-row { border-top: 1px solid var(--line); }
+.plan-row.done .plan-name span:not(.tag) { color: var(--ink4); text-decoration: line-through; }
+.plan-name { flex: 1; min-width: 0; border: none; background: none; padding: 0; text-align: left; display: flex; gap: 8px; align-items: center; font-size: 15px; font-weight: 600; color: var(--ink); }
+.plan-more { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding-left: 28px; }
+.plan-more .btn { grid-column: 1 / -1; justify-self: start; }
+.note { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.note-by { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 10px; background: var(--mist); color: #33248a; }
+.note-by.bora { background: var(--coral-mist); color: var(--coral-ink); }
+.pack-row { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.pack-row.done span { color: var(--ink4); text-decoration: line-through; }
+.tiny-chip { height: 26px; padding: 0 9px; font-size: 11.5px; }

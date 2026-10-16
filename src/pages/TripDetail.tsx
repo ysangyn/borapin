@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import PlanTab from '../components/PlanTab';
+import NotesTab from '../components/NotesTab';
+import PackingCard from '../components/PackingCard';
+import { useNotes } from '../lib/tripExtras';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
 import { computeStats, deleteTrip, patchTrip, usePlaces, useTrips } from '../lib/data';
@@ -30,6 +34,10 @@ export default function TripDetail() {
   const nav = useNavigate();
   const toast = useToast();
   const [confirm, setConfirm] = useState(false);
+  const [sp, setSp] = useSearchParams();
+  const tab = (sp.get('tab') as 'info' | 'plan' | 'photos' | 'notes' | null) ?? 'info';
+  const setTab = (t: string) => setSp(t === 'info' ? {} : { tab: t }, { replace: true });
+  const notes = useNotes(id);
   const trip = trips?.find((t) => t.id === id);
   const stats = useMemo(() => (trip ? computeStats([{ ...trip, status: 'done' }]) : null), [trip]);
 
@@ -67,7 +75,19 @@ export default function TripDetail() {
           </button>
         )}
 
+        <div className="seg tabs" role="tablist" aria-label="여행 보기">
+          {([['info', '개요'], ['plan', '일정'], ['photos', `사진${photos.length ? ` ${photos.length}` : ''}`], ['notes', `기록${notes?.length ? ` ${notes.length}` : ''}`]] as const).map(([k, label]) => (
+            <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>
+          ))}
+        </div>
+
+        {tab === 'plan' && <PlanTab trip={trip} recs={recs ?? []} />}
+        {tab === 'notes' && <NotesTab trip={trip} />}
+
+        {tab === 'info' && <>
         <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} />
+
+        {trip.status === 'planned' && <PackingCard trip={trip} trips={trips} />}
 
         <div className="card white" style={{ padding: '4px 16px' }}>
           <div className="kv"><span className="k">어디</span>
@@ -90,7 +110,9 @@ export default function TripDetail() {
           <div className="kv"><span className="k">남긴 사람</span><span className="muted small">{trip.createdBy?.name ?? '-'}{trip.source === 'v22' ? ' · v22에서 가져옴' : ''}</span></div>
         </div>
 
-        <section data-testid="trip-photos">
+        </>}
+
+        {tab === 'photos' && <section data-testid="trip-photos">
           <div className="row-between" style={{ marginBottom: 6 }}>
             <h2 className="h2" style={{ fontSize: 17 }}>사진{photos.length ? ` · ${photos.length}` : ''}</h2>
             {photos.length > 1 && (
@@ -114,8 +136,9 @@ export default function TripDetail() {
               ))}
             </div>
           )}
-        </section>
+        </section>}
 
+        {tab === 'info' && <>
         <section data-testid="trip-places">
           <div className="row-between" style={{ marginBottom: 2 }}>
             <h2 className="h2" style={{ fontSize: 17 }}>장소</h2>
@@ -146,6 +169,7 @@ export default function TripDetail() {
             </div>
           </div>
         )}
+        </>}
       </div>
     </>
   );

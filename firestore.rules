@@ -40,6 +40,7 @@ service cloud.firestore {
         && (!('companions' in d) || (d.companions is list && d.companions.size() <= 30))
         && (!('memo' in d) || (d.memo is string && d.memo.size() <= 10000))
         && (!('tags' in d) || (d.tags is list && d.tags.size() <= 30))
+        && (!('packing' in d) || (d.packing is list && d.packing.size() <= 200))
         && d.v == 1;
     }
 
@@ -77,6 +78,19 @@ service cloud.firestore {
         && d.v == 1;
     }
 
+    function validPlan(d) {
+      return d.keys().hasAll(['tripId', 'name', 'v'])
+        && d.tripId is string && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
+        && (!('info' in d) || (d.info is string && d.info.size() <= 200))
+        && d.v == 1;
+    }
+    function validNote(d) {
+      return d.keys().hasAll(['tripId', 'text', 'by', 'v'])
+        && d.text is string && d.text.size() >= 1 && d.text.size() <= 5000
+        && d.by.uid == request.auth.uid
+        && d.v == 1;
+    }
+
     match /config/access {
       allow read: if isMember();
       allow create: if isOwner() && validAccess(request.resource.data);
@@ -110,6 +124,20 @@ service cloud.firestore {
         allow read: if isMember();
         allow create, update: if isMember() && validPhoto(request.resource.data);
         allow delete: if isMember();
+      }
+
+      match /plans/{planId} {
+        allow read: if isMember();
+        allow create, update: if isMember() && validPlan(request.resource.data);
+        allow delete: if isMember();
+      }
+
+      match /notes/{noteId} {
+        allow read: if isMember();
+        allow create: if isMember() && validNote(request.resource.data);
+        allow update: if false;
+        // 글은 쓴 사람만 지운다
+        allow delete: if isMember() && resource.data.by.uid == request.auth.uid;
       }
 
       match /wishes/{wishId} {
