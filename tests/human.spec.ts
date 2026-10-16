@@ -371,7 +371,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
-  test('가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 위에서부터 나란히', async ({ browser }) => {
+  test('가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히', async ({ browser }) => {
     const page = await phone(browser);
     // 긴 이름의 '지금 축제'를 제주에 하나 넣어 둔다 (실제 축제 자료는 매주 바뀌므로)
     const d = new Date(); const ymd = (x: Date) => x.toISOString().slice(0, 10).replace(/-/g, '');
@@ -399,11 +399,13 @@ test.describe('사람처럼 쓰기', () => {
     await expect(tag).toBeVisible();
     const tagBox = (await tag.boundingBox())!;
     expect(tagBox.height, '축제 꼬리표가 여러 줄로 늘어났어요').toBeLessThan(28);
-    const tile = (await card.locator('.trip-tile').boundingBox())!;
-    const title = (await card.locator('.t').boundingBox())!;
+    // 목록 카드는 네모(사진)·글·버튼이 세로 가운데로 나란하다
+    const box = (await card.boundingBox())!;
+    const mid = box.y + box.height / 2;
+    const tile = (await card.locator('.trip-tile, .wish-thumb').first().boundingBox())!;
     const btn = (await card.getByTestId('wish-plan').boundingBox())!;
-    expect(Math.abs(tile.y - title.y), '네모가 제목과 같은 높이에서 시작해야 해요').toBeLessThan(10);
-    expect(Math.abs(btn.y - title.y), '버튼이 제목과 같은 높이에서 시작해야 해요').toBeLessThan(14);
+    expect(Math.abs(tile.y + tile.height / 2 - mid), '네모가 카드 가운데에 있어야 해요').toBeLessThan(12);
+    expect(Math.abs(btn.y + btn.height / 2 - mid), '버튼이 카드 가운데에 있어야 해요').toBeLessThan(12);
     await page.context().close();
   });
 

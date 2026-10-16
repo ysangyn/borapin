@@ -350,7 +350,7 @@ test.describe.serial('보라핀 1단계', () => {
     if (await save.count()) {
       await save.click();
       await expect(page.getByRole('status')).toContainText('메모에 넣었어요');
-      await page.getByRole('button', { name: '보기' }).click();
+      await page.getByRole('status').getByRole('button', { name: '보기' }).click();
       await expect(page).toHaveURL(/\/wishes\/[A-Za-z0-9]+$/);
       expect(await page.locator('textarea').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value).join('\n'))).toContain('흑돼지랑 고기국수');
       await page.goto('/');

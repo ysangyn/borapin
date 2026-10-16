@@ -148,9 +148,9 @@ function WishNews({ places }: { places: Place[] }) {
   return (
     <section data-testid="wish-news">
       <h2 className="h2" style={{ marginBottom: 2 }}>가고 싶은 곳 소식</h2>
-      <div className="small muted" style={{ marginBottom: 6 }}>담아 둔 곳의 요즘 여행 뉴스예요. 축제·새 명소 소식이 뜨면 여기서 먼저 봐요.</div>
+      <div className="small muted" style={{ marginBottom: 6 }}>담아 둔 곳의 요즘 여행 소식, 한 곳에 한 줄씩.</div>
       <div className="card white" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {places.map((p) => <NewsStrip key={placeLabel(p)} place={p} max={2} title={placeLabel(p)} />)}
+        {places.map((p) => <NewsStrip key={placeLabel(p)} place={p} max={1} title={placeLabel(p)} />)}
       </div>
     </section>
   );
