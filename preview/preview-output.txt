@@ -1,0 +1,82 @@
+
+Running 5 tests using 1 worker
+
+  ✓  1 tests/preview.spec.ts:41:1 › 시험용 표시가 보이고, 이번 커밋이 올라가 있다 (2.9s)
+  ✘  2 tests/preview.spec.ts:50:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 (4.0m)
+  -  3 tests/preview.spec.ts:101:1 › 함께 쓰는 사람(보라)도 같은 기록을 본다
+  -  4 tests/preview.spec.ts:110:1 › 초대 안 된 계정은 메일·비밀번호가 맞아도 막힌다
+  -  5 tests/preview.spec.ts:117:1 › 화면 오류 없음
+
+
+  1) tests/preview.spec.ts:50:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 ──────────────────────
+
+    Test timeout of 240000ms exceeded.
+
+    Error: locator.click: Test ended.
+    Browser logs:
+
+    <launching> /home/runner/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,AvoidCorsURLLoaderRestartOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-WRlttj --remote-debugging-pipe --no-startup-window
+    <launched> pid=3359
+    [pid=3359][err] [1016/110035.031151:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+    [pid=3359][err] [1016/110035.037760:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+    [pid=3359][err] [1016/110035.038058:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+    [pid=3359][err] [1016/110035.044159:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+    [pid=3359][err] [1016/110035.052877:WARNING:media/gpu/vaapi/vaapi_wrapper.cc:1655] drmGetDevices2() has not found any devices
+    [pid=3359][err] [1016/110035.055008:WARNING:sandbox/policy/linux/sandbox_linux.cc:405] InitializeSandbox() called with multiple threads in process gpu-process.
+    [pid=3359][err] [1016/110037.459324:INFO:CONSOLE:315] "Info: The current domain is not authorized for OAuth operations. This will prevent signInWithPopup, signInWithRedirect, linkWithPopup and linkWithRedirect from working. Add your domain (borapin--ci-test-first-r7n34802.web.app) to the OAuth redirect domains list in the Firebase console -> Authentication -> Settings -> Authorized domains tab.", source: https://borapin-test.firebaseapp.com/__/auth/iframe.js (315)
+    [pid=3359][err] [1016/110038.507784:INFO:CONSOLE:315] "Info: The current domain is not authorized for OAuth operations. This will prevent signInWithPopup, signInWithRedirect, linkWithPopup and linkWithRedirect from working. Add your domain (borapin--ci-test-first-r7n34802.web.app) to the OAuth redirect domains list in the Firebase console -> Authentication -> Settings -> Authorized domains tab.", source: https://borapin-test.firebaseapp.com/__/auth/iframe.js (315)
+    [pid=3359][err] [1016/110043.758218:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=3359][err] [1016/110043.762131:INFO:CONSOLE:0] "[.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: https://borapin--ci-test-first-r7n34802.web.app/ (0)
+    [pid=3359][err] [1016/110043.782580:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=3359][err] [1016/110043.834041:INFO:CONSOLE:0] "[.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: https://borapin--ci-test-first-r7n34802.web.app/ (0)
+    [pid=3359][err] [1016/110043.954545:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=3359][err] [1016/110043.971394:INFO:CONSOLE:0] "[.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: https://borapin--ci-test-first-r7n34802.web.app/ (0)
+    [pid=3359][err] [1016/110043.973070:ERROR:gpu/command_buffer/service/gl_utils.cc:431] [.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+    [pid=3359][err] [1016/110044.004300:INFO:CONSOLE:0] "[.WebGL-0x3834050a1400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)", source: https://borapin--ci-test-first-r7n34802.web.app/ (0)
+    [pid=3359] <gracefully close start>
+    Call log:
+      - waiting for getByTestId('save')
+        - locator resolved to <button disabled class="btn block" data-testid="save">저장하기</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        453 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      61 |   await page.getByLabel('제목').click();
+      62 |   await page.keyboard.type(TITLE);
+    > 63 |   await page.getByTestId('save').click();
+         |                                  ^
+      64 |   await expect(page.getByTestId('trip-title')).toHaveText(TITLE, { timeout: 30_000 });
+      65 |   await page.reload();
+      66 |   await expect(page.getByTestId('trip-title')).toHaveText(TITLE, { timeout: 30_000 });
+        at /home/runner/work/borapin/borapin/tests/preview.spec.ts:63:34
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/preview.spec.ts:50:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 ───────────────────────
+  3 did not run
+  1 passed (4.1m)
