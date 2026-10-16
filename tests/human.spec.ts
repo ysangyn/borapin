@@ -384,6 +384,7 @@ test.describe('사람처럼 쓰기', () => {
     const chips = page.locator('.heart-chip');
     for (let i = 0; i < (await chips.count()); i++) {
       if ((await chips.nth(i).getAttribute('aria-pressed')) !== 'true') await chips.nth(i).click();
+      await expect(chips.nth(i)).toHaveAttribute('aria-pressed', 'true');
     }
     await page.getByRole('button', { name: '1순위', exact: true }).click();
     await page.getByTestId('wish-save').click();

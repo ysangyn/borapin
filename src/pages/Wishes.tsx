@@ -12,7 +12,7 @@ import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
 import { bothWant, sortWishes, wishState, type WishState } from '../lib/wishes';
-import { everyoneLabel, memberNames } from '../lib/members';
+import { everyoneLabel } from '../lib/members';
 import NewsStrip from '../components/NewsStrip';
 import { quickWish } from '../lib/wishActions';
 import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
@@ -49,7 +49,6 @@ export default function Wishes() {
   const festivals = useFestivals();
   const picks = useMemo(() => monthlyPicks(3, stats, info, seasons, wishes ?? [], festivals), [stats, info, seasons, wishes, festivals]);
   const month = new Date().getMonth() + 1;
-  const names = memberNames();
 
   const addPick = async (place: Parameters<typeof quickWish>[0], name: string) => {
     if (auth.status !== 'ready') return;
@@ -81,10 +80,10 @@ export default function Wishes() {
         {(!wishes || !trips) && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
 
         {wishes && active.length > 0 && (
-          <div className="seg tabs" role="tablist" aria-label="누가 원하는 곳">
+          <div className="seg tabs wish-tabs" role="tablist" aria-label="누가 원하는 곳">
             <button role="tab" aria-selected={who === 'all'} className={who === 'all' ? 'on' : ''} onClick={() => setWho('all')}>전체 {active.length}</button>
             <button role="tab" aria-selected={who === 'both'} className={who === 'both' ? 'on' : ''} onClick={() => setWho('both')}>{everyoneLabel()} {active.filter((x) => bothWant(x.w)).length}</button>
-            {names.map((n) => <button key={n} role="tab" aria-selected={who === n} className={who === n ? 'on' : ''} onClick={() => setWho(n)}>{n === me ? '나' : n} {active.filter((x) => (x.w.wantedBy ?? []).includes(n)).length}</button>)}
+            <button role="tab" aria-selected={who === me} className={who === me ? 'on' : ''} onClick={() => setWho(me)}>내 하트 {active.filter((x) => (x.w.wantedBy ?? []).includes(me)).length}</button>
           </div>
         )}
         {wishes && active.length > 0 && shown.length === 0 && (
