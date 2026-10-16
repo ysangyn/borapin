@@ -151,7 +151,7 @@ jobs:
 
   preview:
     name: 3. 미리보기 배포와 진짜 Firebase 시험
-    needs: [check, emulator]
+    needs: [worker, check, emulator]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -224,6 +224,13 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           COMMIT="${GITHUB_SHA::7}" npx playwright test -c playwright.preview.config.ts 2>&1 | tee preview-output.txt
+      - name: 보라(AI) 답 품질 점검 (main에 올릴 때만 · 무료 한도 아끼기)
+        if: steps.testkey.outputs.ok == 'true' && needs.worker.outputs.url != '' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          ASK_URL: ${{ needs.worker.outputs.url }}
+          FIREBASE_API_KEY: AIzaSyAXT9E3jX2BBJwQv0dWS4Fqcx-7qK8bWt0
+          EMAIL: bora.preview@example.com
+        run: PW="$PREVIEW_PW" npx tsx scripts/ask-eval.ts 2>&1 | tee ask-eval.txt
       - name: 시험 기록·계정 지우기
         if: always() && steps.testkey.outputs.ok == 'true'
         env:
@@ -237,7 +244,7 @@ jobs:
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh preview preview-verify.txt preview-setup.txt preview-output.txt test-results
+        run: scripts/push-report.sh preview preview-verify.txt preview-setup.txt preview-output.txt ask-eval.txt test-results
 
   deploy:
     name: 4. borapin.web.app 배포와 확인
