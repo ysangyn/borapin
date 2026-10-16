@@ -30,3 +30,19 @@ test('추천 도구에 질문의 테마·달·안 가본 곳을 채운다', () =
   const kept = ensurePlan('바다 추천', [{ tool: 'recommend', args: { themes: ['섬'] } }], null, now);
   assert.deepEqual(kept[0].args, { themes: ['섬'] });
 });
+
+test('모델이 깨뜨린 인자를 손본다: 물음표 열쇠, 질문에 없는 지명·검색어', () => {
+  const q = '강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나';
+  const calls = ensurePlan(q, [
+    { tool: 'resolve_place', args: { name: '코랑' } },
+    { tool: 'our_places', args: { place: '코랑', query: '해드' } },
+    { tool: 'recommend', args: { 'month?': '2026-11', 'themes?': ['바다'], themes: ['바다'], month: 11 } },
+  ], '강릉시');
+  assert.deepEqual(calls[0], { tool: 'resolve_place', args: { place: '강릉시' } });
+  assert.deepEqual(calls[1], { tool: 'our_places', args: { place: '강릉시' } });
+  assert.deepEqual(calls[2].args, { month: 11, themes: ['바다'] });
+  // 질문에 있는 지명·검색어는 그대로
+  const ok = ensurePlan('제주에서 커피 마신 날 글', [{ tool: 'our_notes', args: { query: '커피' } }, { tool: 'our_trips', args: { place: '제주' } }], '제주');
+  assert.deepEqual(ok.find((c) => c.tool === 'our_notes')!.args, { query: '커피' });
+  assert.deepEqual(ok.find((c) => c.tool === 'our_trips')!.args, { place: '제주' });
+});

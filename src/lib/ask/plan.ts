@@ -28,8 +28,28 @@ export function monthIn(question: string, now = new Date()): number | null {
   return null;
 }
 
+const PLACE_TOOLS = new Set(['resolve_place', 'place_info', 'best_time', 'festivals', 'our_trips', 'our_places', 'our_photos', 'packing']);
+
+/**
+ * 모델이 적은 인자 손보기 (작은 모델이 자주 내는 실수):
+ * - 틀을 그대로 베낀 'month?' 같은 열쇠 → 'month'
+ * - 질문에 없는 지명·검색어(글자가 깨진 것) → 질문에서 찾은 지명으로 바꾸거나 뺀다
+ */
+function sanitize(c: ToolCall, question: string, mention: string | null): ToolCall {
+  const a: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(c.args ?? {})) { const key = k.replace(/\?$/, ''); if (!(key in a) || k === key) a[key] = v; }
+  if (c.tool === 'resolve_place' && typeof a.name === 'string' && a.place === undefined) { a.place = a.name; delete a.name; }
+  const q = question.replace(/\s+/g, '');
+  const inQ = (v: unknown) => typeof v === 'string' && v.trim().length > 0 && q.includes(v.replace(/\s+/g, '').replace(/(시|군|구)$/, '').slice(0, 2));
+  if (PLACE_TOOLS.has(c.tool) && typeof a.place === 'string' && !inQ(a.place) && !/거기|그곳|여기/.test(a.place)) {
+    if (mention) a.place = mention; else delete a.place;
+  }
+  if (typeof a.query === 'string' && !inQ(a.query)) delete a.query;
+  return { tool: c.tool, args: a };
+}
+
 export function ensurePlan(question: string, calls: ToolCall[], placeName: string | null, now = new Date()): ToolCall[] {
-  const out = [...calls];
+  const out = calls.map((c) => sanitize(c, question, placeName));
   // 추천 도구에 질문의 테마·달·안 가본 곳 조건이 빠졌으면 채운다 (모델이 자주 빼먹는 인자)
   for (const c of out) {
     if (c.tool !== 'recommend') continue;
