@@ -12,8 +12,8 @@
 Running 33 tests using 1 worker
 
   ✓   1 tests/app.spec.ts:57:3 › 보라핀 1단계 › 로그인 화면 (1.2s)
-  ✓   2 tests/app.spec.ts:63:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.1s)
-  ✘   3 tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (1.4s)
+  ✓   2 tests/app.spec.ts:63:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.4s)
+  ✘   3 tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (1.5s)
   -   4 tests/app.spec.ts:94:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만)
   -   5 tests/app.spec.ts:110:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만)
   -   6 tests/app.spec.ts:124:3 › 보라핀 1단계 › 여행 목록과 필터
@@ -29,20 +29,20 @@ Running 33 tests using 1 worker
   -  16 tests/app.spec.ts:540:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다
   -  17 tests/app.spec.ts:584:3 › 보라핀 1단계 › 기록 고치기와 지우기
   ✓  18 tests/human.spec.ts:105:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.6s)
-  ✓  19 tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (4.3s)
-  ✓  20 tests/human.spec.ts:145:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (3.5s)
-  ✓  21 tests/human.spec.ts:167:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.3s)
-  ✓  22 tests/human.spec.ts:197:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (4.5s)
-  ✓  23 tests/human.spec.ts:243:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 (12.7s)
+  ✓  19 tests/human.spec.ts:114:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 (4.8s)
+  ✓  20 tests/human.spec.ts:145:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 (4.0s)
+  ✓  21 tests/human.spec.ts:167:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.2s)
+  ✓  22 tests/human.spec.ts:197:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (3.9s)
+  ✓  23 tests/human.spec.ts:243:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 (12.3s)
   ✘  24 tests/human.spec.ts:266:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.0m)
-  ✓  25 tests/human.spec.ts:297:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.3s)
-  ✘  26 tests/human.spec.ts:330:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (18.7s)
-  ✓  27 tests/human.spec.ts:362:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (814ms)
-  ✓  28 tests/human.spec.ts:362:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (656ms)
-  ✓  29 tests/human.spec.ts:362:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (680ms)
-  ✓  30 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.3s)
-  ✓  31 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (40.0s)
-  ✓  32 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (30.7s)
+  ✓  25 tests/human.spec.ts:297:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.4s)
+  ✓  26 tests/human.spec.ts:330:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (6.0s)
+  ✓  27 tests/human.spec.ts:365:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (647ms)
+  ✓  28 tests/human.spec.ts:365:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (671ms)
+  ✓  29 tests/human.spec.ts:365:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 (631ms)
+  ✓  30 tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.2s)
+  ✓  31 tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (41.0s)
+  ✓  32 tests/tour.spec.ts:275:1 › 가득 찬 화면 · PC (30.6s)
   ✓  33 tests/tour.spec.ts:300:1 › 화면 오류 없음 (2ms)
 
 
@@ -111,51 +111,11 @@ Running 33 tests using 1 worker
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  3) tests/human.spec.ts:330:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 ──────────────
-
-    Error: expect(locator).toHaveCount(expected) failed
-
-    Locator:  locator('[data-testid="place-spot"][data-code="47850"]')
-    Expected: 1
-    Received: 0
-    Timeout:  15000ms
-
-    Call log:
-      - Expect "toHaveCount" locator('[data-testid="place-spot"][data-code="47850"]') with timeout 15000ms
-      - waiting for locator('[data-testid="place-spot"][data-code="47850"]')
-        34 × locator resolved to 0 elements
-           - unexpected value "0"
-
-
-      342 |     await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
-      343 |     const spot = page.locator('[data-testid="place-spot"][data-code="47850"]');
-    > 344 |     await expect(spot).toHaveCount(1);
-          |                        ^
-      345 |     await expect(spot).toContainText('1');
-      346 |     // 핀은 아직 없다 (다녀왔다고 하지 않았으니)
-      347 |     await expect(page.getByTestId('headline')).toHaveText(before);
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:344:24
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-우리-장소를-남기면-지도에-장소-표시가-뜨고-다녀왔다고-고르면-핀도-꽂힌다/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/human-사람처럼-쓰기-우리-장소를-남기면-지도에-장소-표시가-뜨고-다녀왔다고-고르면-핀도-꽂힌다/error-context.md
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-우리-장소를-남기면-지도에-장소-표시가-뜨고-다녀왔다고-고르면-핀도-꽂힌다/trace.zip
-    Usage:
-
-        npx playwright show-trace test-results/human-사람처럼-쓰기-우리-장소를-남기면-지도에-장소-표시가-뜨고-다녀왔다고-고르면-핀도-꽂힌다/trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  3 failed
+  2 failed
     tests/app.spec.ts:70:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 ────────────────────
     tests/human.spec.ts:266:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 ──────────
-    tests/human.spec.ts:330:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 ───────────────
   14 did not run
-  16 passed (3.6m)
+  17 passed (3.4m)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator

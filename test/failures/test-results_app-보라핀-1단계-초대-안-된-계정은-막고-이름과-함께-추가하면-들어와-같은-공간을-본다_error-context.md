@@ -87,7 +87,7 @@ Call log:
               - text: ·
               - link "사진·영상·지도 출처" [ref=f4e80] [cursor=pointer]:
                 - /url: /credits
-            - generic [ref=f4e81]: 보라핀 v0.1.0 (fe03368)
+            - generic [ref=f4e81]: 보라핀 v0.1.0 (d2df9e3)
             - generic [ref=f4e82]: "지도 경계: 통계청 SGIS(공공누리 1유형) · vuski/admdongkor(CC BY 4.0) · Natural Earth"
       - navigation "주 메뉴" [ref=f4e83]:
         - link "홈" [ref=f4e84] [cursor=pointer]:
