@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": { "types": ["node"], "noEmit": true },
-  "include": ["scripts/**/*.ts", "src/lib/**/*.ts", "src/data/*.json", "src/vite-env.d.ts"]
+  "include": ["scripts/**/*.ts", "tests/rules/**/*.ts", "tests/unit/**/*.ts", "src/lib/**/*.ts", "src/data/*.json", "src/vite-env.d.ts"]
 }

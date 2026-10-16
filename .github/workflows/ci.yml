@@ -45,6 +45,8 @@ jobs:
         run: npm run build 2>&1 | tee build-output.txt
       - name: 예전 기록 옮기기 스크립트 점검 (에뮬레이터, 두 번 돌려도 겹치지 않는지)
         run: npm run test:migrate 2>&1 | tee migrate-test-output.txt
+      - name: 보안 규칙 시험 (에뮬레이터 + 실제 firestore.rules)
+        run: npm run test:rules 2>&1 | tee rules-output.txt
       - name: 화면 점검 (에뮬레이터)
         run: npm run test:e2e 2>&1 | tee test-output.txt
       - name: 실패 화면 모으기
@@ -58,7 +60,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh test test-results/screens test-results/tour test-output.txt build-output.txt migrate-test-output.txt ask-output.txt failures
+        run: scripts/push-report.sh test test-results/screens test-results/tour test-output.txt rules-output.txt build-output.txt migrate-test-output.txt ask-output.txt failures
 
   deploy:
     name: borapin.web.app 배포

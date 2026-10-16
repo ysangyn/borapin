@@ -128,36 +128,40 @@ service cloud.firestore {
       allow delete: if isMember();
     }
 
+    // 지금은 우리 공간(main) 하나만 있다. 다른 공간 이름으로는 읽지도 쓰지도 못한다.
+    // (나중에 여러 커플이 쓰게 되면 공간마다 멤버 목록을 두고 이 함수만 바꾸면 된다)
+    function inSpace(spaceId) { return spaceId == 'main' && isMember(); }
+
     match /spaces/{spaceId} {
-      allow read: if isMember();
-      allow create, update: if isMember()
+      allow read: if inSpace(spaceId);
+      allow create, update: if inSpace(spaceId)
         && request.resource.data.name is string
         && request.resource.data.name.size() <= 60;
       allow delete: if false;
 
       match /trips/{tripId} {
-        allow read: if isMember();
-        allow create, update: if isMember() && validTrip(request.resource.data);
-        allow delete: if isMember();
+        allow read: if inSpace(spaceId);
+        allow create, update: if inSpace(spaceId) && validTrip(request.resource.data);
+        allow delete: if inSpace(spaceId);
       }
 
       match /places/{placeId} {
-        allow read: if isMember();
-        allow create, update: if isMember() && validPlace(request.resource.data);
-        allow delete: if isMember();
+        allow read: if inSpace(spaceId);
+        allow create, update: if inSpace(spaceId) && validPlace(request.resource.data);
+        allow delete: if inSpace(spaceId);
       }
 
       match /photos/{photoId} {
-        allow read: if isMember();
-        allow create, update: if isMember() && validPhoto(request.resource.data);
-        allow delete: if isMember();
+        allow read: if inSpace(spaceId);
+        allow create, update: if inSpace(spaceId) && validPhoto(request.resource.data);
+        allow delete: if inSpace(spaceId);
       }
 
       // 사진 파일 (크게 보기 _l, 미리보기 _t). 공유 링크에 들어간 사진만 로그인 없이 하나씩 읽힌다.
       match /photoData/{dataId} {
-        allow get: if isMember() || resource.data.public == true;
-        allow list: if isMember();
-        allow create: if isMember()
+        allow get: if inSpace(spaceId) || resource.data.public == true;
+        allow list: if inSpace(spaceId);
+        allow create: if inSpace(spaceId)
           && request.resource.data.keys().hasOnly(['photoId', 'tripId', 'kind', 'data', 'size', 'public', 'v'])
           && request.resource.data.photoId is string
           && dataId == request.resource.data.photoId + '_' + request.resource.data.kind
@@ -170,30 +174,30 @@ service cloud.firestore {
           && !(exists(/databases/$(database)/documents/config/flags)
                && get(/databases/$(database)/documents/config/flags).data.get('uploadsPaused', false) == true);
         // 바꿀 수 있는 건 공개 여부뿐
-        allow update: if isMember()
+        allow update: if inSpace(spaceId)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['public'])
           && request.resource.data.public is bool;
-        allow delete: if isMember();
+        allow delete: if inSpace(spaceId);
       }
 
       match /plans/{planId} {
-        allow read: if isMember();
-        allow create, update: if isMember() && validPlan(request.resource.data);
-        allow delete: if isMember();
+        allow read: if inSpace(spaceId);
+        allow create, update: if inSpace(spaceId) && validPlan(request.resource.data);
+        allow delete: if inSpace(spaceId);
       }
 
       match /notes/{noteId} {
-        allow read: if isMember();
-        allow create: if isMember() && validNote(request.resource.data);
+        allow read: if inSpace(spaceId);
+        allow create: if inSpace(spaceId) && validNote(request.resource.data);
         allow update: if false;
         // 글은 쓴 사람만 지운다
-        allow delete: if isMember() && resource.data.by.uid == request.auth.uid;
+        allow delete: if inSpace(spaceId) && resource.data.by.uid == request.auth.uid;
       }
 
       match /wishes/{wishId} {
-        allow read: if isMember();
-        allow create, update: if isMember() && validWish(request.resource.data);
-        allow delete: if isMember();
+        allow read: if inSpace(spaceId);
+        allow create, update: if inSpace(spaceId) && validWish(request.resource.data);
+        allow delete: if inSpace(spaceId);
       }
     }
 

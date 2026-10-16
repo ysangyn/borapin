@@ -12,7 +12,9 @@
     "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-borapin \"playwright test\"",
     "emulators": "firebase emulators:start --only auth,firestore --project demo-borapin",
     "test:migrate": "firebase emulators:exec --only firestore --project demo-borapin \"GCLOUD_PROJECT=demo-borapin tsx scripts/migrate.ts tests/fixtures/v22-backup.json && GCLOUD_PROJECT=demo-borapin EXPECT_TRIPS=2 tsx scripts/migrate.ts tests/fixtures/v22-backup.json\"",
-    "data:travelinfo": "tsx scripts/travelinfo.ts"
+    "data:travelinfo": "tsx scripts/travelinfo.ts",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-borapin-rules \"node --import tsx --test tests/rules/*.test.ts\"",
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts"
   },
   "dependencies": {
     "es-hangul": "^2.4.0",
@@ -28,6 +30,7 @@
     "write-excel-file": "^2.3.10"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@playwright/test": "^1.64.1",
     "@types/geojson": "^7946.0.16",
     "@types/react": "^19.2.0",

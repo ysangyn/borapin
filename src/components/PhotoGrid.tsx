@@ -18,7 +18,9 @@ export default function PhotoGrid({ photos, tripId, max, readOnly }: { photos: P
   const [checking, setChecking] = useState(false);
   const flags = useFlags();
 
-  const upload = async (files: FileList | null) => {
+  const [dragging, setDragging] = useState(false);
+
+  const upload = async (files: FileList | File[] | null) => {
     if (!files?.length || auth.status !== 'ready') return;
     const list = [...files].filter((f) => f.type.startsWith('image/') || /\.(heic|heif|jpe?g|png|webp)$/i.test(f.name));
     if (!list.length) return toast('사진 파일만 올릴 수 있어요');
@@ -49,24 +51,56 @@ export default function PhotoGrid({ photos, tripId, max, readOnly }: { photos: P
   };
 
   // 올리기 전에 막을 일이 있는지 확인 (멈춤 스위치, 오프라인, 무료 저장 공간 95%)
-  const pick = async () => {
-    if (flags.uploadsPaused) return toast(`사진 올리기를 잠시 멈췄어요${flags.reason ? ` (${flags.reason})` : ''}`);
-    if (isOffline()) return toast('사진은 인터넷에 연결된 뒤에 올릴 수 있어요');
+  const canUpload = async () => {
+    const stop = (msg: string) => {
+      toast(msg);
+      return false;
+    };
+    if (flags.uploadsPaused) return stop(`사진 올리기를 잠시 멈췄어요${flags.reason ? ` (${flags.reason})` : ''}`);
+    if (isOffline()) return stop('사진은 인터넷에 연결된 뒤에 올릴 수 있어요');
     setChecking(true);
     try {
       const u = await photoUsage();
-      if (u.bytes >= FREE_DB_BYTES * 0.95) return toast('무료 저장 공간이 거의 차서 사진 올리기를 멈췄어요');
+      if (u.bytes >= FREE_DB_BYTES * 0.95) return stop('무료 저장 공간이 거의 차서 사진 올리기를 멈췄어요');
     } catch {
       /* 확인하지 못해도 올리기는 할 수 있게 */
     } finally {
       setChecking(false);
     }
-    input.current?.click();
+    return true;
   };
+  const pick = async () => {
+    if (await canUpload()) input.current?.click();
+  };
+  // PC: 사진 파일을 격자 위로 끌어다 놓으면 올린다
+  const hasFiles = (e: React.DragEvent) => [...e.dataTransfer.types].includes('Files');
+  const busy = queue.length > 0 || checking;
+  const drop = readOnly
+    ? {}
+    : {
+        onDragOver: (e: React.DragEvent) => {
+          if (!hasFiles(e)) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = busy ? 'none' : 'copy';
+          if (!dragging) setDragging(true);
+        },
+        onDragLeave: (e: React.DragEvent) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+        },
+        onDrop: async (e: React.DragEvent) => {
+          if (!hasFiles(e)) return;
+          e.preventDefault();
+          setDragging(false);
+          const files = [...e.dataTransfer.files];
+          if (busy || !files.length) return;
+          if (await canUpload()) upload(files);
+        },
+      };
 
   const shown = max ? photos.slice(0, max) : photos;
   return (
-    <div className="photo-grid" data-testid="photo-grid">
+    <div className={'photo-grid' + (dragging ? ' drop' : '')} data-testid="photo-grid" {...drop}>
+      {dragging && <div className="photo-drop-hint" aria-hidden="true">여기에 놓으면 사진이 올라가요</div>}
       {shown.map((p, i) => (
         <button
           key={p.id}
@@ -93,6 +127,7 @@ export default function PhotoGrid({ photos, tripId, max, readOnly }: { photos: P
           >
             <Icon name="plus" size={22} stroke={2.2} />
             <span className="tiny">{checking ? '확인 중' : '사진'}</span>
+            <span className="tiny drop-tip">끌어다 놓아도 돼요</span>
           </button>
           <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => upload(e.target.files)} data-testid="photo-input" />
         </>
