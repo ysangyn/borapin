@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import TripRow from './TripRow';
+import RegionInfo from './RegionInfo';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
@@ -80,6 +81,8 @@ export default function PlaceSheet({ place, trips, stats, onClose }: {
         </div>
         <button className="icon-btn" aria-label="닫기" onClick={onClose}><Icon name="x" size={18} stroke={2.2} /></button>
       </div>
+
+      {place.t === 'kr' && <RegionInfo code={place.code} />}
 
       {here.length > 0 && (
         <div className="list" style={{ marginTop: 4 }}>

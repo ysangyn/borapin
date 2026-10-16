@@ -128,6 +128,13 @@ test.describe.serial('보라핀 1단계', () => {
     const sheet = page.getByTestId('region-sheet');
     await expect(sheet.getByTestId('sheet-title')).toHaveText('부산');
     await expect(sheet).toContainText('아직 안 가본 곳');
+    // 여행정보: 볼거리·먹거리, 더보기로 구·군
+    const info = sheet.getByTestId('region-info');
+    await expect(info).toContainText('볼거리');
+    await info.getByRole('button', { name: /더보기/ }).click();
+    await expect(info).toContainText('해운대구');
+    await shot(page, '09a-region-info');
+    await info.getByRole('button', { name: '접기' }).click();
     await sheet.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('부산에 핀을 꽂았어요');
     await expect(sheet).toContainText('다녀왔어요');

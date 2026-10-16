@@ -11,7 +11,8 @@
     "typecheck": "tsc -b && tsc -p tsconfig.scripts.json",
     "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-borapin \"playwright test\"",
     "emulators": "firebase emulators:start --only auth,firestore --project demo-borapin",
-    "test:migrate": "firebase emulators:exec --only firestore --project demo-borapin \"GCLOUD_PROJECT=demo-borapin tsx scripts/migrate.ts tests/fixtures/v22-backup.json && GCLOUD_PROJECT=demo-borapin EXPECT_TRIPS=2 tsx scripts/migrate.ts tests/fixtures/v22-backup.json\""
+    "test:migrate": "firebase emulators:exec --only firestore --project demo-borapin \"GCLOUD_PROJECT=demo-borapin tsx scripts/migrate.ts tests/fixtures/v22-backup.json && GCLOUD_PROJECT=demo-borapin EXPECT_TRIPS=2 tsx scripts/migrate.ts tests/fixtures/v22-backup.json\"",
+    "data:travelinfo": "tsx scripts/travelinfo.ts"
   },
   "dependencies": {
     "es-hangul": "^2.4.0",

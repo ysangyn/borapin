@@ -148,6 +148,17 @@ a { color: var(--violet); text-decoration: none; }
 
 /* ---------- 바닥 시트 ---------- */
 .sheet { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--safe-b)); width: 100%; max-width: 520px; background: #fff; border-radius: 24px 24px 0 0; box-shadow: 0 -8px 24px rgba(23, 20, 43, 0.12); padding: 8px 20px 18px; z-index: 20; max-height: 58vh; overflow: auto; }
+.sheet { max-height: min(78vh, 680px); overflow-y: auto; overscroll-behavior: contain; }
+.region-info { margin-top: 10px; padding: 12px 14px; border-radius: 16px; background: var(--page); display: flex; flex-direction: column; gap: 6px; }
+.info-theme { font-size: 13px; font-weight: 700; color: #33248a; }
+.info-line { display: flex; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--ink2); }
+.info-line .k { flex: 0 0 42px; color: var(--ink3); font-weight: 600; }
+.info-subs { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.info-subs details { background: #fff; border-radius: 12px; padding: 8px 10px; }
+.info-subs summary { font-size: 13px; cursor: pointer; list-style: none; display: flex; gap: 6px; flex-wrap: wrap; }
+.info-subs summary::-webkit-details-marker { display: none; }
+.info-subs details[open] { display: flex; flex-direction: column; gap: 4px; }
+.link-btn { align-self: flex-start; border: none; background: none; padding: 2px 0; color: var(--violet); font-weight: 700; font-size: 13px; }
 .sheet .grip { width: 40px; height: 5px; border-radius: 3px; background: var(--line2); margin: 0 auto 10px; }
 
 /* ---------- 목록 행 ---------- */

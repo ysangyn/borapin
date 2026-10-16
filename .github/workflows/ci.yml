@@ -32,6 +32,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: 타입 검사
         run: npm run typecheck
+      - name: 여행정보 DB 검사
+        run: npx tsx scripts/travelinfo.ts --check
       - name: 빌드
         run: npm run build 2>&1 | tee build-output.txt
       - name: 예전 기록 옮기기 스크립트 점검 (에뮬레이터, 두 번 돌려도 겹치지 않는지)
