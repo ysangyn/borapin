@@ -12,75 +12,89 @@
 
 [36m[1mi [22m[39m Running script: [1mplaywright test[22m
 
-Running 14 tests using 1 worker
+Running 15 tests using 1 worker
 
-  ✓   1 tests/app.spec.ts:52:3 › 보라핀 1단계 › 로그인 화면 (724ms)
-  ✓   2 tests/app.spec.ts:58:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (3.8s)
+  ✓   1 tests/app.spec.ts:52:3 › 보라핀 1단계 › 로그인 화면 (628ms)
+  ✓   2 tests/app.spec.ts:58:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (3.6s)
   ✓   3 tests/app.spec.ts:65:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.4s)
   ✓   4 tests/app.spec.ts:81:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.3s)
   ✓   5 tests/app.spec.ts:95:3 › 보라핀 1단계 › 여행 목록과 필터 (1.1s)
-  ✓   6 tests/app.spec.ts:105:3 › 보라핀 1단계 › 홈 통계와 지도 (6.5s)
+  ✓   6 tests/app.spec.ts:105:3 › 보라핀 1단계 › 홈 통계와 지도 (6.2s)
   ✓   7 tests/app.spec.ts:123:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (14.6s)
-  ✓   8 tests/app.spec.ts:186:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (7.8s)
-  ✓   9 tests/app.spec.ts:261:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (3.5s)
-  ✓  10 tests/app.spec.ts:297:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (6.1s)
-  ✘  11 tests/app.spec.ts:342:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (3.7s)
-  -  12 tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기
-  -  13 tests/app.spec.ts:413:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다
-  -  14 tests/app.spec.ts:429:3 › 보라핀 1단계 › 기록 고치기와 지우기
+  ✓   8 tests/app.spec.ts:186:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (7.5s)
+  ✓   9 tests/app.spec.ts:261:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (4.0s)
+  ✓  10 tests/app.spec.ts:297:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (6.2s)
+  ✓  11 tests/app.spec.ts:342:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 (4.6s)
+  ✘  12 tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (15.9s)
+  -  13 tests/app.spec.ts:413:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기
+  -  14 tests/app.spec.ts:461:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 추가하면 들어온다
+  -  15 tests/app.spec.ts:477:3 › 보라핀 1단계 › 기록 고치기와 지우기
 
 
-  1) tests/app.spec.ts:342:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 ───────────────────────────
+  1) tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 ────────────────────────────
 
-    Error: locator.check: Clicking the checkbox did not change its state
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('answer').last()
+    Expected substring: "초당 순두부"
+    Timeout: 15000ms
+    Error: element(s) not found
+
     Call log:
-      - waiting for getByTestId('packing').getByLabel('수영복 챙김')
-        - locator resolved to <input type="checkbox" aria-label="수영복 챙김"/>
-      - attempting click action
-        2 × waiting for element to be visible, enabled and stable
-          - element is visible, enabled and stable
-          - scrolling into view if needed
-          - done scrolling
-          - <nav class="nav" aria-label="주 메뉴">…</nav> intercepts pointer events
-        - retrying click action
-        - waiting 20ms
-        - waiting for element to be visible, enabled and stable
-        - element is visible, enabled and stable
-        - scrolling into view if needed
-        - done scrolling
-        - performing click action
-        - click action done
-        - waiting for scheduled navigations to finish
-        - navigations have finished
+      - Expect "toContainText" getByTestId('answer').last() with timeout 15000ms
+      - waiting for getByTestId('answer').last()
 
 
-      377 |     await pack.getByRole('button', { name: '휴양' }).click();
-      378 |     await expect(pack).toContainText('수영복');
-    > 379 |     await pack.getByLabel('수영복 챙김').check();
-          |                                     ^
-      380 |     await expect(pack).toContainText(/1\/\d+ 챙김/);
-      381 |     await pack.getByLabel('선크림 담당자').click();
-      382 |     await expect(pack.getByLabel('선크림 담당자')).toHaveText('보라');
-        at /home/runner/work/borapin/borapin/tests/app.spec.ts:379:37
+      391 |     await expect(page).toHaveURL(/\/ask/);
+      392 |     const answers = page.getByTestId('answer');
+    > 393 |     await expect(answers.last()).toContainText('초당 순두부');
+          |                                  ^
+      394 |     await expect(answers.last()).toContainText('초당할머니순두부');
+      395 |     const input = page.getByLabel('질문');
+      396 |     await input.fill('거기 언제 가면 좋아?');
+        at /home/runner/work/borapin/borapin/tests/app.spec.ts:393:34
+
+    Error: pageerror: l is not a function
+    pageerror: l is not a function
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "pageerror: l is not a function",
+    +   "pageerror: l is not a function",
+    + ]
+
+      22 | });
+      23 | test.afterEach(() => {
+    > 24 |   expect(problems, problems.join('\n')).toEqual([]);
+         |                                         ^
+      25 | });
+      26 |
+      27 | /** 지도가 실제로 경계를 그렸는지 (그려진 칸 수 > 0) */
+        at /home/runner/work/borapin/borapin/tests/app.spec.ts:24:41
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-여행-상세-일정-3단계-둘의-기록-예정-여행-준비물/test-failed-1.png
+    test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: test-results/app-보라핀-1단계-여행-상세-일정-3단계-둘의-기록-예정-여행-준비물/error-context.md
+    Error Context: test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/error-context.md
 
     attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-여행-상세-일정-3단계-둘의-기록-예정-여행-준비물/trace.zip
+    test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/trace.zip
     Usage:
 
-        npx playwright show-trace test-results/app-보라핀-1단계-여행-상세-일정-3단계-둘의-기록-예정-여행-준비물/trace.zip
+        npx playwright show-trace test-results/app-보라핀-1단계-찾아보기-여행정보-이어서-묻기-우리-기록-되묻기/trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
   1 failed
-    tests/app.spec.ts:342:3 › 보라핀 1단계 › 여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물 ────────────────────────────
+    tests/app.spec.ts:386:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 ─────────────────────────────
   3 did not run
-  10 passed (54.8s)
+  11 passed (1.2m)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
