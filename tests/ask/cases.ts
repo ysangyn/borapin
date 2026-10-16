@@ -117,6 +117,25 @@ export const CASES: Case[] = [
   // 일상 낱말에 속지 않기 ('가나요' ≠ 가나, '오만 원' ≠ 오만)
   { q: '강릉 언제 가나요', intent: 'season', place: 'kr:51150' },
   { q: '오만 원으로 갈 만한 곳', intent: 'recommend' },
+  // 축제 (관광공사 자료)
+  { q: '강릉 축제', intent: 'festival', place: 'kr:51150', has: '커피축제' },
+  { q: '이번 달 축제 뭐 있어', intent: 'festival', has: '축제' },
+  { q: '요즘 축제', intent: 'festival' },
+  // 다음 여행·예정
+  { q: '다음 여행 언제야', intent: 'next', has: '제주 여행' },
+  { q: '예정된 여행', intent: 'next', has: '제주' },
+  // 준비물
+  { q: '제주 준비물', intent: 'packing', place: 'kr:50', has: '선크림' },
+  { q: '교토 갈 때 뭐 챙겨', intent: 'packing', place: 'country:JPN', has: '여권' },
+  // 우리 장소·글 찾기
+  { q: '순두부 어디였지', intent: 'find', has: '초당할머니순두부' },
+  { q: '커피 마신 날', intent: 'find', has: '바다 보며 커피 마신 날' },
+  { q: '또 갈래요 한 곳', intent: 'again', has: '초당할머니순두부' },
+  // 인사·도움말
+  { q: '안녕', intent: 'hello' },
+  { q: '고마워', intent: 'hello' },
+  { q: '뭐 물어볼 수 있어?', intent: 'help' },
+  { q: '도움말', intent: 'help' },
   // 모르는 질문은 지어내지 않는다
   { q: '오늘 저녁 뭐 해', intent: 'unknown' },
   { q: 'ㅎㅎ', intent: 'unknown' },

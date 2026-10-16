@@ -10,7 +10,10 @@ import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_COD
 import { candidates, THEMES } from '../recommend';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
-import type { Place, PlaceRec, Season, Trip, Wish } from '../types';
+import type { Note, Place, PlaceRec, Season, Trip, Wish } from '../types';
+import { festivalPeriod, isOngoing, upcomingFestivals, type FestivalData } from '../festivals';
+import { dday } from '../dates';
+import { packFromTemplate } from '../packing';
 import { dailyShuffle, samePlace } from '../wishes';
 import { findMentions, type Mention } from './gazetteer';
 import { josa } from 'es-hangul';
@@ -23,7 +26,8 @@ const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (
 export type Intent =
   | 'overview' | 'spots' | 'foods' | 'goods' | 'transport' | 'season'
   | 'count' | 'when' | 'time' | 'people' | 'again' | 'compare'
-  | 'recommend' | 'stats' | 'wishAdd' | 'wishList' | 'map' | 'choose' | 'unknown';
+  | 'recommend' | 'stats' | 'wishAdd' | 'wishList' | 'map' | 'choose'
+  | 'festival' | 'next' | 'packing' | 'find' | 'hello' | 'help' | 'unknown';
 
 export interface Btn {
   label: string;
@@ -59,6 +63,10 @@ export interface AskData {
   recs: PlaceRec[];
   info: TravelInfo;
   seasons: SeasonData | null;
+  /** 지역 축제 (관광공사) — 없으면 축제 질문에 '자료 없음' */
+  festivals?: FestivalData | null;
+  /** 여행에 남긴 글 — '커피 마신 날' 같은 찾기에 쓴다 */
+  notes?: Note[];
   now?: Date;
 }
 
@@ -113,6 +121,12 @@ function readPerson(q: string, trips: Trip[]): string | null {
 }
 
 function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boolean, hasGroup = false): Intent {
+  if (has(q, /^(안녕|하이|헬로|반가워|고마워|고맙|감사|잘\s*자|수고|사랑해|보라야|ㅎㅇ|ㅇㅋ)/) && q.length <= 12) return 'hello';
+  if (has(q, /도움말|뭐\s*(물어|할\s*수)|어떻게\s*(써|사용)|사용법|뭘\s*할\s*수/)) return 'help';
+  if (has(q, /축제|페스티벌|불꽃|행사/)) return 'festival';
+  if (has(q, /준비물|뭐\s*챙|챙길|챙겨|짐\s*(싸|쌀)|가져갈/)) return 'packing';
+  if (has(q, /다음\s*여행|예정(된|인)?\s*(여행|거)|언제\s*(떠나|출발)|디데이|d-?day/i)) return 'next';
+  if (has(q, /어디였지|어디였더라|뭐였지|이름이\s*뭐|기억\s*안|찾아\s*줘|검색/) || has(q, /(마신|먹은|갔던|봤던|했던)\s*(날|곳|데)$/)) return 'find';
   if (places.length >= 2 && has(q, /비교|vs|어디가\s*(더|나아)|중에|랑.*중|차이/)) return 'compare';
   if (has(q, /또\s*(가|갈)|다시\s*가고\s*싶은\s*(맛집|가게|장소|카페)|또\s*갈래/)) return 'again';
   if (has(q, /가고\s*싶은\s*곳/) && !places.length && !has(q, /추천/)) return 'wishList';
@@ -392,6 +406,81 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       a = recommend(q, d, now, null, groupId);
       break;
     }
+    case 'hello': {
+      const t = /고마워|고맙|감사/.test(q) ? '별말씀을요! 다음 여행도 같이 궁리해요' : /잘\s*자|수고/.test(q) ? '오늘도 수고했어요. 푹 쉬어요' : /사랑/.test(q) ? '저도요! 어디로 떠나 볼까요?' : `안녕하세요! 어디 갈지, 어디 갔었는지 뭐든 물어보세요`;
+      a = { intent, text: t, buttons: [{ label: '안 가본 곳 추천', ask: '안 가본 곳 추천' }, { label: '요즘 축제', ask: '요즘 축제' }, { label: '다음 여행', ask: '다음 여행 언제야' }] };
+      break;
+    }
+    case 'help': {
+      a = {
+        intent,
+        text: '이런 걸 물어볼 수 있어요',
+        lines: ['여행정보: "강릉 맛집", "제주 볼거리", "부산 어떻게 가", "여수 특산물"', '언제: "제주 언제 가면 좋아", "이번 달 가기 좋은 곳", "요즘 축제"', '우리 기록: "강릉 몇 번 갔어", "작년 여름에 간 곳", "엄마랑 간 곳", "순두부 어디였지"', '계획: "다음 여행 언제야", "제주 준비물", "안 가본 곳 추천", "태국 vs 베트남"'],
+        buttons: [{ label: '요즘 축제', ask: '요즘 축제' }, { label: '우리 통계', ask: '우리 몇 곳 갔어?' }, { label: '안 가본 곳 추천', ask: '안 가본 곳 추천' }],
+      };
+      break;
+    }
+    case 'festival': {
+      const fd = d.festivals ?? null;
+      const month = readMonth(q);
+      const from = month ? new Date(now.getFullYear() + (month < now.getMonth() + 1 ? 1 : 0), month - 1, 1) : now;
+      const days = month ? 31 : /요즘|지금|이번\s*주|주말/.test(q) ? 21 : 60;
+      if (p && p.t === 'kr') {
+        const list = upcomingFestivals(fd, p.code, from, 120);
+        a = list.length
+          ? { intent, text: `${placeName(p)} 축제 ${list.length}개`, lines: list.slice(0, 6).map((f) => `${isOngoing(f, now) ? '지금 열려요 · ' : ''}${f.t} · ${festivalPeriod(f)}`), buttons: [...placeButtons(p), ...search(`${placeLabel(p)} 축제`)], source: '한국관광공사 TourAPI' }
+          : { intent, text: `${placeName(p)}에 다가오는 축제 자료가 없어요`, lines: [fd?.updated ? '관광공사에 등록된 축제만 보여 드려요.' : '축제 자료를 아직 받지 못했어요. 인터넷에 연결되면 다시 물어보세요.'], buttons: [...placeButtons(p), ...search(`${placeLabel(p)} 축제`)] };
+      } else {
+        const all = Object.entries(fd?.cells ?? {}).flatMap(([code, _]) => upcomingFestivals(fd, code, from, days).map((f) => ({ code, f })));
+        const groupId2 = groupId;
+        const filtered = groupId2 ? all.filter((x) => REGION_BY_CODE.get(x.code)?.group === groupId2) : all;
+        const sorted = filtered.sort((x, y) => Number(isOngoing(y.f, now)) - Number(isOngoing(x.f, now)) || x.f.s.localeCompare(y.f.s));
+        const picks = dailyShuffle(sorted.slice(0, 40), q).slice(0, 6).sort((x, y) => Number(isOngoing(y.f, now)) - Number(isOngoing(x.f, now)) || x.f.s.localeCompare(y.f.s));
+        const head = month ? `${month}월 축제` : /요즘|지금|이번\s*주|주말/.test(q) ? '요즘 열리는 축제' : '다가오는 축제';
+        a = picks.length
+          ? { intent, text: `${groupId2 ? (GROUPS.find((g) => g.id === groupId2)?.name ?? '') + ' ' : ''}${head}`, lines: picks.map(({ code, f }) => `${placeLong({ t: 'kr', code })} · ${f.t} · ${festivalPeriod(f)}${isOngoing(f, now) ? ' (지금)' : ''}`), buttons: [...picks.slice(0, 3).map(({ code }) => ({ label: `${placeLabel({ t: 'kr', code })} 자세히`, ask: `${placeLabel({ t: 'kr', code })} 축제` })), { label: '다른 축제', ask: q + ' ' }], source: '한국관광공사 TourAPI' }
+          : { intent, text: '그때 열리는 축제 자료가 없어요', lines: [fd?.updated ? '관광공사에 등록된 축제만 보여 드려요.' : '축제 자료를 아직 받지 못했어요. 인터넷에 연결되면 다시 물어보세요.'], buttons: search('이번 달 축제') };
+      }
+      break;
+    }
+    case 'next': {
+      const planned = d.trips.filter((t) => t.status === 'planned').sort((x, y) => (x.when.y ? x.when.y * 10000 + (x.when.m ?? 0) * 100 + (x.when.d ?? 0) : 9e9) - (y.when.y ? y.when.y * 10000 + (y.when.m ?? 0) * 100 + (y.when.d ?? 0) : 9e9));
+      a = planned.length
+        ? { intent, text: `다음 여행은 ${planned[0].title}${dday(planned[0].when, now) ? ` · ${dday(planned[0].when, now)}` : ''}`, lines: planned.slice(0, 6).map((t) => `${formatWhen(t.when)} · ${t.title} · ${t.places.map(placeLabel).join(', ')}${(t.packing?.length ?? 0) ? ` · 준비물 ${t.packing!.filter((x) => x.done).length}/${t.packing!.length}` : ''}`), buttons: planned.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
+        : { intent, text: '예정된 여행이 아직 없어요', lines: ['가고 싶은 곳에서 "여행 만들기"를 누르거나, 기록하기에서 "갈 예정"으로 남겨 보세요.'], buttons: [{ label: '가고 싶은 곳', to: '/wishes' }, { label: '여행 계획하기', to: '/record?status=planned' }] };
+      break;
+    }
+    case 'packing': {
+      const abroad = p?.t === 'country';
+      const theme = p ? info(d, p)?.main.theme ?? '' : '';
+      const kind = /바다|해변|휴양|섬|리조트/.test(theme + q) ? 'rest' : /산|숲|계곡|트레킹|등산|자연/.test(theme + q) ? 'nature' : /아이|가족|부모/.test(q) ? 'family' : 'city';
+      const items = packFromTemplate(kind, abroad).map((x) => x.t);
+      const s2 = p ? seasonFor(d.seasons, p) : null;
+      a = {
+        intent,
+        text: `${p ? placeName(p) + ' ' : ''}준비물 ${items.length}가지${abroad ? ' (해외)' : ''}`,
+        lines: [items.join(', '), s2?.why ? `날씨: ${s2.why}` : ''].filter(Boolean),
+        buttons: [{ label: '여행 만들고 준비물 넣기', to: p ? `/record?status=planned&place=${placeParam(p)}` : '/record?status=planned' }, ...(p ? placeButtons(p) : [])],
+        source: '보라핀 기본 준비물',
+      };
+      break;
+    }
+    case 'find': {
+      const words = q.replace(/어디였지|어디였더라|뭐였지|이름이\s*뭐|기억\s*안\s*나|찾아\s*줘|검색|우리가|갔던|먹었던|그/g, ' ').split(/\s+/).map((w) => w.replace(/[?!.,~]/g, '').replace(/(에서|으로|이랑|하고|에는|은|는|이|가|을|를|에|로|와|과|도|만|랑)$/, '')).filter((w) => w.length >= 2);
+      const hit = (text: string) => words.some((w) => text.includes(w));
+      const recs = d.recs.filter((r) => hit([r.name, r.address ?? '', r.memo ?? '', ...Object.values(r.reviews ?? {})].join(' ')));
+      const notes = (d.notes ?? []).filter((n) => hit(n.text));
+      const trips = d.trips.filter((t) => hit([t.title, t.memo, ...(t.tags ?? [])].join(' ')));
+      const lines = [
+        ...recs.slice(0, 5).map((r) => `우리 장소: ${r.name} · ${placeName(r.region)}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`),
+        ...notes.slice(0, 4).map((n) => { const t = d.trips.find((x) => x.id === n.tripId); return `글: "${n.text.slice(0, 40)}"${t ? ` · ${t.title}` : ''}`; }),
+        ...trips.slice(0, 4).map((t) => `여행: ${t.title} · ${formatWhen(t.when)}`),
+      ];
+      a = lines.length
+        ? { intent, text: `'${words.join(' ')}'로 찾은 기록 ${recs.length + notes.length + trips.length}건`, lines, buttons: [...recs.slice(0, 2).map((r) => ({ label: r.name, to: `/places/${r.id}` })), ...notes.slice(0, 2).map((n) => ({ label: '글 보기', to: `/trips/${n.tripId}` })), ...trips.slice(0, 2).map((t) => ({ label: t.title, to: `/trips/${t.id}` }))], source: '우리 기록' }
+        : { intent, text: `'${words.join(' ') || q}'로는 우리 기록에서 못 찾았어요`, lines: ['장소 이름·한 줄 평·글·여행 제목에서 찾아요.'], buttons: [{ label: '우리 장소', to: '/places' }, ...search(q)] };
+      break;
+    }
     case 'map': {
       a = p ? { intent, text: `${jo(placeName(p), '을/를')} 지도에서 볼게요`, buttons: [{ label: '지도 열기', to: `/map?sel=${placeParam(p)}` }] } : { intent, text: '우리 지도', buttons: [{ label: '지도 열기', to: '/map' }] };
       break;
@@ -415,4 +504,4 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
 }
 
 /** 첫 화면 버튼 (자유 입력을 줄인다) */
-export const STARTERS = ['안 가본 곳 추천', '이번 달 가기 좋은 곳', '우리 몇 곳 갔어?', '작년에 간 곳', '또 가자고 한 맛집', '가고 싶은 곳'];
+export const STARTERS = ['요즘 축제', '안 가본 곳 추천', '이번 달 가기 좋은 곳', '다음 여행 언제야', '우리 몇 곳 갔어?', '또 가자고 한 맛집'];

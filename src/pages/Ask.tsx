@@ -6,6 +6,8 @@ import { Icon, TopBar, useToast } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { useSeasons } from '../lib/seasons';
+import { useFestivals } from '../lib/festivals';
+import { useAllNotes } from '../lib/tripExtras';
 import { useTravelInfo } from '../lib/travelinfo';
 import { quickWish } from '../lib/wishActions';
 import { ask, STARTERS, type Answer, type AskCtx, type Btn } from '../lib/ask/engine';
@@ -24,12 +26,14 @@ export default function Ask() {
   const { places: recs } = usePlaces();
   const info = useTravelInfo();
   const seasons = useSeasons();
+  const festivals = useFestivals();
+  const notes = useAllNotes();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [ctx, setCtx] = useState<AskCtx>({});
   const [text, setText] = useState('');
   const end = useRef<HTMLDivElement>(null);
   const ready = !!(trips && wishes && recs && info);
-  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons } : null), [ready, trips, wishes, recs, info, seasons]);
+  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [] } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes]);
 
   const send = (q: string, forced?: Place) => {
     if (!q.trim() || !data) return;
