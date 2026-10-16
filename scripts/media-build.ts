@@ -46,7 +46,14 @@ async function info(title: string, width?: number) {
   const params: Record<string, string> = { action: 'query', format: 'json', origin: '*', titles: title, prop: 'imageinfo', iiprop: 'url|size|mime|extmetadata' };
   if (width) params.iiurlwidth = String(width);
   for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-  const j = (await (await fetch(u, { headers: { 'User-Agent': UA } })).json()) as { query: { pages: Record<string, { imageinfo?: { url: string; thumburl?: string; width: number; height: number; extmetadata?: Record<string, { value: string }> }[] }> } };
+  // 위키미디어가 '요청이 너무 많다'고 글로 답하면(JSON 아님) 쉬었다가 다시 (사진이 많을 때)
+  let j: { query: { pages: Record<string, { imageinfo?: { url: string; thumburl?: string; width: number; height: number; extmetadata?: Record<string, { value: string }> }[] }> } } | null = null;
+  for (let i = 0; i < 6 && !j; i++) {
+    const r = await fetch(u, { headers: { 'User-Agent': UA } });
+    const text = await r.text();
+    try { j = JSON.parse(text); } catch { await new Promise((res) => setTimeout(res, 8000 * (i + 1))); }
+  }
+  if (!j) throw new Error(`위키미디어 응답 없음: ${title}`);
   const ii = Object.values(j.query.pages)[0]?.imageinfo?.[0];
   if (!ii) throw new Error(`파일 없음: ${title}`);
   const m = ii.extmetadata ?? {};
@@ -84,6 +91,7 @@ const out: { photos: unknown[]; videos: unknown[] } = { photos: [], videos: [] }
 
 for (const p of picks.photos) {
   try {
+    await new Promise((res) => setTimeout(res, 1200)); // 요청 간격 (예의 + 제한 피하기)
     const i = await info(p.title, 1920);
     const src = await download(i.thumb);
     const pos = p.focus === 'top' ? 'top' : p.focus === 'bottom' ? 'bottom' : p.focus === 'attention' ? sharp.strategy.attention : 'centre';
