@@ -31,28 +31,37 @@ Call log:
 - link "담기":
   - /url: /wishes/new
 - tablist "누가 원하는 곳":
-  - tab "전체 2" [selected]
-  - tab "모두 원해요 0"
-  - tab "내 하트 2"
+  - tab "전체 5" [selected]
+  - tab "둘 다 원해요 1"
+  - tab "내 하트 5"
 - heading "한 명만 원해요" [level=2]
-- text: 2곳
+- text: 4곳
 - link "강원 영월군 가고 싶은 곳 보기":
-  - /url: /wishes/I3u20z83E0xWsAJTZOJD
+  - /url: /wishes/4GfyHp6b6Xod070nY67O
   - text: 강원 1 강원 영월군 지금 축제 · 영월 단종문화제 한마당 큰잔치 거리 퍼레이드 10.15~21 가기 좋은 때 4~6, 9·10월
 - button "내 하트 빼기" [pressed]: 나
 - link "경남 남해군 가고 싶은 곳 보기":
-  - /url: /wishes/7XZQLKJfzEqieImBRA9G
+  - /url: /wishes/3WXABdSxy86koRhKwe0M
   - text: 경남 남해군 가기 좋은 때 4~6, 10·11월
 - button "내 하트 빼기" [pressed]: 나
+- link "대만 가오슝 가고 싶은 곳 보기":
+  - /url: /wishes/Azl2TyfKvcy2VuPkhoDA
+  - text: 대만 대만 가오슝 가기 좋은 때 11~3월 먹을 것 해산물
+- button "내 하트 빼기" [pressed]: 나
+- link "강원 속초시 가고 싶은 곳 보기":
+  - /url: /wishes/aIM7fjcWvy4jU6vlBB9w
+  - text: 강원 속초시 가기 좋은 때 4~6, 9·10월
+- button "내 하트 빼기" [pressed]: 나
+- heading "예정" [level=2]
+- text: 1곳
+- link "제주 가고 싶은 곳 보기":
+  - /url: /wishes/sil919Dy6Sy7a36vw06T
+  - text: 1 제주 가기 좋은 때 5·6, 9~11월 가볼 곳 성산일출봉 외 1
+- link "예정 · 2026년쯤":
+  - /url: /trips/poP5J59gNZFUSAUuw7Gj
 - heading "찾아보기" [level=2]
 - button "여행지 뽑기 국내 160곳 · 테마로"
 - button "해외 도시 고르기 125곳 · 예산·비행·누구와"
-- text: 10월에 가 볼 만한 곳 경북 청송군 주왕산의 기암괴석과 달기약수의 시원함 가기 좋은 때 4~6, 9·10월
-- button "담기"
-- text: 충남 부여군 백제의 숨결이 깃든 연꽃 정원 가기 좋은 때 4·5, 9·10월
-- button "담기"
-- text: 강원 횡성군 명품 한우와 숲길 드라이브 가기 좋은 때 4~6, 9·10월
-- button "담기"
 - text: 담아 둔 곳 소식 · 한 곳에 한 줄
 - navigation "주 메뉴":
   - link "홈":
@@ -63,8 +72,9 @@ Call log:
     - /url: /record
   - link "지도":
     - /url: /map
-  - link "피드":
+  - link "새 소식 1개 피드":
     - /url: /feed
+    - text: 피드
 - link "보라에게 물어봐":
   - /url: /ask
 - status
