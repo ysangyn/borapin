@@ -36,8 +36,12 @@ export const photoById = (id: string) => PHOTOS.find((p) => p.id === id) ?? null
 export const videoById = (id: string) => VIDEOS.find((v) => v.id === id) ?? null;
 
 /** 그 지역 사진 (국내 칸 코드 또는 나라가 같으면) */
+/** 장소 사진: 국내는 시·군, 해외는 도시가 맞는 것 → 없으면 그 나라의 아무 도시 사진 */
 export function photoForPlace(p: Place): ScenePhoto | null {
-  return PHOTOS.find((x) => x.place && (p.t === 'kr' ? x.place.t === 'kr' && x.place.code === p.code : x.place.t === 'country' && x.place.id === p.id)) ?? null;
+  if (p.t === 'kr') return PHOTOS.find((x) => x.place?.t === 'kr' && x.place.code === p.code) ?? null;
+  const inCountry = PHOTOS.filter((x) => x.place?.t === 'country' && x.place.id === p.id);
+  if (p.city) { const exact = inCountry.find((x) => x.place?.t === 'country' && x.place.city === p.city); if (exact) return exact; }
+  return inCountry.find((x) => x.place?.t === 'country' && !x.place.city) ?? inCountry[0] ?? null;
 }
 
 /** 움직이는 그림을 아껴야 하는 기기 (데이터 절약·움직임 줄이기) */

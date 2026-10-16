@@ -21,7 +21,9 @@ interface Pick {
   id: string;
   title: string;
   name: string;
-  place?: { t: 'kr'; code: string } | { t: 'country'; id: string };
+  place?: { t: 'kr'; code: string } | { t: 'country'; id: string; city?: string };
+  /** 작은 크기(640)만 만든다 — 목록 네모·카드용 (도시 사진처럼 수가 많을 때) */
+  small?: boolean;
   /** 영상: 시작 초, 길이 초 */
   start?: number;
   dur?: number;
@@ -86,10 +88,16 @@ for (const p of picks.photos) {
     const src = await download(i.thumb);
     const pos = p.focus === 'top' ? 'top' : p.focus === 'bottom' ? 'bottom' : p.focus === 'attention' ? sharp.strategy.attention : 'centre';
     // 3:2로 맞춰 잘라 같은 틀에서 보기 좋게
-    const l = await sharp(src).rotate().resize(1280, 853, { fit: 'cover', position: pos }).webp({ quality: 74 }).toBuffer();
     const s = await sharp(src).rotate().resize(640, 427, { fit: 'cover', position: pos }).webp({ quality: 70 }).toBuffer();
-    fs.writeFileSync(path.join(OUT, `${p.id}-l.webp`), l);
     fs.writeFileSync(path.join(OUT, `${p.id}-s.webp`), s);
+    if (p.small) {
+      // 작은 것만: 큰 화면에서도 같은 파일을 쓴다 (목록·카드용이라 충분)
+      out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-s.webp` }, w: 640, h: 427, lqip: await lqip(s), credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
+      console.log(`사진 ${p.id}: ${kb(path.join(OUT, `${p.id}-s.webp`))} (작게만) · ${i.credit.license}`);
+      continue;
+    }
+    const l = await sharp(src).rotate().resize(1280, 853, { fit: 'cover', position: pos }).webp({ quality: 74 }).toBuffer();
+    fs.writeFileSync(path.join(OUT, `${p.id}-l.webp`), l);
     fs.writeFileSync(path.join(PREVIEW, `photo-${p.id}.jpg`), await sharp(l).resize(640).jpeg({ quality: 75 }).toBuffer());
     out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-l.webp` }, w: 1280, h: 853, lqip: await lqip(s), credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
     console.log(`사진 ${p.id}: ${kb(path.join(OUT, `${p.id}-l.webp`))} / ${kb(path.join(OUT, `${p.id}-s.webp`))} · ${i.credit.license}`);
