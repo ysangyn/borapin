@@ -67,7 +67,16 @@ export default function App() {
         </div>
       </div>
     );
-  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map');
+  // 떠 있는 보라: 목록 화면(홈·여행·피드·추억·가고 싶은 곳·우리 장소)에만. 상세·지도·입력 화면에서는 단추를 가리므로 뺀다
+  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin');
+  // 글자를 치는 동안은 떠 있는 보라를 숨긴다 (입력칸·단추를 가리지 않게)
+  useEffect(() => {
+    const on = (e: FocusEvent) => { const t = e.target as HTMLElement | null; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) document.body.classList.add('typing'); };
+    const off = () => window.setTimeout(() => { const a = document.activeElement as HTMLElement | null; if (!a || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) document.body.classList.remove('typing'); }, 80);
+    document.addEventListener('focusin', on);
+    document.addEventListener('focusout', off);
+    return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off); };
+  }, []);
   const hideNav = hideNavFor(loc.pathname);
   return (
     <DataProvider>

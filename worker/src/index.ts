@@ -101,8 +101,12 @@ async function runModel(env: Env, system: string, user: string, maxTokens: numbe
     ],
     max_tokens: maxTokens,
     temperature: 0.2,
-  } as never)) as { response?: string };
-  return r.response ?? '';
+  } as never)) as { response?: unknown; choices?: { message?: { content?: unknown } }[] };
+  // 모델마다 모양이 다르다: 글자 / 객체(JSON) / OpenAI식 choices
+  const raw = r.response ?? r.choices?.[0]?.message?.content ?? '';
+  if (typeof raw === 'string') return raw;
+  if (raw && typeof raw === 'object') return JSON.stringify(raw);
+  return String(raw ?? '');
 }
 
 /** 모델 출력에서 JSON만 꺼낸다 (앞뒤 설명·코드펜스가 붙어도) */

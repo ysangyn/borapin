@@ -9,6 +9,7 @@ import { everyoneLabel, memberNames } from '../lib/members';
 import type { Wish } from '../lib/types';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 import { photoForPlace } from '../lib/media';
+import { flightLinks } from '../lib/flights';
 
 export function wishTitle(w: Wish) {
   return w.spotName ? `${w.spotName}` : placeLong(w.place);
@@ -78,6 +79,12 @@ export default function WishCard({ wish, state, seasons, compact }: {
           {!compact && memo.length > 0 && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{memo.join(' · ')}</span>}
         </span>
       </Link>
+      {!compact && wish.place.t === 'country' && (() => { const f = flightLinks(wish.place, season?.m[0] ?? null); return f ? (
+        <span className="wish-flights" data-testid="wish-flights">
+          <a href={f.skyscanner} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>항공권</a>
+          <a href={f.google} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} title="구글 항공권에서 가격 알림을 켤 수 있어요">가격 알림</a>
+        </span>
+      ) : null; })()}
       {state.kind === 'wish' && (
         <Link to={`/record?status=planned&place=${placeParam(wish.place)}&wish=${wish.id}`} className="btn sm soft" data-testid="wish-plan">여행 만들기</Link>
       )}

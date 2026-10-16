@@ -45,7 +45,7 @@ function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number,
   map.fitBounds(b, { padding: { top: 90, bottom: 60, left: 50, right: 70 }, maxZoom: 3.2, duration });
 }
 
-const COLORS = { v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0' };
+const COLORS = { v1: '#B9A8F5', v2: '#8D73EE', v3: '#5B3FD1', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0' };
 
 function fillExpr() {
   return [

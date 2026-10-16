@@ -235,8 +235,9 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           COMMIT="${GITHUB_SHA::7}" npx playwright test -c playwright.preview.config.ts 2>&1 | tee preview-output.txt
-      - name: 보라(AI) 답 품질 점검 (main에 올릴 때만 · 무료 한도 아끼기)
+      - name: 보라(AI) 답 품질 점검 (main에 올릴 때만 · 무료 한도 아끼기 · 실패해도 앱 배포는 막지 않고 기록만)
         if: steps.testkey.outputs.ok == 'true' && needs.worker.outputs.url != '' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        continue-on-error: true
         env:
           ASK_URL: ${{ needs.worker.outputs.url }}
           FIREBASE_API_KEY: AIzaSyAXT9E3jX2BBJwQv0dWS4Fqcx-7qK8bWt0
