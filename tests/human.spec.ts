@@ -462,6 +462,38 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/record');
+    await page.getByLabel('어디 검색').fill('여수');
+    await page.getByRole('option', { name: /여수시/ }).first().click();
+    await page.getByLabel('제목').fill('여수 밤바다 사진');
+    await page.getByRole('button', { name: '몰라요' }).click();
+    await page.getByTestId('record-photo-input').setInputFiles(['tests/fixtures/photo-gangneung.jpg']);
+    await expect(page.locator('.pending-photo')).toHaveCount(1);
+    await page.getByTestId('save').click();
+    await expect(page.getByTestId('trip-title')).toHaveText('여수 밤바다 사진', { timeout: 30_000 });
+    await expect(page).toHaveURL(/tab=photos/);
+    await expect(page.getByTestId('trip-photos').locator('.photo-cell img[data-loaded]')).toHaveCount(1, { timeout: 30_000 });
+    await page.context().close();
+  });
+
+  test('피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/feed');
+    const sel = page.getByLabel('사진을 올릴 여행');
+    await expect(sel).toBeVisible();
+    await sel.selectOption({ label: /여수 밤바다 사진/ });
+    await page.getByTestId('quick-upload-input').setInputFiles(['tests/fixtures/photo-gangneung.jpg', 'tests/fixtures/photo-gangneung.jpg']);
+    await expect(page.getByRole('status')).toContainText('사진 2장을 올렸어요', { timeout: 60_000 });
+    const first = page.getByTestId('feed-item').first();
+    await expect(first).toHaveAttribute('data-kind', 'photos');
+    await expect(first).toContainText('여수 밤바다 사진에 사진 3장');
+    await page.context().close();
+  });
+
   for (const width of [360, 375, 390]) {
     test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
       const page = await phone(browser, width, 740);

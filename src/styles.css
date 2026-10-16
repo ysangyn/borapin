@@ -88,7 +88,6 @@ a { color: var(--violet); text-decoration: none; }
 .small { font-size: 13px; }
 .tiny { font-size: 12px; }
 .card { background: var(--page); border-radius: 22px; padding: 14px; }
-.card.white { background: #fff; border: 1px solid var(--line); }
 .list { display: flex; flex-direction: column; }
 .sep { height: 1px; background: var(--line); margin: 4px 0; }
 
@@ -564,3 +563,20 @@ a { color: var(--violet); text-decoration: none; }
 @keyframes fab-bubble { 0%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateX(6px); visibility: hidden; } }
 .ask-fab-bubble { animation: fab-bubble 7s ease forwards; }
 @media (prefers-reduced-motion: reduce) { .ask-fab-bubble { animation: none; } }
+
+/* 홈 가고 싶은 곳: 흰 카드 안에 세 줄, 가로로 돌아가지 않는다 */
+.wish-home { padding: 4px 14px; }
+.wish-home .wish-card { padding: 12px 0; }
+.wish-home-more { display: block; text-align: center; padding: 10px 0 8px; font-weight: 700; color: var(--violet); border-top: 1px solid var(--line); }
+.card.white { background: #fff; border: 1px solid var(--line); }
+
+/* 기록 남기기: 저장 전 고른 사진 */
+.pending-photos { display: flex; gap: 8px; flex-wrap: wrap; }
+.pending-photo, .pending-add { width: 72px; height: 72px; border-radius: 14px; border: none; padding: 0; position: relative; overflow: hidden; background: var(--page); }
+.pending-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pending-x { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: rgba(23, 20, 43, 0.65); color: #fff; display: flex; align-items: center; justify-content: center; }
+.pending-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--violet); border: 1.5px dashed #c9c2ef; background: #faf9ff; }
+
+/* 피드 맨 위 사진 올리기 */
+.quick-upload { display: flex; gap: 8px; align-items: center; }
+.quick-upload-trip { flex: 1; min-width: 0; height: 42px; }

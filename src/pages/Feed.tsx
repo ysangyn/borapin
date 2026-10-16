@@ -13,6 +13,7 @@ import { useAuth, displayName } from '../lib/auth';
 import { markFeedSeen } from '../lib/feedSeen';
 import { openSlideshow } from '../components/slideshow';
 import { wishTitle } from '../components/WishCard';
+import QuickUpload from '../components/QuickUpload';
 
 /** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로 */
 export default function Feed() {
@@ -35,6 +36,7 @@ export default function Feed() {
     <>
       <TopBar title="피드" right={<Link to="/memories" className="btn sm soft" data-testid="to-memories">추억 돌아보기</Link>} />
       <div className="page feed" style={{ paddingTop: 4 }} data-testid="feed">
+        {trips && trips.length > 0 && <QuickUpload trips={trips} />}
         {!items && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
         {items && items.length === 0 && (
           <div className="card art-row" data-testid="feed-empty">

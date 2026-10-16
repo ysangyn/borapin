@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
@@ -9,6 +9,8 @@ import { parsePlaceParam, placeLabel } from '../lib/geo';
 import type { Place, Precision, Season, TripInput, TripKind, TripStatus, When } from '../lib/types';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { memberNames } from '../lib/members';
+import { pickImages, uploadBlocker, uploadSummary, useUploader } from '../lib/uploader';
+import { useFlags } from '../lib/admin';
 
 const PRECISIONS: { p: Precision; label: string }[] = [
   { p: 'day', label: '날짜' },
@@ -28,6 +30,13 @@ export default function Record() {
   const goBack = useGoBack();
   const toast = useToast();
   const auth = useAuth();
+  // 새 기록에 바로 올릴 사진 (저장되면 그 여행에 올라간다)
+  const [pending, setPending] = useState<File[]>([]);
+  const previews = useMemo(() => pending.map((f) => URL.createObjectURL(f)), [pending]);
+  useEffect(() => () => previews.forEach((u) => URL.revokeObjectURL(u)), [previews]);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const uploader = useUploader();
+  const flags = useFlags();
   const { trips } = useTrips();
   const existing = useMemo(() => trips?.find((t) => t.id === id), [trips, id]);
   const thisYear = new Date().getFullYear();
@@ -104,6 +113,16 @@ export default function Record() {
         const wishId = sp.get('wish');
         if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
         if (news) celebrate();
+        if (pending.length) {
+          const block = await uploadBlocker(flags);
+          if (block) toast(`기록했어요 · 사진은 못 올렸어요: ${block}`);
+          else {
+            const r = await uploader.run(pending, newId, auth.user);
+            toast(`기록했어요 · ${uploadSummary(r.ok, r.fails)}`);
+          }
+          nav(`/trips/${newId}?tab=photos`, { replace: true });
+          return;
+        }
         toast(status === 'planned' ? '여행 계획을 담았어요' : `기록했어요${news ? ` · ${news}` : ''}`);
         nav(`/trips/${newId}`, { replace: true });
       }
@@ -214,11 +233,31 @@ export default function Record() {
           <input className="input" aria-label="제목" placeholder={autoTitle || '비워 두면 자동으로 지어요'} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} />
         </div>
 
+        {!editing && (
+          <div className="field">
+            <span className="label">사진 <span className="muted" style={{ fontWeight: 500 }}>(선택 · 저장하면 같이 올라가요)</span></span>
+            <div className="pending-photos">
+              {previews.map((u, i) => (
+                <button key={u} type="button" className="pending-photo" aria-label={`${pending[i].name} 빼기`} onClick={() => setPending((l) => l.filter((_, j) => j !== i))}>
+                  <img src={u} alt="" />
+                  <span className="pending-x"><Icon name="x" size={12} stroke={2.6} /></span>
+                </button>
+              ))}
+              <button type="button" className="pending-add" onClick={() => fileInput.current?.click()} aria-label="사진 고르기" data-testid="record-photo-add">
+                <Icon name="image" size={22} stroke={1.8} />
+                <span className="tiny">{pending.length ? '더 고르기' : '사진 고르기'}</span>
+              </button>
+              <input ref={fileInput} type="file" accept="image/*" multiple hidden data-testid="record-photo-input" onChange={(e) => { const add = pickImages(e.target.files); if (add.length !== (e.target.files?.length ?? 0)) toast('사진 파일만 올릴 수 있어요'); setPending((l) => [...l, ...add].slice(0, 30)); e.target.value = ''; }} />
+            </div>
+          </div>
+        )}
+
         <div className="field">
           <span className="label">메모</span>
           <textarea className="textarea" aria-label="메모" placeholder="안 써도 돼요" value={memo} onChange={(e) => setMemo(e.target.value)} maxLength={10000} />
         </div>
 
+        {uploader.queue.length > 0 && <div className="small muted" role="status">사진 올리는 중 {uploader.queue.filter((q) => q.pct >= 1).length}/{uploader.queue.length}…</div>}
         <button className="btn block" disabled={!canSave} onClick={save} data-testid="save">
           {saving ? '저장 중…' : editing ? '고친 내용 저장' : '저장하기'}
         </button>
