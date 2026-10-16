@@ -10,7 +10,7 @@ import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_COD
 import { candidates, THEMES } from '../recommend';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
-import type { Note, Place, PlaceRec, Season, Trip, Wish } from '../types';
+import type { Note, Photo, PlanItem, Place, PlaceRec, Season, Trip, Wish } from '../types';
 import { festivalPeriod, isOngoing, upcomingFestivals, type FestivalData } from '../festivals';
 import { dday } from '../dates';
 import { packFromTemplate } from '../packing';
@@ -67,6 +67,10 @@ export interface AskData {
   festivals?: FestivalData | null;
   /** 여행에 남긴 글 — '커피 마신 날' 같은 찾기에 쓴다 */
   notes?: Note[];
+  /** 사진 정보(파일 아님): 몇 장·언제 찍었는지·설명 */
+  photos?: Photo[];
+  /** 일정 줄: 가볼 곳·날짜·시간·예약 정보 */
+  plans?: PlanItem[];
   now?: Date;
 }
 

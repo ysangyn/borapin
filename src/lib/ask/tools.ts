@@ -10,7 +10,7 @@ import { monthsLabel, seasonFor } from '../seasons';
 import { festivalPeriod, isOngoing, upcomingFestivals } from '../festivals';
 import { packFromTemplate } from '../packing';
 import { samePlace, dailyShuffle } from '../wishes';
-import type { Place, Season } from '../types';
+import type { Photo, Place, Season } from '../types';
 import type { AskData, Btn } from './engine';
 
 export interface ToolCall { tool: string; args?: Record<string, unknown> }
@@ -113,6 +113,36 @@ export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now 
           const q = str(a.query);
           const list = (d.notes ?? []).filter((n) => !q || n.text.includes(q));
           out.push(list.length ? `글 ${list.length}개: ${list.slice(0, 5).map((n) => { const t = d.trips.find((x) => x.id === n.tripId); return `"${n.text.slice(0, 60)}"(${n.by?.name ?? ''}${t ? `, ${t.title}` : ''})`; }).join(' / ')}` : '글 없음');
+          break;
+        }
+        case 'our_photos': {
+          const p = str(a.place) ? placeArg(a) : null;
+          const tripQ = str(a.trip);
+          let trips = d.trips;
+          if (p) trips = trips.filter((t) => t.places.some((x) => samePlace(x, p)));
+          if (tripQ) trips = trips.filter((t) => t.title.includes(tripQ));
+          const ids = new Set(trips.map((t) => t.id));
+          const list = (d.photos ?? []).filter((ph) => ph.tripId && ids.has(ph.tripId));
+          const byTrip = new Map<string, Photo[]>();
+          for (const ph of list) byTrip.set(ph.tripId!, [...(byTrip.get(ph.tripId!) ?? []), ph]);
+          out.push(list.length
+            ? `사진 ${list.length}장: ${[...byTrip.entries()].slice(0, 6).map(([id, phs]) => { const t = d.trips.find((x) => x.id === id); const caps = phs.map((x) => x.caption?.trim()).filter(Boolean).slice(0, 3); const taken = phs.map((x) => x.taken).filter(Boolean).sort(); return `${t?.title ?? ''} ${phs.length}장${taken.length ? ` (${taken[0]!.slice(0, 10)}${taken.length > 1 ? `~${taken[taken.length - 1]!.slice(0, 10)}` : ''})` : ''}${caps.length ? ` 설명: ${caps.map((c) => `"${c}"`).join(', ')}` : ''}`; }).join(' / ')}`
+            : '사진 없음');
+          for (const [id] of [...byTrip.entries()].slice(0, 2)) { const t = d.trips.find((x) => x.id === id); if (t) out.push(`  ${addAction(`${t.title} 사진 보기`, { to: `/trips/${t.id}?tab=photos` })}`); }
+          break;
+        }
+        case 'plans': {
+          const p = str(a.place) ? placeArg(a) : null;
+          const tripQ = str(a.trip);
+          let trips = d.trips.filter((t) => t.status === 'planned' || (d.plans ?? []).some((x) => x.tripId === t.id));
+          if (p) trips = trips.filter((t) => t.places.some((x) => samePlace(x, p)));
+          if (tripQ) trips = trips.filter((t) => t.title.includes(tripQ));
+          const rows = trips.slice(0, 3).map((t) => {
+            const items = (d.plans ?? []).filter((x) => x.tripId === t.id).sort((x, y) => (x.day ?? '').localeCompare(y.day ?? '') || x.order - y.order);
+            return `${t.title} 일정 ${items.length}줄: ${items.slice(0, 12).map((x) => `${x.day ? x.day.slice(5) + ' ' : ''}${x.time ? x.time + ' ' : ''}${x.name}${x.info ? ` (${x.info.slice(0, 40)})` : ''}${x.done ? ' ✓' : ''}`).join(', ') || '없음'}`;
+          });
+          out.push(rows.length ? rows.join(' / ') : '일정 있는 여행 없음');
+          for (const t of trips.slice(0, 2)) out.push(`  ${addAction(`${t.title} 일정 보기`, { to: `/trips/${t.id}?tab=plan` })}`);
           break;
         }
         case 'stats': {

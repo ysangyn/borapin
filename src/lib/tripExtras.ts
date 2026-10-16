@@ -52,6 +52,16 @@ export const deleteNote = (id: string) => queued(deleteDoc(doc(notesCol(), id)))
 
 export { PACK_TEMPLATES, packFromTemplate } from './packing';
 
+/** 모든 여행의 일정 줄 (물어보기용) */
+export function useAllPlans(enabled = true) {
+  const [items, setItems] = useState<PlanItem[] | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    return onSnapshot(plansCol(), (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as PlanItem)), () => setItems([]));
+  }, [enabled]);
+  return items;
+}
+
 /** 모든 여행의 글 (공유카드 '메모 인용' 등) */
 export function useAllNotes(enabled = true) {
   const [items, setItems] = useState<Note[] | null>(null);

@@ -70,6 +70,8 @@ const TOOLS = `
 - our_trips: 우리가 그 지역에 간 기록 (언제·제목·누구와) · {place?, year?, season?, person?}
 - our_places: 우리가 남긴 맛집·카페·명소와 한 줄 평 · {place?, query?}
 - our_notes: 여행에 남긴 글 찾기 · {query}
+- our_photos: 사진 몇 장·언제 찍었는지·설명 (여행 또는 지역별) · {place?, trip?}
+- plans: 여행 일정표(가볼 곳·날짜·시간·예약 정보) · {place?, trip?}
 - stats: 우리 여행 통계 (몇 번, 시·군 몇 곳, 나라) · {}
 - wishes: 가고 싶은 곳 목록 · {}
 - next_trips: 예정된 여행과 D-day · {}

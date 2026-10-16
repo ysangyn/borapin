@@ -32,3 +32,10 @@ test('도구: 모르는 지명은 앞 대화 지역을 쓰고, 추천은 조건�
   assert.match(f.text, /추천 후보 \(10월\) \(바다\) \(안 가본 곳\)/);
   assert.doesNotMatch(f.text, /강릉시 ·/);
 });
+
+test('도구: 사진·일정도 사실로 만든다', () => {
+  const d2: AskData = { ...d, photos: [{ id: 'p1', tripId: 't1', w: 1, h: 1, taken: '2019-05-03T14:20', takenGuess: false, bytes: 1, caption: '경포 바다', v: 1 }], plans: [{ id: 'pl1', tripId: 't1', name: '초당순두부', order: 0, day: '2019-05-03', time: '12:00', info: '예약 010', done: true, v: 1 }] };
+  const f = runTools([{ tool: 'our_photos', args: { place: '강릉' } }, { tool: 'plans', args: { trip: '강릉' } }], d2, null);
+  assert.match(f.text, /사진 1장: 강릉시 여행 1장 \(2019-05-03\) 설명: "경포 바다"/);
+  assert.match(f.text, /강릉시 여행 일정 1줄: 05-03 12:00 초당순두부 \(예약 010\) ✓/);
+});
