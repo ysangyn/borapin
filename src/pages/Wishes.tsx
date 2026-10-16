@@ -9,7 +9,8 @@ import { placeLong } from '../lib/geo';
 import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
-import { bothWant, quickWish, sortWishes, wishState } from '../lib/wishes';
+import { bothWant, sortWishes, wishState } from '../lib/wishes';
+import { quickWish } from '../lib/wishActions';
 
 type Filter = 'all' | 'both' | 'kr' | 'abroad';
 

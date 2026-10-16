@@ -1,5 +1,5 @@
 import { COUNTRIES, REGIONS } from './geo';
-import type { Stats } from './data';
+import type { Stats } from './stats';
 import type { TravelInfo } from './travelinfo';
 import { isGoodNow, type SeasonData } from './seasons';
 import { dailyShuffle } from './wishes';

@@ -1,4 +1,4 @@
-import type { Stats } from './data';
+import type { Stats } from './stats';
 import type { Photo, PlaceRec, Trip } from './types';
 import { CONTINENTS } from './geo';
 

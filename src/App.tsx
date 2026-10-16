@@ -13,6 +13,7 @@ import Wishes from './pages/Wishes';
 import WishEdit from './pages/WishEdit';
 import Places from './pages/Places';
 import PlaceEdit from './pages/PlaceEdit';
+import Ask from './pages/Ask';
 
 export default function App() {
   const auth = useAuth();
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/space" element={<Space />} />
         <Route path="/wishes" element={<Wishes />} />
         <Route path="/wishes/:id" element={<WishEdit />} />
+        <Route path="/ask" element={<Ask />} />
         <Route path="/places" element={<Places />} />
         <Route path="/places/:id" element={<PlaceEdit />} />
         <Route path="*" element={<Navigate to="/" replace />} />

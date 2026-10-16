@@ -85,3 +85,20 @@ export function dday(w: When, now = new Date()): string | null {
   if (today <= end) return `여행 중 ${Math.round((today - start) / 86400000) + 1}일째`;
   return null;
 }
+
+/** 정확한 날짜가 있는 여행의 날짜들 ['2026-11-01', …] (최대 30일) */
+export function tripDays(w: When): string[] {
+  if (w.p !== 'day' || !w.y || !w.m || !w.d) return [];
+  const start = new Date(Date.UTC(w.y, w.m - 1, w.d));
+  const end = w.d2 ? new Date(Date.UTC(w.y2 ?? w.y, (w.m2 ?? w.m) - 1, w.d2)) : start;
+  const out: string[] = [];
+  for (let t = start.getTime(); t <= end.getTime() && out.length < 30; t += 86400000) out.push(new Date(t).toISOString().slice(0, 10));
+  return out;
+}
+export const dayLabel = (day: string, days: string[]) => {
+  const i = days.indexOf(day);
+  const [, m, d] = day.split('-').map(Number);
+  const wd = '일월화수목금토'[new Date(day + 'T00:00:00Z').getUTCDay()];
+  return `${i >= 0 ? `${i + 1}일째 · ` : ''}${m}.${d} (${wd})`;
+};
+

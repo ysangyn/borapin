@@ -3,7 +3,7 @@ import { addDoc, collection, deleteDoc, doc, onSnapshot, query, serverTimestamp,
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
-import type { Note, PackItem, PlanItem, When } from './types';
+import type { Note, PackItem, PlanItem } from './types';
 
 const plansCol = () => collection(db, 'spaces', SPACE_ID, 'plans');
 const notesCol = () => collection(db, 'spaces', SPACE_ID, 'notes');
@@ -28,21 +28,7 @@ export const addPlan = (tripId: string, name: string, order: number, recId?: str
 export const updatePlan = (id: string, patch: Partial<Omit<PlanItem, 'id' | 'tripId' | 'v'>>) => updateDoc(doc(plansCol(), id), patch);
 export const deletePlan = (id: string) => deleteDoc(doc(plansCol(), id));
 
-/** 정확한 날짜가 있는 여행의 날짜들 ['2026-11-01', …] (최대 30일) */
-export function tripDays(w: When): string[] {
-  if (w.p !== 'day' || !w.y || !w.m || !w.d) return [];
-  const start = new Date(Date.UTC(w.y, w.m - 1, w.d));
-  const end = w.d2 ? new Date(Date.UTC(w.y2 ?? w.y, (w.m2 ?? w.m) - 1, w.d2)) : start;
-  const out: string[] = [];
-  for (let t = start.getTime(); t <= end.getTime() && out.length < 30; t += 86400000) out.push(new Date(t).toISOString().slice(0, 10));
-  return out;
-}
-export const dayLabel = (day: string, days: string[]) => {
-  const i = days.indexOf(day);
-  const [, m, d] = day.split('-').map(Number);
-  const wd = '일월화수목금토'[new Date(day + 'T00:00:00Z').getUTCDay()];
-  return `${i >= 0 ? `${i + 1}일째 · ` : ''}${m}.${d} (${wd})`;
-};
+export { tripDays, dayLabel } from './dates';
 
 // ---------- 기록(글) ----------
 export function useNotes(tripId: string | undefined) {

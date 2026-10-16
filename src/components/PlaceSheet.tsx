@@ -9,7 +9,8 @@ import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/ge
 import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
 import PlaceRecRow from './PlaceRecRow';
 import { recsAt } from '../lib/placeRecs';
-import { quickWish, samePlace as samePlaceW } from '../lib/wishes';
+import { samePlace as samePlaceW } from '../lib/wishes';
+import { quickWish } from '../lib/wishActions';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 
 function mapLinks(p: Place) {

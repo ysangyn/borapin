@@ -8,7 +8,8 @@ import { placeLong } from '../lib/geo';
 import { monthlyPicks } from '../lib/recommend';
 import { isGoodNow, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
-import { quickWish, rollingOrder, wishState } from '../lib/wishes';
+import { rollingOrder, wishState } from '../lib/wishes';
+import { quickWish } from '../lib/wishActions';
 import type { Trip, Wish } from '../lib/types';
 
 /** 홈 '가고 싶은 곳' 롤링: 둘 다 원하는 곳 → 이번 달이 좋은 곳 → 랜덤. 비어 있으면 이번 달 추천 3곳. */

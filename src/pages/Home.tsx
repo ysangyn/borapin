@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Avatars, Icon, Logo } from '../components/ui';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
@@ -20,6 +20,8 @@ export default function Home() {
   const flags = useWishFlags(wishes, trips);
   const [mode, setMode] = useState<MapMode>('kr');
   const [sel, setSel] = useState<Place | null>(null);
+  const [q, setQ] = useState('');
+  const nav = useNavigate();
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   const planned = trips?.filter((t) => t.status === 'planned') ?? [];
   const recent = trips?.filter((t) => t.status === 'done').slice(0, 3) ?? [];
@@ -31,7 +33,7 @@ export default function Home() {
       <div className="topbar">
         <span className="brand"><Logo />보라핀</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link to="/trips" className="icon-btn" aria-label="여행 찾기"><Icon name="search" size={20} stroke={2} /></Link>
+          <Link to="/ask" className="icon-btn" aria-label="찾아보기"><Icon name="search" size={20} stroke={2} /></Link>
           <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
         </div>
       </div>
@@ -94,6 +96,11 @@ export default function Home() {
             <Icon name="chev" size={18} />
           </Link>
         )}
+
+        <form className="ask-home" onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/ask?q=${encodeURIComponent(q.trim())}`); }} data-testid="home-ask">
+          <Icon name="search" size={18} stroke={2} />
+          <input aria-label="찾아보기" placeholder="찾아보기: 영등포 맛집, 작년 여름에 간 곳" value={q} onChange={(e) => setQ(e.target.value)} />
+        </form>
 
         <section>
           <div className="row-between" style={{ marginBottom: 2 }}>

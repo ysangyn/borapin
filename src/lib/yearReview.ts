@@ -1,5 +1,5 @@
-import { computeStats } from './data';
-import { tripDays } from './tripExtras';
+import { computeStats } from './stats';
+import { tripDays } from './dates';
 import { placeLong } from './geo';
 import type { Place, Trip } from './types';
 

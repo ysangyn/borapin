@@ -327,7 +327,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.goto('/memories');
     await expect(page.getByTestId('album')).toContainText('강릉시 여행 · 3장');
     await expect(page.getByTestId('replay-year')).toBeVisible();
-    await page.getByLabel('연도').fill('0');
+    await page.getByLabel('다시 보기 연도').fill('0');
     const firstYear = await page.getByTestId('replay-year').textContent();
     await page.getByTestId('replay-play').click();
     await expect(page.getByTestId('replay-year')).not.toHaveText(firstYear ?? '', { timeout: 5000 });
@@ -381,6 +381,33 @@ test.describe.serial('보라핀 1단계', () => {
     await pack.getByLabel('선크림 담당자').click();
     await expect(pack.getByLabel('선크림 담당자')).toHaveText('보라');
     await shot(page, '13b-packing');
+  });
+
+  test('찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기', async ({ page }) => {
+    await signIn(page, OWNER);
+    const box = page.getByTestId('home-ask').getByLabel('찾아보기');
+    await box.fill('강릉 맛집');
+    await box.press('Enter');
+    await expect(page).toHaveURL(/\/ask/);
+    const answers = page.getByTestId('answer');
+    await expect(answers.last()).toContainText('초당 순두부');
+    await expect(answers.last()).toContainText('초당할머니순두부');
+    const input = page.getByLabel('질문');
+    await input.fill('거기 언제 가면 좋아?');
+    await input.press('Enter');
+    await expect(answers.last()).toContainText('강원 강릉시은(는)');
+    await input.fill('강릉 몇 번 갔지?');
+    await input.press('Enter');
+    await expect(answers.last()).toContainText('1번 다녀왔어요');
+    await input.fill('고성 맛집');
+    await input.press('Enter');
+    await expect(answers.last()).toContainText('여러 곳');
+    await answers.last().getByRole('button', { name: '강원 고성군' }).click();
+    await expect(answers.last()).toContainText('강원 고성군');
+    await shot(page, '14-ask');
+    await page.getByRole('button', { name: '처음으로' }).click();
+    await page.getByRole('button', { name: '우리 몇 곳 갔어?' }).click();
+    await expect(answers.last()).toContainText('시·군');
   });
 
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {

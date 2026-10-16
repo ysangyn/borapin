@@ -291,3 +291,14 @@ a { color: var(--violet); text-decoration: none; }
 .badge.on { background: var(--mist); }
 .badge.on b { color: #33248a; }
 .badge.on span { color: var(--ink2); }
+
+/* ---------- 찾아보기 ---------- */
+.ask-page { padding-bottom: calc(var(--nav-h) + 96px + var(--safe-b)); }
+.bubble { max-width: 88%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
+.bubble.me { align-self: flex-end; background: var(--violet); color: #fff; border-bottom-right-radius: 6px; }
+.bubble.bot { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 6px; display: flex; flex-direction: column; gap: 6px; }
+.bubble.bot ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: 14px; color: var(--ink2); }
+.ask-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--safe-b) + 10px); width: calc(100% - 32px); max-width: 488px; display: flex; gap: 8px; z-index: 20; }
+.ask-bar .input { box-shadow: 0 4px 16px rgba(23, 20, 43, 0.12); }
+.ask-home { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 16px; border-radius: 16px; background: var(--page); color: var(--ink3); }
+.ask-home input { flex: 1; border: none; background: none; font-size: 15px; outline: none; color: var(--ink); }

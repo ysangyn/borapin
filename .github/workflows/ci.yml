@@ -39,6 +39,8 @@ jobs:
         run: npm run typecheck
       - name: 여행정보 DB 검사
         run: npx tsx scripts/travelinfo.ts --check
+      - name: 찾아보기 채점 (95% 미만이면 멈춤)
+        run: npx tsx scripts/ask-test.ts 2>&1 | tee ask-output.txt
       - name: 빌드
         run: npm run build 2>&1 | tee build-output.txt
       - name: 예전 기록 옮기기 스크립트 점검 (에뮬레이터, 두 번 돌려도 겹치지 않는지)
@@ -56,7 +58,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh test test-results/screens test-output.txt build-output.txt migrate-test-output.txt failures
+        run: scripts/push-report.sh test test-results/screens test-output.txt build-output.txt migrate-test-output.txt ask-output.txt failures
 
   deploy:
     name: borapin.web.app 배포

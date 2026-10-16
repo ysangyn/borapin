@@ -7,7 +7,7 @@ import { GROUPS, placeLong, placeParam } from '../lib/geo';
 import { candidates, THEMES, type Candidate } from '../lib/recommend';
 import { monthsLabel, seasonFor, type SeasonData } from '../lib/seasons';
 import type { TravelInfo } from '../lib/travelinfo';
-import { quickWish } from '../lib/wishes';
+import { quickWish } from '../lib/wishActions';
 import type { Wish } from '../lib/types';
 
 /** 여행지 뽑기 (v21 주사위): 조건을 골라 한 곳을 뽑는다 */
