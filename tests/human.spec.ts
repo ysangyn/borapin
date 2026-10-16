@@ -445,8 +445,8 @@ test.describe('사람처럼 쓰기', () => {
   test('홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드', async ({ browser }) => {
     const page = await phone(browser);
     await signIn(page);
-    const d = new Date(); d.setDate(d.getDate() + 5);
-    const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    // 날짜는 앱(한국 시간) 기준으로: CI 서버는 UTC라 자정 무렵이면 하루가 어긋난다
+    const ymd = new Date(Date.now() + 5 * 86400000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
     await page.goto('/record?status=planned');
     await page.getByLabel('어디 검색').fill('속초');
     await page.getByRole('option', { name: /속초시/ }).first().click();
