@@ -25,10 +25,54 @@ defaults:
     shell: bash
 
 jobs:
+  # 0. 물어보기 뒷단(Cloudflare Worker, 무료) — 비밀값이 있을 때만. 주소는 빌드에 넣는다. 없으면 앱은 규칙형 답만 한다.
+  worker:
+    name: 0. 물어보기 뒷단 (Cloudflare Worker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 비밀값 확인
+        id: has
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$TOKEN" ] && [ -n "$ACCOUNT" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; echo "Cloudflare 비밀값이 없어 뒷단은 건너뜁니다 (규칙형 답만)"; fi
+      - name: 타입 검사와 배포
+        id: deploy
+        if: steps.has.outputs.ok == 'true' && github.event_name != 'pull_request'
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm ci
+          npx tsc --noEmit
+          # 하루 횟수용 KV 저장소: 없으면 만들고, id를 설정에 넣는다
+          ID=$(npx wrangler kv namespace list | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const l=JSON.parse(s.slice(s.indexOf('[')));const x=l.find(n=>n.title==='borapin-ask-QUOTA');console.log(x?x.id:'')})")
+          if [ -z "$ID" ]; then
+            ID=$(npx wrangler kv namespace create QUOTA 2>&1 | grep -o '"id": *"[^"]*"\|id = "[^"]*"' | head -1 | grep -o '[0-9a-f]\{32\}')
+          fi
+          test -n "$ID"
+          sed -i "s/REPLACED_BY_CI/$ID/" wrangler.toml
+          npx wrangler deploy 2>&1 | tee deploy-output.txt
+          URL=$(grep -o 'https://[a-z0-9.-]*workers.dev' deploy-output.txt | head -1)
+          test -n "$URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          # 살아 있는지
+          curl -sf "$URL/health"
+
   check:
     name: 1. 코드 검사와 빌드
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: worker
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -49,7 +93,11 @@ jobs:
           TOUR_API_KEY: ${{ secrets.TOUR_API_KEY }}
         run: npx tsx scripts/tour-festivals.ts 2>&1 | tee festivals-output.txt
       - name: 빌드 (이 파일을 끝까지 그대로 쓴다)
-        run: npm run build 2>&1 | tee build-output.txt
+        env:
+          VITE_ASK_URL: ${{ needs.worker.outputs.url }}
+        run: |
+          echo "물어보기 뒷단 주소: ${VITE_ASK_URL:-없음(규칙형만)}"
+          npm run build 2>&1 | tee build-output.txt
       - name: 빌드 버전 확인
         run: |
           test "$(node -p "require('./dist/version.json').commit")" = "${GITHUB_SHA::7}"

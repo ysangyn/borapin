@@ -27,7 +27,7 @@ export type Intent =
   | 'overview' | 'spots' | 'foods' | 'goods' | 'transport' | 'season'
   | 'count' | 'when' | 'time' | 'people' | 'again' | 'compare'
   | 'recommend' | 'stats' | 'wishAdd' | 'wishList' | 'map' | 'choose'
-  | 'festival' | 'next' | 'packing' | 'find' | 'hello' | 'help' | 'unknown';
+  | 'festival' | 'next' | 'packing' | 'find' | 'hello' | 'help' | 'ai' | 'unknown';
 
 export interface Btn {
   label: string;

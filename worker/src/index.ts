@@ -1,0 +1,171 @@
+/**
+ * 보라핀 물어보기 뒷단 (Cloudflare Worker, 무료)
+ *
+ * 앱(폰)이 규칙형으로 못 알아들은 질문만 여기로 보낸다.
+ *   1) POST /plan   : 질문 → 어떤 자료를 볼지 (도구 호출 목록). 자료 조회는 폰 안에서 한다 (기록은 폰 밖으로 안 나감).
+ *   2) POST /answer : 질문 + 폰이 모은 사실 → 사실만으로 쓴 한국어 답 (JSON).
+ *
+ * 지키는 것
+ * - Firebase 로그인 토큰(ID 토큰)이 맞는 요청만 받는다 (구글 공개 키로 서명 확인, 프로젝트 확인).
+ * - 사람당 분당 20번, 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
+ * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
+ */
+export interface Env {
+  AI: Ai;
+  QUOTA: KVNamespace;
+  PER_USER: { limit(opts: { key: string }): Promise<{ success: boolean }> };
+  FIREBASE_PROJECTS: string;
+  MODEL: string;
+  DAILY_LIMIT: string;
+}
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, content-type',
+  'Access-Control-Max-Age': '86400',
+};
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...CORS } });
+
+// ---------- Firebase ID 토큰 확인 ----------
+const JWKS = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+let jwkCache: { keys: JsonWebKey[]; until: number } | null = null;
+
+async function jwks(): Promise<JsonWebKey[]> {
+  if (jwkCache && jwkCache.until > Date.now()) return jwkCache.keys;
+  const r = await fetch(JWKS, { cf: { cacheTtl: 3600 } });
+  const body = (await r.json()) as { keys: (JsonWebKey & { kid: string })[] };
+  const cc = r.headers.get('cache-control') ?? '';
+  const max = Number(/max-age=(\d+)/.exec(cc)?.[1] ?? 3600);
+  jwkCache = { keys: body.keys, until: Date.now() + Math.min(max, 6 * 3600) * 1000 };
+  return body.keys;
+}
+const b64url = (s: string) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=')), (c) => c.charCodeAt(0));
+
+async function verifyIdToken(token: string, projects: string[]): Promise<{ uid: string; email?: string; project: string } | null> {
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const header = JSON.parse(new TextDecoder().decode(b64url(parts[0]))) as { alg: string; kid: string };
+  const payload = JSON.parse(new TextDecoder().decode(b64url(parts[1]))) as { aud: string; iss: string; sub: string; exp: number; iat: number; email?: string; email_verified?: boolean };
+  if (header.alg !== 'RS256') return null;
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.exp <= now || payload.iat > now + 300) return null;
+  const project = projects.find((p) => payload.aud === p && payload.iss === `https://securetoken.google.com/${p}`);
+  if (!project || !payload.sub) return null;
+  const key = (await jwks()).find((k) => (k as JsonWebKey & { kid?: string }).kid === header.kid);
+  if (!key) return null;
+  const pub = await crypto.subtle.importKey('jwk', key, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pub, b64url(parts[2]), new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
+  if (!ok) return null;
+  return { uid: payload.sub, email: payload.email, project };
+}
+
+// ---------- 모델에 주는 지시 ----------
+const TOOLS = `
+쓸 수 있는 도구 (이름: 설명 · 인자)
+- resolve_place: 지명을 앱의 지역(국내 시·군 또는 나라·도시)으로 맞춘다 · {name}
+- place_info: 그 지역의 테마·볼거리·먹거리·특산물·교통 (국내 160곳) · {place}
+- best_time: 그 지역에 가기 좋은 달과 이유 (날씨 자료) · {place}
+- festivals: 다가오는 축제 (지역 또는 달) · {place?, month?}
+- our_trips: 우리가 그 지역에 간 기록 (언제·제목·누구와) · {place?, year?, season?, person?}
+- our_places: 우리가 남긴 맛집·카페·명소와 한 줄 평 · {place?, query?}
+- our_notes: 여행에 남긴 글 찾기 · {query}
+- stats: 우리 여행 통계 (몇 번, 시·군 몇 곳, 나라) · {}
+- wishes: 가고 싶은 곳 목록 · {}
+- next_trips: 예정된 여행과 D-day · {}
+- recommend: 추천 후보 (조건: 달, 테마[바다·산·섬·도시·온천·꽃·단풍·눈·카페·맛집·역사], 안 가본 곳만, 광역) · {month?, themes?, unvisited?, group?, count?}
+- packing: 준비물 제안 · {place?, kind?}
+`;
+
+const PLAN_SYSTEM = `당신은 부부 여행 기록 앱 '보라핀'의 도우미 보라입니다. 사용자 질문에 답하려면 어떤 도구를 불러야 하는지 정합니다.
+${TOOLS}
+규칙: 반드시 JSON만 출력합니다: {"calls":[{"tool":"이름","args":{...}}, ...], "note":"짧은 메모"}.
+- 질문에 지명이 있으면 먼저 resolve_place를 넣고, 그 지명을 다른 도구의 place 인자에도 그대로 적습니다.
+- 우리 기록(갔는지, 언제, 누구와, 뭐 먹었는지, 글)이 필요하면 our_* 도구를, 일반 여행정보면 place_info·best_time·festivals를, 어디 갈지 고르는 질문이면 recommend를 넣습니다.
+- 도구는 최대 5개. 모르면 빈 배열.`;
+
+const ANSWER_SYSTEM = `당신은 부부 여행 기록 앱 '보라핀'의 도우미 보라입니다. 다정하고 간결한 한국어 존댓말(해요체)로 답합니다.
+아주 중요한 규칙:
+- 아래 '사실'에 있는 내용만 씁니다. 사실에 없는 지명·식당·날짜·숫자·축제는 절대 지어내지 않습니다. 모르면 "기록이 없어요"라고 합니다.
+- 답은 JSON만: {"text":"한 줄 요약(40자 이내)","lines":["근거나 세부 1","…(최대 6개)"],"buttons":["사실에 있는 action id만"]}
+- lines에는 사실에서 가져온 구체 내용을 넣고, 우리 기록과 일반 정보를 구분해 씁니다.
+- buttons는 사실 안의 actions 중 id를 골라 최대 4개. 없으면 [].`;
+
+async function runModel(env: Env, system: string, user: string, maxTokens: number): Promise<string> {
+  const r = (await env.AI.run(env.MODEL as never, {
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.2,
+  } as never)) as { response?: string };
+  return r.response ?? '';
+}
+
+/** 모델 출력에서 JSON만 꺼낸다 (앞뒤 설명·코드펜스가 붙어도) */
+function extractJson(s: string): unknown {
+  const m = s.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    return JSON.parse(m[0]);
+  } catch {
+    return null;
+  }
+}
+
+export default {
+  async fetch(req: Request, env: Env): Promise<Response> {
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    const url = new URL(req.url);
+    if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, model: env.MODEL });
+    if (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname)) return json({ error: 'not found' }, 404);
+
+    const auth = req.headers.get('authorization') ?? '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    const who = token ? await verifyIdToken(token, env.FIREBASE_PROJECTS.split(',').map((s) => s.trim())) : null;
+    if (!who) return json({ error: 'unauthorized' }, 401);
+
+    const rl = await env.PER_USER.limit({ key: who.uid });
+    if (!rl.success) return json({ error: 'too many requests', retry: 60 }, 429);
+    // 하루 한도 (/plan 때만 센다: 질문 하나 = 1)
+    if (url.pathname === '/plan') {
+      const day = new Date().toISOString().slice(0, 10);
+      const key = `q:${who.uid}:${day}`;
+      const used = Number((await env.QUOTA.get(key)) ?? 0);
+      const limit = Number(env.DAILY_LIMIT) || 80;
+      if (used >= limit) return json({ error: 'daily limit', limit }, 429);
+      await env.QUOTA.put(key, String(used + 1), { expirationTtl: 2 * 86400 });
+    }
+
+    let body: { question?: string; context?: string; facts?: string };
+    try {
+      body = (await req.json()) as typeof body;
+    } catch {
+      return json({ error: 'bad json' }, 400);
+    }
+    const question = (body.question ?? '').toString().slice(0, 300);
+    if (!question.trim()) return json({ error: 'empty' }, 400);
+
+    try {
+      if (url.pathname === '/plan') {
+        const user = `${body.context ? `상황: ${body.context.slice(0, 600)}\n` : ''}질문: ${question}`;
+        const out = await runModel(env, PLAN_SYSTEM, user, 300);
+        const plan = extractJson(out) as { calls?: unknown } | null;
+        return json({ calls: Array.isArray(plan?.calls) ? plan!.calls.slice(0, 5) : [] });
+      }
+      const facts = (body.facts ?? '').toString().slice(0, 6000);
+      const user = `${body.context ? `상황: ${body.context.slice(0, 600)}\n` : ''}질문: ${question}\n\n사실:\n${facts || '(없음)'}`;
+      const out = await runModel(env, ANSWER_SYSTEM, user, 500);
+      const a = extractJson(out) as { text?: unknown; lines?: unknown; buttons?: unknown } | null;
+      if (!a || typeof a.text !== 'string') return json({ error: 'no answer' }, 502);
+      return json({
+        text: a.text.slice(0, 120),
+        lines: Array.isArray(a.lines) ? a.lines.filter((x) => typeof x === 'string').slice(0, 6).map((x) => (x as string).slice(0, 200)) : [],
+        buttons: Array.isArray(a.buttons) ? a.buttons.filter((x) => typeof x === 'string').slice(0, 4) : [],
+      });
+    } catch (e) {
+      return json({ error: 'model failed', detail: String((e as Error).message ?? e).slice(0, 200) }, 502);
+    }
+  },
+};

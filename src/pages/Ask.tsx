@@ -11,6 +11,7 @@ import { useAllNotes } from '../lib/tripExtras';
 import { useTravelInfo } from '../lib/travelinfo';
 import { quickWish } from '../lib/wishActions';
 import { ask, STARTERS, type Answer, type AskCtx, type Btn } from '../lib/ask/engine';
+import { askSmart } from '../lib/ask/smart';
 import type { Place } from '../lib/types';
 
 type Msg = { who: 'me'; text: string } | { who: 'bot'; a: Answer; q: string };
@@ -35,12 +36,27 @@ export default function Ask() {
   const ready = !!(trips && wishes && recs && info);
   const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [] } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes]);
 
-  const send = (q: string, forced?: Place) => {
-    if (!q.trim() || !data) return;
-    const a = ask(q, forced ? { ...ctx, place: forced } : ctx, data, forced);
-    setCtx(a.ctx);
-    setMsgs((m) => [...m, ...(forced ? [] : [{ who: 'me' as const, text: q }]), { who: 'bot', a, q }]);
+  const [thinking, setThinking] = useState(false);
+  const send = async (q: string, forced?: Place) => {
+    if (!q.trim() || !data || thinking) return;
+    const c = forced ? { ...ctx, place: forced } : ctx;
+    if (forced) {
+      const a = ask(q, c, data, forced);
+      setCtx(a.ctx);
+      setMsgs((m) => [...m, { who: 'bot', a, q }]);
+      return;
+    }
+    setMsgs((m) => [...m, { who: 'me' as const, text: q }]);
     setText('');
+    setThinking(true);
+    try {
+      const history = msgs.flatMap((m, i) => (m.who === 'bot' && msgs[i - 1]?.who === 'me' ? [{ q: (msgs[i - 1] as { text: string }).text, a: m.a.text }] : []));
+      const r = await askSmart(q, c, data, auth.status === 'ready' ? auth.user : null, history);
+      setCtx(r.answer.ctx);
+      setMsgs((m) => [...m, { who: 'bot', a: r.answer, q }]);
+    } finally {
+      setThinking(false);
+    }
   };
 
   // 홈에서 넘어온 질문
@@ -54,7 +70,7 @@ export default function Ask() {
   }, [first, data]);
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [msgs.length]);
+  }, [msgs.length, thinking]);
 
   const press = async (b: Btn, q: string) => {
     if (b.ask) send(b.ask);
@@ -113,11 +129,12 @@ export default function Ask() {
             </div>
           ),
         )}
+        {thinking && <div className="bot-row" aria-live="polite"><img className="bot-face" src="/art/bora-face.webp" alt="" aria-hidden="true" width={28} height={28} /><div className="bubble bot thinking"><span className="dots-typing"><i /><i /><i /></span><span className="tiny muted">보라가 기록을 뒤져 보는 중…</span></div></div>}
         <div ref={end} />
       </div>
       <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); send(text); }}>
-        <input className="input" aria-label="질문" placeholder={ready ? '강릉 맛집, 작년 여름에 간 곳…' : '불러오는 중…'} value={text} onChange={(e) => setText(e.target.value)} disabled={!ready} />
-        <button className="btn" style={{ width: 52, padding: 0 }} aria-label="묻기" disabled={!ready || !text.trim()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" /></svg></button>
+        <input className="input" aria-label="질문" placeholder={ready ? '강릉 맛집, 작년 여름에 간 곳…' : '불러오는 중…'} value={text} onChange={(e) => setText(e.target.value)} disabled={!ready || thinking} />
+        <button className="btn" style={{ width: 52, padding: 0 }} aria-label="묻기" disabled={!ready || thinking || !text.trim()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" /></svg></button>
       </form>
     </>
   );

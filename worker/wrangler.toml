@@ -1,0 +1,28 @@
+# 보라핀 물어보기 뒷단: 로그인 토큰을 확인한 요청만 Cloudflare Workers AI(무료)에 넘긴다.
+# 배포: CI(.github/workflows/ci.yml)의 worker 단계에서 `wrangler deploy` (CLOUDFLARE_API_TOKEN·CLOUDFLARE_ACCOUNT_ID 필요)
+name = "borapin-ask"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[vars]
+# 토큰을 받아 주는 Firebase 프로젝트 (실제·시험용)
+FIREBASE_PROJECTS = "borapin,borapin-test"
+# 모델: 한국어·도구 호출이 되는 것. 비싸면 @cf/meta/llama-3.1-8b-instruct-fast 로 바꾼다
+MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+# 한 사람이 하루에 물어볼 수 있는 횟수 (무료 뉴런 한도 안에서)
+DAILY_LIMIT = "80"
+
+# 하루 횟수 세기 (KV, 무료 등급으로 충분: 하루 1,000번 쓰기)
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "REPLACED_BY_CI"
+
+# 분당 요청 제한 (사람당 20번/분)
+[[ratelimits]]
+name = "PER_USER"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }

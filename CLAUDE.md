@@ -24,6 +24,10 @@
 빌드는 한 번만 하고 같은 파일을 끝까지 쓴다. 하나라도 실패하면 실제 배포는 하지 않는다.
 결과(캡처·출력)는 `ci-report` 브랜치에 올라간다: `git clone --depth 1 --branch ci-report https://github.com/ysangyn/borapin.git`.
 
+## 물어보기(챗봇) 두 단계
+- 1단계 규칙형(`src/lib/ask/engine.ts`): 공짜·즉시. `tests/ask/cases.ts`로 채점(95% 미만이면 배포 중단). 못 알아듣는 질문은 먼저 여기에 문제로 보태고 규칙을 늘린다.
+- 2단계 보라(AI): 규칙형이 자신 없을 때만(`confidence.ts`). `worker/`의 Cloudflare Worker(무료)가 로그인 토큰을 확인하고 Workers AI를 부른다. 자료 조회는 폰 안에서(`tools.ts`), 모델엔 사실만 보낸다. 주소는 CI가 `VITE_ASK_URL`로 빌드에 넣는다(비밀값 `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`가 없으면 규칙형만). 에뮬레이터 시험에서는 AI를 부르지 않는다.
+
 ## 지킬 것
 - 서비스 계정 키는 GitHub Secrets(`FIREBASE_SERVICE_ACCOUNT`, `FIREBASE_SERVICE_ACCOUNT_TEST`)에만 둔다. 채팅·저장소에 올리지 않는다.
 - firebaseConfig 값은 공개값이라 코드에 둬도 된다.
