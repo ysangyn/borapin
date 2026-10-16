@@ -88,7 +88,9 @@ export default function Ask() {
           m.who === 'me' ? (
             <div key={i} className="bubble me">{m.text}</div>
           ) : (
-            <div key={i} className="bubble bot" data-testid="answer">
+            <div key={i} className="bot-row">
+            <img className="bot-face" src="/art/bora-face.webp" alt="" aria-hidden="true" width={28} height={28} decoding="async" />
+            <div className="bubble bot" data-testid="answer">
               <b>{m.a.text}</b>
               {m.a.lines && m.a.lines.length > 0 && <ul>{m.a.lines.map((l, j) => <li key={j}>{l}</li>)}</ul>}
               {m.a.source && <span className="tiny muted">{m.a.source}</span>}
@@ -104,13 +106,14 @@ export default function Ask() {
                 </div>
               )}
             </div>
+            </div>
           ),
         )}
         <div ref={end} />
       </div>
       <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); send(text); }}>
         <input className="input" aria-label="질문" placeholder={ready ? '강릉 맛집, 작년 여름에 간 곳…' : '불러오는 중…'} value={text} onChange={(e) => setText(e.target.value)} disabled={!ready} />
-        <button className="btn" style={{ width: 52, padding: 0 }} aria-label="묻기" disabled={!ready || !text.trim()}><Icon name="search" size={20} stroke={2.2} /></button>
+        <button className="btn" style={{ width: 52, padding: 0 }} aria-label="묻기" disabled={!ready || !text.trim()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" /></svg></button>
       </form>
     </>
   );
