@@ -58,7 +58,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh test test-results/screens test-output.txt build-output.txt migrate-test-output.txt ask-output.txt failures
+        run: scripts/push-report.sh test test-results/screens test-results/tour test-output.txt build-output.txt migrate-test-output.txt ask-output.txt failures
 
   deploy:
     name: borapin.web.app 배포
