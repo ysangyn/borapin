@@ -34,7 +34,7 @@ export function Login() {
       </header>
       <main className="login-card">
         {/* 로그인 칸 윗선에 서 있는 보라 (배경 투명 그림이 있을 때만) */}
-        {artById('bora-login') && <img className="login-mascot" src={artById('bora-login')!.src.s} alt="" aria-hidden="true" width={540} height={540} />}
+        {artById('bora-login') && <img className="login-mascot" src={artById('bora-login')!.src.s} alt="" aria-hidden="true" width={540} height={584} decoding="async" />}
         <EmailLogin />
         <div className="login-or"><span>간편 로그인</span></div>
         <button

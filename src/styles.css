@@ -349,11 +349,11 @@ a { color: var(--violet); text-decoration: none; }
 /* 넓은 화면(PC·태블릿 가로): 가운데 떠 있는 카드 */
 @media (min-width: 700px) and (min-height: 640px) {
   .login { justify-content: center; align-items: center; padding: 40px 24px; gap: 22px; }
-  .login-hero { flex: none; min-height: 0; padding: 0; align-items: center; text-align: center; }
+  .login-hero { flex: none; min-height: 0; width: 100%; max-width: 420px; padding: 0 6px; }
   .login-card { width: 100%; max-width: 420px; border-radius: 28px; padding: 26px 28px 16px; box-shadow: 0 24px 60px rgba(23, 20, 43, 0.28); }
 }
-.login-mascot { position: absolute; right: 18px; bottom: calc(100% - 6px); width: 128px; height: auto; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(23, 20, 43, 0.18)); }
-@media (min-width: 700px) and (min-height: 640px) { .login-mascot { right: -28px; width: 150px; } }
+.login-mascot { position: absolute; right: 16px; bottom: calc(100% - 4px); width: 146px; height: auto; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(23, 20, 43, 0.18)); }
+@media (min-width: 700px) and (min-height: 640px) { .login-mascot { right: 22px; width: 150px; } }
 .auth-mosaic { width: 150px; }
 .email-login { display: flex; flex-direction: column; gap: 10px; }
 .email-login .input { height: 50px; }
