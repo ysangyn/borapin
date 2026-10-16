@@ -248,3 +248,16 @@ a { color: var(--violet); text-decoration: none; }
 .tag.verdict.v-again { background: var(--coral-mist); color: var(--coral-ink); }
 .tag.verdict.v-meh { background: #f2f1f5; color: var(--ink3); }
 .sheet-recs { margin-top: 12px; display: flex; flex-direction: column; }
+
+/* ---------- 사진 ---------- */
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.photo-cell { position: relative; aspect-ratio: 1; border: none; padding: 0; border-radius: 10px; overflow: hidden; background: var(--page); display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--ink3); }
+.photo-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-cell.add { border: 1.5px dashed var(--line2, #d9d5e6); background: #fff; gap: 2px; }
+.photo-cell.uploading { background: var(--mist); color: #33248a; font-weight: 800; font-size: 13px; }
+.trip-cover { border: none; padding: 0; border-radius: 20px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--page); }
+.trip-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pswp__caption-bp { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 20px calc(18px + env(safe-area-inset-bottom, 0px)); color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, 0.6)); display: flex; flex-direction: column; gap: 3px; font-size: 14px; pointer-events: none; }
+.pswp__caption-bp b { font-size: 13px; opacity: 0.9; }
+.pswp__button--play.on svg { opacity: 0.6; }
+.pswp__button--play, .pswp__button--delete { display: flex; align-items: center; justify-content: center; }

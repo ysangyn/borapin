@@ -122,6 +122,11 @@ export async function updateTrip(id: string, input: TripInput) {
   await updateDoc(doc(tripsCol(), id), { ...clean(input), updatedAt: serverTimestamp() });
 }
 
+/** 여행 일부만 고치기 (사진으로 날짜·장소 채우기 등) */
+export async function patchTrip(id: string, patch: Partial<TripInput>) {
+  await updateDoc(doc(tripsCol(), id), { ...clean(patch), updatedAt: serverTimestamp() });
+}
+
 export async function deleteTrip(id: string) {
   await deleteDoc(doc(tripsCol(), id));
 }

@@ -7,6 +7,8 @@ export interface SeasonInfo {
   m: number[];
   /** 짧은 이유: '선선하고 비가 적어요' */
   why: string;
+  /** 나라는 많이 가는 도시 기준일 때 그 도시 이름 */
+  at?: string;
 }
 export interface SeasonData {
   updated: string;

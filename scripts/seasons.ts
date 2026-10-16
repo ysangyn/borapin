@@ -51,14 +51,29 @@ async function fetchClimate(lat: number, lng: number): Promise<Climate> {
   }
 }
 
+/** 나라 안에서 기후 차이가 큰 곳은 많이 가는 도시 기준으로 (나라 중심점이 산이나 사막일 때가 많다) */
+const COUNTRY_REP: Record<string, [string, number, number]> = {
+  JPN: ['도쿄', 35.68, 139.69], CHN: ['상하이', 31.23, 121.47], VNM: ['다낭', 16.05, 108.2], THA: ['방콕', 13.75, 100.5],
+  PHL: ['세부', 10.32, 123.9], TWN: ['타이베이', 25.03, 121.56], USA: ['뉴욕', 40.71, -74.0], AUS: ['시드니', -33.87, 151.21],
+  CAN: ['밴쿠버', 49.28, -123.12], GBR: ['런던', 51.5, -0.12], FRA: ['파리', 48.86, 2.35], ITA: ['로마', 41.9, 12.5],
+  ESP: ['바르셀로나', 41.39, 2.17], DEU: ['뮌헨', 48.14, 11.58], CHE: ['취리히', 47.37, 8.54], TUR: ['이스탄불', 41.01, 28.98],
+  IDN: ['발리', -8.65, 115.22], MYS: ['코타키나발루', 5.98, 116.07], RUS: ['블라디보스토크', 43.12, 131.89], MNG: ['울란바토르', 47.89, 106.91],
+  IND: ['델리', 28.61, 77.21], NZL: ['오클랜드', -36.85, 174.76], MEX: ['칸쿤', 21.16, -86.85], BRA: ['리우데자네이루', -22.91, -43.17],
+  EGY: ['카이로', 30.04, 31.24], CZE: ['프라하', 50.08, 14.44], PRT: ['리스본', 38.72, -9.14], AUT: ['빈', 48.21, 16.37],
+  KHM: ['시엠레아프', 13.36, 103.86], LAO: ['비엔티안', 17.97, 102.63], NPL: ['카트만두', 27.72, 85.32], ARG: ['부에노스아이레스', -34.6, -58.38],
+  PER: ['쿠스코', -13.53, -71.97], ZAF: ['케이프타운', -33.92, 18.42], GRC: ['아테네', 37.98, 23.73], HRV: ['두브로브니크', 42.65, 18.09],
+  UZB: ['사마르칸트', 39.65, 66.96], ARE: ['두바이', 25.2, 55.27], SAU: ['리야드', 24.71, 46.68], NOR: ['오슬로', 59.91, 10.75],
+  CHL: ['산티아고', -33.45, -70.67], KAZ: ['알마티', 43.24, 76.89],
+};
+
 const comfort = (t: number) =>
-  t >= 18 && t <= 26 ? 1 : t >= 15 && t <= 28.5 ? 0.65 : t >= 12 && t <= 30.5 ? 0.3 : 0;
+  t >= 16 && t <= 26 ? 1 : t >= 13 && t <= 29 ? 0.7 : t >= 10 && t <= 31 ? 0.35 : 0;
 const dryness = (mm: number) => (mm <= 2.2 ? 1 : mm <= 3.5 ? 0.75 : mm <= 5 ? 0.45 : mm <= 7 ? 0.2 : 0);
 
 /** 점수로 좋은 달을 고르고 이유를 붙인다 */
 export function bestMonths(c: Climate): { m: number[]; why: string } {
   const score = c.tmax.map((t, i) => comfort(t) * 0.65 + dryness(c.prcp[i]) * 0.35);
-  let m = score.map((s, i) => [s, i + 1] as const).filter(([s]) => s >= 0.74).map(([, i]) => i);
+  let m = score.map((s, i) => [s, i + 1] as const).filter(([s]) => s >= 0.7).map(([, i]) => i);
   const hotAll = Math.min(...c.tmax) >= 28;
   const coldAll = Math.max(...c.tmax) < 17;
   let why = '';
@@ -107,7 +122,10 @@ async function main() {
   const cache: Record<string, Climate> = fs.existsSync(RAW) ? JSON.parse(fs.readFileSync(RAW, 'utf8')) : {};
   const todo = [
     ...regions.map((r) => ({ key: `kr:${r.code}`, lat: r.lat, lng: r.lng })),
-    ...countries.map((c) => ({ key: `w:${c.id}`, lat: c.lat, lng: c.lng })),
+    ...countries.map((c) => {
+      const rep = COUNTRY_REP[c.id];
+      return rep ? { key: `w:${c.id}@${rep[0]}`, lat: rep[1], lng: rep[2] } : { key: `w:${c.id}`, lat: c.lat, lng: c.lng };
+    }),
   ].filter((x) => !cache[x.key]);
   console.log(`기후값 받기: ${todo.length}곳 (이미 받은 곳 ${Object.keys(cache).length})`);
   const failed: string[] = [];
@@ -122,10 +140,12 @@ async function main() {
   fs.writeFileSync(RAW, JSON.stringify(cache) + '\n');
 
   const kr: Record<string, { m: number[]; why: string }> = {};
-  const world: Record<string, { m: number[]; why: string }> = {};
-  for (const [k, c] of Object.entries(cache)) {
-    const [t, id] = k.split(':');
-    (t === 'kr' ? kr : world)[id] = bestMonths(c);
+  const world: Record<string, { m: number[]; why: string; at?: string }> = {};
+  for (const r of regions) if (cache[`kr:${r.code}`]) kr[r.code] = bestMonths(cache[`kr:${r.code}`]);
+  for (const c of countries) {
+    const rep = COUNTRY_REP[c.id];
+    const hit = rep ? cache[`w:${c.id}@${rep[0]}`] : cache[`w:${c.id}`];
+    if (hit) world[c.id] = { ...bestMonths(hit), ...(rep ? { at: rep[0] } : {}) };
   }
   const out = { updated: new Date().toISOString().slice(0, 10), source: 'NASA POWER 월별 기후값', kr, world };
   fs.writeFileSync(OUT, JSON.stringify(out) + '\n');

@@ -2,7 +2,10 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
-import { computeStats, deleteTrip, usePlaces, useTrips } from '../lib/data';
+import { computeStats, deleteTrip, patchTrip, usePlaces, useTrips } from '../lib/data';
+import PhotoGrid from '../components/PhotoGrid';
+import { openSlideshow } from '../components/slideshow';
+import { deletePhoto, suggestPlaces, suggestWhen, usePhotos } from '../lib/photos';
 import PlaceRecRow from '../components/PlaceRecRow';
 import { formatWhen, nightsDays } from '../lib/dates';
 import { COUNTRY_BY_ID, placeLong, REGION_BY_CODE } from '../lib/geo';
@@ -23,6 +26,7 @@ export default function TripDetail() {
   const { id } = useParams();
   const { trips } = useTrips();
   const { places: recs } = usePlaces();
+  const { photos: allPhotos } = usePhotos();
   const nav = useNavigate();
   const toast = useToast();
   const [confirm, setConfirm] = useState(false);
@@ -38,6 +42,9 @@ export default function TripDetail() {
       </>
     );
   }
+  const photos = (allPhotos ?? []).filter((p) => p.tripId === trip.id);
+  const sugWhen = suggestWhen(trip, photos);
+  const sugPlaces = suggestPlaces(trip, photos);
   const nd = nightsDays(trip.when);
   const abroad = trip.places.every((p) => p.t === 'country');
 
@@ -54,7 +61,13 @@ export default function TripDetail() {
           <div className="muted">{formatWhen(trip.when)}{nd ? ` · ${nd}` : ''}</div>
         </div>
 
-        <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={220} controls={false} />
+        {photos.length > 0 && (
+          <button className="trip-cover" onClick={() => openSlideshow(photos, 0, { onDelete: (x) => deletePhoto(x) })} aria-label="표지 사진 크게 보기">
+            <img src={photos[0].url} alt="" />
+          </button>
+        )}
+
+        <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} />
 
         <div className="card white" style={{ padding: '4px 16px' }}>
           <div className="kv"><span className="k">어디</span>
@@ -76,6 +89,32 @@ export default function TripDetail() {
           {trip.tags.length > 0 && <div className="kv"><span className="k">태그</span><span className="chips">{trip.tags.map((t) => <span key={t} className="tag">{t}</span>)}</span></div>}
           <div className="kv"><span className="k">남긴 사람</span><span className="muted small">{trip.createdBy?.name ?? '-'}{trip.source === 'v22' ? ' · v22에서 가져옴' : ''}</span></div>
         </div>
+
+        <section data-testid="trip-photos">
+          <div className="row-between" style={{ marginBottom: 6 }}>
+            <h2 className="h2" style={{ fontSize: 17 }}>사진{photos.length ? ` · ${photos.length}` : ''}</h2>
+            {photos.length > 1 && (
+              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true })} data-testid="slideshow">▶ 슬라이드쇼</button>
+            )}
+          </div>
+          <PhotoGrid photos={photos} tripId={trip.id} />
+          {(sugWhen || sugPlaces.length > 0) && (
+            <div className="card coral-soft" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }} data-testid="photo-suggest">
+              {sugWhen && (
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span className="small" style={{ flex: 1 }}>사진으로 보면 <b>{formatWhen({ ...sugWhen, est: false })}</b>이에요. 날짜를 채울까요?</span>
+                  <button className="btn sm" onClick={() => patchTrip(trip.id, { when: sugWhen }).then(() => toast('날짜를 채웠어요 (추정)'))}>채우기</button>
+                </div>
+              )}
+              {sugPlaces.map((p) => (
+                <div key={placeLong(p)} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span className="small" style={{ flex: 1 }}>사진 위치에 <b>{placeLong(p)}</b>도 있어요.</span>
+                  <button className="btn sm soft" onClick={() => patchTrip(trip.id, { places: [...trip.places, p] }).then(() => toast('장소에 넣었어요'))}>넣기</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <section data-testid="trip-places">
           <div className="row-between" style={{ marginBottom: 2 }}>

@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import type { LngLatBoundsLike, Map as MLMap } from 'maplibre-gl';
-import { feature, mesh } from 'topojson-client';
-import type { Topology, GeometryCollection } from 'topojson-specification';
-import type { FeatureCollection, MultiLineString } from 'geojson';
+import { loadGeo, SIZES } from '../lib/geodata';
 import seas from '../data/seas.json';
 import { COUNTRY_BY_ID, REGION_BY_CODE } from '../lib/geo';
 import type { Place } from '../lib/types';
@@ -40,42 +38,6 @@ function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number)
 }
 
 const COLORS = { v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#E6E2F0', sea: '#F1EFF7', land: '#E9E6F1' };
-
-// ---------- 경계 데이터는 한 번만 불러온다 ----------
-let geoPromise: Promise<{ kr: FeatureCollection; krMesh: MultiLineString; world: FeatureCollection }> | null = null;
-/** 경계 크기(대략) — 이름 자리 경쟁에서 큰 곳이 먼저 */
-const SIZES = new Map<string, number>();
-function bboxSize(geom: unknown): number {
-  let x0 = 180, y0 = 90, x1 = -180, y1 = -90;
-  const walk = (c: unknown): void => {
-    if (Array.isArray(c) && typeof c[0] === 'number') {
-      const [x, y] = c as [number, number];
-      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-    } else if (Array.isArray(c)) c.forEach(walk);
-  };
-  walk((geom as { coordinates?: unknown })?.coordinates);
-  if (x1 < x0) return 0;
-  return (x1 - x0) * (y1 - y0) * Math.cos((((y0 + y1) / 2) * Math.PI) / 180);
-}
-function loadGeo() {
-  if (!geoPromise) {
-    geoPromise = Promise.all([
-      fetch('/data/kr-cells.topojson').then((r) => r.json() as Promise<Topology>),
-      fetch('/data/world.topojson').then((r) => r.json() as Promise<Topology>),
-    ]).then(([krT, wT]) => {
-      const krObj = krT.objects[Object.keys(krT.objects)[0]] as GeometryCollection<{ cell: string }>;
-      const wObj = wT.objects[Object.keys(wT.objects)[0]] as GeometryCollection;
-      const kr = feature(krT, krObj) as unknown as FeatureCollection;
-      const groupOf = (g: unknown) => REGION_BY_CODE.get((g as { properties?: { cell?: string } }).properties?.cell ?? '')?.group;
-      const krMesh = mesh(krT, krObj, (a, b) => a !== b && groupOf(a) !== groupOf(b)) as MultiLineString;
-      const world = feature(wT, wObj) as unknown as FeatureCollection;
-      for (const f of kr.features) SIZES.set(`kr:${f.properties?.cell}`, bboxSize(f.geometry));
-      for (const f of world.features) SIZES.set(`w:${f.properties?.ADM0_A3}`, bboxSize(f.geometry));
-      return { kr, krMesh, world };
-    });
-  }
-  return geoPromise;
-}
 
 function fillExpr() {
   return [

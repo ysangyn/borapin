@@ -66,7 +66,7 @@ export default function WishCard({ wish, state, seasons, compact }: {
           </span>
           {season && (
             <span className="tiny" style={{ color: now ? '#b4472c' : 'var(--ink3)', fontWeight: now ? 700 : 500 }}>
-              {now ? '지금 가기 좋아요 · ' : '가기 좋은 때 '}{monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}
+              {now ? '지금 가기 좋아요 · ' : '가기 좋은 때 '}{monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}
             </span>
           )}
           {!compact && memo.length > 0 && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{memo.join(' · ')}</span>}

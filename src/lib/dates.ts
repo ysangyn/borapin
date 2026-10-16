@@ -19,6 +19,11 @@ export function whenYear(w: When): number | null {
 
 /** 화면 표시: '2025.11.13–17', '2019년 1월쯤', '2019 여름', '2018년쯤', '날짜 모름' */
 export function formatWhen(w: When): string {
+  const base = formatWhenBase(w);
+  return w.est && w.p !== 'unknown' ? `${base} (추정)` : base;
+}
+
+function formatWhenBase(w: When): string {
   switch (w.p) {
     case 'day': {
       if (!w.y || !w.m || !w.d) return w.y ? `${w.y}년` : '날짜 모름';

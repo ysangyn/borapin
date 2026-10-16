@@ -83,6 +83,10 @@ jobs:
       - name: 배포 (화면 + 보안 규칙)
         if: steps.key.outputs.ok == 'true'
         run: npx firebase deploy --only hosting,firestore:rules --project borapin --non-interactive --force --message "${GITHUB_SHA::7}" 2>&1 | tee deploy-output.txt
+      - name: 사진 저장소 규칙 배포 (Storage를 켠 뒤부터)
+        if: steps.key.outputs.ok == 'true'
+        continue-on-error: true
+        run: npx firebase deploy --only storage --project borapin --non-interactive --force 2>&1 | tee storage-deploy-output.txt
       - name: 열쇠 지우기
         if: always()
         run: rm -f "$RUNNER_TEMP/sa.json"
@@ -97,4 +101,4 @@ jobs:
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh deploy deploy-output.txt live-output.txt test-results/screens
+        run: scripts/push-report.sh deploy deploy-output.txt storage-deploy-output.txt live-output.txt test-results/screens

@@ -294,6 +294,39 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '11b-places');
   });
 
+  test('사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/trips');
+    await page.getByText('강릉시 여행', { exact: true }).click();
+    const sec = page.getByTestId('trip-photos');
+    await sec.getByTestId('photo-input').setInputFiles([
+      'tests/fixtures/photo-gangneung.jpg',
+      'tests/fixtures/photo-gangneung2.jpg',
+      'tests/fixtures/photo-noexif.jpg',
+    ]);
+    await expect(page.getByRole('status')).toContainText('사진 3장을 올렸어요', { timeout: 40_000 });
+    await expect(sec.locator('.photo-cell img')).toHaveCount(3);
+    // 촬영일(2019.5.3~4)로 날짜 채우기 → '(추정)'
+    const sug = page.getByTestId('photo-suggest');
+    await expect(sug).toContainText('2019.5.3–4');
+    await sug.getByRole('button', { name: '채우기' }).click();
+    await expect(page.getByText('2019.5.3–4 (추정)')).toBeVisible();
+    await expect(page.getByTestId('photo-suggest')).toHaveCount(0);
+    await expect(page.locator('.trip-cover img')).toBeVisible();
+    await shot(page, '12-photos');
+    // 슬라이드쇼: 자막에 촬영 시각과 장소
+    await sec.locator('.photo-cell img').first().click();
+    const cap = page.locator('.pswp__caption-bp');
+    await expect(cap).toContainText('2019.5.3 14:20');
+    await expect(cap).toContainText('강원 강릉시');
+    await page.waitForTimeout(600);
+    await shot(page, '12b-slideshow');
+    await page.keyboard.press('Escape');
+    // 추억 탭 사진첩
+    await page.goto('/memories');
+    await expect(page.getByTestId('album')).toContainText('강릉시 여행 · 3장');
+  });
+
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();

@@ -68,6 +68,15 @@ service cloud.firestore {
         && d.v == 1;
     }
 
+    function validPhoto(d) {
+      return d.keys().hasAll(['url', 'thumb', 'w', 'h', 'bytes', 'v'])
+        && d.url is string && d.url.size() <= 1000
+        && d.thumb is string && d.thumb.size() <= 1000
+        && d.bytes is int && d.bytes < 12 * 1024 * 1024
+        && (!('caption' in d) || (d.caption is string && d.caption.size() <= 500))
+        && d.v == 1;
+    }
+
     match /config/access {
       allow read: if isMember();
       allow create: if isOwner() && validAccess(request.resource.data);
@@ -94,6 +103,12 @@ service cloud.firestore {
       match /places/{placeId} {
         allow read: if isMember();
         allow create, update: if isMember() && validPlace(request.resource.data);
+        allow delete: if isMember();
+      }
+
+      match /photos/{photoId} {
+        allow read: if isMember();
+        allow create, update: if isMember() && validPhoto(request.resource.data);
         allow delete: if isMember();
       }
 

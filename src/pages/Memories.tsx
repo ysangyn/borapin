@@ -4,9 +4,19 @@ import { TopBar } from '../components/ui';
 import TripRow from '../components/TripRow';
 import { computeStats, useTrips } from '../lib/data';
 import { pickMemory } from '../lib/memories';
+import { usePhotos } from '../lib/photos';
+import { openSlideshow } from '../components/slideshow';
+import PhotoGrid from '../components/PhotoGrid';
 
 export default function Memories() {
   const { trips } = useTrips();
+  const { photos } = usePhotos();
+  const albums = useMemo(() => {
+    if (!photos || !trips) return [];
+    return trips
+      .map((t) => ({ trip: t, photos: photos.filter((p) => p.tripId === t.id) }))
+      .filter((a) => a.photos.length > 0);
+  }, [photos, trips]);
   const memory = useMemo(() => (trips ? pickMemory(trips) : null), [trips]);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   const thisYear = new Date().getFullYear();
@@ -42,7 +52,21 @@ export default function Memories() {
           </div>
         </section>
 
-        <div className="card small muted">사진첩·슬라이드쇼·공유 카드는 2단계에서 이 자리에 열려요.</div>
+        <section data-testid="album">
+          <div className="row-between" style={{ marginBottom: 6 }}>
+            <h2 className="h2">사진첩{photos?.length ? ` · ${photos.length}` : ''}</h2>
+            {photos && photos.length > 1 && (
+              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, shuffle: true })}>▶ 섞어서 보기</button>
+            )}
+          </div>
+          {albums.length === 0 && <div className="small muted">여행 상세의 '사진'에서 올린 사진이 여기 여행별로 모여요.</div>}
+          {albums.map(({ trip, photos: ps }) => (
+            <div key={trip.id} style={{ marginBottom: 14 }}>
+              <Link to={`/trips/${trip.id}`} className="year-head" style={{ display: 'block', color: 'inherit' }}>{trip.title} · {ps.length}장</Link>
+              <PhotoGrid photos={ps} tripId={trip.id} max={6} />
+            </div>
+          ))}
+        </section>
       </div>
     </>
   );

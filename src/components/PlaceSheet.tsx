@@ -93,7 +93,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }} data-testid="sheet-title">{name}</div>
-          {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}</div>}
+          {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           <div className="small muted">
             {visits >= 2 ? `${visits}번 다녀왔어요` : visits === 1 ? '다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>

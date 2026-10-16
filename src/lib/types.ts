@@ -14,6 +14,8 @@ export interface When {
   m2?: number;
   d2?: number;
   s?: Season;
+  /** 사진 촬영일 등으로 채운 추정값 */
+  est?: boolean;
 }
 
 export type Place =
@@ -95,6 +97,31 @@ export interface PlaceRec {
   v: 1;
 }
 export type PlaceRecInput = Omit<PlaceRec, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'v'>;
+
+/** 사진 한 장 (압축본 + 미리보기). 촬영 정보는 압축 전에 원본에서 읽어 둔다. */
+export interface Photo {
+  id: string;
+  tripId: string | null;
+  url: string;
+  thumb: string;
+  w: number;
+  h: number;
+  /** 촬영 현지 시각 '2019-05-03T14:20' */
+  taken: string | null;
+  tz?: string | null;
+  /** 촬영 정보가 없어 파일 날짜로 추정 */
+  takenGuess: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  /** 위치로 찾은 시·군·나라 */
+  place?: Place | null;
+  camera?: string | null;
+  caption?: string;
+  bytes: number;
+  createdBy?: { uid: string; email: string; name: string };
+  createdAt?: Timestamp | null;
+  v: 1;
+}
 
 export interface Access {
   allowed: string[];
