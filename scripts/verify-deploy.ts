@@ -16,6 +16,7 @@ if (!base0 || !commit) {
 }
 const base = base0.replace(/\/$/, '');
 const errors: string[] = [];
+const warnings: string[] = [];
 const bust = () => `ts=${Date.now()}`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -74,16 +75,20 @@ await Promise.all(
   [...want].map(async (p) => {
     const r = await get(p);
     checked++;
-    const html = isHtml(r);
     const expectHtml = /\.html$/.test(p) || p === '/';
+    // 없는 파일은 호스팅이 index.html을 대신 준다: 내용이 앱 첫 화면인지로 가린다 (확장자를 몰라 text/html로 오는 파일도 있어서)
+    const body = !expectHtml && isHtml(r) ? await r.text() : '';
+    const fallback = /<meta name="borapin-version"|<div id="root">/.test(body);
     if (!r.ok) errors.push(`${p}: ${r.status}`);
-    else if (html && !expectHtml) errors.push(`${p}: 파일이 빠져서 index.html이 대신 왔어요`);
+    else if (fallback) errors.push(`${p}: 파일이 빠져서 index.html이 대신 왔어요`);
+    else if (!expectHtml && isHtml(r)) warnings.push(`${p}: 파일은 있지만 text/html로 내려와요 (압축·캐시가 안 될 수 있어요)`);
     else if (/\/assets\/.+\.(js|mjs)$/.test(p) && !/javascript/.test(r.headers.get('content-type') ?? '')) errors.push(`${p}: 자바스크립트가 아니에요 (${r.headers.get('content-type')})`);
     else if (/\/assets\//.test(p) && !/immutable/.test(r.headers.get('cache-control') ?? '')) errors.push(`${p}: 오래 캐시되지 않아요`);
   }),
 );
 console.log(`✓ 파일 ${checked}개 확인 (index.html이 부르는 파일 + 서비스 워커가 미리 저장하는 파일)`);
 
+if (warnings.length) console.log('\n주의\n- ' + warnings.join('\n- '));
 if (errors.length) {
   console.error(`\n✗ 배포 확인 실패 (${base})\n- ` + errors.join('\n- '));
   process.exit(1);

@@ -60,6 +60,7 @@ export default function TripDetail() {
     );
   }
   const photos = tripPhotos ?? [];
+  const tripPlace = () => (trip ? trip.places.map(placeLong).join(', ') : null);
   const dd = trip.status === 'planned' ? dday(trip.when) : null;
   const past = trip.status === 'planned' && trip.when.p !== 'unknown' && !isUpcoming(trip.when);
   const removeAll = async () => {
@@ -106,7 +107,7 @@ export default function TripDetail() {
         )}
 
         {tab === 'info' && photos.length > 0 && (
-          <button className="trip-cover" onClick={() => openSlideshow(photos, 0, { onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })} aria-label="표지 사진 크게 보기">
+          <button className="trip-cover" onClick={() => openSlideshow(photos, 0, { placeOf: tripPlace, onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })} aria-label="표지 사진 크게 보기">
             <PhotoImg id={photos[0].id} size="l" />
           </button>
         )}
@@ -152,7 +153,7 @@ export default function TripDetail() {
           <div className="row-between" style={{ marginBottom: 6 }}>
             <h2 className="h2" style={{ fontSize: 17 }}>사진{photos.length ? ` · ${photos.length}` : ''}</h2>
             {photos.length > 1 && (
-              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true })} data-testid="slideshow">▶ 슬라이드쇼</button>
+              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, placeOf: tripPlace })} data-testid="slideshow">▶ 슬라이드쇼</button>
             )}
           </div>
           {tripPhotos && tripPhotos.length === 0 && (
@@ -164,7 +165,7 @@ export default function TripDetail() {
               </span>
             </div>
           )}
-          <PhotoGrid photos={photos} tripId={trip.id} />
+          <PhotoGrid photos={photos} tripId={trip.id} placeOf={tripPlace} />
           {(sugWhen || sugPlaces.length > 0) && (
             <div className="card coral-soft" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }} data-testid="photo-suggest">
               {sugWhen && (

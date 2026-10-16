@@ -10,7 +10,7 @@ import { openSlideshow } from './slideshow';
 import PhotoImg from './PhotoImg';
 
 /** 사진 격자: 미리보기, 올리기(여러 장), 누르면 슬라이드쇼. readOnly면 보기만 (추억 사진첩) */
-export default function PhotoGrid({ photos, tripId, max, readOnly }: { photos: Photo[]; tripId: string | null; max?: number; readOnly?: boolean }) {
+export default function PhotoGrid({ photos, tripId, max, readOnly, placeOf }: { photos: Photo[]; tripId: string | null; max?: number; readOnly?: boolean; placeOf?: (p: Photo) => string | null }) {
   const auth = useAuth();
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
@@ -105,7 +105,7 @@ export default function PhotoGrid({ photos, tripId, max, readOnly }: { photos: P
         <button
           key={p.id}
           className="photo-cell"
-          onClick={() => openSlideshow(photos, i, readOnly ? {} : { onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })}
+          onClick={() => openSlideshow(photos, i, readOnly ? { placeOf } : { placeOf, onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })}
           aria-label={`사진 ${i + 1} 크게 보기`}
         >
           <PhotoImg id={p.id} />

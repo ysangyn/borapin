@@ -13,6 +13,7 @@ import ShareCards from '../components/ShareCards';
 import { badges } from '../lib/achievements';
 import { monthGrid, yearReview } from '../lib/yearReview';
 import { placeLong } from '../lib/geo';
+import type { Photo } from '../lib/types';
 import { Art } from '../components/Scene';
 
 export default function Memories() {
@@ -46,6 +47,11 @@ export default function Memories() {
   // 받은 뱃지 먼저, 그다음 거의 다 된 것부터
   const badgeOrder = [...list].sort((a, b) => { const ao = a.have >= a.need, bo = b.have >= b.need; return Number(bo) - Number(ao) || (ao ? 0 : b.have / b.need - a.have / a.need); });
   const badgeShown = allBadges ? badgeOrder : badgeOrder.slice(0, 6);
+  // 사진에 위치가 없으면 그 여행의 장소로
+  const placeOfPhoto = (p: Photo) => {
+    const t = trips?.find((x) => x.id === p.tripId);
+    return t ? t.places.map(placeLong).join(', ') : null;
+  };
 
   if (!trips) return (<><TopBar title="추억" /><div className="page"><div className="skeleton-list" aria-busy="true"><i /><i /><i /></div></div></>);
   if (doneCount === 0)
@@ -152,14 +158,14 @@ export default function Memories() {
           <div className="row-between" style={{ marginBottom: 6 }}>
             <h2 className="h2">사진첩{photos?.length ? ` · ${photos.length}` : ''}</h2>
             {photos && photos.length > 1 && (
-              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, shuffle: true })}>▶ 섞어서 보기</button>
+              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, shuffle: true, placeOf: placeOfPhoto })}>▶ 섞어서 보기</button>
             )}
           </div>
           {albums.length === 0 && <div className="small muted">여행 상세의 '사진'에서 올린 사진이 여기 여행별로 모여요.</div>}
           {albums.map(({ trip, photos: ps }) => (
             <div key={trip.id} style={{ marginBottom: 14 }}>
               <Link to={`/trips/${trip.id}?tab=photos`} className="year-head" style={{ display: 'block', color: 'inherit' }}>{trip.title} · {ps.length}장</Link>
-              <PhotoGrid photos={ps} tripId={trip.id} max={6} readOnly />
+              <PhotoGrid photos={ps} tripId={trip.id} max={6} readOnly placeOf={() => trip.places.map(placeLong).join(', ')} />
             </div>
           ))}
         </section>

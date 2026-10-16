@@ -11,7 +11,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
  * 전체 화면 슬라이드쇼 (PhotoSwipe, MIT)
  * - 넘겨 보기, 자동 재생(4초), 섞어 보기, 날짜·장소·메모 자막, 지우기
  */
-export function openSlideshow(photos: Photo[], index = 0, opts: { autoplay?: boolean; shuffle?: boolean; onDelete?: (p: Photo) => void } = {}) {
+export function openSlideshow(photos: Photo[], index = 0, opts: { autoplay?: boolean; shuffle?: boolean; onDelete?: (p: Photo) => void; placeOf?: (p: Photo) => string | null } = {}) {
   // 지울 수 있는 곳(우리 기록)에서는 사진 설명도 쓸 수 있다
   const canEdit = !!opts.onDelete;
   let list = [...photos];
@@ -66,7 +66,8 @@ export function openSlideshow(photos: Photo[], index = 0, opts: { autoplay?: boo
         const set = () => {
           const p = list[pswp.currIndex];
           if (!p) return;
-          const where = p.place ? placeLong(p.place) : '';
+          // 사진에 위치(GPS)가 없으면 그 여행의 장소를 대신 보여 준다
+          const where = p.place ? placeLong(p.place) : opts.placeOf?.(p) ?? '';
           el.innerHTML = `<b>${esc([takenLabel(p), where].filter(Boolean).join(' · '))}</b>${p.caption ? `<span>${esc(p.caption)}</span>` : ''}`;
         };
         pswp.on('change', set);

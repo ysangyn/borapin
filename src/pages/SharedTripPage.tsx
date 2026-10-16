@@ -45,18 +45,18 @@ export default function SharedTripPage() {
         <div className="muted">{d.when} · {d.places.map(placeLong).join(', ')}</div>
       </div>
       {photos[0] && (
-        <button className="trip-cover" onClick={() => openSlideshow(photos, 0)} aria-label="사진 크게 보기"><PhotoImg id={photos[0].id} size="l" /></button>
+        <button className="trip-cover" onClick={() => openSlideshow(photos, 0, { placeOf: () => d.places.map(placeLong).join(', ') })} aria-label="사진 크게 보기"><PhotoImg id={photos[0].id} size="l" /></button>
       )}
       <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={d.places} height={220} controls={false} interactive={false} />
       {photos.length > 1 && (
         <section>
           <div className="row-between" style={{ marginBottom: 6 }}>
             <h2 className="h2" style={{ fontSize: 17 }}>사진 · {photos.length}</h2>
-            <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true })}>▶ 슬라이드쇼</button>
+            <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, placeOf: () => d.places.map(placeLong).join(', ') })}>▶ 슬라이드쇼</button>
           </div>
           <div className="photo-grid">
             {photos.map((p, i) => (
-              <button key={p.id} className="photo-cell" onClick={() => openSlideshow(photos, i)} aria-label={`사진 ${i + 1}`}><PhotoImg id={p.id} /></button>
+              <button key={p.id} className="photo-cell" onClick={() => openSlideshow(photos, i, { placeOf: () => d.places.map(placeLong).join(', ') })} aria-label={`사진 ${i + 1}`}><PhotoImg id={p.id} /></button>
             ))}
           </div>
         </section>

@@ -5,7 +5,7 @@ import { artById } from '../lib/art';
 /**
  * 여행지 사진: 흐린 미리보기가 먼저 깔리고, 화면 폭에 맞는 크기(640/1280)를 받는다.
  */
-export function ScenicPhoto({ photo, id, className, alt, eager }: { photo?: ScenePhoto | null; id?: string; className?: string; alt?: string; eager?: boolean }) {
+export function ScenicPhoto({ photo, id, className, alt, eager, label }: { photo?: ScenePhoto | null; id?: string; className?: string; alt?: string; eager?: boolean; label?: 'top' | 'bottom' }) {
   const p = photo ?? (id ? photoById(id) : null);
   const [loaded, setLoaded] = useState(false);
   if (!p) return null;
@@ -21,6 +21,13 @@ export function ScenicPhoto({ photo, id, className, alt, eager }: { photo?: Scen
         className={loaded ? 'on' : ''}
         onLoad={() => setLoaded(true)}
       />
+      {/* 어디를 찍은 사진인지 */}
+      {label && (
+        <span className={'scenic-label ' + label} data-testid="scenic-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" /></svg>
+          {p.name}
+        </span>
+      )}
     </div>
   );
 }

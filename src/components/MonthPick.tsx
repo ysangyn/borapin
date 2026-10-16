@@ -52,7 +52,7 @@ export default function MonthPick({ stats, wishes }: { stats: Stats | null; wish
   };
   return (
     <section className="month-pick" data-testid="month-pick">
-      <ScenicPhoto photo={pick} className="month-pick-photo" alt={pick.name} />
+      <ScenicPhoto photo={pick} className="month-pick-photo" alt={pick.name} label="top" />
       <div className="month-pick-copy">
         <span className="month-pick-eyebrow">{good ? `${month}월에 가기 좋은 곳` : '오늘의 여행지'}</span>
         <b className="month-pick-name">{placeLong(place)}</b>
