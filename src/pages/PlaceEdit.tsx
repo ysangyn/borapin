@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
-import { useAuth, displayName } from '../lib/auth';
-import { createPlace, deletePlace, restorePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
+import { useAuth, displayName, memberNames } from '../lib/auth';
+import { createPlace, createTrip, deletePlace, restorePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
+import { quickTripInput } from '../lib/tripActions';
+import { celebrate, whatsNew } from '../lib/celebrate';
 import { formatWhen } from '../lib/dates';
 import { parsePlaceParam } from '../lib/geo';
 import { KINDS, parseNaverShare, placeRecLinks, VERDICTS } from '../lib/placeRecs';
@@ -34,6 +36,7 @@ export default function PlaceEdit() {
   const [address, setAddress] = useState('');
   const [memo, setMemo] = useState('');
   const [paste, setPaste] = useState('');
+  const [visited, setVisited] = useState(false);
   const [loaded, setLoaded] = useState(!editing);
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -82,11 +85,26 @@ export default function PlaceEdit() {
   const save = async () => {
     if (!where || !name.trim() || auth.status !== 'ready' || saving) return;
     setSaving(true);
+    // 여행 없이 장소만 남기면서 '여기 다녀왔어요'를 골랐으면 핀(날짜 없는 여행)도 꽂고 이어 둔다
+    let linkTrip = tripId || null;
+    let news: string | null = null;
+    if (!editing && !linkTrip && visited) {
+      try {
+        const ti = quickTripInput(where, memberNames());
+        news = trips ? whatsNew(trips, [...trips, { ...ti, id: 'new', v: 1 }]) : null;
+        linkTrip = await createTrip(ti, auth.user);
+      } catch (e) {
+        console.warn(e);
+        toast('핀을 꽂지 못했어요. 다시 해 주세요.');
+        setSaving(false);
+        return;
+      }
+    }
     const input: PlaceRecInput = {
       name: name.trim(),
       kind,
       region: where,
-      tripId: tripId || null,
+      tripId: linkTrip,
       reviews: Object.fromEntries(Object.entries(reviews).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v)),
       verdict,
       naverUrl: /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : undefined,
@@ -96,7 +114,8 @@ export default function PlaceEdit() {
     try {
       if (editing && id && existing) await updatePlace(id, existing, input);
       else await createPlace(input, auth.user);
-      toast(editing ? '고쳤어요' : '장소를 남겼어요');
+      if (news) celebrate();
+      toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
       goBack(tripParam ? `/trips/${tripParam}` : '/places');
     } catch (e) {
       console.warn(e);
@@ -132,12 +151,20 @@ export default function PlaceEdit() {
     <>
       <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소' : '장소 남기기'} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
-        {!editing && (
-          <div className="field">
-            <span className="label">네이버지도에서 공유한 글 붙여넣기 <span className="muted small">(선택)</span></span>
-            <textarea className="textarea" rows={2} aria-label="네이버지도 공유 글" value={paste} onChange={(e) => applyPaste(e.target.value)} placeholder={'[네이버지도]\n가게 이름\nhttps://naver.me/…'} />
-          </div>
-        )}
+        <div className="field">
+          <span className="label">네이버지도 <span className="muted small">(선택)</span></span>
+          {/^https?:\/\//i.test(naverUrl.trim()) ? (
+            <div className="naver-linked" data-testid="naver-link">
+              <span className="naver-badge" aria-hidden="true">N</span>
+              <a href={naverUrl.trim()} target="_blank" rel="noreferrer">{naverUrl.trim().replace(/^https?:\/\//i, '')}</a>
+              <button type="button" className="icon-btn" style={{ width: 40, height: 40 }} aria-label="네이버지도 링크 빼기" onClick={() => { setNaverUrl(''); setPaste(''); }}><Icon name="x" size={14} /></button>
+            </div>
+          ) : (
+            <>
+              <textarea className="textarea" rows={2} aria-label="네이버지도 공유 글" value={paste} onChange={(e) => applyPaste(e.target.value)} placeholder="네이버지도에서 '공유'로 복사한 글이나 링크를 붙여 넣으면 이름·주소가 채워져요" />
+            </>
+          )}
+        </div>
 
         <div className="field">
           <span className="label">이름<span className="req">*</span></span>
@@ -148,7 +175,9 @@ export default function PlaceEdit() {
           <span className="label">종류</span>
           <div className="chips">
             {KINDS.map((k) => (
-              <button key={k.k} type="button" className={'chip' + (kind === k.k ? ' on' : '')} onClick={() => setKind(k.k)}>{k.label}</button>
+              <button key={k.k} type="button" aria-pressed={kind === k.k} className={'chip' + (kind === k.k ? ' on' : '')} onClick={() => setKind(k.k)}>
+                {kind === k.k && <span className="chip-check" aria-hidden="true"><Icon name="check" size={13} stroke={2.6} /></span>}{k.label}
+              </button>
             ))}
           </div>
         </div>
@@ -156,6 +185,7 @@ export default function PlaceEdit() {
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
           <PlacePicker value={where ? [where] : []} onChange={(v) => setRegion(v.slice(-1))} />
+          <input className="input" aria-label="주소" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="자세한 주소 (선택)" />
         </div>
 
         {tripOptions.length > 0 && (
@@ -166,6 +196,13 @@ export default function PlaceEdit() {
               {tripOptions.map((t) => <option key={t.id} value={t.id}>{t.title} · {formatWhen(t.when)}</option>)}
             </select>
           </div>
+        )}
+
+        {!editing && !tripId && (
+          <label className="check-row">
+            <input type="checkbox" checked={visited} onChange={(e) => setVisited(e.target.checked)} />
+            <span>여기 다녀왔어요 (지도에 핀도 꽂기)</span>
+          </label>
         )}
 
         <div className="field">
@@ -189,16 +226,13 @@ export default function PlaceEdit() {
           <span className="label">다시 간다면</span>
           <div className="chips">
             {VERDICTS.map((v) => (
-              <button key={v.v} type="button" className={'chip' + (verdict === v.v ? (v.v === 'again' ? ' on-coral' : ' on') : '')} onClick={() => setVerdict(verdict === v.v ? null : v.v)}>{v.label}</button>
+              <button key={v.v} type="button" aria-pressed={verdict === v.v} className={'chip' + (verdict === v.v ? (v.v === 'again' ? ' on-coral' : ' on') : '')} onClick={() => setVerdict(verdict === v.v ? null : v.v)}>
+                {verdict === v.v && <span className="chip-check" aria-hidden="true"><Icon name="check" size={13} stroke={2.6} /></span>}{v.label}
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="field">
-          <span className="label">네이버지도 링크 · 주소 <span className="muted small">(선택)</span></span>
-          <input className="input" aria-label="네이버지도 링크" value={naverUrl} onChange={(e) => setNaverUrl(e.target.value)} placeholder="https://naver.me/…" />
-          <input className="input" aria-label="주소" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="주소" />
-        </div>
 
         <div className="field">
           <span className="label">메모</span>

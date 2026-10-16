@@ -43,6 +43,9 @@ export function nameOf(email: string | null | undefined, fallback = ''): string 
   if (partner && e === partner) return '보라';
   return fallback || e.split('@')[0];
 }
+/** 함께 쓰는 사람 이름 (허용 목록 순서). 아직 아무도 없으면 빈 목록 */
+export const memberNames = () => [...new Set(access.allowed.map((e) => nameOf(e)).filter(Boolean))];
+
 export function displayName(user: User | null | undefined): string {
   if (!user) return '';
   return nameOf(user.email, user.displayName?.split(' ')[0] || user.email?.split('@')[0] || '나');

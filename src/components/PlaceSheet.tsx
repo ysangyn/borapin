@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import TripRow from './TripRow';
 import RegionInfo from './RegionInfo';
 import { Icon, useToast } from './ui';
-import { useAuth } from '../lib/auth';
+import { memberNames, useAuth } from '../lib/auth';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
 import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/geo';
 import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
@@ -17,6 +17,7 @@ import { photoForPlace } from '../lib/media';
 import { ScenicPhoto } from './Scene';
 import { times } from '../lib/ko';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
+import { quickTripInput } from '../lib/tripActions';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -71,17 +72,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
     if (auth.status !== 'ready' || busy) return;
     setBusy(true);
     try {
-      const input = {
-        title: `${placeLabel(place)} 여행`,
-        kind: 'trip' as const,
-        status: 'done' as const,
-        when: { p: 'unknown' as const },
-        places: [place],
-        companions: ['보라', '영상'],
-        memo: '',
-        tags: [],
-        source: 'app' as const,
-      };
+      const input = quickTripInput(place, memberNames());
       const news = whatsNew(trips, [...trips, { ...input, id: 'new', v: 1 }]);
       const id = await createTrip(input, auth.user);
       if (news) celebrate();

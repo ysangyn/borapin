@@ -8,6 +8,7 @@ import PlaceSheet from '../components/PlaceSheet';
 import type { Place } from '../lib/types';
 import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTAL_GROUPS, upcomingTrips, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
+import { usePlaceSpots } from '../lib/placeSpots';
 import WishRolling from '../components/WishRolling';
 import MonthPick from '../components/MonthPick';
 import { pickMemory } from '../lib/memories';
@@ -19,6 +20,7 @@ export default function Home() {
   const { wishes } = useWishes();
   const { places: recs } = usePlaces();
   const flags = useWishFlags(wishes, trips);
+  const spots = usePlaceSpots(recs ?? null);
   const [mode, setMode] = useState<MapMode>('kr');
   const [sel, setSel] = useState<Place | null>(null);
   const [q, setQ] = useState('');
@@ -56,7 +58,7 @@ export default function Home() {
             </div>
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
-          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} />
+          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} />
           <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">

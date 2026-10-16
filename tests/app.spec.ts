@@ -274,7 +274,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByRole('button', { name: /강릉시 빼기/ })).toBeVisible();
     await page.getByLabel('네이버지도 공유 글').fill('[네이버지도]\n초당할머니순두부\n강원 강릉시 초당순두부길 77\nhttps://naver.me/xYz12');
     await expect(page.getByLabel('장소 이름')).toHaveValue('초당할머니순두부');
-    await expect(page.getByLabel('네이버지도 링크')).toHaveValue('https://naver.me/xYz12');
+    await expect(page.getByTestId('naver-link')).toContainText('naver.me/xYz12');
     await expect(page.getByLabel('주소')).toHaveValue('강원 강릉시 초당순두부길 77');
     await page.getByLabel('영상 한 줄 평').fill('순두부 젤라또까지 완벽');
     await page.getByLabel('보라 한 줄 평').fill('아침으로 최고');

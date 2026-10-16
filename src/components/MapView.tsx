@@ -57,6 +57,9 @@ export interface MapFlag {
   both: boolean;
 }
 
+/** 우리 장소가 있는 지역 */
+export interface MapSpot { place: Place; count: number }
+
 export interface MapViewProps {
   mode: MapMode;
   stats: Stats | null;
@@ -70,6 +73,8 @@ export interface MapViewProps {
   focus?: Place[];
   /** 가고 싶은 곳 깃발 */
   flags?: MapFlag[];
+  /** 우리 장소가 있는 지역 (개수) */
+  spots?: MapSpot[];
   /** 이 장소로 화면 이동 (색칠은 그대로) */
   flyTo?: Place | null;
   className?: string;
@@ -79,7 +84,7 @@ export interface MapViewProps {
   interactive?: boolean;
 }
 
-export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, flyTo, className, controlsTop = 12, legendBottom = 12, interactive = true }: MapViewProps) {
+export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, spots, flyTo, className, controlsTop = 12, legendBottom = 12, interactive = true }: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -333,6 +338,24 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       flagMarkers.current.push(new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [5, -7] }).setLngLat([at.lng, at.lat]).addTo(map));
     }
   }, [flags, mode, ready]);
+
+  // 우리 장소 표시: 지역 가운데 아래쪽에 작은 개수 표시 (깃발과 겹치지 않게 왼쪽으로)
+  const spotMarkers = useRef<maplibregl.Marker[]>([]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    spotMarkers.current.forEach((m) => m.remove());
+    spotMarkers.current = [];
+    for (const s of spots ?? []) {
+      if ((s.place.t === 'kr') !== (mode === 'kr')) continue;
+      const at = s.place.t === 'kr' ? REGION_BY_CODE.get(s.place.code) : COUNTRY_BY_ID.get(s.place.id);
+      if (!at) continue;
+      const el = document.createElement('div');
+      el.className = 'place-spot-marker';
+      el.innerHTML = `<div class="place-spot" data-testid="place-spot" data-code="${s.place.t === 'kr' ? s.place.code : s.place.id}" aria-label="우리 장소 ${s.count}곳"><svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg><b>${s.count}</b></div>`;
+      spotMarkers.current.push(new maplibregl.Marker({ element: el, anchor: 'top', offset: [-6, 4] }).setLngLat([at.lng, at.lat]).addTo(map));
+    }
+  }, [spots, mode, ready]);
 
   // 지정한 장소로 이동
   useEffect(() => {
