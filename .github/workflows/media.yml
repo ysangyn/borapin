@@ -1,0 +1,51 @@
+name: 꾸밈 사진·영상
+
+# media-scout 브랜치에 올리면: 위키미디어 공용에서 자유 이용 사진·영상 후보를 찾아 모아보기를 ci-report에 올린다.
+# media-build 브랜치에 올리면: media/picks.json에 고른 것만 받아 가볍게 줄이고(WebP·MP4·WebM) 같은 브랜치에 올린다.
+on:
+  push:
+    branches: [media-scout, media-build]
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: 후보 찾기
+        if: github.ref == 'refs/heads/media-scout'
+        run: npx tsx scripts/media-scout.ts 2>&1 | tee media-scout-output.txt
+      - name: 후보 올리기
+        if: always() && github.ref == 'refs/heads/media-scout'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh media media-scout media-scout-output.txt
+      - name: 고른 것 만들기
+        if: github.ref == 'refs/heads/media-build'
+        run: npx tsx scripts/media-build.ts 2>&1 | tee media-build-output.txt
+      - name: 만든 것 올리기 (media-build 브랜치)
+        if: github.ref == 'refs/heads/media-build'
+        run: |
+          git config user.name "borapin-ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add public/media src/data/media.json media-build-output.txt
+          git commit -m "꾸밈 사진·영상 만들기 결과" || echo "바뀐 것 없음"
+          git push origin HEAD:media-build
+      - name: 만들기 결과 올리기
+        if: always() && github.ref == 'refs/heads/media-build'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh media-build media-build-output.txt public/media/preview
