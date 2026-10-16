@@ -37,6 +37,20 @@ export default function Ask() {
   const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [] } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes]);
 
   const [thinking, setThinking] = useState(false);
+  // 말로 묻기 (폰 브라우저의 음성 인식, 무료). 지원하는 기기에서만 단추가 보인다
+  const SR = typeof window !== 'undefined' ? ((window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition ?? (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition) : undefined;
+  const [listening, setListening] = useState(false);
+  const listen = () => {
+    if (!SR || listening) return;
+    const rec = new (SR as new () => { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void })();
+    rec.lang = 'ko-KR';
+    rec.interimResults = false;
+    rec.onresult = (e) => { const t = e.results[0]?.[0]?.transcript ?? ''; if (t) void send(t); };
+    rec.onend = () => setListening(false);
+    rec.onerror = () => { setListening(false); toast('잘 못 들었어요. 다시 말해 주세요'); };
+    setListening(true);
+    rec.start();
+  };
   const send = async (q: string, forced?: Place) => {
     if (!q.trim() || !data || thinking) return;
     const c = forced ? { ...ctx, place: forced } : ctx;
@@ -134,6 +148,11 @@ export default function Ask() {
       </div>
       <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); send(text); }}>
         <input className="input" aria-label="질문" placeholder={ready ? '강릉 맛집, 작년 여름에 간 곳…' : '불러오는 중…'} value={text} onChange={(e) => setText(e.target.value)} disabled={!ready || thinking} />
+        {!!SR && !text.trim() && (
+          <button type="button" className={'btn soft' + (listening ? ' listening' : '')} style={{ width: 52, padding: 0 }} aria-label={listening ? '듣는 중' : '말로 묻기'} disabled={!ready || thinking} onClick={listen}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
+          </button>
+        )}
         <button className="btn" style={{ width: 52, padding: 0 }} aria-label="묻기" disabled={!ready || thinking || !text.trim()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" /></svg></button>
       </form>
     </>
