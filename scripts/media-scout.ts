@@ -104,8 +104,8 @@ async function sheet(name: string, items: { buf: Buffer; label: string }[]) {
 }
 
 // ---------- 사진 후보 ----------
-const PLACES: { id: string; q: string[] }[] = [
-  { id: 'jeju', q: ['Seongsan Ilchulbong', 'Jeju island coast', 'Hallasan'] },
+const PLACES_ALL: { id: string; q: string[] }[] = [
+  { id: 'jeju', q: ['Seongsan Ilchulbong', 'Seongsan Ilchulbong sunrise', 'Udo Jeju', 'Hyeopjae Beach', 'Sanbangsan', 'Seopjikoji', 'Jeju canola flowers', 'Jusangjeolli'] },
   { id: 'gangneung', q: ['Gangneung beach', 'Gyeongpo beach', 'Jumunjin'] },
   { id: 'gyeongju', q: ['Bulguksa', 'Donggung Palace Wolji Pond', 'Gyeongju Daereungwon'] },
   { id: 'jeonju', q: ['Jeonju Hanok Village'] },
@@ -115,18 +115,24 @@ const PLACES: { id: string; q: string[] }[] = [
   { id: 'namhae', q: ['Darangyi village Namhae', 'Namhae'] },
   { id: 'seoul', q: ['Gyeongbokgung', 'Bukchon Hanok Village'] },
   { id: 'andong', q: ['Hahoe Folk Village', 'Andong Hahoe'] },
-  { id: 'tongyeong', q: ['Tongyeong harbor', 'Tongyeong'] },
+  { id: 'tongyeong', q: ['Tongyeong harbor', 'Tongyeong Gangguan', 'Dongpirang', 'Tongyeong cable car', 'Mireuksan'] },
   { id: 'damyang', q: ['Juknokwon Damyang bamboo', 'Damyang'] },
   { id: 'suncheon', q: ['Suncheon Bay reed', 'Suncheonman'] },
   { id: 'danyang', q: ['Dodamsambong', 'Danyang'] },
 ];
 
-const VIDEOS: { id: string; q: string[] }[] = [
+const VIDEOS_ALL: { id: string; q: string[] }[] = [
   { id: 'clouds', q: ['clouds time-lapse', 'timelapse clouds sky', 'cloud timelapse mountain'] },
-  { id: 'stream', q: ['mountain stream water flowing', 'creek water flowing', 'waterfall stream forest'] },
+  { id: 'stream', q: ['brook forest', 'mountain creek', 'small waterfall forest', 'stream water rocks', 'Bach Wasser', 'river rapids calm', 'cascade forest stream'] },
   { id: 'waves', q: ['ocean waves beach', 'sea waves shore'] },
 ];
 
+// 'npx tsx scripts/media-scout.ts jeju stream' 처럼 이름을 주면 그것만 다시 찾는다
+const only = process.argv.slice(2);
+const PLACES = PLACES_ALL.filter((p) => !only.length || only.includes(p.id));
+const VIDEOS = VIDEOS_ALL.filter((v) => !only.length || only.includes(v.id));
+// 행사·군사·사람 위주 사진은 뺀다
+const NOISE = /coast guard|navy|uscgc|seminar|soldier|marine|military|conference|ceremony|raft|kayak|gopro|tsunami|forecast|hurricane|satellite/i;
 const report: Record<string, Cand[]> = {};
 
 for (const p of PLACES) {
@@ -140,7 +146,7 @@ for (const p of PLACES) {
     }
   }
   // 크고 가로로 긴 사진만, 큰 것부터
-  all = all.filter((c) => c.w >= 2000 && c.w / c.h >= 1.3 && c.w / c.h <= 2.2 && /jpeg|png/.test(c.mime)).sort((a, b) => b.w * b.h - a.w * a.h).slice(0, 16);
+  all = all.filter((c) => !NOISE.test(c.title + ' ' + c.desc) && c.w >= 2000 && c.w / c.h >= 1.3 && c.w / c.h <= 2.2 && /jpeg|png/.test(c.mime)).sort((a, b) => b.w * b.h - a.w * a.h).slice(0, 16);
   report[p.id] = all;
   const items: { buf: Buffer; label: string }[] = [];
   for (const [i, c] of all.entries()) {
@@ -164,15 +170,18 @@ for (const v of VIDEOS) {
       console.warn(v.id, q, e);
     }
   }
-  all = all.filter((c) => c.w >= 1280 && c.w > c.h).slice(0, 12);
+  all = all.filter((c) => !NOISE.test(c.title + ' ' + c.desc) && c.w >= 1280 && c.w > c.h).slice(0, 12);
   report[`video-${v.id}`] = all;
   const items: { buf: Buffer; label: string }[] = [];
   for (const [i, c] of all.entries()) {
     try {
-      const file = path.join(OUT, `tmp-${v.id}-${i}`);
+      const file = path.join('/tmp', `scout-${v.id}-${i}`);
+      // 너무 큰 원본(500MB 넘음)은 건너뛴다
+      const head = await fetch(c.url, { method: 'HEAD', headers: { 'User-Agent': UA } });
+      if (Number(head.headers.get('content-length') ?? 0) > 500 * 1024 * 1024) continue;
       fs.writeFileSync(file, await download(c.url));
-      // 2초 지점 한 장면
-      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '2', '-i', file, '-frames:v', '1', `${file}.jpg`]);
+      // 1초 지점 한 장면 (짧은 영상도 되게)
+      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '1', '-i', file, '-frames:v', '1', `${file}.jpg`]);
       const dur = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file]).toString().trim();
       items.push({ buf: fs.readFileSync(`${file}.jpg`), label: `${v.id} ${i} ${Math.round(+dur)}s` });
       fs.rmSync(file);

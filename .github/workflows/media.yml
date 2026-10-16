@@ -27,7 +27,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: 후보 찾기
         if: github.ref == 'refs/heads/media-scout'
-        run: npx tsx scripts/media-scout.ts 2>&1 | tee media-scout-output.txt
+        run: npx tsx scripts/media-scout.ts $(cat media/scout-only.txt 2>/dev/null) 2>&1 | tee media-scout-output.txt
       - name: 후보 올리기
         if: always() && github.ref == 'refs/heads/media-scout'
         env:
