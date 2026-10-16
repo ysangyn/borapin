@@ -60,7 +60,7 @@ jobs:
           # 하루 횟수용 KV 저장소: 없으면 만들고, id를 설정에 넣는다
           npx wrangler kv namespace list > kv-list.json 2>kv-list.err || true
           cat kv-list.err | tee -a worker-output.txt
-          ID=$(node -e "const s=require('fs').readFileSync('kv-list.json','utf8');const i=s.indexOf('[');if(i<0){console.log('');process.exit()}const l=JSON.parse(s.slice(i));const x=l.find(n=>n.title==='borapin-ask-QUOTA');console.log(x?x.id:'')")
+          ID=$(node -e "const s=require('fs').readFileSync('kv-list.json','utf8');const i=s.indexOf('[');if(i<0){console.log('');process.exit()}const l=JSON.parse(s.slice(i));const x=l.find(n=>n.title==='QUOTA'||n.title==='borapin-ask-QUOTA');console.log(x?x.id:'')")
           if [ -z "$ID" ]; then
             npx wrangler kv namespace create QUOTA 2>&1 | tee kv-create.txt | tee -a worker-output.txt
             ID=$(grep -o '[0-9a-f]\{32\}' kv-create.txt | head -1)
