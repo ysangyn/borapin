@@ -1,10 +1,11 @@
 name: 꾸밈 사진·영상
 
 # media-scout 브랜치에 올리면: 위키미디어 공용에서 자유 이용 사진·영상 후보를 찾아 모아보기를 ci-report에 올린다.
+# media-cities 브랜치에 올리면: 세계 도시(world.json)마다 사진 후보 4장을 찾아 모아보기를 ci-report에 올린다.
 # media-build 브랜치에 올리면: media/picks.json에 고른 것만 받아 가볍게 줄이고(WebP·MP4·WebM) 같은 브랜치에 올린다.
 on:
   push:
-    branches: [media-scout, media-build]
+    branches: [media-scout, media-build, media-cities]
 
 permissions:
   contents: write
@@ -33,6 +34,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/push-report.sh media media-scout media-scout-output.txt
+      - name: 세계 도시 사진 후보 찾기
+        if: github.ref == 'refs/heads/media-cities'
+        run: npx tsx scripts/media-cities.ts $(cat media/cities-only.txt 2>/dev/null) 2>&1 | tee media-cities-output.txt
+      - name: 도시 후보 올리기
+        if: always() && github.ref == 'refs/heads/media-cities'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh media-cities media-cities media-cities-output.txt
       - name: 고른 것 만들기
         if: github.ref == 'refs/heads/media-build'
         run: npx tsx scripts/media-build.ts 2>&1 | tee media-build-output.txt
