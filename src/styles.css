@@ -339,7 +339,7 @@ a { color: var(--violet); text-decoration: none; }
 .login-logo { width: 50px; height: 50px; border-radius: 16px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(23, 20, 43, 0.22); }
 .login-tag { margin: 8px 0 0; font-size: 19px; font-weight: 700; letter-spacing: -0.03em; opacity: 0.94; }
 /* 로그인 칸: 아래에서 올라온 반투명 판 */
-.login-card { color: var(--ink); display: flex; flex-direction: column; gap: 12px; padding: 22px 24px calc(14px + var(--safe-b)); border-radius: 28px 28px 0 0; background: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); box-shadow: 0 -12px 40px rgba(23, 20, 43, 0.16); }
+.login-card { position: relative; color: var(--ink); display: flex; flex-direction: column; gap: 12px; padding: 22px 24px calc(14px + var(--safe-b)); border-radius: 28px 28px 0 0; background: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); box-shadow: 0 -12px 40px rgba(23, 20, 43, 0.16); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .login-card { background: #fff; } }
 .login-or { display: flex; align-items: center; gap: 10px; color: var(--ink4); font-size: 12px; font-weight: 700; margin-top: 4px; }
 .login-or::before, .login-or::after { content: ''; flex: 1; height: 1px; background: var(--line2); }
@@ -352,6 +352,8 @@ a { color: var(--violet); text-decoration: none; }
   .login-hero { flex: none; min-height: 0; padding: 0; align-items: center; text-align: center; }
   .login-card { width: 100%; max-width: 420px; border-radius: 28px; padding: 26px 28px 16px; box-shadow: 0 24px 60px rgba(23, 20, 43, 0.28); }
 }
+.login-mascot { position: absolute; right: 18px; bottom: calc(100% - 6px); width: 128px; height: auto; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(23, 20, 43, 0.18)); }
+@media (min-width: 700px) and (min-height: 640px) { .login-mascot { right: -28px; width: 150px; } }
 .auth-mosaic { width: 150px; }
 .email-login { display: flex; flex-direction: column; gap: 10px; }
 .email-login .input { height: 50px; }

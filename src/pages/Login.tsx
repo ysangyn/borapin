@@ -4,6 +4,7 @@ import { Logo } from '../components/ui';
 import KoreaMosaic from '../components/KoreaMosaic';
 import { SceneVideo } from '../components/Scene';
 import { videoById } from '../lib/media';
+import { artById } from '../lib/art';
 import { authErrorText, logOut, resendVerification, resetPassword, signInWithEmail, signInWithGoogle, signUpWithEmail, useRecheckAuth } from '../lib/auth';
 
 const Footer = () => (
@@ -32,6 +33,8 @@ export function Login() {
         <p className="login-tag">가본 곳마다, 우리 핀 하나</p>
       </header>
       <main className="login-card">
+        {/* 로그인 칸 윗선에 서 있는 보라 (배경 투명 그림이 있을 때만) */}
+        {artById('bora-login') && <img className="login-mascot" src={artById('bora-login')!.src.s} alt="" aria-hidden="true" width={540} height={540} />}
         <EmailLogin />
         <div className="login-or"><span>간편 로그인</span></div>
         <button
