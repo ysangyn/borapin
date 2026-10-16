@@ -6,13 +6,17 @@ import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
 import PlaceSheet from '../components/PlaceSheet';
 import type { Place } from '../lib/types';
-import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips } from '../lib/data';
+import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips, useWishes } from '../lib/data';
+import { useWishFlags } from '../lib/wishFlags';
+import WishRolling from '../components/WishRolling';
 import { pickMemory } from '../lib/memories';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 
 export default function Home() {
   const { trips } = useTrips();
+  const { wishes } = useWishes();
+  const flags = useWishFlags(wishes, trips);
   const [mode, setMode] = useState<MapMode>('kr');
   const [sel, setSel] = useState<Place | null>(null);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
@@ -46,7 +50,7 @@ export default function Home() {
             </div>
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
-          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} />
+          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} />
           <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">
@@ -76,6 +80,8 @@ export default function Home() {
           </section>
         )}
 
+        {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
+
         {memory && (
           <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
             <span className="trip-tile">{placeLabel(memory.trip.places[0]).slice(0, 4)}</span>
@@ -103,7 +109,7 @@ export default function Home() {
           <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
         </section>
       </div>
-      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} onClose={() => setSel(null)} />}
+      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} wishes={wishes ?? []} onClose={() => setSel(null)} />}
     </>
   );
 }

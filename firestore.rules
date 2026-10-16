@@ -43,10 +43,16 @@ service cloud.firestore {
         && d.v == 1;
     }
 
+    function optList(d, k, n) { return !(k in d) || (d[k] is list && d[k].size() <= n); }
+
     function validWish(d) {
       return d.keys().hasAll(['place', 'v'])
         && d.place is map
         && (!('note' in d) || (d.note is string && d.note.size() <= 5000))
+        && (!('spotName' in d) || (d.spotName is string && d.spotName.size() <= 60))
+        && optList(d, 'wantedBy', 10) && optList(d, 'links', 20) && optList(d, 'months', 12)
+        && optList(d, 'spots', 50) && optList(d, 'todos', 50) && optList(d, 'foods', 50)
+        && (!('priority' in d) || d.priority == null || d.priority in [1, 2, 3])
         && d.v == 1;
     }
 

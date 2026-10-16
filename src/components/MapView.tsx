@@ -88,6 +88,13 @@ function fillExpr() {
   ] as unknown as maplibregl.ExpressionSpecification;
 }
 
+export interface MapFlag {
+  id: string;
+  place: Place;
+  priority: number | null;
+  both: boolean;
+}
+
 export interface MapViewProps {
   mode: MapMode;
   stats: Stats | null;
@@ -99,12 +106,16 @@ export interface MapViewProps {
   onSelect?: (p: Place | null) => void;
   /** 이 장소들만 강조 (여행 상세) */
   focus?: Place[];
+  /** 가고 싶은 곳 깃발 */
+  flags?: MapFlag[];
+  /** 이 장소로 화면 이동 (색칠은 그대로) */
+  flyTo?: Place | null;
   className?: string;
   controlsTop?: number;
   legendBottom?: number;
 }
 
-export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, className, controlsTop = 12, legendBottom = 12 }: MapViewProps) {
+export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, flyTo, className, controlsTop = 12, legendBottom = 12 }: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -318,6 +329,45 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     }
     (map as unknown as { __sel?: Record<string, string> }).__sel = sel;
   }, [selected, ready]);
+
+  // 가고 싶은 곳 깃발 (국내 지도엔 국내, 세계 지도엔 나라)
+  const flagMarkers = useRef<maplibregl.Marker[]>([]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    flagMarkers.current.forEach((m) => m.remove());
+    flagMarkers.current = [];
+    for (const f of flags ?? []) {
+      if ((f.place.t === 'kr') !== (mode === 'kr')) continue;
+      const at = f.place.t === 'kr' ? REGION_BY_CODE.get(f.place.code) : COUNTRY_BY_ID.get(f.place.id);
+      if (!at) continue;
+      const el = document.createElement('div');
+      el.className = 'wish-flag' + (f.both ? ' both' : '');
+      el.dataset.testid = 'wish-flag';
+      el.innerHTML = `<svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true"><path d="M2 21V2" stroke="#c4553a" stroke-width="2" stroke-linecap="round"/><path d="M3 2.5h11l-2.4 4L14 10.5H3z" fill="#FF7A59" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>${f.priority ? `<b>${f.priority}</b>` : ''}`;
+      flagMarkers.current.push(new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [5, -7] }).setLngLat([at.lng, at.lat]).addTo(map));
+    }
+  }, [flags, mode, ready]);
+
+  // 지정한 장소로 이동
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !flyTo) return;
+    loadGeo().then((g) => {
+      const fc = flyTo.t === 'kr' ? g.kr : g.world;
+      const key = flyTo.t === 'kr' ? 'cell' : 'ADM0_A3';
+      const id = flyTo.t === 'kr' ? flyTo.code : flyTo.id;
+      const f = fc.features.find((x) => x.properties?.[key] === id);
+      if (!f) return;
+      const b = new maplibregl.LngLatBounds();
+      const walk = (c: unknown): void => {
+        if (Array.isArray(c) && typeof c[0] === 'number') b.extend(c as [number, number]);
+        else if (Array.isArray(c)) c.forEach(walk);
+      };
+      walk((f.geometry as { coordinates: unknown }).coordinates);
+      if (!b.isEmpty()) map.fitBounds(b, { padding: { top: 120, bottom: 320, left: 40, right: 70 }, maxZoom: flyTo.t === 'kr' ? 8.6 : 4.5, duration: 600 });
+    });
+  }, [flyTo, ready]);
 
   // 여행 상세: 해당 장소로 맞춤
   useEffect(() => {

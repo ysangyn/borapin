@@ -183,6 +183,72 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByText(/가져오기/)).toHaveCount(0);
   });
 
+  test('가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기', async ({ page }) => {
+    await signIn(page, OWNER);
+    // 비어 있으면 홈에 이번 달 추천 3곳
+    const homeWishes = page.getByTestId('home-wishes');
+    await expect(homeWishes).toContainText('가고 싶은 곳 3곳만 담아볼까요?');
+    await expect(homeWishes.getByRole('button', { name: '담기' })).toHaveCount(3);
+    await expectMapDrawn(page);
+
+    // 지도에서 제주를 눌러 하트로 담기 → 알림의 '메모 쓰기'
+    await tapLngLat(page, 126.55, 33.38);
+    const sheet = page.getByTestId('region-sheet');
+    await expect(sheet.getByTestId('sheet-title')).toHaveText('제주');
+    await sheet.getByTestId('sheet-wish').click();
+    await expect(page.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
+    await page.getByRole('button', { name: '메모 쓰기' }).click();
+    await expect(page).toHaveURL(/\/wishes\/[A-Za-z0-9]+$/);
+
+    // 고치기: 둘 다 원해요, 1순위, 가볼 곳
+    await expect(page.getByRole('button', { name: /제주 빼기/ })).toBeVisible();
+    await page.getByRole('button', { name: '보라', exact: true }).click();
+    await expect(page.getByText('둘 다 원해요')).toBeVisible();
+    await page.getByRole('button', { name: '1순위' }).click();
+    await page.getByLabel('가볼 곳').fill('성산일출봉\n우도');
+    await page.getByTestId('wish-save').click();
+    await expect(page).toHaveURL(/\/wishes$/);
+    const card = page.getByTestId('wish-card').filter({ hasText: '제주' });
+    await expect(card).toContainText('둘 다 원해요');
+    await expect(card).toContainText('가볼 곳 성산일출봉 외 1');
+    await expect(card.getByLabel('1순위')).toBeVisible();
+    await shot(page, '10-wishes');
+
+    // 여행 만들기 → 예정된 여행, 카드는 '예정'
+    await card.getByTestId('wish-plan').click();
+    await expect(page).toHaveURL(/status=planned/);
+    await page.getByRole('button', { name: '몇 년쯤' }).click();
+    await page.getByTestId('save').click();
+    await expect(page.getByTestId('trip-title')).toHaveText('제주 여행');
+    await page.goto('/wishes');
+    await expect(page.getByTestId('wish-card').filter({ hasText: '제주' })).toContainText('예정');
+
+    // 지도에 깃발
+    await page.goto('/map');
+    await expectMapDrawn(page);
+    await expect(page.getByTestId('wish-flag')).toHaveCount(1);
+    await shot(page, '10b-map-flags');
+
+    // 여행지 뽑기: 강원 · 바다 → 담기
+    await page.goto('/wishes');
+    await page.getByTestId('dice-open').click();
+    await page.getByLabel('뽑을 범위').selectOption('gangwon');
+    await page.getByRole('button', { name: '바다', exact: true }).click();
+    await page.getByTestId('dice-roll').click();
+    await expect(page.getByTestId('dice-add')).toBeVisible();
+    await expect(page.getByTestId('dice-face')).toContainText('강원');
+    await shot(page, '10c-dice');
+    await page.getByTestId('dice-add').click();
+    await expect(page.getByTestId('wish-card')).toHaveCount(2);
+
+    // 홈 롤링, 여행 탭에도 보인다
+    await page.goto('/');
+    await expect(page.getByTestId('home-wishes').getByTestId('wish-card').first()).toBeVisible();
+    await expect(page.getByTestId('home-wishes')).toContainText('제주');
+    await page.goto('/trips');
+    await expect(page.getByTestId('trips-wishes')).toContainText('제주');
+  });
+
   test('초대 안 된 계정은 막고, 추가하면 들어온다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();
@@ -212,6 +278,6 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '이 기록 지우기' }).click();
     await page.getByRole('button', { name: '지우기', exact: true }).click();
     await expect(page).toHaveURL(/\/trips$/);
-    await expect(page.getByTestId('trip-row')).toHaveCount(2);
+    await expect(page.getByTestId('trip-row')).toHaveCount(3);
   });
 });

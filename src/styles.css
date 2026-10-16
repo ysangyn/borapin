@@ -201,3 +201,34 @@ a { color: var(--violet); text-decoration: none; }
 @media (min-width: 560px) {
   body { background: #eeecf5; }
 }
+
+/* ---------- 가고 싶은 곳 ---------- */
+.btn.coral { background: var(--coral); color: #fff; }
+.btn.coral-soft { background: var(--coral-mist); color: var(--coral-ink); }
+.card.coral-soft { background: var(--coral-mist); }
+.tag.coral { background: var(--coral-mist); color: var(--coral-ink); }
+.chip.on-coral { background: var(--coral-mist); border-color: #ffd2c4; color: var(--coral-ink); font-weight: 700; }
+.trip-tile.wish { background: var(--coral-mist); color: var(--coral-ink); position: relative; }
+.flag-badge { position: absolute; right: -4px; top: -4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--coral); color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 1px; box-shadow: 0 0 0 2px #fff; }
+.wish-card { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+.wish-card + .wish-card { border-top: 1px solid var(--line); }
+.wish-card .wish-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; color: inherit; }
+.wish-card .t { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wish-card.done .t { color: var(--ink3); font-weight: 600; }
+.hearts { display: inline-flex; gap: 8px; font-size: 12px; color: var(--ink4); }
+.heart { display: inline-flex; align-items: center; gap: 2px; }
+.heart svg { fill: none; stroke: currentColor; stroke-width: 2; }
+.heart.on { color: var(--coral-ink); font-weight: 700; }
+.heart.on svg { fill: var(--coral); stroke: var(--coral); }
+.rolling { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
+.rolling::-webkit-scrollbar { display: none; }
+.rolling-item { flex: 0 0 88%; scroll-snap-align: start; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 2px 12px; }
+.rolling-item .wish-card { border: none; }
+.dots { display: flex; gap: 5px; justify-content: center; margin-top: 8px; }
+.dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--line); transition: width 0.2s; }
+.dots i.on { width: 16px; background: var(--coral); }
+.wish-flag { position: relative; pointer-events: none; filter: drop-shadow(0 1px 1.5px rgba(23, 20, 43, 0.25)); }
+.wish-flag b { position: absolute; left: 6px; top: 2px; font-size: 8.5px; font-weight: 800; color: #fff; line-height: 1; }
+.dice { display: flex; flex-direction: column; gap: 10px; }
+.dice-face { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 16px; background: var(--coral-mist); }
+.dice-face.rolling { opacity: 0.6; }

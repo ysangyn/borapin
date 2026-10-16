@@ -1,5 +1,5 @@
 import { REGION_BY_CODE } from './geo';
-import type { Trip, Wish, When } from './types';
+import type { Trip, Wish, WishPriority, When } from './types';
 
 interface V22Entry {
   color?: string;
@@ -90,7 +90,9 @@ export function planV22Import(json: unknown): ImportPlan {
         todos: (w.todos ?? []).filter(Boolean),
         foods: (w.foods ?? []).filter(Boolean),
         spots: (w.places ?? []).filter(Boolean),
-        priority: i < 3 ? i + 1 : null,
+        priority: (i < 3 ? i + 1 : null) as WishPriority,
+        wantedBy: [],
+        links: [],
         source: 'v22',
         v: 1,
       },

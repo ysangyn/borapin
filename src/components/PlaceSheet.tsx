@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import TripRow from './TripRow';
 import RegionInfo from './RegionInfo';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
 import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/geo';
-import type { Place, Trip } from '../lib/types';
+import type { Place, Trip, Wish } from '../lib/types';
+import { quickWish, samePlace as samePlaceW } from '../lib/wishes';
+import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 
 function mapLinks(p: Place) {
   const q = p.t === 'kr'
@@ -20,12 +22,17 @@ const samePlace = (sel: Place) => (p: Place) =>
   sel.t === 'kr' ? p.t === 'kr' && p.code === sel.code : p.t === 'country' && p.id === sel.id;
 
 /** 지도에서 지역을 누르면 뜨는 아래 시트: 그곳 기록 보기 + 바로 핀 꽂기 */
-export default function PlaceSheet({ place, trips, stats, onClose }: {
+export default function PlaceSheet({ place, trips, stats, wishes = [], onClose }: {
   place: Place;
   trips: Trip[];
   stats: Stats | null;
+  wishes?: Wish[];
   onClose: () => void;
 }) {
+  const nav = useNavigate();
+  const seasons = useSeasons();
+  const wish = wishes.find((w) => samePlaceW(w.place, place));
+  const season = seasonFor(seasons, place, wish?.months);
   const auth = useAuth();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -69,12 +76,19 @@ export default function PlaceSheet({ place, trips, stats, onClose }: {
     }
   };
 
+  const addWish = async () => {
+    if (auth.status !== 'ready') return;
+    const id = await quickWish(place, auth.user);
+    toast(`가고 싶은 곳에 담았어요`, { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
+  };
+
   return (
     <div className="sheet" role="dialog" aria-label={name} data-testid="region-sheet">
       <div className="grip" />
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }} data-testid="sheet-title">{name}</div>
+          {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}</div>}
           <div className="small muted">
             {visits >= 2 ? `${visits}번 다녀왔어요` : visits === 1 ? '다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>
@@ -97,6 +111,15 @@ export default function PlaceSheet({ place, trips, stats, onClose }: {
           {busy ? '꽂는 중…' : done.length ? '또 다녀왔어요' : '다녀왔어요'}
         </button>
         <Link to={`/record?place=${placeParam}`} className="btn soft" style={{ flex: 1 }}>날짜·메모까지</Link>
+        {wish ? (
+          <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 52, padding: 0 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>
+          </Link>
+        ) : (
+          <button className="btn coral-soft" style={{ width: 52, padding: 0 }} onClick={addWish} aria-label="가고 싶은 곳에 담기" data-testid="sheet-wish">
+            <Icon name="heart" size={20} stroke={2.2} />
+          </button>
+        )}
       </div>
       <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
         <span style={{ flex: 1 }}>'다녀왔어요'는 날짜 없이 핀만 꽂아요</span>

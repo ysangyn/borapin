@@ -9,6 +9,8 @@ import Record from './pages/Record';
 import MapPage from './pages/MapPage';
 import Memories from './pages/Memories';
 import Space from './pages/Space';
+import Wishes from './pages/Wishes';
+import WishEdit from './pages/WishEdit';
 
 export default function App() {
   const auth = useAuth();
@@ -16,7 +18,7 @@ export default function App() {
   if (auth.status === 'loading') return <div className="app"><Spinner /></div>;
   if (auth.status === 'signedOut') return <div className="app"><Login /></div>;
   if (auth.status === 'denied') return <div className="app"><Denied email={auth.user.email} /></div>;
-  const hideNav = loc.pathname.startsWith('/record') || loc.pathname.endsWith('/edit');
+  const hideNav = loc.pathname.startsWith('/record') || loc.pathname.endsWith('/edit') || /^\/wishes\/./.test(loc.pathname);
   return (
     <div className="app">
       <Routes>
@@ -28,6 +30,8 @@ export default function App() {
         <Route path="/map" element={<MapPage />} />
         <Route path="/memories" element={<Memories />} />
         <Route path="/space" element={<Space />} />
+        <Route path="/wishes" element={<Wishes />} />
+        <Route path="/wishes/:id" element={<WishEdit />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {!hideNav && <BottomNav />}

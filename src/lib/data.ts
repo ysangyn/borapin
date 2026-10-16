@@ -15,7 +15,7 @@ import {
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
-import type { Place, Trip, TripInput, Wish } from './types';
+import type { Place, Trip, TripInput, Wish, WishInput } from './types';
 import { whenSortKey } from './dates';
 import { COUNTRY_BY_ID, REGION_BY_CODE, GROUPS } from './geo';
 
@@ -66,6 +66,31 @@ export async function createTrip(input: TripInput, user: User): Promise<string> 
     v: 1,
   });
   return ref.id;
+}
+
+// ---------- 가고 싶은 곳 ----------
+export async function createWish(input: WishInput, user: User): Promise<string> {
+  const ref = await addDoc(wishesCol(), {
+    ...clean(input),
+    createdBy: { uid: user.uid, email: user.email ?? '', name: displayName(user) },
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    v: 1,
+  });
+  return ref.id;
+}
+
+export async function updateWish(id: string, patch: Partial<WishInput>) {
+  await updateDoc(doc(wishesCol(), id), { ...clean(patch), updatedAt: serverTimestamp() });
+}
+
+export async function deleteWish(id: string) {
+  await deleteDoc(doc(wishesCol(), id));
+}
+
+/** 다녀온 뒤 '또 가고 싶어요': 새로 담은 것처럼 되돌린다 */
+export async function reviveWish(id: string) {
+  await updateDoc(doc(wishesCol(), id), { tripId: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
 }
 
 export async function updateTrip(id: string, input: TripInput) {

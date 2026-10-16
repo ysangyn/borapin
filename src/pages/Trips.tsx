@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatars, Icon, TopBar } from '../components/ui';
 import TripRow from '../components/TripRow';
+import WishCard from '../components/WishCard';
+import { useSeasons } from '../lib/seasons';
+import { sortWishes, wishState } from '../lib/wishes';
 import { useTrips, useWishes } from '../lib/data';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
@@ -14,6 +17,11 @@ export default function Trips() {
   const [filter, setFilter] = useState<Filter>('all');
   const [who, setWho] = useState<string>('');
   const [q, setQ] = useState('');
+  const seasons = useSeasons();
+  const activeWishes = useMemo(
+    () => (wishes && trips ? sortWishes(wishes).map((w) => ({ w, s: wishState(w, trips) })).filter((x) => x.s.kind !== 'done') : []),
+    [wishes, trips],
+  );
 
   const people = useMemo(() => {
     const s = new Set<string>();
@@ -78,12 +86,23 @@ export default function Trips() {
           )}
         </section>
 
-        {wishes && wishes.length > 0 && (
-          <div className="card small" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Icon name="flag" size={18} />
-            <span style={{ flex: 1 }}>가고 싶은 곳 <b>{wishes.length}곳</b>을 가져왔어요. 화면은 다음 단계에서 열려요.</span>
+        <section data-testid="trips-wishes">
+          <div className="row-between" style={{ marginBottom: 4 }}>
+            <h2 className="h2" style={{ color: '#b4472c' }}>가고 싶은 곳</h2>
+            <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{activeWishes.length ? `모두 보기 ${activeWishes.length}` : '담으러 가기'}</Link>
           </div>
-        )}
+          {activeWishes.length === 0 ? (
+            <Link to="/wishes" className="trip-row" style={{ color: 'var(--ink2)' }}>
+              <span className="trip-tile wish"><Icon name="heart" size={20} stroke={2.2} /></span>
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontWeight: 700 }}>가고 싶은 곳 3곳만 담아볼까요?</span>
+                <span className="tiny muted">이번 달 추천과 여행지 뽑기가 있어요</span>
+              </span>
+            </Link>
+          ) : (
+            <div className="list">{activeWishes.slice(0, 3).map(({ w, s }) => <WishCard key={w.id} wish={w} state={s} seasons={seasons} compact />)}</div>
+          )}
+        </section>
 
         <section>
           <h2 className="h2" style={{ marginBottom: 4 }}>다녀온 곳</h2>

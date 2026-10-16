@@ -124,3 +124,15 @@ export function searchPlaces(query: string, limit = 12): SearchHit[] {
   hits.sort((a, b) => b.score - a.score || a.label.localeCompare(b.label, 'ko'));
   return hits.slice(0, limit);
 }
+
+/** 주소창용: kr:51150 · country:JPN · country:JPN:교토 */
+export const placeParam = (p: Place) =>
+  p.t === 'kr' ? `kr:${p.code}` : `country:${p.id}${p.city ? `:${encodeURIComponent(p.city)}` : ''}`;
+
+export function parsePlaceParam(v: string | null): Place[] {
+  if (!v) return [];
+  const [t, id, city] = v.split(':');
+  if (t === 'kr' && id && REGION_BY_CODE.has(id)) return [{ t: 'kr', code: id }];
+  if (t === 'country' && id) return [city ? { t: 'country', id, city: decodeURIComponent(city) } : { t: 'country', id }];
+  return [];
+}

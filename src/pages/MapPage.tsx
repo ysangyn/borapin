@@ -1,21 +1,27 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import PlaceSheet from '../components/PlaceSheet';
-import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips } from '../lib/data';
-import { CONTINENTS } from '../lib/geo';
+import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, useTrips, useWishes } from '../lib/data';
+import { useWishFlags } from '../lib/wishFlags';
+import { CONTINENTS, parsePlaceParam } from '../lib/geo';
 import type { Place } from '../lib/types';
 
 export default function MapPage() {
   const { trips } = useTrips();
-  const [mode, setMode] = useState<MapMode>('kr');
-  const [sel, setSel] = useState<Place | null>(null);
+  const { wishes } = useWishes();
+  const [sp] = useSearchParams();
+  const initial = useMemo(() => parsePlaceParam(sp.get('sel'))[0] ?? null, [sp]);
+  const [mode, setMode] = useState<MapMode>(initial?.t === 'country' ? 'world' : 'kr');
+  const [sel, setSel] = useState<Place | null>(initial);
+  const flags = useWishFlags(wishes, trips);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   return (
     <div className="map-full" style={{ bottom: 'calc(var(--nav-h) + var(--safe-b))' }}>
       <MapView
-        mode={mode} stats={stats} height="100%" legend selected={sel} onSelect={(p) => setSel(p)}
+        mode={mode} stats={stats} height="100%" legend selected={sel} onSelect={(p) => setSel(p)} flags={flags} flyTo={initial}
         controlsTop={112} legendBottom={sel ? 300 : 14} className="full"
       />
       <div className="map-top">
@@ -42,7 +48,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} onClose={() => setSel(null)} />}
+      {sel && trips && <PlaceSheet place={sel} trips={trips} stats={stats} wishes={wishes ?? []} onClose={() => setSel(null)} />}
     </div>
   );
 }

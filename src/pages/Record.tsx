@@ -3,9 +3,9 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import { useAuth } from '../lib/auth';
-import { companionSuggestions, createTrip, updateTrip, useTrips } from '../lib/data';
+import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } from '../lib/data';
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
-import { placeLabel } from '../lib/geo';
+import { parsePlaceParam, placeLabel } from '../lib/geo';
 import type { Place, Precision, Season, TripInput, TripKind, TripStatus, When } from '../lib/types';
 
 const PRECISIONS: { p: Precision; label: string }[] = [
@@ -17,13 +17,6 @@ const PRECISIONS: { p: Precision; label: string }[] = [
 ];
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
 
-function parsePlaceParam(v: string | null): Place[] {
-  if (!v) return [];
-  const [t, id] = v.split(':');
-  if (t === 'kr' && id) return [{ t: 'kr', code: id }];
-  if (t === 'country' && id) return [{ t: 'country', id }];
-  return [];
-}
 
 export default function Record() {
   const { id } = useParams();
@@ -100,6 +93,8 @@ export default function Record() {
         nav(`/trips/${id}`, { replace: true });
       } else {
         const newId = await createTrip(input, auth.user);
+        const wishId = sp.get('wish');
+        if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
         toast(status === 'planned' ? '여행 계획을 담았어요' : '기록했어요');
         nav(`/trips/${newId}`, { replace: true });
       }
