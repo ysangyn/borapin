@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import type { LngLatBoundsLike, Map as MLMap } from 'maplibre-gl';
 import { feature, mesh } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
@@ -9,6 +10,9 @@ import { REGION_BY_CODE } from '../lib/geo';
 import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
+
+// v6는 워커 파일을 자기 옆에서 찾는데, 번들되면 그 자리에 파일이 없다 → 주소를 직접 알려 준다.
+maplibregl.setWorkerUrl(workerUrl);
 
 export type MapMode = 'kr' | 'world';
 
@@ -147,6 +151,12 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         if (!onSelectRef.current) return;
         const f = map.queryRenderedFeatures(e.point, { layers: ['kr-fill', 'world-fill'] });
         map.getCanvas().style.cursor = f.length ? 'pointer' : '';
+      });
+      // 점검용: 실제로 그려진 경계 수를 남긴다
+      map.on('idle', () => {
+        if (!el.current) return;
+        const n = map.queryRenderedFeatures({ layers: ['kr-fill', 'world-fill'] }).length;
+        el.current.dataset.features = String(n);
       });
       setReady(true);
     });

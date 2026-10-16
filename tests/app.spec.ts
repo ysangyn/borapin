@@ -7,6 +7,28 @@ const SHOTS = 'test-results/screens';
 fs.mkdirSync(SHOTS, { recursive: true });
 const shot = (page: Page, name: string) => page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
 
+// 화면에서 난 오류는 모두 모아 두었다가 테스트 끝에 확인한다
+const IGNORED = [/permission[-_ ]denied/i, /Missing or insufficient permissions/i];
+let problems: string[] = [];
+test.beforeEach(({ page }) => {
+  problems = [];
+  page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
+  page.on('console', (m) => {
+    if (m.type() === 'error' && !IGNORED.some((r) => r.test(m.text()))) problems.push(`console: ${m.text().slice(0, 300)}`);
+  });
+  page.on('response', (r) => {
+    if (r.status() === 404) problems.push(`404: ${r.url()}`);
+  });
+});
+test.afterEach(() => {
+  expect(problems, problems.join('\n')).toEqual([]);
+});
+
+/** 지도가 실제로 경계를 그렸는지 (그려진 칸 수 > 0) */
+async function expectMapDrawn(page: Page) {
+  await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
+}
+
 async function signIn(page: Page, email: string) {
   await page.goto('/');
   await page.waitForFunction(() => typeof (window as unknown as { __testSignIn?: unknown }).__testSignIn === 'function');
@@ -28,7 +50,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('주인 계정으로 들어오면 빈 홈', async ({ page }) => {
     await signIn(page, OWNER);
     await expect(page.getByTestId('headline')).toHaveText('첫 핀을 꽂아 볼까요?');
-    await page.waitForTimeout(1500);
+    await expectMapDrawn(page);
     await shot(page, '02-home-empty');
   });
 
@@ -44,7 +66,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByTestId('save').click();
     await expect(page.getByTestId('trip-title')).toHaveText('강릉시 여행');
     await expect(page.getByText('2024년쯤')).toBeVisible();
-    await page.waitForTimeout(1500);
+    await expectMapDrawn(page);
     await shot(page, '04-detail');
   });
 
@@ -75,16 +97,18 @@ test.describe.serial('보라핀 1단계', () => {
   test('홈 통계와 지도', async ({ page }) => {
     await signIn(page, OWNER);
     await expect(page.getByTestId('headline')).toHaveText('2번의 여행, 핀 2개');
-    await page.waitForTimeout(2500);
+    await expectMapDrawn(page);
     await shot(page, '06-home');
     await page.goto('/map');
     await expect(page.getByTestId('map-stats')).toContainText('시·군 1/160');
     await expect(page.getByTestId('map-stats')).toContainText('광역 1/16');
-    await page.waitForTimeout(2500);
+    await expectMapDrawn(page);
+    await page.waitForTimeout(800);
     await shot(page, '07-map');
     await page.getByRole('tab', { name: '세계' }).click();
     await expect(page.getByTestId('map-stats')).toContainText('나라 1');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1200);
+    await expectMapDrawn(page);
     await shot(page, '08-map-world');
   });
 

@@ -23,5 +23,11 @@ test('실제 주소에서 로그인 화면이 뜬다 (PC)', async ({ browser }) 
   expect(manifest.ok()).toBeTruthy();
   const geo = await page.request.get('/data/kr-cells.topojson');
   expect(geo.ok()).toBeTruthy();
+  // 지도 그리기 일꾼(worker) 파일이 자바스크립트로 내려오는지
+  if (process.env.WORKER_PATH) {
+    const w = await page.request.get(process.env.WORKER_PATH);
+    expect(w.ok()).toBeTruthy();
+    expect(w.headers()['content-type']).toMatch(/javascript/);
+  }
   await ctx.close();
 });

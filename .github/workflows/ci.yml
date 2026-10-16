@@ -87,6 +87,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           sleep 5
+          export WORKER_PATH="/assets/$(basename dist/assets/maplibre-gl-worker-*.mjs)"
           npx playwright test -c playwright.live.config.ts 2>&1 | tee live-output.txt
       - name: 배포 결과 올리기 (ci-report 브랜치)
         if: always()

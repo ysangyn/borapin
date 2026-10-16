@@ -18,10 +18,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npx vite --port 5174 --strictPort --host 127.0.0.1',
+    // 실제 배포와 같은 묶음(build)으로 점검한다
+    command: 'npx vite build --outDir dist-e2e --emptyOutDir && npx vite preview --outDir dist-e2e --port 5174 --strictPort --host 127.0.0.1',
     url: 'http://127.0.0.1:5174',
     env: { VITE_EMULATOR: '1' },
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 });
