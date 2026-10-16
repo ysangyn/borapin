@@ -471,6 +471,15 @@ a { color: var(--violet); text-decoration: none; }
 .month-pick-copy { display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 16px; text-shadow: 0 1px 10px rgba(20, 14, 48, 0.45); }
 .month-pick-fest { font-size: 13px; font-weight: 700; color: #ffe1d6; }
 .season-line .tag { white-space: normal; height: auto; min-height: 22px; padding-top: 2px; padding-bottom: 2px; max-width: 100%; }
+/* 축제 꼬리표는 한 줄: 이름이 길면 줄임표, 기간은 줄 바꿈 없이 */
+.season-line .fest-tag { white-space: nowrap; max-width: 100%; overflow: hidden; }
+.season-line .fest-tag .fest-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.season-line .fest-tag .fest-when { flex: none; }
+.season-line .fest-tag + .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* 홈 롤링 카드: 칸이 세 줄이어도 네모 꼬리표와 버튼이 위에서부터 나란히 */
+.wish-card.compact .wish-main { align-items: flex-start; }
+.wish-card.compact { align-items: flex-start; }
+.wish-card.compact > .btn { margin-top: 6px; }
 .sheet-fests { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 2px; }
 .sheet-fests .fest { display: flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
 .sheet-fests .fest-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }

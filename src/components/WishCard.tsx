@@ -69,7 +69,7 @@ export default function WishCard({ wish, state, seasons, compact }: {
           </span>
           {(fest || season) && (
             <span className="tiny season-line">
-              {fest && <span className={'tag ' + (isOngoing(fest) ? 'coral' : 'violet')} data-testid="wish-festival">{isOngoing(fest) ? '지금 축제' : '축제'} · {fest.t} {festivalPeriod(fest)}</span>}
+              {fest && <span className={'tag fest-tag ' + (isOngoing(fest) ? 'coral' : 'violet')} data-testid="wish-festival" title={`${fest.t} ${festivalPeriod(fest)}`}>{isOngoing(fest) ? '지금 축제' : '축제'} · <span className="fest-name">{fest.t}</span> <span className="fest-when">{festivalPeriod(fest)}</span></span>}
               {season && <span className="muted">가기 좋은 때 {monthsLabel(season.m)}</span>}
             </span>
           )}
