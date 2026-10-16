@@ -1,5 +1,6 @@
 import type { Trip, Season } from './types';
 import { SEASON_LABEL } from './dates';
+import { placeLabel } from './geo';
 
 export interface Memory { trip: Trip; label: string }
 
@@ -46,5 +47,6 @@ export function pickMemory(trips: Trip[], now = new Date(), seed = now.getDate()
   }
   // 5. 날짜를 모르는 기록은 장소로 꺼낸다
   const t = done[seed % done.length];
-  return { trip: t, label: '다시 꺼내 보는 여행' };
+  const where = t.places[0] ? placeLabel(t.places[0]) : '';
+  return { trip: t, label: where ? `오늘은 ${where}을(를) 다시 볼까요?` : '다시 꺼내 보는 여행' };
 }

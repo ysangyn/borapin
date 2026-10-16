@@ -18,9 +18,14 @@ export default function NotesTab({ trip }: { trip: Trip }) {
   const save = async () => {
     if (!text.trim() || auth.status !== 'ready' || busy) return;
     setBusy(true);
+    const t = text;
+    setText('');
     try {
-      await addNote(trip.id, text, auth.user);
-      setText('');
+      await addNote(trip.id, t, auth.user);
+    } catch (e) {
+      console.warn(e);
+      setText(t);
+      toast('남기지 못했어요. 잠시 뒤 다시 해 주세요.');
     } finally {
       setBusy(false);
     }

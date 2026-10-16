@@ -15,8 +15,15 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
 
   const add = async (n = name, recId?: string) => {
     if (!n.trim()) return;
-    await addPlan(trip.id, n, (items?.length ?? 0) + 1, recId);
-    setName('');
+    // 저장을 기다리지 않고 바로 비운다 (이어서 적는 글자가 지워지지 않게)
+    if (n === name) setName('');
+    try {
+      await addPlan(trip.id, n, (items?.length ?? 0) + 1, recId);
+    } catch (e) {
+      console.warn(e);
+      toast('저장하지 못했어요');
+      if (!recId) setName(n);
+    }
   };
 
   const groups: { key: string; title: string; list: PlanItem[] }[] = [];

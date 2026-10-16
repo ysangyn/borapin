@@ -37,6 +37,8 @@ export interface Trip {
   tags: string[];
   /** 준비물 (예정된 여행) */
   packing?: PackItem[];
+  /** 날짜 채우기 놀이: 사람마다 '언제였을까' 답 */
+  guesses?: Record<string, { y?: number; s?: Season }>;
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;

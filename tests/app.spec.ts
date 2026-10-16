@@ -323,9 +323,20 @@ test.describe.serial('보라핀 1단계', () => {
     await page.waitForTimeout(600);
     await shot(page, '12b-slideshow');
     await page.keyboard.press('Escape');
-    // 추억 탭 사진첩
+    // 추억 탭: 사진첩, 지도 다시 보기, 결산, 잔디, 뱃지
     await page.goto('/memories');
     await expect(page.getByTestId('album')).toContainText('강릉시 여행 · 3장');
+    await expect(page.getByTestId('replay-year')).toBeVisible();
+    await page.getByLabel('연도').fill('0');
+    const firstYear = await page.getByTestId('replay-year').textContent();
+    await page.getByTestId('replay-play').click();
+    await expect(page.getByTestId('replay-year')).not.toHaveText(firstYear ?? '', { timeout: 5000 });
+    await page.getByLabel('결산 연도').selectOption('2019');
+    await expect(page.getByTestId('year-review')).toContainText('처음 가본 곳');
+    await expect(page.getByTestId('year-review')).toContainText('2');
+    await expect(page.getByTestId('heatmap')).toBeVisible();
+    await expect(page.getByTestId('badges').locator('.badge.on').first()).toContainText('첫 핀');
+    await shot(page, '12c-memories');
   });
 
   test('여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물', async ({ page }) => {

@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# 파이프(| tee)를 써도 앞 명령이 실패하면 단계가 실패하도록 (bash -eo pipefail)
+defaults:
+  run:
+    shell: bash
+
 jobs:
   seasons:
     runs-on: ubuntu-latest
