@@ -21,9 +21,15 @@ export default function Space() {
   const addMember = async () => {
     const e = email.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return toast('메일 주소를 확인해 주세요');
-    await setAccessList('allowed', e, true);
     setEmail('');
-    toast(`${e} 계정이 들어올 수 있어요`);
+    try {
+      await setAccessList('allowed', e, true);
+      toast(`${e} 계정이 들어올 수 있어요`);
+    } catch (err) {
+      console.warn(err);
+      setEmail(e);
+      toast('추가하지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
   };
 
   const onFile = async (f: File | undefined) => {
