@@ -13,6 +13,7 @@ import { openSlideshow } from '../components/slideshow';
 import PhotoImg from '../components/PhotoImg';
 import { deletePhoto, photoUsage, suggestPlaces, suggestWhen, useTripPhotos } from '../lib/photos';
 import { photosLeft } from '../lib/usage';
+import { useStore } from '../lib/store';
 import PlaceRecRow from '../components/PlaceRecRow';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
@@ -221,15 +222,18 @@ export default function TripDetail() {
 /** 사진 탭 아래 작은 안내: 무료 저장 공간과 권장 장수 (앱이 어떤 앱인지 솔직하게) */
 function PhotoSpaceNote({ count }: { count: number }) {
   const [left, setLeft] = useState<number | null>(null);
+  const { trips, places, wishes } = useStore();
+  const records = (trips?.length ?? 0) + (places?.length ?? 0) + (wishes?.length ?? 0);
   useEffect(() => {
     let on = true;
-    photoUsage().then((u) => on && setLeft(photosLeft(u)), () => on && setLeft(null));
+    // 관리자 화면과 같은 계산(기록 문서 수까지 포함)이라 두 화면 숫자가 같다
+    photoUsage().then((u) => on && setLeft(photosLeft(u, records)), () => on && setLeft(null));
     return () => { on = false; };
-  }, [count]);
+  }, [count, records]);
   return (
     <div className="tiny muted" style={{ marginTop: 8, lineHeight: 1.5 }} data-testid="photo-space">
-      여행마다 고른 사진 30장쯤을 남기는 앱이에요 (사진은 긴 변 1600px로 줄여 저장해요).
-      {left !== null && <> 무료 저장 공간에 <b>약 {left.toLocaleString()}장</b> 더 올릴 수 있어요.</>}
+      여행마다 고른 사진 30장쯤을 남기는 앱이에요.
+      {left !== null && <> 앞으로 <b>약 {(Math.round(left / 100) * 100).toLocaleString()}장</b> 더 올릴 수 있어요.</>}
       {count > 60 && <> 이 여행은 사진이 많아요 — 공유 링크에는 앞 60장만 보여요.</>}
     </div>
   );

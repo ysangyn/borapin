@@ -660,3 +660,8 @@ a { color: var(--violet); text-decoration: none; }
 /* 해외 가고 싶은 곳: 항공권 바로가기 */
 .wish-flights { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; flex: none; }
 .wish-flights a { font-size: 12px; font-weight: 700; color: var(--violet); white-space: nowrap; }
+
+.seg-labeled { display: flex; flex-direction: column; gap: 4px; }
+.trip-tile.photo { position: relative; overflow: hidden; }
+.trip-tile.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.trip-tile.photo .tile-mark { position: absolute; left: 0; right: 0; bottom: 0; font-size: 10px; font-weight: 800; color: #fff; background: rgba(23, 20, 43, 0.55); text-align: center; padding: 2px 0; }

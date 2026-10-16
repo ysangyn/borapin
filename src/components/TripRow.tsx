@@ -1,3 +1,4 @@
+import { photoForPlace } from '../lib/media';
 import { Link } from 'react-router-dom';
 import { josa } from 'es-hangul';
 import type { Trip } from '../lib/types';
@@ -27,7 +28,9 @@ export default function TripRow({ trip }: { trip: Trip }) {
   const others = trip.companions.filter((c) => !isMemberName(c));
   return (
     <Link to={`/trips/${trip.id}`} className="trip-row" data-testid="trip-row">
-      <span className={cls}>{tileText(trip)}</span>
+      {(() => { const ph = trip.places[0] ? photoForPlace(trip.places[0]) : null; return ph
+        ? <span className={cls + ' photo'}><img src={ph.src.s} alt="" loading="lazy" decoding="async" />{trip.status === 'planned' && <span className="tile-mark">예정</span>}</span>
+        : <span className={cls}>{tileText(trip)}</span>; })()}
       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <span className="t">{trip.title || placeLabel(trip.places[0])}</span>
         <span className="s">{tripSubtitle(trip)}</span>

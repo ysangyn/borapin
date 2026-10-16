@@ -21,7 +21,7 @@ export const CARD_KINDS: { k: CardKind; label: string }[] = [
 
 const W = 1080, H = 1350;
 const FONT = "'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', sans-serif";
-const C = { violet: '#5B3FD1', lav: '#B9A8FF', mist: '#EFEBFF', night: '#1E1640', ink2: '#4B4762', ink3: '#716C88', coral: '#FF7A59', v1: '#CBBEFF', v2: '#9A82F5', v3: '#5B3FD1', none: '#E6E2F0' };
+const C = { violet: '#5B3FD1', lav: '#B9A8FF', mist: '#EFEBFF', night: '#1E1640', ink2: '#4B4762', ink3: '#716C88', coral: '#FF7A59', v1: '#B9A8F5', v2: '#8D73EE', v3: '#5B3FD1', none: '#EFEAE0' };
 
 export interface CardData {
   trips: Trip[];
@@ -109,7 +109,7 @@ async function drawKorea(ctx: CanvasRenderingContext2D, visits: Map<string, numb
   for (const f of g.kr.features) {
     const n = visits.get(String(f.properties?.cell)) ?? 0;
     ctx.fillStyle = n >= 3 ? C.v3 : n === 2 ? C.v2 : n === 1 ? C.v1 : C.none;
-    ctx.strokeStyle = '#FFFFFF';
+    ctx.strokeStyle = n ? '#FFFFFF' : '#E2DCD0';
     ctx.lineWidth = 1.2;
     const geom = f.geometry as { type: string; coordinates: number[][][] | number[][][][] };
     const polys = (geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates) as number[][][][];

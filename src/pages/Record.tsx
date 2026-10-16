@@ -152,15 +152,17 @@ export default function Record() {
       <div className="page" style={{ paddingTop: 4, gap: 20 }}>
         <div className="small muted" style={{ marginTop: -8 }}>어디, 대략 언제만 있으면 저장돼요.</div>
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          <div className="seg-labeled"><span className="tiny muted">종류</span>
           <div className="seg" role="radiogroup" aria-label="종류">
             <button role="radio" aria-checked={kind === 'trip'} className={kind === 'trip' ? 'on' : ''} onClick={() => setKind('trip')}>여행</button>
             <button role="radio" aria-checked={kind === 'outing'} className={kind === 'outing' ? 'on' : ''} onClick={() => setKind('outing')}>나들이</button>
-          </div>
+          </div></div>
+          <div className="seg-labeled"><span className="tiny muted">언제</span>
           <div className="seg" role="radiogroup" aria-label="상태">
             <button role="radio" aria-checked={status === 'done'} className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀왔어요</button>
             <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 예정</button>
-          </div>
+          </div></div>
         </div>
 
         <div className="field">
