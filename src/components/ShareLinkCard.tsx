@@ -76,7 +76,7 @@ export default function ShareLinkCard({ trip, photos, recs }: { trip: Trip; phot
           <span className="small muted">
             앱이 없어도 이 여행을 볼 수 있는 링크를 만들어요. 제목·날짜·장소, 사진{photos.length > 60 ? '(앞의 60장)' : ''}과 촬영 날짜·설명, 들른 곳 이름이 보여요. 메모와 글, 함께 간 사람 이름은 넣지 않아요.
           </span>
-          <button className="btn sm soft" style={{ alignSelf: 'flex-start' }} disabled={busy} onClick={() => run(() => enableShare(trip, photos, recs), '링크를 만들었어요')} data-testid="share-on">
+          <button className="btn sm" style={{ alignSelf: 'flex-start' }} disabled={busy} onClick={() => run(() => enableShare(trip, photos, recs), '링크를 만들었어요 · 아래 보내기로 전하세요')} data-testid="share-on">
             {busy ? '만드는 중…' : '링크 만들기'}
           </button>
         </>
