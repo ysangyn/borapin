@@ -155,6 +155,15 @@ export default function TripDetail() {
               <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true })} data-testid="slideshow">▶ 슬라이드쇼</button>
             )}
           </div>
+          {tripPhotos && tripPhotos.length === 0 && (
+            <div className="photo-empty" data-testid="photos-empty">
+              <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} loading="lazy" decoding="async" />
+              <span className="small">
+                <b style={{ display: 'block', fontSize: 15, marginBottom: 2 }}>그날의 사진을 올려 주세요</b>
+                <span className="muted">슬라이드쇼와 추억 화면에 나오고, 사진에 담긴 날짜·위치로 여행 정보도 채워 드려요.</span>
+              </span>
+            </div>
+          )}
           <PhotoGrid photos={photos} tripId={trip.id} />
           {(sugWhen || sugPlaces.length > 0) && (
             <div className="card coral-soft" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }} data-testid="photo-suggest">

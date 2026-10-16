@@ -376,6 +376,8 @@ a { color: var(--violet); text-decoration: none; }
 .art { position: relative; aspect-ratio: 1; border-radius: 28px; overflow: hidden; background-size: cover; background-position: center; margin: 0 auto; }
 .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s; }
 .art img.on { opacity: 1; }
+.photo-empty { display: flex; gap: 14px; align-items: center; padding: 2px 4px 14px; }
+.photo-empty img { width: 78px; height: auto; flex: none; }
 .pack-empty { display: grid; grid-template-columns: 1fr 112px; gap: 10px; align-items: center; }
 .pack-art { width: 112px; height: auto; display: block; }
 .empty-art { margin-bottom: 6px; box-shadow: 0 10px 30px rgba(91, 63, 209, 0.14); }
