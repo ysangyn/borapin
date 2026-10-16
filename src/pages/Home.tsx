@@ -44,6 +44,8 @@ export default function Home() {
     const fromTrips = (recent[0]?.places ?? []).filter((p) => p.t === 'kr');
     return fromTrips.length ? fromTrips : pick?.place ? [pick.place] : [];
   }, [recent, pick]);
+  // 기록이 없을 땐 추천 둘레를 도 단위로만 (전국이 어디쯤인지 감이 오게), 기록이 있으면 최근 핀의 시·군이 보이게
+  const nearZoom = recent.length ? 7.3 : 6.3;
 
   return (
     <>
@@ -72,8 +74,8 @@ export default function Home() {
             </div>
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
-          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} />
-          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · 확대하면 이름이 보여요</div>
+          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} nearZoom={nearZoom} />
+          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>지역을 누르면 바로 핀을 꽂을 수 있어요 · ⛶ 를 누르면 전국이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">
               {few ? (
