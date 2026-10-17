@@ -926,3 +926,29 @@ a.hub-way-row { text-decoration: none; }
 .link-preview-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .link-preview-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rec-thumb { flex: none; width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: var(--mist2); }
+
+/* ---------- 추억 ---------- */
+.mem-page { gap: 18px; }
+.mem-hero { display: flex; flex-direction: column; gap: 10px; }
+.mem-hero-img { position: relative; display: block; border-radius: 22px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--mist); color: #fff; text-decoration: none; }
+.mem-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; background-size: cover; }
+.mem-hero:not(.has-photo) .mem-hero-img { aspect-ratio: auto; min-height: 190px; display: flex; align-items: flex-end; justify-content: flex-end; color: var(--ink); }
+.mem-hero:not(.has-photo) .mem-hero-img > :first-child { position: absolute; right: 8px; bottom: 0; height: 180px; width: auto; opacity: .9; }
+.mem-hero-text { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px; display: flex; flex-direction: column; gap: 3px; background: linear-gradient(to top, rgba(23, 20, 43, .72), rgba(23, 20, 43, 0)); }
+.mem-hero:not(.has-photo) .mem-hero-text { position: relative; background: none; padding: 18px 16px; margin-right: 120px; }
+.mem-hero-text b { font-size: 22px; line-height: 1.25; word-break: keep-all; }
+.mem-when { align-self: flex-start; padding: 3px 9px; border-radius: 999px; background: var(--coral); color: #fff; font-size: 12px; font-weight: 800; }
+.mem-hero-actions { display: flex; gap: 8px; }
+.mem-hero-actions > * { flex: 1; }
+.mem-more { margin-top: 10px; }
+.mem-more summary { cursor: pointer; color: var(--ink3); font-weight: 700; margin-bottom: 6px; }
+.mem-albums { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none; }
+.mem-albums::-webkit-scrollbar { display: none; }
+.mem-album { flex: none; width: 150px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 3px; color: var(--ink); text-decoration: none; }
+.mem-album-grid { display: grid; gap: 2px; width: 150px; height: 150px; border-radius: 16px; overflow: hidden; background: var(--mist2); }
+.mem-album-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mem-album-grid.n2 { grid-template-columns: 1fr 1fr; }
+.mem-album-grid.n4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.mem-album-grid.n3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.mem-album-grid.n3 > :first-child { grid-row: span 2; }
+.mem-album-title { font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

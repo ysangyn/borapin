@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TopBar } from '../components/ui';
-import TripRow from '../components/TripRow';
 import { computeStats, usePlaces, useTrips } from '../lib/data';
 import { pickMemory } from '../lib/memories';
 import { usePhotos } from '../lib/photos';
 import { openSlideshow } from '../components/slideshow';
-import PhotoGrid from '../components/PhotoGrid';
 import MapReplay from '../components/MapReplay';
 import DateGame from '../components/DateGame';
 import ShareCards from '../components/ShareCards';
@@ -15,6 +13,10 @@ import { monthGrid, yearReview } from '../lib/yearReview';
 import { placeLong } from '../lib/geo';
 import type { Photo } from '../lib/types';
 import { Art } from '../components/Scene';
+import PhotoImg from '../components/PhotoImg';
+import { photoForPlace } from '../lib/media';
+import { formatWhen } from '../lib/dates';
+import { Icon } from '../components/ui';
 
 export default function Memories() {
   const { trips } = useTrips();
@@ -76,18 +78,29 @@ export default function Memories() {
     );
   const maxCell = Math.max(1, ...(grid?.rows.flatMap(([, r]) => r) ?? [1]));
 
+  const memPhotos = memory ? albums.find((x) => x.trip.id === memory.trip.id)?.photos ?? [] : [];
+  const memScene = memory && !memPhotos.length && memory.trip.places[0] ? photoForPlace(memory.trip.places[0]) : null;
+
   return (
     <>
       <TopBar title="추억" right={<Link to="/feed" className="btn sm soft">피드</Link>} />
-      <div className="page" style={{ paddingTop: 4 }}>
+      <div className="page mem-page" style={{ paddingTop: 4 }}>
         {memory && (
-          <section className="card" data-testid="memory-card">
-            <div className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</div>
-            <div className="list"><TripRow trip={memory.trip} /></div>
+          <section className={'mem-hero' + (memPhotos.length || memScene ? ' has-photo' : '')} data-testid="memory-card">
+            <Link to={`/trips/${memory.trip.id}`} className="mem-hero-img" aria-label={`${memory.trip.title} 보기`}>
+              {memPhotos.length > 0 ? <PhotoImg id={memPhotos[0].id} size="l" /> : memScene ? <img src={memScene.src.l} alt="" decoding="async" style={{ backgroundImage: `url(${memScene.lqip})` }} /> : <Art id="bora-walk" size={200} />}
+              <span className="mem-hero-text">
+                <span className="mem-when">{memory.label}</span>
+                <b>{memory.trip.title}</b>
+                <span className="tiny">{formatWhen(memory.trip.when)}{memory.trip.places.length ? ` · ${memory.trip.places.map(placeLong).join(', ')}` : ''}</span>
+              </span>
+            </Link>
+            <div className="mem-hero-actions">
+              {memPhotos.length > 0 && <button className="btn sm" onClick={() => openSlideshow(memPhotos, 0, { autoplay: true, placeOf: placeOfPhoto })}><Icon name="play" size={14} />사진 {memPhotos.length}장 넘겨 보기</button>}
+              <Link to={`/trips/${memory.trip.id}`} className="btn sm ghost">여행 보기</Link>
+            </div>
           </section>
         )}
-
-        {trips && <DateGame trips={trips} />}
 
         <section>
           <h2 className="h2" style={{ marginBottom: 6 }}>지도 다시 보기</h2>
@@ -112,26 +125,50 @@ export default function Memories() {
               {review.top && <div className="small muted">가장 많이 간 곳: {review.top}</div>}
             </>
           )}
-        </section>
-
-        {grid && grid.rows.length > 0 && (
-          <section data-testid="heatmap">
-            <h2 className="h2" style={{ marginBottom: 6 }}>여행 잔디</h2>
-            <div className="heatmap">
-              <span />
-              {Array.from({ length: 12 }, (_, i) => <span key={i} className="hm-m">{i + 1}</span>)}
-              {grid.rows.map(([y, row]) => (
-                <div key={y} style={{ display: 'contents' }}>
-                  <span className="hm-y">{y}</span>
-                  {row.map((n, i) => (
-                    <span key={i} className="hm-c" style={{ background: n ? `rgba(91, 63, 209, ${0.25 + 0.75 * (n / maxCell)})` : undefined }} title={`${y}년 ${i + 1}월 ${n}번`} />
+          {grid && grid.rows.length > 0 && (
+            <details className="mem-more" data-testid="heatmap-wrap" open>
+              <summary className="tiny">달마다 다닌 날 (여행 잔디)</summary>
+              <div data-testid="heatmap">
+                <div className="heatmap">
+                  <span />
+                  {Array.from({ length: 12 }, (_, i) => <span key={i} className="hm-m">{i + 1}</span>)}
+                  {grid.rows.map(([y, row]) => (
+                    <div key={y} style={{ display: 'contents' }}>
+                      <span className="hm-y">{y}</span>
+                      {row.map((n, i) => (
+                        <span key={i} className="hm-c" style={{ background: n ? `rgba(91, 63, 209, ${0.25 + 0.75 * (n / maxCell)})` : undefined }} title={`${y}년 ${i + 1}월 ${n}번`} />
+                      ))}
+                    </div>
                   ))}
                 </div>
+                {grid.undated > 0 && <div className="tiny muted" style={{ marginTop: 6 }}>달을 모르는 기록 {grid.undated}건은 빠져 있어요.</div>}
+              </div>
+            </details>
+          )}
+        </section>
+
+        <section data-testid="album">
+          <div className="row-between" style={{ marginBottom: 6 }}>
+            <h2 className="h2">사진첩{photos?.length ? ` · ${photos.length}` : ''}</h2>
+            {photos && photos.length > 1 && (
+              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, shuffle: true, placeOf: placeOfPhoto })}>▶ 섞어서 보기</button>
+            )}
+          </div>
+          {albums.length === 0 && <div className="small muted">여행 상세의 '사진'에서 올린 사진이 여기 여행별로 모여요.</div>}
+          {albums.length > 0 && (
+            <div className="mem-albums">
+              {albums.map(({ trip, photos: ps }) => (
+                <Link key={trip.id} to={`/trips/${trip.id}?tab=photos`} className="mem-album">
+                  <span className={'mem-album-grid n' + Math.min(ps.length, 4)}>
+                    {ps.slice(0, 4).map((p) => <PhotoImg key={p.id} id={p.id} />)}
+                  </span>
+                  <span className="mem-album-title">{trip.title} · {ps.length}장</span>
+                  <span className="tiny muted">{formatWhen(trip.when)}</span>
+                </Link>
               ))}
             </div>
-            {grid.undated > 0 && <div className="tiny muted" style={{ marginTop: 6 }}>달을 모르는 기록 {grid.undated}건은 빠져 있어요.</div>}
-          </section>
-        )}
+          )}
+        </section>
 
         <section data-testid="badges">
           <div className="row-between" style={{ marginBottom: 6 }}>
@@ -152,23 +189,9 @@ export default function Memories() {
           </div>
         </section>
 
-        {trips && <ShareCards trips={trips} year={year} />}
+        {trips && <DateGame trips={trips} />}
 
-        <section data-testid="album">
-          <div className="row-between" style={{ marginBottom: 6 }}>
-            <h2 className="h2">사진첩{photos?.length ? ` · ${photos.length}` : ''}</h2>
-            {photos && photos.length > 1 && (
-              <button className="link-btn" onClick={() => openSlideshow(photos, 0, { autoplay: true, shuffle: true, placeOf: placeOfPhoto })}>▶ 섞어서 보기</button>
-            )}
-          </div>
-          {albums.length === 0 && <div className="small muted">여행 상세의 '사진'에서 올린 사진이 여기 여행별로 모여요.</div>}
-          {albums.map(({ trip, photos: ps }) => (
-            <div key={trip.id} style={{ marginBottom: 14 }}>
-              <Link to={`/trips/${trip.id}?tab=photos`} className="year-head" style={{ display: 'block', color: 'inherit' }}>{trip.title} · {ps.length}장</Link>
-              <PhotoGrid photos={ps} tripId={trip.id} max={6} readOnly placeOf={() => trip.places.map(placeLong).join(', ')} />
-            </div>
-          ))}
-        </section>
+        {trips && <ShareCards trips={trips} year={year} />}
       </div>
     </>
   );
