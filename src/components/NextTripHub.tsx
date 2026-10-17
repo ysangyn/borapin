@@ -21,6 +21,8 @@ import { cityFor, flyLabel, tzLabel, useWorld } from '../lib/world';
 import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { accessLine } from '../lib/transport';
 import { tzText } from '../lib/tz';
+import { useOpenDrafts } from '../lib/planDrafts';
+import { useAuth as useAuthHub } from '../lib/auth';
 import { dday, formatWhen } from '../lib/dates';
 import type { Place, Trip, Wish } from '../lib/types';
 
@@ -48,6 +50,7 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
         <h2 className="h2 hub-title">다음 여행 준비</h2>
         <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{active.length ? `가고 싶은 곳 ${active.length}곳` : '여행지 뽑기'}</Link>
       </div>
+      <DraftNudge />
       {nextTrip ? <NextTripHero trip={nextTrip} more={upcoming.slice(1, 3)} wishes={active.slice(0, 2)} />
         : firstWish ? <WhereNext top={active.slice(0, 3)} />
         : <WishRolling wishes={wishes} trips={trips} stats={stats} bare />}
@@ -244,5 +247,23 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
         {good && <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>}
       </div>
     </div>
+  );
+}
+
+/** 고르는 중인 여행 계획: 상대가 후보를 골라 두었거나, 내가 하트를 기다리는 중 */
+function DraftNudge() {
+  const drafts = useOpenDrafts();
+  const auth = useAuthHub();
+  const uid = auth.status === 'ready' ? auth.user.uid : '';
+  const d = drafts?.[0];
+  if (!d) return null;
+  const mineDone = (d.hearts[uid] ?? []).length > 0;
+  const text = d.by.uid !== uid && !mineDone ? `${d.by.name}이(가) 여행 후보 ${d.cands.length}곳을 골라 뒀어요` : mineDone ? '여행 후보 · 상대 하트를 기다리는 중' : '고르던 여행 후보가 있어요';
+  return (
+    <Link to={`/plan/${d.id}`} className="card coral-soft draft-nudge" data-testid="draft-nudge">
+      <Icon name="heart" size={18} stroke={2.2} />
+      <span style={{ flex: 1, minWidth: 0 }}><b>{text}</b><span className="tiny muted" style={{ display: 'block' }}>{d.cands.map((c) => placeLabel(c.place)).join(' · ')}</span></span>
+      <Icon name="chev" size={16} />
+    </Link>
   );
 }

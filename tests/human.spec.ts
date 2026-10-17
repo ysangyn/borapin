@@ -122,7 +122,8 @@ test.describe('사람처럼 쓰기', () => {
   test('375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다', async ({ browser }) => {
     const page = await phone(browser);
     await googleSignIn(page);
-    await page.getByRole('link', { name: '기록하기', exact: true }).click();
+    await page.getByRole('button', { name: '기록하기', exact: true }).click();
+    await page.getByRole('menuitem', { name: /다녀온 곳 기록하기/ }).click();
     // 장소: 한 글자씩 쳐서 찾기
     await page.getByLabel('어디 검색').click();
     await page.keyboard.type('경주', { delay: 60 });

@@ -95,16 +95,29 @@ function useFeedUnseen() {
 export function BottomNav() {
   const cls = ({ isActive }: { isActive: boolean }) => (isActive ? 'on' : '');
   const unseen = useFeedUnseen();
+  const [menu, setMenu] = useState(false);
+  const loc = useLocation();
+  useEffect(() => setMenu(false), [loc.pathname]);
   return (
+    <>
+    {menu && (
+      <div className="plus-sheet-backdrop" onClick={() => setMenu(false)}>
+        <div className="plus-sheet" role="menu" aria-label="무엇을 할까요" onClick={(e) => e.stopPropagation()} data-testid="plus-sheet">
+          <NavLink to="/record" role="menuitem" className="plus-item"><Icon name="pin" size={22} /><span><b>다녀온 곳 기록하기</b><span className="tiny muted">핀 꽂기 · 사진 · 한 줄</span></span></NavLink>
+          <NavLink to="/plan" role="menuitem" className="plus-item"><Icon name="calendar" size={22} /><span><b>여행 계획하기</b><span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에 둘이 하트</span></span></NavLink>
+        </div>
+      </div>
+    )}
     <nav className="nav" aria-label="주 메뉴">
       <NavLink to="/" end className={cls}><Icon name="home" size={24} />홈</NavLink>
       <NavLink to="/trips" className={cls}><Icon name="bag" size={24} />여행</NavLink>
-      <NavLink to="/record" className="plus" aria-label="기록하기"><Icon name="plus" size={26} stroke={2.4} /></NavLink>
+      <button type="button" className="plus" aria-label="기록하기" aria-expanded={menu} onClick={() => setMenu((v) => !v)}><Icon name={menu ? 'x' : 'plus'} size={26} stroke={2.4} /></button>
       <NavLink to="/map" className={cls}><Icon name="map" size={24} />지도</NavLink>
       <NavLink to="/feed" className={({ isActive }) => (isActive || location.pathname.startsWith('/memories') ? 'on' : '')} data-testid="nav-feed">
         <span className="nav-icon"><Icon name="feed" size={24} />{unseen > 0 && <i className="nav-dot" aria-label={`새 소식 ${unseen}개`} data-testid="feed-dot" />}</span>피드
       </NavLink>
     </nav>
+    </>
   );
 }
 

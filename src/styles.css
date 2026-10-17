@@ -79,7 +79,8 @@ a { color: var(--violet); text-decoration: none; }
 }
 .nav a { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink3); font-size: 11px; font-weight: 600; }
 .nav a.on { color: var(--violet); font-weight: 700; }
-.nav a.plus { width: 54px; height: 54px; margin-top: -18px; border-radius: 19px; background: var(--violet); color: #fff; justify-content: center; box-shadow: 0 8px 20px rgba(91, 63, 209, 0.35); }
+.nav .plus { border: none; display: inline-flex; align-items: center; }
+.nav a.plus, .nav button.plus { width: 54px; height: 54px; margin-top: -18px; border-radius: 19px; background: var(--violet); color: #fff; justify-content: center; box-shadow: 0 8px 20px rgba(91, 63, 209, 0.35); }
 
 /* ---------- 공통 조각 ---------- */
 .h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
@@ -852,3 +853,35 @@ a.hub-way-row { text-decoration: none; }
 .ask-item-main .tiny { line-height: 1.4; }
 .ask-item-heart { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line2); background: #fff; color: var(--coral-ink); display: inline-flex; align-items: center; justify-content: center; }
 .ask-item-heart:active { background: var(--coral-mist); }
+
+/* ===== 여행 계획하기 ===== */
+.planner { display: flex; flex-direction: column; gap: 14px; }
+.planner-lead { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 18px; background: var(--mist); }
+.planner-lead img { width: 56px; height: auto; flex: none; }
+.planner-lead > span { display: flex; flex-direction: column; gap: 3px; }
+.planner-q { display: flex; flex-direction: column; gap: 8px; }
+.planner-label { font-size: 13px; font-weight: 800; color: var(--ink3); }
+.plan-cands { display: flex; flex-direction: column; gap: 12px; }
+.plan-cand { border-radius: 22px; overflow: hidden; background: #fff; border: 1px solid var(--line); }
+.plan-cand.all { border-color: var(--coral); box-shadow: 0 0 0 2px var(--coral-mist); }
+.plan-cand-photo { position: relative; aspect-ratio: 16 / 7; background: linear-gradient(135deg, #f3edff, #ffe4df) center/cover; display: flex; align-items: flex-end; isolation: isolate; }
+.plan-cand-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.plan-cand-photo.has-photo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20, 14, 48, 0) 40%, rgba(20, 14, 48, 0.65)); }
+.plan-cand-name { padding: 12px 16px; font-size: 21px; letter-spacing: -0.02em; }
+.plan-cand-photo.has-photo .plan-cand-name { color: #fff; text-shadow: 0 1px 8px rgba(20, 14, 48, 0.4); }
+.plan-cand-body { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; }
+.plan-reasons { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; color: var(--ink2); }
+.plan-reasons li::before { content: '· '; color: var(--violet); font-weight: 800; }
+.plan-cand-foot { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.plan-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.plan-actions .btn:only-child { grid-column: 1 / -1; }
+/* + 메뉴: 다녀온 곳 기록 · 여행 계획하기 */
+.plus-sheet-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(23, 20, 43, 0.28); display: flex; align-items: flex-end; justify-content: center; padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
+.plus-sheet { width: 100%; max-width: 420px; background: #fff; border-radius: 22px; padding: 8px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 12px 40px rgba(23, 20, 43, 0.2); }
+.plus-item { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 16px; color: var(--ink); }
+.plus-item:active { background: var(--mist); }
+.plus-item svg { color: var(--violet); flex: none; }
+.plus-item > span { display: flex; flex-direction: column; gap: 2px; }
+.plus-item b { font-size: 16px; }
+.draft-nudge { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.draft-nudge > svg:first-child { color: var(--coral-ink); flex: none; }

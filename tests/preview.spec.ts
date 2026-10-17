@@ -54,7 +54,8 @@ test('메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 →
   await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 30_000 });
 
   // 기록
-  await page.getByRole('link', { name: '기록하기', exact: true }).click();
+  await page.getByRole('button', { name: '기록하기', exact: true }).click();
+  await page.getByRole('menuitem', { name: /다녀온 곳 기록하기/ }).click();
   await page.getByLabel('어디 검색').click();
   await page.keyboard.type('강릉', { delay: 50 });
   await page.getByRole('option', { name: /강릉시/ }).first().click();

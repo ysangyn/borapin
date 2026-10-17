@@ -31,6 +31,9 @@ export function usePlan(tripId: string | undefined) {
 }
 export const addPlan = (tripId: string, name: string, order: number, recId?: string | null) =>
   queued(setDoc(doc(plansCol()), { tripId, name: name.trim(), order, day: null, time: null, info: '', recId: recId ?? null, done: false, createdAt: serverTimestamp(), v: 1 }));
+/** 뼈대 일정 한꺼번에 넣기 (여행 계획하기) */
+export const addPlans = (tripId: string, items: { day: string | null; time: string | null; name: string; info: string; recId?: string }[]) =>
+  Promise.all(items.map((it, i) => queued(setDoc(doc(plansCol()), { tripId, name: it.name.slice(0, 80), order: i + 1, day: it.day, time: it.time, info: it.info.slice(0, 200), recId: it.recId ?? null, done: false, createdAt: serverTimestamp(), v: 1 }))));
 export const updatePlan = (id: string, patch: Partial<Omit<PlanItem, 'id' | 'tripId' | 'v'>>) => queued(updateDoc(doc(plansCol(), id), patch));
 export const deletePlan = (id: string) => queued(deleteDoc(doc(plansCol(), id)));
 /** 뺀 일정 되돌리기 */

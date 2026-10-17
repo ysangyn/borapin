@@ -141,7 +141,8 @@ test.describe.serial('보라핀 1단계', () => {
 
   test('국내 여행 기록 (초성 검색, 연도만)', async ({ page }) => {
     await signIn(page, OWNER);
-    await page.getByRole('link', { name: '기록하기', exact: true }).click();
+    await page.getByRole('button', { name: '기록하기', exact: true }).click();
+    await page.getByRole('menuitem', { name: /다녀온 곳 기록하기/ }).click();
     await pickPlace(page, 'ㄱㄹ', '강릉시');
     await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByLabel('연도').selectOption('2024');
@@ -469,6 +470,54 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(way.getByRole('link')).toHaveCount(0);
     await en.click();
     await expect(page).toHaveURL(/\/study$/);
+  });
+
+  test('여행 계획하기: + → 조건만 고르면 후보 3곳 → 둘이 하트 → 여기로 정해요 → 갈 예정 여행과 하루 뼈대', async ({ page, browser }) => {
+    await signIn(page, OWNER);
+    await expect(page.getByTestId('headline')).toBeVisible();
+    await page.getByRole('button', { name: '기록하기', exact: true }).click();
+    await expect(page.getByTestId('plus-sheet')).toBeVisible();
+    await page.getByRole('menuitem', { name: /여행 계획하기/ }).click();
+    await expect(page).toHaveURL(/\/plan$/);
+    await page.getByRole('button', { name: '다음 주말' }).click();
+    await page.getByRole('button', { name: '1박 2일' }).click();
+    await page.getByRole('button', { name: '국내', exact: true }).click();
+    await shot(page, '10h-planner');
+    await page.getByTestId('planner-go').click();
+    await expect(page).toHaveURL(/\/plan\/[A-Za-z0-9]+$/);
+    const cands = page.getByTestId('plan-cand');
+    await expect(cands).toHaveCount(3);
+    const url = page.url();
+    // 나만 하트 → 상대를 기다린다
+    await cands.first().getByTestId('plan-heart').click();
+    await expect(cands.first().getByTestId('plan-heart')).toHaveAttribute('aria-pressed', 'true');
+    await expect(cands.first()).toContainText('상대 하트를 기다려요');
+    await expect(cands.first().getByTestId('plan-decide')).toHaveCount(0);
+    await shot(page, '10i-plan-pick');
+    const name = (await cands.first().locator('.plan-cand-name').textContent())!.trim();
+    // 보라가 같은 링크로 와서 같은 곳에 하트 → 여기로 정해요
+    const bora = await browser.newPage();
+    await signIn(bora, 'bora@example.com');
+    await bora.goto(url);
+    const bc = bora.getByTestId('plan-cand').filter({ hasText: name });
+    await expect(bc).toContainText('영상');
+    await bc.getByTestId('plan-heart').click();
+    await expect(bc.getByTestId('plan-decide')).toBeVisible();
+    await bora.close();
+    // 내 화면에도 바로 '여기로 정해요'가 뜬다
+    await expect(cands.first().getByTestId('plan-decide')).toBeVisible({ timeout: 15_000 });
+    await cands.first().getByTestId('plan-decide').click();
+    await expect(page.getByRole('status')).toContainText('하루 뼈대를 깔아 두었어요');
+    await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=plan$/);
+    const plan = page.getByTestId('plan-tab');
+    await expect(plan.getByTestId('plan-item').first()).toBeVisible();
+    expect(await plan.getByTestId('plan-item').count()).toBeGreaterThanOrEqual(4);
+    await expect(plan).toContainText('1일째');
+    await expect(plan).toContainText('2일째');
+    await shot(page, '10j-plan-skeleton');
+    // 정한 뒤 계획 화면은 '정했어요'
+    await page.goto(url);
+    await expect(page.getByTestId('plan-decided')).toBeVisible();
   });
 
   test('우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임', async ({ page }) => {

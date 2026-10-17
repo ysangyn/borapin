@@ -278,3 +278,19 @@ describe('초대 링크', () => {
     await assertSucceeds(updateDoc(doc(as.owner(), 'config/access'), new FieldPath('names', STRANGER), '막내', 'updatedAt', 1));
   });
 });
+
+describe('여행 계획하기 초안', () => {
+  const draft = (by = 'owner') => ({ conds: { when: 'nextweekend', nights: 1 }, cands: [{ title: '강릉' }], hearts: {}, names: {}, by: { uid: by, name: '영상' }, createdAt: 1, tripId: null, round: 1, v: 1 });
+  test('멤버가 만들고, 상대는 자기 하트만 누른다 (남의 하트·만든 사람은 못 바꾼다)', async () => {
+    await assertSucceeds(setDoc(doc(as.owner(), 'spaces/main/planDrafts/d1'), draft()));
+    await assertFails(setDoc(doc(as.bora(), 'spaces/main/planDrafts/d2'), draft('owner')));
+    await assertFails(setDoc(doc(as.stranger(), 'spaces/main/planDrafts/d3'), draft('stranger')));
+    await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { 'hearts.bora': ['kr:51150'], 'names.bora': '보라' }));
+    await assertFails(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { 'hearts.owner': ['kr:50'] }));
+    await assertFails(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { by: { uid: 'bora', name: '보라' } }));
+    await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { tripId: 't1' }));
+    await assertFails(getDoc(doc(as.stranger(), 'spaces/main/planDrafts/d1')));
+    await assertFails(deleteDoc(doc(as.bora(), 'spaces/main/planDrafts/d1')));
+    await assertSucceeds(deleteDoc(doc(as.owner(), 'spaces/main/planDrafts/d1')));
+  });
+});

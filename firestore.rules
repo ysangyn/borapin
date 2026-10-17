@@ -250,6 +250,29 @@ service cloud.firestore {
             && request.resource.data.v == 1));
       }
 
+      // 여행 계획하기: 후보 3곳에 둘이 각자 하트. 만든 사람이 후보를 정하고, 다른 사람은 자기 하트 칸만 바꾼다
+      match /planDrafts/{id} {
+        allow read: if inSpace(spaceId);
+        allow create: if inSpace(spaceId)
+          && request.resource.data.keys().hasOnly(['conds', 'cands', 'hearts', 'names', 'by', 'createdAt', 'tripId', 'round', 'v'])
+          && request.resource.data.cands is list && request.resource.data.cands.size() <= 6
+          && request.resource.data.by.uid == request.auth.uid
+          && request.resource.data.v == 1;
+        allow update: if inSpace(spaceId)
+          && request.resource.data.keys().hasOnly(['conds', 'cands', 'hearts', 'names', 'by', 'createdAt', 'tripId', 'round', 'v'])
+          && request.resource.data.by == resource.data.by
+          && request.resource.data.cands is list && request.resource.data.cands.size() <= 6
+          && (
+            // 하트·이름: 자기 칸만
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hearts', 'names'])
+              && request.resource.data.hearts.diff(resource.data.hearts).affectedKeys().hasOnly([request.auth.uid])
+              && request.resource.data.names.diff(resource.data.names).affectedKeys().hasOnly([request.auth.uid]))
+            // 정하기(여행 만들기)·다시 고르기는 누구나
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tripId', 'cands', 'hearts', 'round'])
+          );
+        allow delete: if inSpace(spaceId) && resource.data.by.uid == request.auth.uid;
+      }
+
       // 오늘의 한 질문: 날짜마다 문서 하나. answers = { uid: {name, text, at} }, 자기 칸만 쓴다
       match /asks/{day} {
         allow read: if inSpace(spaceId);
