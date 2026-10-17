@@ -150,12 +150,29 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         labelEls.current.set(l.key, el);
       }
       el.style.transform = `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`;
+      posRef.current.set(l.key, { lng: l.lng, lat: l.lat, w: l.w, h: l.h });
       el.classList.toggle('on', on);
       el.style.display = '';
       next.add(l.key);
     }
     for (const k of shown.current) if (!next.has(k)) { const el = labelEls.current.get(k); if (el) el.style.display = 'none'; }
     shown.current = next;
+    zoomAtLayout.current = map.getZoom();
+    layoutAt.current = performance.now();
+  };
+  const posRef = useRef(new Map<string, { lng: number; lat: number; w: number; h: number }>());
+  const zoomAtLayout = useRef(-1);
+  const layoutAt = useRef(0); // 오래 끌면 0.4초마다 새로 들어온 이름표도 놓는다
+  /** 끌기(확대 없이)일 때는 보이는 이름표만 같은 순간에 옮긴다 → 그림과 글자가 함께 움직인다 */
+  const followLabels = () => {
+    const map = mapRef.current;
+    if (!map || Math.abs(map.getZoom() - zoomAtLayout.current) > 1e-6 || performance.now() - layoutAt.current > 400) return scheduleLabels();
+    for (const k of shown.current) {
+      const el = labelEls.current.get(k), q = posRef.current.get(k);
+      if (!el || !q) continue;
+      const pt = map.project([q.lng, q.lat]);
+      el.style.transform = `translate(${Math.round(pt.x - q.w / 2)}px, ${Math.round(pt.y - q.h / 2)}px)`;
+    }
   };
   const layoutRef = useRef(layoutLabels);
   layoutRef.current = layoutLabels;
@@ -175,7 +192,6 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       minZoom: 0.6,
       maxZoom: 11,
       attributionControl: false,
-      // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
       // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
       cooperativeGestures: !!cooperative && !(typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches),
       interactive,
@@ -256,7 +272,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         const f = map.queryRenderedFeatures(e.point, { layers: ['kr-fill', 'world-fill'] });
         map.getCanvas().style.cursor = f.length ? 'pointer' : '';
       });
-      map.on('move', scheduleLabels);
+      map.on('move', followLabels);
+      map.on('moveend', scheduleLabels);
       map.on('resize', scheduleLabels);
       scheduleLabels();
       if (import.meta.env.VITE_EMULATOR === '1') (window as unknown as { __map?: MLMap }).__map = map;
