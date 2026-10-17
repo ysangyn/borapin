@@ -107,7 +107,7 @@ for (const q of ['유류할증료 when:14d', '고창 여행 when:30d', '경기 �
   const items = (r.body.items as { title: string; at: string }[] | undefined) ?? [];
   console.log(`소식 "${q}": ${r.status} · ${items.length}개 · ${JSON.stringify(r.body.debug ?? r.body.error ?? "")}${items[0] ? ` · 첫 기사 "${items[0].title}" (${items[0].at})` : ''}`);
 }
-for (const u of ['https://naver.me/GlVmYk5l', 'https://naver.me/GIVmYk5l']) {
+for (const u of ['https://naver.me/GlVmYk5l', 'https://naver.me/GIVmYk5l', 'https://naver.me/xYz12']) {
   const r = await get(`/place?url=${encodeURIComponent(u)}&addr=${encodeURIComponent('경북 칠곡군 동명면 남원로3길 14')}`).catch((e) => ({ status: 0, body: { error: String(e) } as Record<string, unknown> }));
   console.log(`장소 링크 ${u}: ${r.status} ${JSON.stringify(r.body).slice(0, 400)}`);
 }

@@ -195,12 +195,12 @@ async function placeInfo(raw: string, addr: string): Promise<Response> {
       info.placeId = nid;
       const r = await fetch(`https://m.place.naver.com/place/${nid}/home`, { headers: { 'user-agent': MOBILE_UA, 'accept-language': 'ko-KR,ko' } });
       steps.push(`naver ${r.status}`);
-      if (r.ok) info = { ...parseNaverHtml(await r.text()), placeId: nid };
+      if (r.ok) info = { ...parseNaverHtml((await r.text()).slice(0, 600_000)), placeId: nid };
     } else if (kid) {
       info.placeId = kid;
       const r = await fetch(`https://place.map.kakao.com/${kid}`, { headers: { 'user-agent': MOBILE_UA } });
       steps.push(`kakao ${r.status}`);
-      if (r.ok) info = { ...parseKakaoHtml(await r.text()), placeId: kid };
+      if (r.ok) info = { ...parseKakaoHtml((await r.text()).slice(0, 200_000)), placeId: kid };
     }
     if (c && info.lat == null) { info.lat = c.lat; info.lng = c.lng; }
     const where = info.address || addr;
@@ -220,7 +220,18 @@ async function placeInfo(raw: string, addr: string): Promise<Response> {
 }
 
 export default {
+  // 어떤 오류가 나도 CORS 머리글이 붙은 JSON으로 답한다 (브라우저가 '막힌 요청'으로 보지 않게)
   async fetch(req: Request, env: Env): Promise<Response> {
+    try {
+      return await handle(req, env);
+    } catch (e) {
+      return json({ error: 'server', detail: String((e as Error)?.message ?? e).slice(0, 200) }, 500);
+    }
+  },
+};
+
+async function handle(req: Request, env: Env): Promise<Response> {
+  {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, model: env.MODEL });
@@ -286,5 +297,6 @@ export default {
     } catch (e) {
       return json({ error: 'model failed', detail: String((e as Error).message ?? e).slice(0, 200) }, 502);
     }
-  },
-};
+  }
+}
+

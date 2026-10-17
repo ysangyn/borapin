@@ -431,6 +431,25 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('폰에서 홈 지도는 한 손가락으로 끌면 움직인다 (두 손가락 안내 없이)', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    const map = page.getByTestId('map').first();
+    await expect(map).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
+    await map.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+    const before = await map.getAttribute('data-center');
+    const box = (await map.boundingBox())!;
+    const cdp = await page.context().newCDPSession(page);
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    for (let i = 1; i <= 10; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x - i * 12, y: y - i * 6 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect.poll(async () => map.getAttribute('data-center'), { timeout: 5000 }).not.toBe(before);
+    await expect(page.getByText('두 손가락으로 움직여 주세요')).toBeHidden();
+    await page.context().close();
+  });
+
   test('홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로', async ({ browser }) => {
     const page = await phone(browser);
     await signIn(page);

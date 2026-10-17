@@ -175,6 +175,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       minZoom: 0.6,
       maxZoom: 11,
       attributionControl: false,
+      // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
       cooperativeGestures: !!cooperative,
       interactive,
       locale: {
@@ -187,6 +188,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       renderWorldCopies: false,
     });
     map.touchZoomRotate.disableRotation();
+    // 시험용: 지금 가운데 (손가락으로 움직였는지 확인)
+    map.on('moveend', () => { const c = map.getCenter(); if (el.current) el.current.dataset.center = `${c.lng.toFixed(3)},${c.lat.toFixed(3)}`; });
     mapRef.current = map;
     let cancelled = false;
     map.on('load', async () => {
