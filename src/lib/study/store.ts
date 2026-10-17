@@ -1,3 +1,4 @@
+import { say } from '../speech';
 import { useCallback, useEffect, useState } from 'react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth, db, SPACE_ID } from '../firebase';
@@ -39,15 +40,4 @@ export function useStudy() {
 }
 
 /** 영어 읽어 주기 (폰 내장 음성, 무료) */
-export function speak(text: string) {
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US';
-    u.rate = 0.92;
-    const voices = speechSynthesis.getVoices().filter((v) => v.lang.startsWith('en'));
-    const pick = voices.find((v) => /Samantha|Google US|Karen|Daniel|Moira/.test(v.name)) ?? voices[0];
-    if (pick) u.voice = pick;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  } catch { /* 음성이 없는 기기 */ }
-}
+export const speak = (text: string) => say(text, 'en-US', 0.92);

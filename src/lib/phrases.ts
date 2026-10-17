@@ -1,3 +1,4 @@
+import { say } from './speech';
 import { useEffect, useState } from 'react';
 
 /**
@@ -34,15 +35,5 @@ export function phraseLangFor(lang: string): string | null {
   return /영어/.test(lang) ? 'en' : null;
 }
 
-/** 현지어 읽어 주기 (기기 내장 음성, 없으면 조용히 넘어감) */
-export function speakPhrase(text: string, speech: string) {
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = speech;
-    u.rate = 0.9;
-    const v = speechSynthesis.getVoices().find((x) => x.lang.replace('_', '-').toLowerCase().startsWith(speech.slice(0, 2).toLowerCase()));
-    if (v) u.voice = v;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  } catch { /* 음성 없는 기기 */ }
-}
+/** 현지어 읽어 주기 (기기 내장 음성) */
+export const speakPhrase = (text: string, speech: string) => say(text, speech, 0.9);

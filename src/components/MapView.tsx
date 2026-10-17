@@ -176,7 +176,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       maxZoom: 11,
       attributionControl: false,
       // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
-      cooperativeGestures: !!cooperative,
+      // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
+      cooperativeGestures: !!cooperative && !(typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches),
       interactive,
       locale: {
         'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl을 누른 채 스크롤하면 확대돼요',
