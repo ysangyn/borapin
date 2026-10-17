@@ -267,8 +267,11 @@ service cloud.firestore {
             (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hearts', 'names'])
               && request.resource.data.hearts.diff(resource.data.hearts).affectedKeys().hasOnly([request.auth.uid])
               && request.resource.data.names.diff(resource.data.names).affectedKeys().hasOnly([request.auth.uid]))
-            // 정하기(여행 만들기)·다시 고르기는 누구나
-            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tripId', 'cands', 'hearts', 'round'])
+            // 정하기(여행 만들기)는 누구나
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tripId'])
+            // 다시 고르기: 후보를 바꾸면 하트는 모두 비운다 (남의 하트를 바꾸는 길이 되지 않게)
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cands', 'hearts', 'round'])
+              && request.resource.data.hearts.size() == 0)
           );
         allow delete: if inSpace(spaceId) && resource.data.by.uid == request.auth.uid;
       }

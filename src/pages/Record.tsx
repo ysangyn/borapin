@@ -47,6 +47,9 @@ export default function Record() {
   const [places, setPlaces] = useState<Place[]>(() => parsePlaceParam(sp.get('place')));
   const [when, setWhen] = useState<When>({ p: 'day' });
   const [companions, setCompanions] = useState<string[]>(() => memberNames());
+  // 새 기록은 함께 쓰는 사람 모두(부부·연인이면 둘 다)가 기본. 이름이 늦게 실려도 채운다
+  const memberKey = memberNames().join('|');
+  useEffect(() => { if (!editing) setCompanions((c) => [...new Set([...memberNames(), ...c])]); }, [memberKey, editing]);
   const [newName, setNewName] = useState('');
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');

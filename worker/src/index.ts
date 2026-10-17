@@ -140,10 +140,11 @@ async function news(q: string): Promise<Response> {
     const source = decode(/<source[^>]*>([\s\S]*?)<\/source>/.exec(b)?.[1] ?? '');
     const at = /<pubDate>([\s\S]*?)<\/pubDate>/.exec(b)?.[1] ?? '';
     if (title && link) items.push({ title: title.replace(/\s*-\s*[^-]+$/, ''), link, source, at: at ? new Date(at).toISOString() : '' });
-    if (items.length >= 8) break;
+    if (items.length >= 15) break;
   }
   const res = json({ items, q, cachedAt: new Date().toISOString() });
-  res.headers.set('cache-control', 'public, max-age=21600');
+  // 빈 결과는 20분만 (일시 장애가 6시간 '소식 없음'으로 굳지 않게)
+  res.headers.set('cache-control', `public, max-age=${items.length ? 21600 : 1200}`);
   await cache.put(key, res.clone());
   return res;
 }
@@ -163,7 +164,7 @@ export default {
 
     // 여행 소식: 구글 뉴스 RSS(키 없음)를 6시간 캐시해 지역별 머리기사 5개만 준다 (AI 한도와 무관)
     if (isNews) {
-      const q = (url.searchParams.get('q') ?? '').trim().slice(0, 40);
+      const q = (url.searchParams.get('q') ?? '').trim().slice(0, 60);
       if (!q) return json({ error: 'empty' }, 400);
       return news(q);
     }

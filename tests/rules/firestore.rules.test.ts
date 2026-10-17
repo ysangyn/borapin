@@ -288,6 +288,9 @@ describe('여행 계획하기 초안', () => {
     await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { 'hearts.bora': ['kr:51150'], 'names.bora': '보라' }));
     await assertFails(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { 'hearts.owner': ['kr:50'] }));
     await assertFails(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { by: { uid: 'bora', name: '보라' } }));
+    // 다시 고르기는 하트를 모두 비울 때만
+    await assertFails(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { cands: [{ title: '제주' }], hearts: { owner: ['x'] }, round: 2 }));
+    await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { cands: [{ title: '제주' }], hearts: {}, round: 2 }));
     await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main/planDrafts/d1'), { tripId: 't1' }));
     await assertFails(getDoc(doc(as.stranger(), 'spaces/main/planDrafts/d1')));
     await assertFails(deleteDoc(doc(as.bora(), 'spaces/main/planDrafts/d1')));

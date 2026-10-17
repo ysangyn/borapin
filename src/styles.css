@@ -845,6 +845,7 @@ a { color: var(--violet); text-decoration: none; }
 a.hub-way-row { text-decoration: none; }
 .news-digest { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; }
 .news-tabs .chip { height: 30px; padding: 0 11px; font-size: 12.5px; }
+.news-tabs .chip.dim:not(.on) { opacity: .5; }
 .ask-items { display: flex; flex-direction: column; margin: 6px 0 2px; }
 .ask-item { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line); }
 .ask-item:first-child { border-top: none; }
