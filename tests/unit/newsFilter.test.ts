@@ -18,6 +18,9 @@ test('점수: 여행 준비에 쓰이는 말·지역 이름·최근일수록 높
   assert.ok(newsScore(N('고창 청보리밭 축제 개막, 가볼 만한 곳'), '고창', now) > newsScore(N('고창 소식 모음'), '고창', now));
   assert.equal(newsScore(N('강릉 축제', 40), '강릉', now), -99);
   assert.ok(newsScore(N('11월 유류할증료 인하…항공권 싸진다'), '', now) >= 3);
+  assert.ok(newsScore(N('설악산 단풍 이번 주말 절정'), '', now) >= 2);
+  assert.ok(newsScore(N('추석 KTX 예매 내일부터'), '', now) >= 2);
+  assert.equal(newsScore(N('공항 활주로 사고 조사'), '', now), -99);
 });
 
 test('합치기: 같은 보도는 하나만, 점수순, 낮은 점수는 버린다', () => {
@@ -38,7 +41,11 @@ test('검색어: 군·시를 떼고 찾고, 이름이 겹치는 곳은 도 이�
   assert.ok(gj.queries[0].startsWith('경기 광주'), gj.queries[0]);
   const gwangju = newsSpec({ t: 'kr', code: '29' });
   assert.ok(gwangju.queries[0].startsWith('광주 여행'), gwangju.queries[0]);
-  assert.ok(GENERAL_QUERIES.length >= 4 && GENERAL_QUERIES.every((q) => q.length <= 60));
+  assert.ok(GENERAL_QUERIES.length >= 10 && GENERAL_QUERIES.every((q) => q.length <= 60));
+  const { generalQueries } = await import('../../src/lib/newsFilter');
+  assert.ok(generalQueries(10).some((q) => q.includes('단풍')));
+  assert.ok(generalQueries(4).some((q) => q.includes('벚꽃')));
+  for (let m = 1; m <= 12; m++) assert.ok(generalQueries(m).length >= 12, `${m}월`);
 });
 
 test('소식 탭: 새 소식 있는 곳부터 최근 순, 빈 곳은 뒤로', async () => {

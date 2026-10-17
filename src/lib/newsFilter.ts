@@ -16,8 +16,9 @@ const GOOD: [RegExp, number][] = [
   [/축제|페스티벌|불꽃|개막|열린다|개최/, 3],
   [/개장|개통|새로 문|오픈|문 연|재개장|신규 취항|취항|노선|직항/, 3],
   [/특가|할인|무료|반값|프로모션|이벤트/, 2],
-  [/유류할증료|항공권|운임|환율|무비자|입국|비자|여권|면세/, 3],
-  [/명소|가볼 만한|가볼만한|여행 코스|드라이브 코스|산책 코스|여행지|관광|여행|나들이|단풍|벚꽃|꽃길|해돋이|야경|맛집|체험|캠핑|트레킹|둘레길/, 2],
+  [/유류할증료|항공권|운임|환율|무비자|입국|비자|여권|면세|여행경보|전자여행허가|ETA|ESTA/, 3],
+  [/KTX|SRT|예매|공항|출국|숙박|쿠폰|연휴|휴가/, 2],
+  [/명소|가볼 만한|가볼만한|여행 코스|드라이브 코스|산책 코스|여행지|관광|여행|나들이|단풍|벚꽃|꽃길|해돋이|야경|맛집|체험|캠핑|트레킹|둘레길|개화|절정|해수욕장|눈꽃/, 2],
   [/추천|선정|베스트|가이드/, 1],
 ];
 
@@ -69,15 +70,30 @@ export function newsSpec(p: Place): { label: string; match: string; queries: str
   return { label: name, match: name, queries: [`${name} 여행 when:30d`, `${name} 항공권 when:30d`, `${name} 입국 when:60d`] };
 }
 
-/** 여행 전반: 준비에 영향을 주는 것만 따로 찾아 합친다 (한 검색어에 몰아 넣으면 거의 안 걸린다) */
-export const GENERAL_QUERIES = [
+/** 여행 전반: 준비에 영향을 주는 것만 주제별로 따로 찾아 합친다 (한 검색어에 몰아 넣으면 거의 안 걸린다) */
+const SEASON_QUERIES: Record<number, string[]> = {
+  1: ['눈꽃 여행 when:14d', '겨울 축제 when:14d'], 2: ['겨울 축제 when:14d', '봄 여행 예약 when:14d'],
+  3: ['벚꽃 개화 when:14d', '봄꽃 축제 when:14d'], 4: ['벚꽃 개화 when:14d', '봄꽃 축제 when:14d'],
+  5: ['봄 축제 when:14d', '여름휴가 예약 when:14d'], 6: ['해수욕장 개장 when:14d', '여름휴가 항공권 when:14d'],
+  7: ['해수욕장 when:7d 여행', '여름휴가 when:7d 여행'], 8: ['해수욕장 when:7d 여행', '가을 여행 when:14d'],
+  9: ['추석 연휴 여행 when:14d', '가을 축제 when:14d'], 10: ['단풍 절정 when:14d', '가을 축제 when:14d'],
+  11: ['단풍 절정 when:14d', '겨울 여행 when:14d'], 12: ['해돋이 명소 when:14d', '연말 여행 when:14d'],
+};
+export const BASE_QUERIES = [
   '유류할증료 when:14d',
   '항공권 특가 when:14d',
   '신규 취항 노선 when:14d',
   '무비자 입국 when:30d',
-  '여권 when:14d 여행',
+  '여행경보 when:14d',
+  '전자여행허가 OR 여권 여행 when:14d',
+  '환율 여행 엔화 OR 달러 when:7d',
+  'KTX OR SRT 예매 when:14d',
+  '숙박 할인 쿠폰 when:14d',
+  '공항 혼잡 OR 주차 출국 when:14d',
   '축제 개막 when:7d',
 ];
+export const generalQueries = (month = new Date().getMonth() + 1) => [...BASE_QUERIES, ...(SEASON_QUERIES[month] ?? [])];
+export const GENERAL_QUERIES = generalQueries();
 
 
 /** 소식 탭 순서: 새 소식 있는 탭부터, 가장 최근 소식 순. 빈 탭은 뒤로 */
