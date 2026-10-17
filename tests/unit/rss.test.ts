@@ -19,3 +19,8 @@ test('빙 뉴스 RSS: 진짜 기사 주소와 언론사', () => {
   assert.equal(bingQuery('유류할증료 when:14d'), '유류할증료');
   assert.equal(bingQuery('KTX OR SRT 예매 when:14d'), 'KTX OR SRT 예매');
 });
+
+test('숫자로 쓴 글자(&#183; 등)도 풀어 쓴다', () => {
+  const [a] = parseBingRss('<item><title>하나&#183;모두투어 &#x27;한숨&#x27;</title><link>https://a.example/1</link></item>');
+  assert.equal(a.title, "하나·모두투어 '한숨'");
+});

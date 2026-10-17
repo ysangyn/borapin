@@ -1,7 +1,7 @@
 /** 뉴스 RSS 읽기 (순수 함수, 시험: tests/unit/rss.test.ts) */
 export interface NewsItem { title: string; link: string; source: string; at: string }
 
-const decode = (t: string) => t.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/<[^>]+>/g, '').trim();
+const decode = (t: string) => t.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/<[^>]+>/g, '').trim();
 const tag = (b: string, name: string) => decode(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`).exec(b)?.[1] ?? '');
 const iso = (d: string) => { const t = d ? new Date(d) : null; return t && !isNaN(t.getTime()) ? t.toISOString() : ''; };
 
