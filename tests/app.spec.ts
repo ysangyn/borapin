@@ -560,6 +560,20 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '또 갈래요' }).click();
     await expect(page.getByTestId('place-rec')).toHaveCount(1);
     await shot(page, '11b-places');
+
+    // 장소를 열면 '보기' 화면: 이름·지도 앱·자리 그림·한 줄 평, 고치기를 누르면 고치는 칸
+    await page.getByTestId('place-rec').click();
+    await expect(page.getByRole('heading', { name: '초당할머니순두부' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: '지도 앱으로 열기' }).getByRole('link')).toHaveCount(3);
+    await expect(page.getByTestId('spot-map')).toBeVisible();
+    await expect(page.getByText('아침으로 최고')).toBeVisible();
+    await shot(page, '11c-place-view');
+    await page.getByTestId('place-edit').click();
+    await expect(page.getByLabel('장소 이름')).toHaveValue('초당할머니순두부');
+    await page.getByLabel('장소 메모').fill('줄 30분');
+    await page.getByTestId('place-save').click();
+    await expect(page.getByRole('heading', { name: '초당할머니순두부' })).toBeVisible();
+    await expect(page.getByText('줄 30분')).toBeVisible();
   });
 
   test('사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩', async ({ page }) => {

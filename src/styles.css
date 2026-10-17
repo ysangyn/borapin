@@ -886,3 +886,43 @@ a.hub-way-row { text-decoration: none; }
 .plus-item b { font-size: 16px; }
 .draft-nudge { display: flex; align-items: center; gap: 10px; color: var(--ink); }
 .draft-nudge > svg:first-child { color: var(--coral-ink); flex: none; }
+
+/* ---------- 장소 보기 ---------- */
+.place-view { gap: 14px; }
+.pv-photo { position: relative; margin: 0 -2px; border-radius: 20px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--mist2); }
+.pv-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pv-photo-src { position: absolute; right: 10px; bottom: 8px; padding: 2px 7px; border-radius: 8px; background: rgba(23, 20, 43, .45); color: #fff; }
+.pv-head { display: flex; flex-direction: column; gap: 4px; }
+.pv-tags { display: flex; gap: 6px; align-items: center; }
+.pv-name { margin: 2px 0 0; font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; word-break: keep-all; }
+.pv-addr { display: flex; align-items: center; gap: 6px; margin-top: 4px; padding: 8px 10px; border: 0; border-radius: 12px; background: var(--mist2); color: var(--ink2); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+.pv-addr span:nth-child(2) { flex: 1; min-width: 0; }
+.pv-addr .tiny { color: var(--violet); font-weight: 700; flex: none; }
+.pv-apps { display: flex; gap: 6px; }
+.pv-app { flex: 1; min-width: 0; height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line2); border-radius: 12px; background: #fff; font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; text-decoration: none; }
+.pv-app.route { background: var(--violet); border-color: var(--violet); color: #fff; }
+.app-badge { width: 18px; height: 18px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: #fff; }
+.app-badge.n { background: #03c75a; }
+.app-badge.k { background: #fee500; color: #3c1e1e; }
+.app-badge.g { background: #fff; color: #4285f4; box-shadow: inset 0 0 0 1px var(--line2); }
+.pv-map { padding: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pv-map-note { padding: 0 8px 6px; text-align: center; }
+.spot-map { width: 100%; height: auto; display: block; }
+.spot-near { fill: var(--mist2); stroke: var(--line2); stroke-width: .8; }
+.spot-me { fill: var(--mist); stroke: var(--violet); stroke-width: 1.4; }
+.spot-pin path { fill: var(--coral); stroke: #fff; stroke-width: 1.5; }
+.spot-halo { fill: var(--coral); opacity: .18; }
+.spot-label { fill: var(--violet); font-size: 14px; font-weight: 800; }
+.pv-trip { display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: var(--ink); text-decoration: none; }
+.pv-reviews { display: flex; flex-direction: column; gap: 8px; }
+.pv-review { display: flex; gap: 8px; align-items: flex-start; }
+.pv-bubble { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 4px 16px 16px 16px; background: #fff; border: 1px solid var(--line2); }
+.pv-bubble b { color: var(--ink3); }
+.pv-empty { align-self: flex-start; border: 1px dashed var(--line2); background: none; border-radius: 12px; padding: 10px 14px; color: var(--ink3); font: inherit; cursor: pointer; }
+.pv-remove { align-self: center; display: inline-flex; gap: 6px; align-items: center; color: var(--ink3); margin-top: 8px; }
+.link-preview { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px; border-radius: 14px; background: var(--mist2); }
+.link-preview img, .link-preview-ph { flex: none; width: 64px; height: 64px; border-radius: 10px; object-fit: cover; }
+.link-preview-ph { display: inline-flex; align-items: center; justify-content: center; background: var(--mist); color: var(--violet); }
+.link-preview-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.link-preview-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-thumb { flex: none; width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: var(--mist2); }

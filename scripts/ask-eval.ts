@@ -97,6 +97,21 @@ for (const q of QUESTIONS) {
     console.log(`✗ "${q}" → ${(e as Error).message}`);
   }
 }
+// 소식·장소 링크 뒷단 확인 (결과만 기록, 실패해도 관문은 막지 않는다: 바깥 사이트 사정이라)
+async function get(path: string) {
+  const r = await fetch(`${ASK_URL}${path}`, { headers: { authorization: `Bearer ${tk}` } });
+  return { status: r.status, body: await r.json().catch(() => ({})) as Record<string, unknown> };
+}
+for (const q of ['유류할증료 when:14d', '고창 여행 when:30d', '경기 광주 축제 when:30d']) {
+  const r = await get(`/news?q=${encodeURIComponent(q)}`).catch((e) => ({ status: 0, body: { error: String(e) } as Record<string, unknown> }));
+  const items = (r.body.items as { title: string; at: string }[] | undefined) ?? [];
+  console.log(`소식 "${q}": ${r.status} · ${items.length}개${items[0] ? ` · 첫 기사 "${items[0].title}" (${items[0].at})` : ''}`);
+}
+for (const u of ['https://naver.me/GlVmYk5l', 'https://naver.me/GIVmYk5l']) {
+  const r = await get(`/place?url=${encodeURIComponent(u)}&addr=${encodeURIComponent('경북 칠곡군 동명면 남원로3길 14')}`).catch((e) => ({ status: 0, body: { error: String(e) } as Record<string, unknown> }));
+  console.log(`장소 링크 ${u}: ${r.status} ${JSON.stringify(r.body).slice(0, 400)}`);
+}
+
 console.log(`\n보라(AI) 점검: ${QUESTIONS.length - bad}/${QUESTIONS.length}`);
 if (bad > QUESTIONS.length / 2) {
   console.error('✗ 절반 넘게 실패');

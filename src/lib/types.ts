@@ -99,6 +99,11 @@ export interface PlaceRec {
   naverUrl?: string;
   address?: string;
   memo?: string;
+  /** 지도 링크에서 가져온 대표 사진 주소 (그쪽 서버의 사진: 안 뜨면 숨긴다) */
+  photoUrl?: string;
+  /** 위경도 (지도 링크·주소에서) */
+  lat?: number;
+  lng?: number;
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;

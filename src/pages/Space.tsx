@@ -1,3 +1,4 @@
+import { withRo } from '../lib/ko';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatars, Icon, TopBar, useToast } from '../components/ui';
@@ -118,7 +119,8 @@ export default function Space() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }} data-testid="space-title">{spaceTitle()}{spaceRelation() && <span className="tag coral" data-testid="space-relation">{RELATION_ICON[spaceRelation()!]} {RELATION_LABEL[spaceRelation()!]}</span>}</div>
             <div className="small muted">{stats ? `함께 다닌 여행 ${stats.tripsDone}번 · 핀 ${stats.pins}개` : '기록을 불러오는 중…'}</div>
-            <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nameOf(user.email)} · {user.email}</div>
+            <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{withRo(nameOf(user.email))} 들어와 있어요 · {user.email}</div>
+            <div className="tiny" style={{ color: 'var(--violet)', marginTop: 2 }}>각자 계정으로 들어와도 같은 기록을 함께 봐요</div>
           </div>
         </div>
 

@@ -10,6 +10,8 @@
  * - 사람당 분당 20번, 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
+import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
+
 export interface Env {
   AI: Ai;
   QUOTA: KVNamespace;
@@ -21,7 +23,7 @@ export interface Env {
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Max-Age': '86400',
 };
@@ -149,13 +151,79 @@ async function news(q: string): Promise<Response> {
   return res;
 }
 
+// ---------- 지도 링크 → 장소 정보 (이름·사진·주소·종류·좌표) ----------
+const MOBILE_UA = 'Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Mobile Safari/537.36';
+async function follow(u: URL): Promise<URL> {
+  let cur = u;
+  for (let i = 0; i < 5; i++) {
+    const r = await fetch(cur.toString(), { redirect: 'manual', headers: { 'user-agent': MOBILE_UA } });
+    const loc = r.headers.get('location');
+    if (r.status < 300 || r.status >= 400 || !loc) return cur;
+    const next = allowedUrl(new URL(loc, cur).toString());
+    if (!next) return new URL(new URL(loc, cur).toString()); // 허용 밖이면 열지 않고 주소만 본다
+    cur = next;
+  }
+  return cur;
+}
+async function geocode(addr: string): Promise<{ lat: number; lng: number } | null> {
+  // OpenStreetMap Nominatim (키 없음, 초당 1번 이하 · 결과는 7일 캐시)
+  const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q=${encodeURIComponent(addr)}`, { headers: { 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' } });
+  if (!r.ok) return null;
+  const j = (await r.json().catch(() => [])) as { lat: string; lon: string }[];
+  const lat = Number(j[0]?.lat), lng = Number(j[0]?.lon);
+  return lat && lng ? { lat, lng } : null;
+}
+async function placeInfo(raw: string, addr: string): Promise<Response> {
+  const start = allowedUrl(raw);
+  if (!start) return json({ error: 'not allowed' }, 400);
+  const cache = caches.default;
+  const key = new Request(`https://cache.borapin/place?u=${encodeURIComponent(start.toString())}&a=${encodeURIComponent(addr)}`);
+  const hit = await cache.match(key);
+  if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+  let info: PlaceInfo = {};
+  const steps: string[] = [];
+  try {
+    const end = await follow(start);
+    steps.push(`→ ${end.hostname}${end.pathname}`);
+    const c = coordsFromUrl(end.toString());
+    const nid = naverPlaceId(end.toString());
+    const kid = kakaoPlaceId(end.toString());
+    if (nid) {
+      info.placeId = nid;
+      const r = await fetch(`https://m.place.naver.com/place/${nid}/home`, { headers: { 'user-agent': MOBILE_UA, 'accept-language': 'ko-KR,ko' } });
+      steps.push(`naver ${r.status}`);
+      if (r.ok) info = { ...parseNaverHtml(await r.text()), placeId: nid };
+    } else if (kid) {
+      info.placeId = kid;
+      const r = await fetch(`https://place.map.kakao.com/${kid}`, { headers: { 'user-agent': MOBILE_UA } });
+      steps.push(`kakao ${r.status}`);
+      if (r.ok) info = { ...parseKakaoHtml(await r.text()), placeId: kid };
+    }
+    if (c && info.lat == null) { info.lat = c.lat; info.lng = c.lng; }
+    const where = info.address || addr;
+    if (info.lat == null && where) {
+      const g = await geocode(where).catch(() => null);
+      steps.push(`geocode ${g ? 'ok' : 'none'}`);
+      if (g) { info.lat = g.lat; info.lng = g.lng; }
+    }
+  } catch (e) {
+    steps.push(`error ${(e as Error).message}`);
+  }
+  const res = json({ ...info, steps });
+  const found = info.name || info.image || info.lat != null;
+  res.headers.set('cache-control', `public, max-age=${found ? 7 * 86400 : 1800}`);
+  await cache.put(key, res.clone());
+  return res;
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, model: env.MODEL });
     const isNews = req.method === 'GET' && url.pathname === '/news';
-    if (!isNews && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isPlace = req.method === 'GET' && url.pathname === '/place';
+    if (!isNews && !isPlace && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -167,6 +235,11 @@ export default {
       const q = (url.searchParams.get('q') ?? '').trim().slice(0, 60);
       if (!q) return json({ error: 'empty' }, 400);
       return news(q);
+    }
+    if (isPlace) {
+      const rl0 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl0.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      return placeInfo((url.searchParams.get('url') ?? '').slice(0, 300), (url.searchParams.get('addr') ?? '').slice(0, 120));
     }
 
     const rl = await env.PER_USER.limit({ key: who.uid });

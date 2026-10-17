@@ -68,6 +68,9 @@ service cloud.firestore {
         && (!('verdict' in d) || d.verdict == null || d.verdict in ['again', 'once', 'meh'])
         && (!('naverUrl' in d) || (d.naverUrl is string && d.naverUrl.size() <= 500))
         && (!('memo' in d) || (d.memo is string && d.memo.size() <= 5000))
+        && (!('photoUrl' in d) || (d.photoUrl is string && d.photoUrl.size() <= 600 && d.photoUrl.matches('https://.*')))
+        && (!('lat' in d) || (d.lat is number && d.lat >= -90 && d.lat <= 90))
+        && (!('lng' in d) || (d.lng is number && d.lng >= -180 && d.lng <= 180))
         && d.v == 1;
     }
 

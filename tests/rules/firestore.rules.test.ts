@@ -121,6 +121,16 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertSucceeds(updateDoc(T(db, 't2'), { title: '경주 벚꽃 여행' }));
     await assertSucceeds(deleteDoc(T(db, 't2')));
   });
+  test('장소: 사진 주소는 https만, 좌표는 범위 안만', async () => {
+    const db = as.bora();
+    const P = (id: string) => doc(db, `spaces/main/places/${id}`);
+    const place = (over: Record<string, unknown> = {}) => ({ name: '슈츠', kind: 'cafe', region: { t: 'kr', code: '47850' }, reviews: {}, verdict: null, v: 1, ...over });
+    await assertSucceeds(setDoc(P('p1'), place({ photoUrl: 'https://search.pstatic.net/x.jpg', lat: 35.99, lng: 128.57 })));
+    await assertFails(setDoc(P('p2'), place({ photoUrl: 'javascript:alert(1)' })));
+    await assertFails(setDoc(P('p3'), place({ photoUrl: 'http://x.example/a.jpg' })));
+    await assertFails(setDoc(P('p4'), place({ lat: 135, lng: 128 })));
+    await assertFails(setDoc(P('p5'), place({ lng: '128' })));
+  });
   test('메일 대소문자가 달라도 같은 사람으로 본다', async () => {
     await assertSucceeds(getDoc(T(as.boraUpper())));
   });

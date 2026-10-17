@@ -4,12 +4,16 @@ import { hideReview, useBlind } from '../lib/blind';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import { useAuth, displayName } from '../lib/auth';
-import { createPlace, createTrip, deletePlace, restorePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
+import { createPlace, createTrip, deletePlace, enrichPlace, restorePlace, tripsAtPlace, updatePlace, usePlaces, useTrips } from '../lib/data';
+import { lookupLink, type LinkInfo } from '../lib/placeLookup';
+import { kindFromCategory } from '../lib/placeApps';
+import { locate } from '../lib/geodata';
+import PlaceView from '../components/PlaceView';
 import { quickTripInput } from '../lib/tripActions';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { formatWhen } from '../lib/dates';
 import { parsePlaceParam } from '../lib/geo';
-import { KINDS, parseNaverShare, placeRecLinks, VERDICTS } from '../lib/placeRecs';
+import { KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
 import { memberNames, toneOf } from '../lib/members';
 import type { Place, PlaceKind, PlaceRecInput, Verdict } from '../lib/types';
@@ -42,6 +46,11 @@ export default function PlaceEdit() {
   const [loaded, setLoaded] = useState(!editing);
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' ? 'view' : 'form');
+  const [kindTouched, setKindTouched] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [link, setLink] = useState<{ state: 'idle' | 'loading' | 'done' | 'none'; info?: LinkInfo }>({ state: 'idle' });
 
   // 안드로이드 공유(네이버지도 → 보라핀)로 들어온 글
   useEffect(() => {
@@ -67,6 +76,9 @@ export default function PlaceEdit() {
       setNaverUrl(existing.naverUrl ?? '');
       setAddress(existing.address ?? '');
       setMemo(existing.memo ?? '');
+      setPhotoUrl(existing.photoUrl ?? '');
+      setCoords(existing.lat != null && existing.lng != null ? { lat: existing.lat, lng: existing.lng } : null);
+      setKindTouched(true);
       setLoaded(true);
     }
   }, [editing, existing, loaded]);
@@ -84,6 +96,32 @@ export default function PlaceEdit() {
     if (r.url) setNaverUrl(r.url);
     if (r.address && !address) setAddress(r.address);
   };
+
+  // 링크가 붙으면 그쪽 지도에서 이름·사진·주소·종류·자리를 가져와 빈 칸만 채운다
+  const linkUrl = /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : '';
+  useEffect(() => {
+    if (!linkUrl || mode !== 'form' || (editing && !loaded)) { setLink({ state: 'idle' }); return; }
+    if (editing && existing?.naverUrl === linkUrl && existing.photoUrl && existing.lat != null) return;
+    let on = true;
+    setLink({ state: 'loading' });
+    lookupLink(linkUrl, address).then(async (info) => {
+      if (!on) return;
+      if (!info) { setLink({ state: 'none' }); return; }
+      setLink({ state: 'done', info });
+      if (info.name) setName((n) => n || info.name!.slice(0, 80));
+      if (info.address) setAddress((a) => a || info.address!);
+      const k = kindFromCategory(info.category);
+      if (k && !kindTouched) setKind(k);
+      if (info.image) setPhotoUrl((p) => p || info.image!);
+      if (info.lat != null && info.lng != null) {
+        setCoords({ lat: info.lat, lng: info.lng });
+        const at = await locate(info.lng, info.lat).catch(() => null);
+        if (on && at) setRegion((r) => (r.length ? r : [at]));
+      }
+    });
+    return () => { on = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkUrl, mode, loaded]);
 
   const save = async () => {
     if (!where || !name.trim() || auth.status !== 'ready' || saving) return;
@@ -113,12 +151,16 @@ export default function PlaceEdit() {
       naverUrl: /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : undefined,
       address: address.trim() || undefined,
       memo: memo.trim() || undefined,
+      photoUrl: /^https:\/\//.test(photoUrl) ? photoUrl.slice(0, 600) : undefined,
+      lat: coords?.lat,
+      lng: coords?.lng,
     };
     try {
       if (editing && id && existing) await updatePlace(id, existing, input);
       else await createPlace(input, auth.user);
       if (news) celebrate();
       toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
+      if (editing) { setSaving(false); setMode('view'); return; }
       goBack(tripParam ? `/trips/${tripParam}` : '/places');
     } catch (e) {
       console.warn(e);
@@ -127,8 +169,7 @@ export default function PlaceEdit() {
     }
   };
 
-  const links = where && name ? placeRecLinks({ name, region: where, naverUrl: /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : undefined }) : null;
-  const dirty = !saving && (editing ? loaded && !!existing && (name !== existing.name || memo !== (existing.memo ?? '') || JSON.stringify(reviews) !== JSON.stringify(existing.reviews ?? {})) : !!(name.trim() || memo.trim() || Object.values(reviews).some((v) => v.trim())));
+  const dirty = !saving && mode === 'form' && (editing ? loaded && !!existing && (name !== existing.name || memo !== (existing.memo ?? '') || JSON.stringify(reviews) !== JSON.stringify(existing.reviews ?? {})) : !!(name.trim() || memo.trim() || Object.values(reviews).some((v) => v.trim())));
   useLeaveGuard(dirty);
 
   const remove = () => {
@@ -150,18 +191,48 @@ export default function PlaceEdit() {
     return <Spinner />;
   }
 
+  if (editing && existing && mode === 'view') {
+    return (
+      <PlaceView
+        rec={existing}
+        trip={trips?.find((t) => t.id === existing.tripId) ?? null}
+        onEdit={() => setMode('form')}
+        onRemove={remove}
+        onEnrich={(f) => void enrichPlace(existing.id, f).catch(() => {})}
+      />
+    );
+  }
+
   return (
     <>
-      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소' : '장소 남기기'} />
+      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '장소 남기기'} right={editing ? <button className="btn sm ghost" onClick={() => { setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         <div className="field">
           <span className="label">네이버지도 <span className="muted small">(선택)</span></span>
           {/^https?:\/\//i.test(naverUrl.trim()) ? (
+            <>
             <div className="naver-linked" data-testid="naver-link">
               <span className="naver-badge" aria-hidden="true">N</span>
               <a href={naverUrl.trim()} target="_blank" rel="noreferrer">{naverUrl.trim().replace(/^https?:\/\//i, '')}</a>
-              <button type="button" className="icon-btn" style={{ width: 40, height: 40 }} aria-label="네이버지도 링크 빼기" onClick={() => { setNaverUrl(''); setPaste(''); }}><Icon name="x" size={14} /></button>
+              <button type="button" className="icon-btn" style={{ width: 40, height: 40 }} aria-label="네이버지도 링크 빼기" onClick={() => { setNaverUrl(''); setPaste(''); setLink({ state: 'idle' }); }}><Icon name="x" size={14} /></button>
             </div>
+            {(link.state === 'loading' || link.state === 'done' || photoUrl) && (
+              <div className="link-preview" data-testid="link-preview" aria-live="polite">
+                {photoUrl ? <img src={photoUrl} alt="" referrerPolicy="no-referrer" loading="lazy" onError={() => setPhotoUrl('')} /> : <span className="link-preview-ph" aria-hidden="true"><Icon name="image" size={20} /></span>}
+                <span className="link-preview-text">
+                  {link.state === 'loading' ? <span className="small muted">링크에서 사진과 자리를 찾는 중…</span> : (
+                    <>
+                      <b>{link.info?.name || name}</b>
+                      {link.info?.category && <span className="tiny muted">{link.info.category}</span>}
+                      <span className="tiny" style={{ color: 'var(--violet)' }}>{[photoUrl && '사진', coords && '자리', link.info?.address && '주소'].filter(Boolean).join('·') || '이름'}을 가져왔어요</span>
+                    </>
+                  )}
+                </span>
+                {photoUrl && <button type="button" className="icon-btn" style={{ width: 36, height: 36 }} aria-label="사진 빼기" onClick={() => setPhotoUrl('')}><Icon name="x" size={13} /></button>}
+              </div>
+            )}
+            {link.state === 'none' && <span className="tiny muted">이 링크에선 더 가져올 게 없어요. 이름과 주소는 직접 써 주세요.</span>}
+            </>
           ) : (
             <>
               <textarea className="textarea" rows={2} aria-label="네이버지도 공유 글" value={paste} onChange={(e) => applyPaste(e.target.value)} placeholder="네이버지도에서 '공유'로 복사한 글이나 링크를 붙여 넣으면 이름·주소가 채워져요" />
@@ -178,7 +249,7 @@ export default function PlaceEdit() {
           <span className="label">종류</span>
           <div className="chips">
             {KINDS.map((k) => (
-              <button key={k.k} type="button" aria-pressed={kind === k.k} className={'chip' + (kind === k.k ? ' on' : '')} onClick={() => setKind(k.k)}>
+              <button key={k.k} type="button" aria-pressed={kind === k.k} className={'chip' + (kind === k.k ? ' on' : '')} onClick={() => { setKind(k.k); setKindTouched(true); }}>
                 {kind === k.k && <span className="chip-check" aria-hidden="true"><Icon name="check" size={13} stroke={2.6} /></span>}{k.label}
               </button>
             ))}
@@ -250,13 +321,6 @@ export default function PlaceEdit() {
           <span className="label">메모</span>
           <textarea className="textarea" aria-label="장소 메모" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="주문한 메뉴, 웨이팅, 주차…" maxLength={5000} />
         </div>
-
-        {links && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <a href={links.naver} target="_blank" rel="noreferrer" className="btn sm ghost" style={{ flex: 1 }}>네이버지도로 열기</a>
-            <a href={links.google} target="_blank" rel="noreferrer" className="btn sm ghost" style={{ flex: 1 }}>구글지도로 열기</a>
-          </div>
-        )}
 
         <button className="btn block" disabled={!where || !name.trim() || saving} onClick={save} data-testid="place-save">
           {saving ? '저장 중…' : editing ? '고친 내용 저장' : '남기기'}

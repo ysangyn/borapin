@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth, displayName } from '../lib/auth';
 import { hideReview, useBlind } from '../lib/blind';
@@ -10,6 +11,7 @@ export default function PlaceRecRow({ rec, showRegion }: { rec: PlaceRec; showRe
   const auth = useAuth();
   const [blind] = useBlind();
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
+  const [ok, setOk] = useState(true);
   const reviews = Object.entries(rec.reviews ?? {}).filter(([, v]) => v);
   return (
     <Link to={`/places/${rec.id}`} className="rec-row" data-testid="place-rec">
@@ -24,6 +26,7 @@ export default function PlaceRecRow({ rec, showRegion }: { rec: PlaceRec; showRe
           <span key={who} className="small" style={{ color: 'var(--ink2)' }}><b className="tiny" style={{ color: 'var(--ink3)' }}>{who}</b> {hideReview(rec.reviews, who, me, blind) ? <span className="muted" data-testid="review-hidden">내 한 줄 평을 쓰면 열려요 🔒</span> : text}</span>
         ))}
       </span>
+      {rec.photoUrl && ok && <img className="rec-thumb" src={rec.photoUrl} alt="" referrerPolicy="no-referrer" loading="lazy" onError={() => setOk(false)} />}
     </Link>
   );
 }

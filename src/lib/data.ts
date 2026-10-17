@@ -167,6 +167,11 @@ export async function createPlace(input: PlaceRecInput, user: User): Promise<str
 export async function updatePlace(id: string, before: PlaceRec, input: PlaceRecInput) {
   await patch(doc(placesCol(), id), changedFields(before, input, ['reviews']));
 }
+/** 링크에서 가져온 사진·자리만 조용히 채우기 (이미 있는 값은 건드리지 않는다) */
+export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
+  const f = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+  if (Object.keys(f).length) await patch(doc(placesCol(), id), f);
+}
 export async function deletePlace(id: string) {
   await queued(deleteDoc(doc(placesCol(), id)));
 }
