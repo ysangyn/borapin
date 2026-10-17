@@ -21,6 +21,12 @@ if (IS_PREVIEW) {
   document.body.appendChild(tag);
 }
 
+// 홈 지도는 무거워서: 로그인·기록을 기다리는 동안 지도 코드와 경계를 미리 받아 둔다 (공유 링크 화면은 빼고)
+if (!location.pathname.startsWith('/s/')) {
+  void import('./components/MapView').catch(() => undefined);
+  void import('./lib/geodata').then((m) => m.loadGeo()).catch(() => undefined);
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

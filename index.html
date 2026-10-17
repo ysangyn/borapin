@@ -10,6 +10,9 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="보라핀" />
+    <!-- 홈 지도 경계: 앱 코드를 받는 동안 같이 받기 시작한다 -->
+    <link rel="preload" href="/data/kr-cells.topojson" as="fetch" type="application/json" crossorigin="anonymous" />
+    <link rel="preload" href="/data/world.topojson" as="fetch" type="application/json" crossorigin="anonymous" />
     <title>보라핀</title>
   </head>
   <body>

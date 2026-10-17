@@ -37,13 +37,26 @@ export default defineConfig({
       injectRegister: false,
       manifest: false, // public/manifest.webmanifest를 그대로 쓴다 (공유 대상 포함)
       workbox: {
-        globPatterns: ['**/*.{js,mjs,css,html,svg,png,topojson}', 'art/bora-rest.webp'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png}', 'art/bora-rest.webp'],
         // 설치용 큰 아이콘은 설치할 때 브라우저가 따로 받는다
-        globIgnores: ['icons/bora-512.png', 'icons/bora-maskable-512.png'],
+        // 처음 열 때 화면과 받기 경쟁하지 않게: 가끔 쓰는 큰 조각(엑셀·사진 넘기기)과 지도 경계(화면이 이미 받음)는 쓸 때 저장
+        globIgnores: ['icons/bora-512.png', 'icons/bora-maskable-512.png', 'assets/write-excel-file-*.js', 'assets/photoswipe*.js', 'assets/photoswipe*.css'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/__/],
         runtimeCaching: [
+          {
+            // 지도 경계: 한 번 받으면 기기에 두고, 뒤에서 새것이 있나 본다
+            urlPattern: ({ url }) => url.pathname.endsWith('.topojson'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'geo', expiration: { maxEntries: 4 } },
+          },
+          {
+            // 미리 저장하지 않은 앱 조각(이름에 해시가 있어 바뀌지 않음)
+            urlPattern: ({ url }) => url.pathname.startsWith('/assets/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'chunks', expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 60 } },
+          },
           {
             // 글꼴은 쓰는 글자 묶음만 그때그때 받아 저장
             urlPattern: ({ url }) => url.pathname.endsWith('.woff2'),

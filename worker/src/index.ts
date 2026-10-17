@@ -10,7 +10,7 @@
  * - 사람당 분당 20번, 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
-import { bingQuery, parseBingRss, parseGoogleRss } from './rss';
+import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
 
 export interface Env {
@@ -133,12 +133,12 @@ async function rss(url: string): Promise<{ status: number; xml: string }> {
     return { status: 0, xml: String(e) };
   }
 }
-/** 소식: 구글 뉴스 RSS → 비면 빙 뉴스 RSS. 6시간 캐시(빈 결과는 20분) */
-async function news(q: string): Promise<Response> {
+/** 소식 하나: 구글 뉴스 RSS → 비면 빙 뉴스 RSS. 6시간 캐시(빈 결과는 20분) */
+async function newsOne(q: string): Promise<{ items: NewsItem[]; debug: string[] }> {
   const cache = caches.default;
   const key = new Request(`https://cache.borapin/news2?q=${encodeURIComponent(q)}`);
   const hit = await cache.match(key);
-  if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+  if (hit) return (await hit.json()) as { items: NewsItem[]; debug: string[] };
   const g = await rss(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ko&gl=KR&ceid=KR:ko`);
   let items = parseGoogleRss(g.xml);
   const debug: string[] = [`google ${g.status} ${g.xml.length}b ${items.length}`];
@@ -146,12 +146,17 @@ async function news(q: string): Promise<Response> {
     const b = await rss(`https://www.bing.com/news/search?q=${encodeURIComponent(bingQuery(q))}&format=rss&setlang=ko-KR&cc=KR&mkt=ko-KR`);
     items = parseBingRss(b.xml);
     debug.push(`bing ${b.status} ${b.xml.length}b ${items.length}`);
-    if (!items.length) debug.push(`head ${(g.xml || b.xml).slice(0, 160).replace(/\s+/g, ' ')}`);
   }
-  const res = json({ items, q, debug, cachedAt: new Date().toISOString() });
-  res.headers.set('cache-control', `public, max-age=${items.length ? 21600 : 1200}`);
-  await cache.put(key, res.clone());
-  return res;
+  const body = { items, debug };
+  const res = new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${items.length ? 21600 : 1200}` } });
+  await cache.put(key, res);
+  return body;
+}
+/** 소식: ?q=하나 → {items}, ?q=a&q=b… → {lists: {a: items, b: items}} (한 번에 받아 폰의 왕복을 줄인다) */
+async function news(qs: string[]): Promise<Response> {
+  const got = await Promise.all(qs.map((q) => newsOne(q).catch((e) => ({ items: [] as NewsItem[], debug: [`error ${String(e).slice(0, 80)}`] }))));
+  if (qs.length === 1) return json({ items: got[0].items, q: qs[0], debug: got[0].debug });
+  return json({ lists: Object.fromEntries(qs.map((q, i) => [q, got[i].items])), debug: Object.fromEntries(qs.map((q, i) => [q, got[i].debug])) });
 }
 
 // ---------- 지도 링크 → 장소 정보 (이름·사진·주소·종류·좌표) ----------
@@ -246,9 +251,9 @@ async function handle(req: Request, env: Env): Promise<Response> {
 
     // 여행 소식: 구글 뉴스 RSS(키 없음)를 6시간 캐시해 지역별 머리기사 5개만 준다 (AI 한도와 무관)
     if (isNews) {
-      const q = (url.searchParams.get('q') ?? '').trim().slice(0, 60);
-      if (!q) return json({ error: 'empty' }, 400);
-      return news(q);
+      const qs = [...new Set(url.searchParams.getAll('q').map((q) => q.trim().slice(0, 60)).filter(Boolean))].slice(0, 24);
+      if (!qs.length) return json({ error: 'empty' }, 400);
+      return news(qs);
     }
     if (isPlace) {
       const rl0 = await env.PER_USER.limit({ key: who.uid });
