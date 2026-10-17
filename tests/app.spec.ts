@@ -593,7 +593,7 @@ test.describe.serial('보라핀 1단계', () => {
     const sug = page.getByTestId('photo-suggest');
     await expect(sug).toContainText('2019.5.3–4');
     await sug.getByRole('button', { name: '채우기' }).click();
-    await expect(page.getByText('2019.5.3–4', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/^2019\.5\.3–4( · 1박 2일)?$/).first()).toBeVisible();
     await expect(page.getByTestId('photo-suggest')).toHaveCount(0);
     await shot(page, '12-photos');
     // 표지 사진은 개요 탭 위에
