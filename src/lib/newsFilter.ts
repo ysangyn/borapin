@@ -20,7 +20,12 @@ const GOOD: [RegExp, number][] = [
   [/KTX|SRT|예매|공항|출국|숙박|쿠폰|연휴|휴가/, 2],
   [/명소|가볼 만한|가볼만한|여행 코스|드라이브 코스|산책 코스|여행지|관광|여행|나들이|단풍|벚꽃|꽃길|해돋이|야경|맛집|체험|캠핑|트레킹|둘레길|개화|절정|해수욕장|눈꽃/, 2],
   [/추천|선정|베스트|가이드/, 1],
+  [/인기|몰려|발길|북적|뜨는|핫플|여행객|관광객/, 2],
 ];
+
+/** 대형 언론사 (같은 보도면 이쪽을 남기고, 조금 앞에 둔다) */
+const MAJOR = /^(연합뉴스|연합뉴스TV|KBS|MBC|SBS|JTBC|YTN|MBN|TV조선|채널A|조선일보|중앙일보|동아일보|한겨레|경향신문|한국일보|서울신문|국민일보|세계일보|문화일보|매일경제|한국경제|서울경제|머니투데이|헤럴드경제|아시아경제|이데일리|파이낸셜뉴스|뉴시스|뉴스1|노컷뉴스|조선비즈|중앙SUNDAY|KBS 뉴스|MBC 뉴스|SBS 뉴스|JTBC 뉴스)/;
+export const isMajor = (n: { source: string }) => MAJOR.test((n.source || '').trim());
 
 export function newsScore(n: NewsLike, place = '', now = Date.now()): number {
   if (!isTravelNews(n)) return -99;
@@ -31,23 +36,33 @@ export function newsScore(n: NewsLike, place = '', now = Date.now()): number {
   const age = n.at ? (now - new Date(n.at).getTime()) / 86400000 : 15;
   if (age > 30) return -99;
   s += age <= 3 ? 2 : age <= 10 ? 1 : 0;
+  if (isMajor(n)) s += 2;
   return s;
 }
 
 const norm = (t: string) => t.replace(/[\s"'“”‘’·…\[\]()<>「」]/g, '').slice(0, 18);
 
-/** 여러 검색 결과를 합쳐 점수순으로, 같은 보도는 하나만 (min 점수 미만은 버림) */
+/** 화면에 놓는 순서: 최근 순, 대형 언론사는 이틀 앞당겨 친다 */
+export const newsOrderKey = (n: NewsLike) => (n.at ? new Date(n.at).getTime() : 0) + (isMajor(n) ? 2 * 86400000 : 0);
+
+/** 여러 검색 결과를 합쳐 점수로 고르고(같은 보도는 대형 언론사 것을 하나만), 최근 순(대형지 이틀 가산)으로 */
 export function pickNews<T extends NewsLike>(lists: T[][], place = '', n = 5, now = Date.now(), min = 2): T[] {
-  const seen = new Set<string>();
-  const all: { it: T; s: number }[] = [];
+  const best = new Map<string, { it: T; s: number }>();
+  const linkSeen = new Set<string>();
   for (const it of lists.flat()) {
-    const k = norm(it.title);
-    if (seen.has(k) || seen.has(it.link)) continue;
-    seen.add(k); seen.add(it.link);
+    if (linkSeen.has(it.link)) continue;
+    linkSeen.add(it.link);
     const s = newsScore(it, place, now);
-    if (s >= min) all.push({ it, s });
+    if (s < min) continue;
+    const k = norm(it.title);
+    const cur = best.get(k);
+    if (!cur || s > cur.s) best.set(k, { it, s });
   }
-  return all.sort((a, b) => b.s - a.s || (b.it.at || '').localeCompare(a.it.at || '')).slice(0, n).map((x) => x.it);
+  return [...best.values()]
+    .sort((a, b) => b.s - a.s || newsOrderKey(b.it) - newsOrderKey(a.it))
+    .slice(0, n)
+    .map((x) => x.it)
+    .sort((a, b) => newsOrderKey(b) - newsOrderKey(a));
 }
 
 /**
@@ -91,6 +106,9 @@ export const BASE_QUERIES = [
   '숙박 할인 쿠폰 when:14d',
   '공항 혼잡 OR 주차 출국 when:14d',
   '축제 개막 when:7d',
+  '인기 여행지 when:14d',
+  '관광객 몰려 OR 발길 이어져 when:14d',
+  '여행객 늘어 OR 뜨는 여행지 when:14d',
 ];
 export const generalQueries = (month = new Date().getMonth() + 1) => [...BASE_QUERIES, ...(SEASON_QUERIES[month] ?? [])];
 export const GENERAL_QUERIES = generalQueries();

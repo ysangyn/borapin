@@ -54,3 +54,19 @@ test('소식 탭: 새 소식 있는 곳부터 최근 순, 빈 곳은 뒤로', as
   const got = { a: [], b: [N('b 축제', 5)], c: [N('c 축제', 1)], general: [N('항공권', 3)] };
   assert.deepEqual(orderNewsTabs([T('a'), T('b'), T('c'), T('general')], got).map((t) => t.key), ['c', 'general', 'b', 'a']);
 });
+
+test('대형 언론사 먼저: 같은 보도면 대형지 것을 남기고, 이틀까지는 앞에 둔다', () => {
+  const S = (title: string, d: number, link: string, source: string) => ({ ...N(title, d, link), source });
+  const out = pickNews([[
+    S('가을 단풍 명소 인기…여행객 몰려', 1, 'small', '어느지역신문'),
+    S('가을 단풍 명소 인기…여행객 몰려', 1, 'yna', '연합뉴스'),
+    S('제주 신규 취항 노선 특가', 0, 'today', '작은신문'),
+    S('일본 무비자 입국 연장 여행객 늘어', 2, 'kbs', 'KBS'),
+    S('항공권 특가 쏟아진다', 9, 'old-major', '중앙일보'),
+  ]], '', 5, now);
+  const links = out.map((x) => x.link);
+  assert.ok(!links.includes('small') && links.includes('yna'));
+  assert.equal(links[0], 'yna'); // 하루 전 대형지 > 오늘 작은 신문
+  assert.ok(links.indexOf('kbs') < links.indexOf('today')); // 이틀 전 대형지 ≈ 오늘
+  assert.equal(links[links.length - 1], 'old-major'); // 9일 지난 대형지는 뒤로
+});

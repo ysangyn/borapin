@@ -44,7 +44,7 @@ export async function fetchNewsSet(queries: string[], match = '', n = 5): Promis
   const lists = await Promise.all(queries.map((q) => fetchRaw(q).catch(() => [] as NewsItem[])));
   const only = match ? lists.map((l) => l.filter((x) => x.title.includes(match))) : lists;
   // 골라낸 것(관련 있는 것)은 최근 순으로 보여 준다
-  return pickNews(only, match, n).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+  return pickNews(only, match, n);
 }
 
 export type { NewsTab } from './newsFilter';

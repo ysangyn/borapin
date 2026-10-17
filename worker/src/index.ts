@@ -10,6 +10,7 @@
  * - 사람당 분당 20번, 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
+import { bingQuery, parseBingRss, parseGoogleRss } from './rss';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
 
 export interface Env {
@@ -123,29 +124,31 @@ function extractJson(s: string): unknown {
   }
 }
 
-interface NewsItem { title: string; link: string; source: string; at: string }
-const decode = (t: string) => t.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36';
+async function rss(url: string): Promise<{ status: number; xml: string }> {
+  try {
+    const r = await fetch(url, { headers: { 'user-agent': BROWSER_UA, 'accept-language': 'ko-KR,ko;q=0.9', accept: 'application/rss+xml, application/xml, text/xml, */*' } });
+    return { status: r.status, xml: r.ok ? await r.text() : '' };
+  } catch (e) {
+    return { status: 0, xml: String(e) };
+  }
+}
+/** 소식: 구글 뉴스 RSS → 비면 빙 뉴스 RSS. 6시간 캐시(빈 결과는 20분) */
 async function news(q: string): Promise<Response> {
-  const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ko&gl=KR&ceid=KR:ko`;
   const cache = caches.default;
-  const key = new Request(feed);
+  const key = new Request(`https://cache.borapin/news2?q=${encodeURIComponent(q)}`);
   const hit = await cache.match(key);
   if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
-  const r = await fetch(feed, { headers: { 'user-agent': 'borapin/1.0' } });
-  if (!r.ok) return json({ items: [], error: `rss ${r.status}` }, 200);
-  const xml = await r.text();
-  const items: NewsItem[] = [];
-  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
-    const b = m[1];
-    const title = decode(/<title>([\s\S]*?)<\/title>/.exec(b)?.[1] ?? '');
-    const link = decode(/<link>([\s\S]*?)<\/link>/.exec(b)?.[1] ?? '');
-    const source = decode(/<source[^>]*>([\s\S]*?)<\/source>/.exec(b)?.[1] ?? '');
-    const at = /<pubDate>([\s\S]*?)<\/pubDate>/.exec(b)?.[1] ?? '';
-    if (title && link) items.push({ title: title.replace(/\s*-\s*[^-]+$/, ''), link, source, at: at ? new Date(at).toISOString() : '' });
-    if (items.length >= 15) break;
+  const g = await rss(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ko&gl=KR&ceid=KR:ko`);
+  let items = parseGoogleRss(g.xml);
+  const debug: string[] = [`google ${g.status} ${g.xml.length}b ${items.length}`];
+  if (!items.length) {
+    const b = await rss(`https://www.bing.com/news/search?q=${encodeURIComponent(bingQuery(q))}&format=rss&setlang=ko-KR&cc=KR&mkt=ko-KR`);
+    items = parseBingRss(b.xml);
+    debug.push(`bing ${b.status} ${b.xml.length}b ${items.length}`);
+    if (!items.length) debug.push(`head ${(g.xml || b.xml).slice(0, 160).replace(/\s+/g, ' ')}`);
   }
-  const res = json({ items, q, cachedAt: new Date().toISOString() });
-  // 빈 결과는 20분만 (일시 장애가 6시간 '소식 없음'으로 굳지 않게)
+  const res = json({ items, q, debug, cachedAt: new Date().toISOString() });
   res.headers.set('cache-control', `public, max-age=${items.length ? 21600 : 1200}`);
   await cache.put(key, res.clone());
   return res;
