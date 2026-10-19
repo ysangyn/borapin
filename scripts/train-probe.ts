@@ -62,3 +62,4 @@ if (g) for (const name of ['동서울', '춘천', '원주', '청주', '천안', 
   const r = await api('SuburbsBusInfo', 'GetStrtpntAlocFndSuberbsBusInfo', { depTerminalId: String(g.terminalId), arrTerminalId: String(B.terminalId), depPlandTime: day });
   console.log(`고양종합 → ${B.terminalNm}: ${r.length}회`);
 }
+export {};

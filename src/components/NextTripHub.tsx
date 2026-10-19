@@ -55,8 +55,8 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
         : firstWish ? <WhereNext top={active.slice(0, 3)} />
         : <WishRolling wishes={wishes} trips={trips} stats={stats} bare />}
       {anchor && <TodayAsk place={anchor.place} wish={anchor.wish} />}
-      <TodayEnglish />
       {anchor && <WayThere place={anchor.place} months={anchor.wish?.months} wishId={anchor.wish?.id ?? null} />}
+      <TodayEnglish />
     </section>
   );
 }
@@ -197,7 +197,9 @@ function TodayEnglish() {
   const set = useMemo(() => (data ? todaySet(data.progress, today) : []), [data, today]);
   const sum = useMemo(() => (data ? summary(data.progress, data.days, today) : null), [data, today]);
   const doneToday = !!data?.days.includes(ymd(today));
-  const first = set[0];
+  // 홈 미리 보기는 오늘의 새 문장(날마다 바뀜). 밀린 복습이 있어도 같은 문장이 며칠씩 걸려 있지 않게
+  const reviews = data ? set.filter((i) => data.progress[i.id]).length : 0;
+  const first = set.find((i) => !data?.progress[i.id]) ?? set[0];
   return (
     <Link to="/study" className="hub-block card white hub-english" data-testid="hub-english">
       <div className="hub-label">
@@ -211,7 +213,7 @@ function TodayEnglish() {
         <>
           <div className="hub-en">{first.en}</div>
           <div className="small muted">{first.ko}</div>
-          <div className="tiny muted hub-english-foot">{doneToday ? '더 하기' : '시작하기'} · {set.length}문장 · 90초{sum && sum.learned > 0 ? ` · 외운 문장 ${sum.learned}` : ''}</div>
+          <div className="tiny muted hub-english-foot">{doneToday ? '더 하기' : '시작하기'} · {set.length}문장 · 90초{reviews ? ` · 복습 ${reviews}` : ''}{sum && sum.learned > 0 ? ` · 외운 문장 ${sum.learned}` : ''}</div>
         </>
       ) : (
         <div className="small muted">오늘 몫을 다 했어요. 내일 또 봐요!</div>
