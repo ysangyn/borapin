@@ -38,3 +38,4 @@ else {
   await hit('환율 (oapi)', `https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=${KEYS.exim}&searchdate=${day}&data=AP01`);
   await hit('환율 (www)', `https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=${KEYS.exim}&searchdate=${day}&data=AP01`);
 }
+export {};

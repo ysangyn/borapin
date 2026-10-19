@@ -23,9 +23,12 @@ jobs:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           TOUR_API_KEY: ${{ secrets.TOUR_API_KEY }}
           KOREAEXIM_KEY: ${{ secrets.KOREAEXIM_KEY }}
-        run: npx tsx scripts/gov-probe.ts 2>&1 | tee gov-probe.txt
+        run: |
+          npx tsx scripts/gov-probe.ts 2>&1 | tee gov-probe.txt
+          SAMPLE=1 npx tsx scripts/abroad-build.ts 2>&1 | tee -a gov-probe.txt
+          cp src/data/abroad.json abroad.json
       - name: 결과 올리기
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh gov gov-probe.txt
+        run: scripts/push-report.sh gov gov-probe.txt abroad.json
