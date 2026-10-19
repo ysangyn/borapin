@@ -15,6 +15,7 @@ import { newsAgo, useNews } from '../lib/news';
 import { answerAsk, questionFor, questionText, useTodayAsk } from '../lib/asks';
 import { useStudy } from '../lib/study/store';
 import HomeRoute from './HomeRoute';
+import Stopovers from './Stopovers';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
 import { upcomingTrips } from '../lib/stats';
@@ -243,6 +244,7 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
         {s && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="sun" size={16} /><span>가기 좋은 때 <b>{monthsLabel(s.m)}</b>{s.why ? ` · ${s.why}` : ''}</span></button>}
         {f && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="flag" size={16} /><span>{isOngoing(f) ? '지금 열리는 축제' : '다가오는 축제'} <b>{f.t}</b> · {festivalPeriod(f)}</span></button>}
         {place.t === 'kr' && REGION_BY_CODE.get(place.code) && <div className="hub-way-row" style={{ cursor: 'default' }}><Icon name="home" size={16} /><HomeRoute to={{ name: placeLabel(place), lat: REGION_BY_CODE.get(place.code)!.lat, lng: REGION_BY_CODE.get(place.code)!.lng }} note="시·군 가운데까지" /></div>}
+        {place.t === 'kr' && <Stopovers destCode={place.code} />}
         {place.t === 'kr' && accessLine(place) && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>}
         {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzText(place) || tzLabel(city.tz)}</span></button>}
         {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{city.entry}</b> · 떠나기 전 확인</span></button>}

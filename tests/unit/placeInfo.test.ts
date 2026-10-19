@@ -66,3 +66,26 @@ test('우리 집: 기본은 500m쯤 흐리게, 길찾기 주소는 출발·도�
   const km = straightKm({ lat: 37.66, lng: 126.77 }, { lat: 36.76, lng: 128.07 });
   assert.ok(km > 140 && km < 170, String(km));
 });
+
+test('차 경유: 고양 → 문경, 덜 돌아가는 안 가본 곳을 고르고 집 근처·너무 가까운 길은 뺀다', async () => {
+  const { stopovers } = await import('../../src/lib/stopover');
+  const { REGIONS } = await import('../../src/lib/geo');
+  const info = (await import('../../src/data/travelinfo.json', { with: { type: 'json' } })).default as never;
+  const R = (n: string) => REGIONS.find((r) => r.name === n)!;
+  const home = { ...R('고양시'), code: R('고양시').code }, dest = { ...R('문경시'), code: R('문경시').code };
+  const s = stopovers(home, dest, new Set(), info);
+  assert.equal(s.length, 3);
+  for (const x of s) {
+    assert.ok(x.code !== home.code && x.code !== dest.code);
+    assert.ok(x.atKm >= 30);
+    assert.ok(x.extraMin <= 60, JSON.stringify(x));
+  }
+  const names = s.map((x) => REGIONS.find((r) => r.code === x.code)!.name);
+  // 고양에서 문경 쪽(남동) 길 위: 서쪽 바다·북쪽은 나오지 않는다
+  for (const bad of ['강화군', '파주시', '태안군', '속초시']) assert.ok(!names.includes(bad), names.join(','));
+  // 다녀온 곳은 뒤로
+  const v = new Set([s[0].code]);
+  assert.ok(stopovers(home, dest, v, info)[0].code !== s[0].code);
+  // 가까우면 들를 곳 없음
+  assert.deepEqual(stopovers(home, { ...R('파주시'), code: R('파주시').code }, new Set(), info), []);
+});
