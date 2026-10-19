@@ -18,8 +18,8 @@
 | 3 | 물어보기: 여행 주제 사전 확장(자료로) | 완료 (src/data/topics.json 20주제·100곳, 지명 사전의 볼거리 이름도 자동 주제) | |
 | 4 | 여행 상식 + 바뀌는 규정 감시 | 완료 (src/data/faq.json 42개·예시 질문으로 시험, 매주 .github/workflows/faq-watch.yml → ci-report/faq-watch) | 분기마다 faq.json updated 갱신 |
 | 5 | 외교부 입국요건·여행경보 + 환율 | 대기 | 사용자: 외교부 API 3종 신청, 수출입은행 환율 키 |
-| 6 | 우리 집 설정 + 길찾기 버튼 | 진행 중 | |
-| 7 | 차 경유 추천 | 대기 | |
+| 6 | 우리 집 설정 + 길찾기 버튼 | 완료 (HomeSetting·HomeRoute·home.ts, 공간 문서 home 칸·규칙, 뒷단 /geo) | |
+| 7 | 차 경유 추천 | 진행 중 | src/lib/stopover.ts (집→목적지 길에서 덜 돌아가는 안 가본 시·군) |
 | 8 | TourAPI 관광정보·사진·연관 | 대기 | 사용자: TourAPI 신청 |
 | 9 | 버스·KTX 여행답게 가는 길 | 자료 모으는 중 (백그라운드, 매일 새벽 .github/workflows/bus.yml → bus-data 브랜치 state.json) | 다 모이면(진행 100%) 노선표를 src/data/routes.json으로 줄이고 길 찾기 화면 (FLAGS.transitRoute) |
 | 10 | AI 모델 비교 점검 | 대기 | |

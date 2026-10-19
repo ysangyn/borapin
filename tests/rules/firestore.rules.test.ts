@@ -131,6 +131,14 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertFails(setDoc(P('p4'), place({ lat: 135, lng: 128 })));
     await assertFails(setDoc(P('p5'), place({ lng: '128' })));
   });
+  test('우리 집: 국내 위경도와 정해진 칸만 저장된다', async () => {
+    const db = as.bora();
+    const S = doc(db, 'spaces/main');
+    await assertSucceeds(setDoc(S, { name: '보라 & 영상', v: 1, home: { label: '고양시 일산동구', code: '41285', lat: 37.66, lng: 126.77, exact: false } }, { merge: true }));
+    await assertFails(setDoc(S, { name: '보라 & 영상', v: 1, home: { label: '집', code: '41285', lat: 37.66, lng: 126.77, exact: false, addr: '자세한 주소' } }, { merge: true }));
+    await assertFails(setDoc(S, { name: '보라 & 영상', v: 1, home: { label: '집', code: '41285', lat: 48.8, lng: 2.3, exact: false } }, { merge: true }));
+    await assertFails(setDoc(doc(as.stranger(), 'spaces/main'), { name: 'x', home: { label: '집', code: '1', lat: 37.5, lng: 127, exact: false } }, { merge: true }));
+  });
   test('메일 대소문자가 달라도 같은 사람으로 본다', async () => {
     await assertSucceeds(getDoc(T(as.boraUpper())));
   });

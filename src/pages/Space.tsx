@@ -1,5 +1,5 @@
 import { withRo } from '../lib/ko';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatars, Icon, TopBar, useToast } from '../components/ui';
 import { logOut, nameOf, useAuth } from '../lib/auth';
@@ -16,6 +16,7 @@ import { RELATION_ICON, RELATION_LABEL, spaceRelation, spaceTitle } from '../lib
 import type { Relation } from '../lib/types';
 import { createInvite, deleteInvite, inviteUrl, useOpenInvites } from '../lib/invites';
 import { shareAnyhow } from '../lib/kakao';
+import HomeSetting from '../components/HomeSetting';
 
 export default function Space() {
   const auth = useAuth();
@@ -33,6 +34,9 @@ export default function Space() {
   const [madeCode, setMadeCode] = useState<string | null>(null);
   const invites = useOpenInvites(auth.status === 'ready' && auth.isAdmin);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
+  // '우리 집을 정하면…'에서 오면 그 칸으로
+  useEffect(() => { if (location.hash === '#home') setTimeout(() => document.getElementById('home')?.scrollIntoView({ block: 'center' }), 300); }, []);
+
   if (auth.status !== 'ready') return null;
   const { user, access, isAdmin } = auth;
 
@@ -216,6 +220,8 @@ export default function Space() {
             </div>
           </section>
         )}
+
+        <HomeSetting />
 
         <section>
           <div className="label" style={{ padding: '0 4px 6px' }}>백업</div>

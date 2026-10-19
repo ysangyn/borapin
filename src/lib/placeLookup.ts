@@ -22,3 +22,16 @@ export async function lookupLink(url: string, addr = ''): Promise<LinkInfo | nul
 }
 
 export { kindFromCategory, mapApps } from './placeApps';
+
+/** 동네·주소 → 위경도 (뒷단 /geo). 실패하면 null */
+export async function lookupGeo(q: string): Promise<{ lat: number; lng: number; name?: string } | null> {
+  const user = auth.currentUser;
+  if (!aiAvailable() || !user || !q.trim()) return null;
+  try {
+    const token = await user.getIdToken();
+    const r = await fetch(`${ASK_URL}/geo?q=${encodeURIComponent(q.trim())}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(9000) });
+    if (!r.ok) return null;
+    const j = (await r.json()) as { lat?: number; lng?: number; name?: string };
+    return j.lat && j.lng ? { lat: j.lat, lng: j.lng, name: j.name } : null;
+  } catch { return null; }
+}

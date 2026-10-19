@@ -23,3 +23,28 @@ export function mapApps(name: string, area: string, lat?: number | null, lng?: n
     route: has ? `https://map.kakao.com/link/to/${n},${lat},${lng}` : null,
   };
 }
+
+/** 우리 집 (공간에 하나). exact가 아니면 약 500m로 반올림해 둔다 */
+export interface Home { label: string; code: string; lat: number; lng: number; exact: boolean }
+export const roundHome = (lat: number, lng: number, exact: boolean) => (exact ? { lat: +lat.toFixed(5), lng: +lng.toFixed(5) } : { lat: Math.round(lat * 200) / 200, lng: Math.round(lng * 200) / 200 });
+
+/** 우리 집에서 가는 길: 카카오맵(웹·앱 모두), 네이버지도(앱) */
+export function routeLinks(from: { label: string; lat: number; lng: number }, to: { name: string; lat: number; lng: number }) {
+  const o = `${encodeURIComponent(from.label)},${from.lat},${from.lng}`;
+  const d = `${encodeURIComponent(to.name)},${to.lat},${to.lng}`;
+  const nm = (mode: string) => `nmap://route/${mode}?slat=${from.lat}&slng=${from.lng}&sname=${encodeURIComponent(from.label)}&dlat=${to.lat}&dlng=${to.lng}&dname=${encodeURIComponent(to.name)}&appname=borapin.web.app`;
+  return {
+    kakaoTransit: `https://map.kakao.com/link/by/publictransit/${o}/${d}`,
+    kakaoCar: `https://map.kakao.com/link/by/car/${o}/${d}`,
+    naverTransit: nm('public'),
+    naverCar: nm('car'),
+  };
+}
+
+/** 두 점 사이 직선거리(km) */
+export const straightKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const R = 6371, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};

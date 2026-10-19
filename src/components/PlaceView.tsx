@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, TopBar, useToast } from './ui';
 import SpotMap from './SpotMap';
+import HomeRoute from './HomeRoute';
 import { useAuth, displayName } from '../lib/auth';
 import { hideReview, useBlind } from '../lib/blind';
 import { formatWhen } from '../lib/dates';
@@ -85,6 +86,8 @@ export default function PlaceView({ rec, trip, onEdit, onRemove, onEnrich }: {
           <a href={apps.google} target="_blank" rel="noreferrer" className="pv-app"><span className="app-badge g" aria-hidden="true">G</span>구글</a>
           {apps.route && <a href={apps.route} target="_blank" rel="noreferrer" className="pv-app route"><Icon name="flag" size={15} />길찾기</a>}
         </nav>
+
+        {rec.lat != null && rec.lng != null && <HomeRoute to={{ name: rec.name, lat: rec.lat, lng: rec.lng }} />}
 
         {rec.region.t === 'kr' && (
           <div className="pv-map card white">

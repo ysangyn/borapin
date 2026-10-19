@@ -242,7 +242,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, model: env.MODEL });
     const isNews = req.method === 'GET' && url.pathname === '/news';
     const isPlace = req.method === 'GET' && url.pathname === '/place';
-    if (!isNews && !isPlace && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isGeo = req.method === 'GET' && url.pathname === '/geo';
+    if (!isNews && !isPlace && !isGeo && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -254,6 +255,24 @@ async function handle(req: Request, env: Env): Promise<Response> {
       const qs = [...new Set(url.searchParams.getAll('q').map((q) => q.trim().slice(0, 60)).filter(Boolean))].slice(0, 24);
       if (!qs.length) return json({ error: 'empty' }, 400);
       return news(qs);
+    }
+    // 동네·주소 → 위경도 (우리 집 정하기). OpenStreetMap Nominatim, 30일 캐시
+    if (isGeo) {
+      const rl1 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl1.success) return json({ error: 'too many requests' }, 429);
+      const q = (url.searchParams.get('q') ?? '').trim().slice(0, 80);
+      if (!q) return json({ error: 'empty' }, 400);
+      const cache = caches.default;
+      const key = new Request(`https://cache.borapin/geo?q=${encodeURIComponent(q)}`);
+      const hit = await cache.match(key);
+      if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q=${encodeURIComponent(q)}`, { headers: { 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' } }).catch(() => null);
+      const j = r && r.ok ? ((await r.json().catch(() => [])) as { lat: string; lon: string; display_name: string }[]) : [];
+      const out = j[0] ? { lat: Number(j[0].lat), lng: Number(j[0].lon), name: j[0].display_name } : {};
+      const res = json(out);
+      res.headers.set('cache-control', `public, max-age=${j[0] ? 30 * 86400 : 600}`);
+      await cache.put(key, res.clone());
+      return res;
     }
     if (isPlace) {
       const rl0 = await env.PER_USER.limit({ key: who.uid });

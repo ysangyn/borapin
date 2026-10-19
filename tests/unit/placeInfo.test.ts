@@ -55,3 +55,14 @@ test('업종 → 종류, 지도 앱 주소', async () => {
   assert.ok(a.route?.includes('/link/to/'));
   assert.equal(mapApps('슈츠', '칠곡군').route, null);
 });
+
+test('우리 집: 기본은 500m쯤 흐리게, 길찾기 주소는 출발·도착이 채워진다', async () => {
+  const { roundHome, routeLinks, straightKm } = await import('../../src/lib/placeApps');
+  assert.deepEqual(roundHome(37.66123, 126.77211, false), { lat: 37.66, lng: 126.77 });
+  assert.deepEqual(roundHome(37.66123, 126.77211, true), { lat: 37.66123, lng: 126.77211 });
+  const l = routeLinks({ label: '우리 집', lat: 37.66, lng: 126.77 }, { name: '문경새재', lat: 36.76, lng: 128.07 });
+  assert.equal(l.kakaoTransit, 'https://map.kakao.com/link/by/publictransit/%EC%9A%B0%EB%A6%AC%20%EC%A7%91,37.66,126.77/%EB%AC%B8%EA%B2%BD%EC%83%88%EC%9E%AC,36.76,128.07');
+  assert.ok(l.naverCar.startsWith('nmap://route/car?slat=37.66'));
+  const km = straightKm({ lat: 37.66, lng: 126.77 }, { lat: 36.76, lng: 128.07 });
+  assert.ok(km > 140 && km < 170, String(km));
+});

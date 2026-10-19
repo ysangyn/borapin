@@ -467,7 +467,9 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(way).toContainText('제주');
     await expect(way).toContainText('가기 좋은 때');
     // 바깥 링크(항공권·뉴스)는 국내 여행지엔 없다
-    await expect(way.getByRole('link')).toHaveCount(0);
+    await expect(way.locator('a[target="_blank"]')).toHaveCount(0);
+    // 우리 집을 안 정했으면 정하러 가는 안내만
+    await expect(way.getByTestId('home-route-empty')).toBeVisible();
     await en.click();
     await expect(page).toHaveURL(/\/study$/);
   });

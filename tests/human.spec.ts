@@ -372,6 +372,23 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('우리 집을 정하면 다음 여행지까지 지도 앱 길찾기가 출발·도착이 채워져 열린다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/space');
+    await page.getByTestId('home-edit').click();
+    await page.getByLabel('어디 검색').fill('고양');
+    await page.getByRole('option', { name: /고양시/ }).first().click();
+    await page.getByTestId('home-save').click();
+    await expect(page.getByRole('status')).toContainText('우리 집을 정했어요');
+    await expect(page.getByTestId('home-edit')).toContainText('고양시');
+    await expect(page.getByTestId('home-edit')).toContainText('동네까지만');
+    // 새로 고쳐도 남아 있다 (둘이 같은 집)
+    await page.reload();
+    await expect(page.getByTestId('home-edit')).toContainText('고양시');
+    await page.context().close();
+  });
+
   test('가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히', async ({ browser }) => {
     const page = await phone(browser);
     // 긴 이름의 '지금 축제'를 제주에 하나 넣어 둔다 (실제 축제 자료는 매주 바뀌므로)

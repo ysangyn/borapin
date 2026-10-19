@@ -179,7 +179,16 @@ service cloud.firestore {
       allow read: if inSpace(spaceId);
       allow create, update: if inSpace(spaceId)
         && request.resource.data.name is string
-        && request.resource.data.name.size() <= 60;
+        && request.resource.data.name.size() <= 60
+        // 우리 집: 이름·시군 코드·위경도·정확히 여부만
+        && (!('home' in request.resource.data) || (
+          request.resource.data.home is map
+          && request.resource.data.home.keys().hasOnly(['label', 'code', 'lat', 'lng', 'exact'])
+          && request.resource.data.home.label is string && request.resource.data.home.label.size() <= 40
+          && request.resource.data.home.code is string && request.resource.data.home.code.size() <= 10
+          && request.resource.data.home.lat is number && request.resource.data.home.lat >= 33 && request.resource.data.home.lat <= 39
+          && request.resource.data.home.lng is number && request.resource.data.home.lng >= 124 && request.resource.data.home.lng <= 132
+          && request.resource.data.home.exact is bool));
       allow delete: if false;
 
       match /trips/{tripId} {
