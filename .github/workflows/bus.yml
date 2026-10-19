@@ -1,0 +1,35 @@
+name: 버스·열차 자료 확인
+
+# bus-probe 브랜치에 올리면 공공데이터(국토교통부 TAGO) 범위를 확인해 ci-report/bus에 보고서를 올린다. 앱 배포와 무관.
+on:
+  push:
+    branches: [bus-probe]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 범위 확인
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: npx tsx scripts/bus-probe.ts 2>&1 | tee bus-probe.txt
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh bus bus-probe.txt bus-probe.json
