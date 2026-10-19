@@ -97,8 +97,8 @@ const ANSWER_SYSTEM = `당신은 부부 여행 기록 앱 '보라핀'의 도우�
 - lines에는 사실에서 가져온 구체 내용을 넣고, 우리 기록과 일반 정보를 구분해 씁니다.
 - buttons는 사실 안의 actions 중 id를 골라 최대 4개. 없으면 [].`;
 
-async function runModel(env: Env, system: string, user: string, maxTokens: number): Promise<string> {
-  const r = (await env.AI.run(env.MODEL as never, {
+async function runModel(env: Env, system: string, user: string, maxTokens: number, model = env.MODEL): Promise<string> {
+  const r = (await env.AI.run(model as never, {
     messages: [
       { role: 'system', content: system },
       { role: 'user', content: user },
@@ -280,6 +280,9 @@ async function handle(req: Request, env: Env): Promise<Response> {
       return placeInfo((url.searchParams.get('url') ?? '').slice(0, 300), (url.searchParams.get('addr') ?? '').slice(0, 120));
     }
 
+    // 모델 비교 점검: 시험용 계정만 ?model=로 다른 모델을 써 볼 수 있다 (실제 사용자는 늘 MODEL)
+    const want = url.searchParams.get('model') ?? '';
+    const model = who.project === 'borapin-test' && /^@cf\/[\w./-]+$/.test(want) ? want : env.MODEL;
     const rl = await env.PER_USER.limit({ key: who.uid });
     if (!rl.success) return json({ error: 'too many requests', retry: 60 }, 429);
     // 하루 한도 (/plan 때만 센다: 질문 하나 = 1)
@@ -304,13 +307,13 @@ async function handle(req: Request, env: Env): Promise<Response> {
     try {
       if (url.pathname === '/plan') {
         const user = `${body.context ? `상황: ${body.context.slice(0, 600)}\n` : ''}질문: ${question}`;
-        const out = await runModel(env, PLAN_SYSTEM, user, 300);
+        const out = await runModel(env, PLAN_SYSTEM, user, 300, model);
         const plan = extractJson(out) as { calls?: unknown } | null;
         return json({ calls: Array.isArray(plan?.calls) ? plan!.calls.slice(0, 5) : [] });
       }
       const facts = (body.facts ?? '').toString().slice(0, 6000);
       const user = `${body.context ? `상황: ${body.context.slice(0, 600)}\n` : ''}질문: ${question}\n\n사실:\n${facts || '(없음)'}`;
-      const out = await runModel(env, ANSWER_SYSTEM, user, 500);
+      const out = await runModel(env, ANSWER_SYSTEM, user, 500, model);
       const a = extractJson(out) as { text?: unknown; lines?: unknown; buttons?: unknown } | null;
       if (!a || typeof a.text !== 'string') return json({ error: 'no answer' }, 502);
       return json({

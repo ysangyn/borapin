@@ -22,7 +22,7 @@
 | 7 | 차 경유 추천 | 완료 (src/lib/stopover.ts·Stopovers.tsx, 홈 '가는 길'에) | 여행 계획하기 뼈대에 끼우기는 9번과 함께 |
 | 8 | TourAPI 관광정보·사진·연관 | 대기 | 사용자: TourAPI 신청 |
 | 9 | 버스·KTX 여행답게 가는 길 | 자료 모으는 중 (백그라운드, 매일 새벽 .github/workflows/bus.yml → bus-data 브랜치 state.json) | 다 모이면(진행 100%) 노선표를 src/data/routes.json으로 줄이고 길 찾기 화면 (FLAGS.transitRoute) |
-| 10 | AI 모델 비교 점검 | 진행 중 | scripts/ask-compare.ts + workflow_dispatch |
+| 10 | AI 모델 비교 점검 | 결과 기다림 (커밋 메시지에 [모델비교] → CI가 후보 4개 모델로 ask-eval, ci-report/preview/ask-eval.txt) | 결과 보고 wrangler.toml MODEL 바꿀지 결정 (시험용 계정만 ?model= 허용) |
 | - | 우리 동네 지도(동 단위) | 보류 | |
 
 ## 항목별 결정 메모

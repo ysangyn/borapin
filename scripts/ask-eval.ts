@@ -40,6 +40,12 @@ const data: AskData = {
 };
 
 const QUESTIONS = [
+  '은하수 보기 좋은 데 중에 아직 안 가본 곳',
+  '부모님 모시고 많이 안 걷는 가을 여행지',
+  '비 오는 주말 서울 근처 실내에서 놀 만한 곳',
+  '케이블카 있는 바닷가 도시 추천',
+  '혼자 조용히 쉬기 좋은 곳 추천해줘',
+  '겨울에 따뜻한 국내 여행지',
   '다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까',
   '강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나',
   '제주 가기 전에 준비물 뭐 남았어',
@@ -59,7 +65,7 @@ async function token(): Promise<string> {
 async function post(path: string, tk: string, body: unknown, tries = 2) {
   let r: Response;
   try {
-    r = await fetch(`${ASK_URL}${path}`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tk}` }, body: JSON.stringify(body) });
+    r = await fetch(`${ASK_URL}${path}${process.env.EVAL_MODEL ? `?model=${encodeURIComponent(process.env.EVAL_MODEL)}` : ''}`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tk}` }, body: JSON.stringify(body) });
   } catch (e) {
     // 네트워크가 잠깐 끊기면 한 번 더 (시험 결과가 날씨에 흔들리지 않게)
     if (tries > 1) { await new Promise((ok) => setTimeout(ok, 2000)); return post(path, tk, body, tries - 1); }
@@ -112,7 +118,7 @@ for (const u of ['https://naver.me/GlVmYk5l', 'https://naver.me/GIVmYk5l', 'http
   console.log(`장소 링크 ${u}: ${r.status} ${JSON.stringify(r.body).slice(0, 400)}`);
 }
 
-console.log(`\n보라(AI) 점검: ${QUESTIONS.length - bad}/${QUESTIONS.length}`);
+console.log(`\n보라(AI) 점검${process.env.EVAL_MODEL ? ` [${process.env.EVAL_MODEL}]` : ''}: ${QUESTIONS.length - bad}/${QUESTIONS.length}`);
 if (bad > QUESTIONS.length / 2) {
   console.error('✗ 절반 넘게 실패');
   process.exit(1);

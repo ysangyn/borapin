@@ -243,6 +243,18 @@ jobs:
           FIREBASE_API_KEY: AIzaSyAXT9E3jX2BBJwQv0dWS4Fqcx-7qK8bWt0
           EMAIL: bora.preview@example.com
         run: PW="$PREVIEW_PW" npx tsx scripts/ask-eval.ts 2>&1 | tee ask-eval.txt
+      - name: 모델 비교 (커밋 메시지에 [모델비교]가 있을 때만 · 같은 질문을 후보 모델에)
+        if: always() && steps.testkey.outputs.ok == 'true' && needs.worker.outputs.url != '' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[모델비교]')
+        continue-on-error: true
+        env:
+          ASK_URL: ${{ needs.worker.outputs.url }}
+          FIREBASE_API_KEY: AIzaSyAXT9E3jX2BBJwQv0dWS4Fqcx-7qK8bWt0
+          EMAIL: bora.preview@example.com
+        run: |
+          for m in "@cf/openai/gpt-oss-120b" "@cf/meta/llama-4-scout-17b-16e-instruct" "@cf/google/gemma-3-12b-it" "@cf/mistralai/mistral-small-3.1-24b-instruct"; do
+            echo "===== $m =====" | tee -a ask-eval.txt
+            EVAL_MODEL="$m" PW="$PREVIEW_PW" timeout 600 npx tsx scripts/ask-eval.ts 2>&1 | tee -a ask-eval.txt || true
+          done
       - name: 시험 기록·계정 지우기
         if: always() && steps.testkey.outputs.ok == 'true'
         env:
