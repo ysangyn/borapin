@@ -78,28 +78,39 @@ for (const s of SVCS) {
   log(`고양 쪽: ${goyang.map((t) => `${t.name}(${t.id})`).join(', ') || '없음'}`);
 }
 
-// 고양 → 경북·충북 쪽 배차 (시외·고속), 문경새재 예시
-const TARGET = /문경|점촌|충주|청주|괴산|상주|예천|안동|제천|단양|수안보|연풍|이천|여주|원주/;
-for (const s of SVCS) {
+// 고양 출발 전체 목적지: 고양 터미널 × 모든 터미널 (하루 한도 10,000번 안)
+const fmt = (x: Item) => String(x.depPlandTime ?? '').slice(8, 12);
+const mins = (x: Item) => { const d = String(x.depPlandTime ?? ''), a = String(x.arrPlandTime ?? ''); if (d.length < 12 || a.length < 12) return 0; const m = (t: string) => +t.slice(8, 10) * 60 + +t.slice(10, 12); return (m(a) - m(d) + 1440) % 1440; };
+for (const s of SVCS.filter((x) => x.label !== '열차')) {
   const stops = found[s.label] ?? [];
-  const deps = stops.filter((t) => /고양|일산|화정|백석|대화|탄현/.test(t.name)).slice(0, 4);
-  const arrs = stops.filter((t) => TARGET.test(t.name)).slice(0, 40);
-  if (!deps.length || !arrs.length) { log(`\n${s.label}: 고양 출발 또는 도착 후보 없음 (출발 ${deps.length}, 도착 ${arrs.length})`); continue; }
-  log(`\n## ${s.label}: 고양 출발 → 경북·충북 쪽 (내일)`);
+  const deps = stops.filter((t) => /^고양|백석|^화정$|고양화정/.test(t.name)).filter((t) => !/경남|회화정/.test(t.name));
+  log(`\n## ${s.label}: ${deps.map((d) => d.name).join(', ')} 출발 전체 (내일)`);
   for (const d of deps) {
-    for (const a of arrs) {
-      if (calls > 600) break;
+    const rows: string[] = [];
+    for (const a of stops) {
+      if (a.id === d.id || calls > 9000) continue;
       const r = await api(s.svc, s.route, { [s.dep]: d.id, [s.arr]: a.id, depPlandTime: tomorrow });
       if (r.items.length) {
-        const times = r.items.map((x) => String(x.depPlandTime ?? '').slice(8, 12)).filter(Boolean);
-        const dur = r.items[0] && r.items[0].arrPlandTime && r.items[0].depPlandTime ? '' : '';
-        log(`✓ ${d.name} → ${a.name}: 하루 ${r.items.length}회 · 첫차 ${times[0] ?? '?'} · 막차 ${times[times.length - 1] ?? '?'}${dur} · 요금 ${r.items[0].charge ?? r.items[0].adultcharge ?? '?'}`);
-      } else if (r.err) log(`· ${d.name} → ${a.name}: ${r.err}`);
-      await pause(60);
+        const ts = r.items.map(fmt).filter(Boolean).sort();
+        rows.push(`✓ ${d.name} → ${a.name}(${a.city}): 하루 ${r.items.length}회 · ${ts[0]}~${ts[ts.length - 1]} · 약 ${mins(r.items[0])}분 · ${r.items[0].charge ?? '?'}원`);
+      }
+      await pause(25);
     }
+    log(`${d.name}: 목적지 ${rows.length}곳`);
+    for (const x of rows) log(x);
   }
 }
-
+// 문경새재 쪽 예시: 문경·점촌 터미널로 가는 시외버스 출발지
+const sub = SVCS[0], subStops = found[sub.label] ?? [];
+const mg = subStops.filter((t) => /문경|점촌/.test(t.name));
+log(`\n## 문경·점촌 터미널: ${mg.map((t) => `${t.name}(${t.city})`).join(', ')}`);
+for (const a of mg.slice(0, 3)) {
+  for (const d of subStops.filter((t) => /동서울|서울남부|상봉|충주|청주|괴산|수안보|상주|안동|예천|이천|여주|원주|김천|대구|구미|고양|부천|인천|수원|성남/.test(t.name)).slice(0, 60)) {
+    const r = await api(sub.svc, sub.route, { [sub.dep]: d.id, [sub.arr]: a.id, depPlandTime: tomorrow });
+    if (r.items.length) log(`✓ ${d.name} → ${a.name}: 하루 ${r.items.length}회 · 약 ${mins(r.items[0])}분`);
+    await pause(25);
+  }
+}
 log(`\n호출 ${calls}번`);
 log('\n## 응답 첫머리 (형식 확인용)');
 for (const [k, v] of Object.entries(raw)) log(`${k}: ${v.replace(/serviceKey=[^&"]+/g, 'serviceKey=***')}`);
