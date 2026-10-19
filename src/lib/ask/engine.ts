@@ -8,6 +8,7 @@ import { computeStats, TOTAL_CELLS, TOTAL_GROUPS } from '../stats';
 import { formatWhen, SEASON_LABEL } from '../dates';
 import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_CODE } from '../geo';
 import { candidates, THEMES } from '../recommend';
+import topicsData from '../../data/topics.json';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
 import { cityFor, cityPlace, COST_LABEL, countryName, flyLabel, pickCities, tzLabel, WALK_LABEL, type WorldCity, type WorldData } from '../world';
@@ -139,6 +140,7 @@ function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boole
   if (has(q, /패턴|성향|스타일|취향|여행\s*습관|어떤\s*여행(을|자|가)|우리\s*(여행|부부|둘).*어때/)) return 'pattern';
   if (has(q, /축제|페스티벌|불꽃|행사/)) return 'festival';
   if (has(q, /준비물|뭐\s*챙|챙길|챙겨|짐\s*(싸|쌀)|가져갈/)) return 'packing';
+  if ((topicOf(q) || STAR_Q.test(q)) && !places.length && !hasTime && !has(q, /(간|갔|다녀온|다녀왔)\s*(곳|데|적)/)) return 'recommend';
   if (has(q, /다음\s*여행|예정(된|인)?\s*(여행|거)|언제\s*(떠나|출발)|디데이|d-?day/i)) return 'next';
   if (has(q, /어디였지|어디였더라|뭐였지|이름이\s*뭐|기억\s*안|찾아\s*줘|검색/) || has(q, /(마신|먹은|갔던|봤던|했던)\s*(날|곳|데)$/)) return 'find';
   if (places.length >= 2 && has(q, /비교|vs|어디가\s*(더|나아)|중에|랑.*중|차이/)) return 'compare';
@@ -371,6 +373,8 @@ const GENERIC = new Set(('여행지 여행 곳 데 데가 곳들 장소 명소 �
 export function unusedWords(q: string, info: AskData['info']): string[] {
   let rest = ` ${q} `;
   const cut = (re: RegExp) => { rest = rest.replace(new RegExp(re.source, 'g'), ' '); };
+  // 주제 낱말을 먼저(긴 것부터) 지운다: '석회동굴'이 '동굴'로 잘려 '석회'가 남지 않게
+  for (const w of TOPICS.flatMap((t) => t.words).sort((a, b) => b.length - a.length)) if (hasWord(q, w)) rest = rest.split(w).join(' ');
   for (const m of findMentions(q, info)) rest = rest.replace(q.slice(m.start, m.end), ' ');
   for (const t of THEMES) { cut(t.re); for (const w of t.label.split('·')) cut(new RegExp(w)); }
   for (const x of SIGHT_WORDS) cut(x.re);
@@ -388,6 +392,40 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   const far = q.match(UNKNOWN_FAR);
   if (far && !findMentions(q, d.info).length && !/바다|동해|서해|남해/.test(far[1])) {
     return { intent: 'recommend', text: `${far[1]} 쪽 여행지는 아직 자료가 없어요`, lines: ['가까운 나라나 도시 이름으로 물어보면 찾아볼게요. 예: 노르웨이 트롬쇠, 아이슬란드'], buttons: [{ label: '오로라 보러 갈 만한 곳', ask: '오로라 보러 갈 만한 곳 추천' }, { label: '해외 도시 고르기', to: '/wishes?find=world' }] };
+  }
+  // 볼거리 이름('공룡발자국'·'출렁다리')이 지명 사전에 있으면: 그 볼거리가 있는 곳들 (사전에 없는 주제도 자료가 있으면 답한다)
+  const spotM = findMentions(q, d.info).filter((m) => m.entry.kind === 'spot');
+  if (spotM.length && !topicOf(q)) {
+    const label = spotM.map((m) => m.entry.label).join('·');
+    const ps = [...new Map(spotM.flatMap((m) => m.entry.places).filter((p) => p.t === 'kr').map((p) => [p.t === 'kr' ? p.code : '', p])).values()];
+    const picks = dailyShuffle(ps, q).slice(0, 5);
+    if (picks.length) return {
+      intent: 'recommend',
+      text: `'${label}' 볼 수 있는 곳 ${picks.length}곳`,
+      items: picks.map((pl) => { const s = seasonFor(d.seasons, pl); return { title: placeName(pl), sub: s ? `좋은 때 ${monthsLabel(s.m)}` : '', open: { label: `${placeLabel(pl)} 자세히`, ask: `${placeLabel(pl)} 볼거리` }, wish: pl }; }),
+      buttons: [{ label: '다른 곳', ask: q + ' ' }],
+      source: INFO_SRC(d),
+    };
+  }
+  // 여행 주제(해돋이·케이블카·캠핑…): 주제 사전의 곳에서 고른다
+  const topic = topicOf(q);
+  if (topic) {
+    const visited = computeStats(d.trips).cellVisits;
+    const unv = /안\s*가\s*본|안가본|처음/.test(q);
+    const list = topic.places.filter((x) => !unv || !visited.has(x.code));
+    const picks = dailyShuffle(list, q).slice(0, 3);
+    if (!picks.length) return { intent: 'recommend', text: `${topic.label} 하기 좋은 곳은 이미 다 가 봤어요`, lines: ['안 가본 곳 조건을 빼고 다시 물어보세요.'], buttons: [{ label: '다시 보기', ask: q.replace(/안\s*가\s*본|안가본|처음/g, '') }] };
+    return {
+      intent: 'recommend',
+      text: `${topic.label} 하기 좋은 곳 ${picks.length}곳`,
+      items: picks.map((x) => {
+        const pl: Place = { t: 'kr', code: x.code };
+        const s = seasonFor(d.seasons, pl);
+        return { title: placeName(pl), sub: `${x.spot}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''}`, open: { label: `${placeLabel(pl)} 자세히`, ask: `${placeLabel(pl)} 볼거리` }, wish: pl };
+      }),
+      buttons: [{ label: '다른 곳', ask: q + ' ' }],
+      source: '보라핀 여행 주제 사전 · 운영 여부는 떠나기 전 확인',
+    };
   }
   // 별·은하수: 테마 글자로는 못 고른다(대도시 '야경'이 걸림) → 빛 공해가 적은 곳을 손으로 고른 목록
   if (STAR_Q.test(q)) {
@@ -407,7 +445,7 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
       source: '보라핀이 고른 별 보기 좋은 곳 · 날씨는 떠나기 전 확인',
     };
   }
-  const sight = SIGHT_WORDS.find((x) => x.re.test(q));
+  const sight = SIGHT_WORDS.find((x) => new RegExp(`(^|[^가-힣])(?:${x.re.source})`).test(q));
   const seasonQ = readSeason(q);
   const month = monthArg ?? readMonth(q) ?? sight?.month ?? (seasonQ ? SEASON_MONTH[seasonQ] : null);
   const { pos, neg } = readThemes(q);
@@ -487,6 +525,13 @@ function travelPattern(done: Trip[], d: AskData): Omit<Answer, 'ctx'> {
   return { intent: 'pattern', text: head, lines, buttons: [{ label: missing[0] ? `${missing[0]}에 갈 곳` : '안 가본 곳 추천', ask: missing[0] ? `${missing[0]}에 갈 만한 곳` : '안 가본 곳 추천' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
 }
 
+/** 여행 주제 사전 (src/data/topics.json): 낱말이 있으면 손으로 고른 곳에서 */
+interface Topic { id: string; label: string; words: string[]; places: { code: string; spot: string }[] }
+const TOPICS = (topicsData as { topics: Topic[] }).topics;
+// 낱말 앞이 다른 한글이면(수상스키의 '스키') 그 주제가 아니다
+const hasWord = (q: string, w: string) => new RegExp(`(^|[^가-힣])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(q);
+export const topicOf = (q: string) => TOPICS.find((t) => t.words.some((w) => hasWord(q, w))) ?? null;
+
 const STAR_Q = /은하수|별\s*(을|이)?\s*(보|관측|사진)|별자리|별빛|천문대|밤하늘|별\s*보러/;
 const WEATHER_SOON = /날씨|맑|비\s*안/;
 /** 빛 공해가 적은 곳 (국제밤하늘보호공원·천문대) */
@@ -507,7 +552,9 @@ const DARK_SKY: { code: string; spot: string }[] = [
 export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): Answer {
   const now = d.now ?? new Date();
   const q = question.trim().replace(/[?!.~]+$/g, '');
-  const mentions: Mention[] = forced ? [] : findMentions(q, d.info);
+  // 여행 주제 낱말('케이블카'·'동굴')이 지명 사전의 볼거리 이름에 걸려 되묻지 않게: 주제 낱말 자리의 지명은 버린다
+  const tp = topicOf(q);
+  const mentions: Mention[] = forced ? [] : findMentions(q, d.info).filter((m) => !tp || !tp.words.some((w) => { const i = q.indexOf(w); return i >= 0 && hasWord(q, w) && m.start < i + w.length && m.end > i; }));
   const person = readPerson(q, d.trips);
   const year = readYear(q, now);
   const season = readSeason(q);
@@ -614,6 +661,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
     }
     case 'recommend': {
       a = recommend(q, d, now, null, groupId);
+      if (!a.unused) a = { ...a, unused: unusedWords(q, d.info) };
       break;
     }
     case 'hello': {
