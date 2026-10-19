@@ -1,0 +1,26 @@
+## 외교부 (1262000) — 맞는 주소 하나면 된다
+✓ 여행경보 a: 200 {"response":{"body":{"dataType":"JSON","items":{"item":[{"alarm_lvl":"2","continent_cd":"50","continent_eng_nm":"Africa","continent_nm":"아프리카","country_eng_nm":"Ghana","country_iso_alp2":"GH","country_nm":"가나","dang_map_download_url":"https://www.0404.go.kr/fi
+✗ 여행경보 b: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✗ 여행경보 c: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✗ 여행경보 조정 a: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✗ 여행경보 조정 b: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✗ 여행경보 조정 c: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✓ 입국허가요건 a: 200 {"response":{"body":{"dataType":"JSON","items":{"item":[{"country_eng_nm":"Ghana","country_iso_alp2":"GH","country_nm":"가나","dplmt_pspt_visa_cn":"X","dplmt_pspt_visa_yn":"Y","gnrl_pspt_visa_cn":"X","gnrl_pspt_visa_yn":"Y","have_yn":"Y","id":86,"nvisa_entry_evd
+✗ 입국허가요건 b: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✗ 안전공지 a: 403 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR", "returnAuthMsg": "등록되지 않은 서비스키", "returnReasonCode": "30" } } } 
+✗ 안전공지 b: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+✗ 안전공지 c: 403 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR", "returnAuthMsg": "등록되지 않은 서비스키", "returnReasonCode": "30" } } } 
+✗ 특별여행주의보 a: 400 { "OpenAPI_ServiceResponse": { "cmmMsgHeader": { "errMsg": "NO_OPENAPI_SERVICE_ERROR", "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨", "returnReasonCode": "12" } } } 
+
+## 한국관광공사 (B551011)
+✓ 국문 관광정보 (지역기반): 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"addr1":"강원특별자치도 동해시 삼화동","addr2":"산267-3","areacode":"32","cat1":"A02","cat2":"A0201","cat3":"A02010700","contentid":"2735607","contenttypeid":"12","createdtime":"202108
+✓ 국문 관광정보 (TOUR_API_KEY): 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"addr1":"강원특별자치도 평창군 평창읍 평창시장1길 14","addr2":"","areacode":"32","cat1":"A05","cat2":"A0502","cat3":"A05020100","contentid":"2788416","contenttypeid":"39","createdtime":"20
+✓ 관광사진: 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"galContentId":"1002144","galContentTypeId":"17","galTitle":"청설모","galWebImageUrl":"https://tong.visitkorea.or.kr/cms2/website/44/1002144.jpg","galCreatedtime":"201004200
+✓ 연관 관광지: 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"baseYm":"202509","tAtsCd":"8a546d69c38a6b3f0134e11e362cb2be","tAtsNm":"BTS버스정류장","areaCd":"51","areaNm":"강원특별자치도","signguCd":"51150","signguNm":"강릉시","rlteTatsCd":"92225
+✓ 관광빅데이터 (광역 방문자): 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"areaCode":"11","areaNm":"서울특별시","daywkDivCd":"2","daywkDivNm":"화요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"4920440.0","baseYmd":"20260901"},{"areaCode":"11","areaN
+✓ 무장애 여행: 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"addr1":"강원특별자치도 강릉시 공항길30번길 16","addr2":"","areacode":"32","cat1":"A05","cat2":"A0502","cat3":"A05020100","contentid":"2868839","contenttypeid":"39","createdtime":"20221
+✓ 관광지 집중률: 200 {"response": {"header":{"resultCode":"0000","resultMsg":"OK"},"body": {"items": {"item":[{"baseYmd":"20261019","areaCd":"51","areaNm":"강원특별자치도","signguCd":"51150","signguNm":"강릉시","tAtsNm":"강남축구공원","cnctrRate":"34.84"},{"baseYmd":"20261020","areaCd":"51","area
+
+## 한국수출입은행 환율
+✓ 환율 (oapi): 200 [{"result":1,"cur_unit":"AED","ttb":"363.45","tts":"370.8","deal_bas_r":"367.13","bkpr":"367","yy_efee_r":"0","ten_dd_efee_r":"0","kftc_bkpr":"367","kftc_deal_bas_r":"367.13","cur_nm":"아랍에미리트 디르함"},{"result":1,"cur_unit":"AUD","ttb":"923.69","tts":"942.36","de
+✗ 환율 (www): fetch failed
