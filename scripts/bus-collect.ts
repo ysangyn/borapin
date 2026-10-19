@@ -31,7 +31,7 @@ async function api(svc: string, op: string, p: Record<string, string> = {}): Pro
 }
 
 interface Stop { svc: 'S' | 'E' | 'T'; id: string; name: string; region: string }
-interface State { v: 1; stops: Stop[]; pairs: number; done: number; routes: [string, string, string, number, number, number][]; updated: string }
+interface State { v: 1; stops: Stop[]; pairs: number; done: number; doneBy?: Record<Stop['svc'], number>; routes: [string, string, string, number, number, number][]; updated: string }
 const SVC = { S: ['SuburbsBusInfo', 'GetStrtpntAlocFndSuberbsBusInfo', 'depTerminalId', 'arrTerminalId'], E: ['ExpBusInfo', 'GetStrtpntAlocFndExpbusInfo', 'depTerminalId', 'arrTerminalId'], T: ['TrainInfo', 'GetStrtpntAlocFndTrainInfo', 'depPlaceId', 'arrPlaceId'] } as const;
 
 const regions = (JSON.parse(fs.readFileSync('src/data/regions.json', 'utf8')) as { regions: { code: string; name: string; lat: number; lng: number }[] }).regions;
@@ -81,20 +81,30 @@ const mins = (x: Item) => { const d = String(x.depPlandTime ?? x.depplandtime ??
 let st: State;
 try { st = JSON.parse(fs.readFileSync(STATE, 'utf8')) as State; } catch { st = { v: 1, stops: [], pairs: 0, done: 0, routes: [], updated: '' }; }
 if (!st.stops.length) { st.stops = await pickStops(); st.done = 0; st.routes = []; console.log(`대표 정류지 ${st.stops.length}곳 (시외 ${st.stops.filter((s) => s.svc === 'S').length} · 고속 ${st.stops.filter((s) => s.svc === 'E').length} · 열차 ${st.stops.filter((s) => s.svc === 'T').length})`); }
-const pairs = pairList(st.stops);
-st.pairs = pairs.length;
-console.log(`짝 ${pairs.length}개 중 ${st.done}개 끝 · 이번 최대 ${MAX_CALLS}번`);
-
-let stop = false;
+// 서비스(시외·고속·열차)마다 하루 한도가 따로라서 세 줄을 나란히 돌린다. 한 서비스가 한도에 닿아도 나머지는 계속
+const all = pairList(st.stops);
+const bySvc: Record<Stop['svc'], [Stop, Stop][]> = { S: all.filter(([a]) => a.svc === 'S'), E: all.filter(([a]) => a.svc === 'E'), T: all.filter(([a]) => a.svc === 'T') };
+st.pairs = all.length;
+st.doneBy ??= { S: st.done, E: 0, T: 0 }; // 예전(한 줄) 상태 이어받기: 앞쪽은 모두 시외였다
+const PER = Math.floor(MAX_CALLS); // 서비스마다 이만큼까지
+console.log(`짝 ${all.length}개 (시외 ${bySvc.S.length} · 고속 ${bySvc.E.length} · 열차 ${bySvc.T.length}) · 끝난 것 시외 ${st.doneBy.S} · 고속 ${st.doneBy.E} · 열차 ${st.doneBy.T}`);
 const CONC = 6;
-while (!stop && st.done < pairs.length && calls < MAX_CALLS) {
-  const batch = pairs.slice(st.done, st.done + CONC);
-  const res = await Promise.all(batch.map(([a, b]) => { const [svc, op, dk, ak] = SVC[a.svc]; return api(svc, op, { [dk]: a.id, [ak]: b.id, depPlandTime: day }); }));
-  if (res.some((r) => r === null)) { console.log('오늘 한도에 닿아 멈춰요'); stop = true; break; }
-  res.forEach((r, i) => { if (r && r.length) { const [a, b] = batch[i]; st.routes.push([a.svc, a.id, b.id, r.length, mins(r[0]), Number(r[0].charge ?? r[0].adultcharge ?? 0)]); } });
-  st.done += batch.length;
-  if (st.done % 600 < CONC) { st.updated = new Date().toISOString(); fs.writeFileSync(STATE, JSON.stringify(st)); }
+async function lane(svc: Stop['svc']) {
+  const [name, op, dk, ak] = SVC[svc];
+  let used = 0;
+  while (st.doneBy![svc] < bySvc[svc].length && used < PER) {
+    const batch = bySvc[svc].slice(st.doneBy![svc], st.doneBy![svc] + CONC);
+    const res = await Promise.all(batch.map(([a, b]) => api(name, op, { [dk]: a.id, [ak]: b.id, depPlandTime: day })));
+    used += batch.length;
+    if (res.some((r) => r === null)) { console.log(`${name}: 오늘 한도에 닿아 멈춰요`); return; }
+    res.forEach((r, i) => { if (r && r.length) { const [a, b] = batch[i]; st.routes.push([a.svc, a.id, b.id, r.length, mins(r[0]), Number(r[0].charge ?? r[0].adultcharge ?? 0)]); } });
+    st.doneBy![svc] += batch.length;
+    if (st.doneBy![svc] % 600 < CONC) { st.done = st.doneBy!.S + st.doneBy!.E + st.doneBy!.T; st.updated = new Date().toISOString(); fs.writeFileSync(STATE, JSON.stringify(st)); }
+  }
 }
+await Promise.all((['S', 'E', 'T'] as const).map(lane));
+st.done = st.doneBy.S + st.doneBy.E + st.doneBy.T;
+const pairs = all;
 st.updated = new Date().toISOString();
 fs.writeFileSync(STATE, JSON.stringify(st));
 console.log(`이번 호출 ${calls}번 · 진행 ${st.done}/${pairs.length} (${Math.round((st.done / Math.max(1, pairs.length)) * 100)}%) · 찾은 노선 ${st.routes.length}개`);
