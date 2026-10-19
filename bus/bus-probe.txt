@@ -1,55 +1,36 @@
-버스·열차 공공데이터 범위 확인 · 내일 20261020 기준
-
-## 시외버스 (SuburbsBusInfo)
-도시 코드 17개
-터미널·역 1945곳
-우리 160개 시·군 중 이름이 맞는 곳: 145곳
-없는 곳(일부): 경기 파주시, 경기 광명시, 경기 과천시, 경기 남양주시, 경기 군포시, 경기 의왕시, 경기 가평군, 경기 양평군, 경기 양주시, 경기 포천시, 경북 칠곡군, 경북 울릉군, 강원 횡성군, 강원 철원군, 전북 완주군
-고양 쪽: 고양종합(NAI1045001), 화정(경남)(NAI5215602), 대포리회화정(NAI5715349)
-
-## 고속버스 (ExpBusInfo)
-도시 코드 110개
-터미널·역 453곳
-우리 160개 시·군 중 이름이 맞는 곳: 117곳
-없는 곳(일부): 경기 연천군, 경기 과천시, 경기 남양주시, 경기 군포시, 경기 의왕시, 경기 하남시, 경기 양평군, 경기 동두천시, 경기 양주시, 경기 화성시, 충북 영동군, 충북 진천군, 충북 음성군, 충남 계룡시, 전남광주 신안군, 경북 문경시, 경북 경산시, 경북 의성군, 경북 청송군, 경북 영양군, 경북 청도군, 경북 고령군, 경북 성주군, 경북 칠곡군, 경북 울릉군, 경남 사천시, 경남 거제시, 경남 의령군, 경남 함안군, 경남 창녕군, 경남 고성군, 경남 남해군, 경남 하동군, 경남 산청군, 경남 함양군, 경남 거창군, 경남 합천군, 제주 제주, 강원 평창군, 강원 고성군 외 3
-고양 쪽: 고양화정(NAEK115), 고양백석(NAEK116)
-
-## 열차 (TrainInfo)
-도시 코드 16개
-터미널·역 349곳
-우리 160개 시·군 중 이름이 맞는 곳: 91곳
-없는 곳(일부): 세종 세종, 경기 성남시, 경기 안산시, 경기 과천시, 경기 구리시, 경기 남양주시, 경기 시흥시, 경기 군포시, 경기 의왕시, 경기 하남시, 경기 용인시, 경기 이천시, 경기 안성시, 경기 여주시, 경기 고양시, 경기 양주시, 경기 포천시, 경기 김포시, 충북 보은군, 충북 진천군, 충북 괴산군, 충남 보령시, 충남 서산시, 충남 당진시, 충남 금산군, 충남 부여군, 충남 청양군, 충남 태안군, 전남광주 담양군, 전남광주 고흥군, 전남광주 영광군, 전남광주 완도군, 전남광주 진도군, 전남광주 신안군, 경북 청송군, 경북 영양군, 경북 고령군, 경북 성주군, 경북 칠곡군, 경북 울릉군 외 29
-고양 쪽: 일산(NAT110249), 탄현(NAT110265)
-
-## 시외버스: 고양종합 출발 전체 (내일)
-고양종합: 목적지 0곳
-
-## 고속버스: 고양화정, 고양백석 출발 전체 (내일)
-고양화정: 목적지 0곳
-고양백석: 목적지 6곳
-✓ 고양백석 → 강릉(): 하루 3회 · 0800~1900 · 약 170분 · 29000원
-✓ 고양백석 → 주문진(): 하루 3회 · 0800~1900 · 약 155분 · 27100원
-✓ 고양백석 → 정안(): 하루 5회 · 0730~1830 · 약 100분 · 17600원
-✓ 고양백석 → 충주(): 하루 4회 · 0600~1730 · 약 120분 · 19300원
-✓ 고양백석 → 광주(유·스퀘어)(): 하루 2회 · 0910~1540 · 약 260분 · 41800원
-✓ 고양백석 → 전주(): 하루 5회 · 0730~1830 · 약 185분 · 28500원
-
-## 문경·점촌 터미널: 점촌.명(시내)(강원도), 문경(경상북도), 점촌(경상북도)
-✓ 괴산 → 문경: 하루 1회 · 약 26분
-✓ 예천 → 문경: 하루 1회 · 약 42분
-✓ 동서울 → 점촌: 하루 6회 · 약 140분
-✓ 괴산 → 점촌: 하루 1회 · 약 40분
-✓ 예천 → 점촌: 하루 1회 · 약 26분
-✓ 상주 → 점촌: 하루 45회 · 약 18분
-
-호출 3050번
-
-## 응답 첫머리 (형식 확인용)
-SuburbsBusInfo/GetCtyCodeList: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[{"cityCode":"11","cityName":"서울특별시"},{"cityCode":"12","cityName":"세종특별시"},{"cityCode":"21","cityName":"부산광역시"},{"cityCode":"22","cityName":"대구광역시"},{"cityCode":"23","cityName":"인천광역시"},{"cityCode":"24","cityName":"광주광역시"},{"cityCode":"25","cityName":"대전광역시"},{"cityCode":"26","cityName":"울산광역시"},{"cityCode":"31","cityName":"경기도"},{"cityCode":"32","cityName":"강원도"},{"cityCode":"33","cityName":"충청북도"},{"cityCode":"34","cityName":"충청남도"},{"cityCode":"35","cityName":"전라북도"},{"cityCode":"36","cityName":"
-SuburbsBusInfo/GetSuberbsBusTrminlList: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[{"terminalId":"NAI0162503","cityName":"서울특별시","terminalNm":"수락산역(직통)"},{"terminalId":"NAI0215101","cityName":"서울특별시","terminalNm":"상봉"},{"terminalId":"NAI0456505","cityName":"서울특별시","terminalNm":"동대문 디자인플라자(DDP)"},{"terminalId":"NAI0496801","cityName":"서울특별시","terminalNm":"광나루역"},{"terminalId":"NAI0511601","cityName":"서울특별시","terminalNm":"동서울"},{"terminalId":"NAI0550201","cityName":"서울특별시","terminalNm":"잠실역"},{"terminalId":"NAI0616401","cityName":"서울특별시","terminalNm":"코엑스(도심공항)"},{"terminalId":"NAI
-ExpBusInfo/GetCtyCodeList: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[{"cityCode":"11","cityName":"서울특별시"},{"cityCode":"12","cityName":"세종특별시"},{"cityCode":"21","cityName":"부산광역시"},{"cityCode":"22","cityName":"대구광역시"},{"cityCode":"23","cityName":"인천광역시"},{"cityCode":"24","cityName":"광주광역시"},{"cityCode":"25","cityName":"대전광역시"},{"cityCode":"26","cityName":"울산광역시"},{"cityCode":"31010","cityName":"수원시"},{"cityCode":"31020","cityName":"성남시"},{"cityCode":"31030","cityName":"의정부시"},{"cityCode":"31050","cityName":"부천시"},{"cityCode":"31060","cityName":"광명시"},{"cityCode":"310
-ExpBusInfo/GetExpBusTrminlList: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[{"terminalId":"NAEK010","terminalNm":"서울경부"},{"terminalId":"NAEK020","terminalNm":"센트럴시티(서울)"},{"terminalId":"NAEK021","terminalNm":"센트럴시티(서울)"},{"terminalId":"NAEK030","terminalNm":"동서울"},{"terminalId":"NAEK031","terminalNm":"동서울"},{"terminalId":"NAEK032","terminalNm":"동서울"},{"terminalId":"NAEK035","terminalNm":"동서울"},{"terminalId":"NAEK040","terminalNm":"상봉"},{"terminalId":"NAEK045","terminalNm":"파주문산"},{"terminalId":"NAEK046","terminalNm":"파주운정"},{"terminalId":"NAEK050","terminalNm":"서울남부"},{"te
-TrainInfo/GetCtyCodeList: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[{"citycode":"11","cityname":"서울특별시"},{"citycode":"12","cityname":"세종특별자치시"},{"citycode":"21","cityname":"부산광역시"},{"citycode":"22","cityname":"대구광역시"},{"citycode":"23","cityname":"인천광역시"},{"citycode":"24","cityname":"광주광역시"},{"citycode":"25","cityname":"대전광역시"},{"citycode":"26","cityname":"울산광역시"},{"citycode":"31","cityname":"경기도"},{"citycode":"32","cityname":"강원특별자치도"},{"citycode":"33","cityname":"충청북도"},{"citycode":"34","cityname":"충청남도"},{"citycode":"35","cityname":"전북특별자치도"},{"citycode":"36","ci
-TrainInfo/GetCtyAcctoTrainSttnList: 200 {"header":{"resultCode":"99","resultMsg":"UNKNOWN_ERROR. 요청한 리소스를 찾을 수 없습니다."}}
-SuburbsBusInfo/GetStrtpntAlocFndSuberbsBusInfo: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[]},"numOfRows":1000,"pageNo":1,"totalCount":0}}}
-ExpBusInfo/GetStrtpntAlocFndExpbusInfo: 200 {"response":{"header":{"resultCode":"00","resultMsg":"NORMAL SERVICE."},"body":{"items":{"item":[]},"numOfRows":1000,"pageNo":1,"totalCount":0}}}
+차량 종류: KTX(00), 새마을호(01), 무궁화호(02), 통근열차(03), 누리로(04), AREX직통(06), KTX-산천(A-type)(07), ITX-새마을(08), ITX-청춘(09), KTX-산천(B-type)(10), KTX-산천(0A), KTX-이음(16), SRT(17), ITX-마음(18), KTX-청룡(19)
+역 349곳
+행신: 행신(NAT110147)
+일산: 일산(NAT110249)
+판교: 판교(경기)(NAT250007), 판교(충남)(NAT081240)
+문경: 문경(NAT280927)
+서울: 서울(NAT010000)
+용산: 용산(NAT010032)
+충주: 충주(NAT050827)
+점촌: 점촌(NAT300600)
+상주: 상주(NAT300360)
+수서: 수서(NATH30000)
+행신→부산 (20261020): 11회 · KTX/KTX-산천(A-type)/KTX-청룡/KTX-산천(B-type) · 예) 0611→0922 KTX 55500원 | 0701→1003 KTX 55500원
+행신→동대구 (20261020): 18회 · KTX/KTX-산천(B-type)/KTX-산천(A-type)/KTX-청룡/KTX-산천 · 예) 0611→0827 KTX 40200원 | 0701→0920 KTX 40200원
+행신→광주송정 (20261020): 6회 · KTX/KTX-산천/KTX-산천(A-type) · 예) 0600→0828 KTX 43400원 | 0643→0951 KTX-산천 42600원
+행신→강릉 (20261020): 1회 · KTX-이음 · 예) 0733→1003 KTX-이음 29200원
+판교→문경: 역 없음
+서울→부산 (20261020): 75회 · KTX/ITX-새마을/무궁화호/KTX-산천(A-type)/ITX-마음/KTX-청룡/KTX-산천(B-type)/KTX-산천 · 예) 0513→0750 KTX 54200원 | 0527→0816 KTX 54200원
+일산→문산 (20261020): 0회 ·  · 예) 
+판교→문경: 역 없음
+행신 출발 KTX로 바로 닿는 역: 46곳
+서울 출발 KTX로 바로 닿는 역: 66곳
+수서 출발 KTX로 바로 닿는 역: 35곳
+KTX 역(합): 70곳 · 서울, 청량리, 용산, 구포, 부산, 동대구, 서대구, 광주송정, 대전, 서대전, 울산, 양평, 광명, 강릉, 만종, 횡성, 둔내, 평창, 오송, 논산, 계룡, 천안아산, 공주, 익산, 김제, 정읍, 전주, 남원, 장성, 나주, 목포, 곡성, 구례구, 순천, 여수EXPO, 여천, 경산, 김천구미, 경주, 포항, 밀양, 진영, 창원, 마산, 진주, 창원중앙, 영등포, 상봉, 신해운대, 부전, 센텀, 태화강, 남창, 수원, 행신, 동해, 묵호, 정동진, 진부, 서원주, 원주, 제천, 단양, 풍기, 영주, 의성, 영천, 안동, 물금, 동탄
+고양종합 정보: {"terminalId":"NAI1045001","cityName":"경기도","terminalNm":"고양종합"}
+고양종합 → 동서울: 0회
+고양종합 → 춘천병원: 0회
+고양종합 → 원주공항: 0회
+고양종합 → 청주북부터미널: 0회
+고양종합 → 천안대: 0회
+고양종합 → 대전도룡: 0회
+고양종합 → 수원역(공항): 0회
+고양종합 → 인천시청후문: 0회
+고양종합 → 의정부: 0회
+고양종합 → 김포공항: 0회
+고양종합 → 인천공항2터미널: 0회
