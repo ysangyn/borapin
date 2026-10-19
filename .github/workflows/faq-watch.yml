@@ -1,0 +1,28 @@
+name: 여행 상식 규정 점검
+
+# 매주 월요일 아침, 바뀌기 쉬운 규정(보조배터리·액체·입국 등) 관련 최근 뉴스를 모아 ci-report/faq-watch에 올린다. 앱 배포와 무관.
+on:
+  schedule:
+    - cron: '13 23 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/faq-watch.ts
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh faq-watch faq-watch.txt

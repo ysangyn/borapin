@@ -16,9 +16,9 @@
 | 1 | 물어보기: 버린 핵심어 감지 → AI/모름 | 완료 (unusedWords · confidence.ts · tests/unit/askUnused.test.ts) | |
 | 2 | 물어보기: 대량 채점 문제(주제×표현) | 완료 (tests/unit/askBulk.test.ts: 주제 20개×낱말×말투 8 + 모르는 활동 20×8) | 주제를 늘릴 때 topics.json만 고치면 시험이 같이 늘어남 |
 | 3 | 물어보기: 여행 주제 사전 확장(자료로) | 완료 (src/data/topics.json 20주제·100곳, 지명 사전의 볼거리 이름도 자동 주제) | |
-| 4 | 여행 상식 50개 + 바뀌는 규정 감시 | 진행 중 | src/data/faq.json으로 옮기고 50개로 |
+| 4 | 여행 상식 + 바뀌는 규정 감시 | 완료 (src/data/faq.json 42개·예시 질문으로 시험, 매주 .github/workflows/faq-watch.yml → ci-report/faq-watch) | 분기마다 faq.json updated 갱신 |
 | 5 | 외교부 입국요건·여행경보 + 환율 | 대기 | 사용자: 외교부 API 3종 신청, 수출입은행 환율 키 |
-| 6 | 우리 집 설정 + 길찾기 버튼 | 대기 | |
+| 6 | 우리 집 설정 + 길찾기 버튼 | 진행 중 | |
 | 7 | 차 경유 추천 | 대기 | |
 | 8 | TourAPI 관광정보·사진·연관 | 대기 | 사용자: TourAPI 신청 |
 | 9 | 버스·KTX 여행답게 가는 길 | 자료 모으는 중 (백그라운드, 매일 새벽 .github/workflows/bus.yml → bus-data 브랜치 state.json) | 다 모이면(진행 100%) 노선표를 src/data/routes.json으로 줄이고 길 찾기 화면 (FLAGS.transitRoute) |

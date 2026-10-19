@@ -138,9 +138,15 @@ export interface Mention {
 }
 
 /** 문장에서 지명 찾기: 긴 이름 먼저, 겹치면 앞선 것만. 없으면 오타·초성으로 한 번 더 */
-export function findMentions(q: string, info: TravelInfo): Mention[] {
+export function findMentions(q: string, info: TravelInfo, opts: { typo?: boolean } = {}): Mention[] {
   const text = norm(q);
   const list = buildGazetteer(info);
+  // 공백을 지운 글자 i가 원래 글에서 낱말의 첫 글자인지, 다음 글자와의 사이에 공백이 있었는지
+  const wordStart: boolean[] = [], spaceAfter: boolean[] = [];
+  { let prevSpace = true; const chars = [...q.toLowerCase()];
+    for (let k = 0; k < chars.length; k++) { const c = chars[k]; if (/\s/.test(c)) { prevSpace = true; if (spaceAfter.length) spaceAfter[spaceAfter.length - 1] = true; continue; } wordStart.push(prevSpace); spaceAfter.push(false); prevSpace = false; } }
+  // 낱말 가운데서 시작해 공백을 건너는 이름은 버린다 ('어디서 해' → '서해' 아님, '통영 케이블카' 같은 여러 낱말 이름은 그대로)
+  const crossesMid = (i: number, end: number) => !wordStart[i] && spaceAfter.slice(i, end - 1).some(Boolean);
   const taken: boolean[] = new Array(text.length).fill(false);
   const out: Mention[] = [];
   for (const e of list) {
@@ -149,7 +155,7 @@ export function findMentions(q: string, info: TravelInfo): Mention[] {
       const i = text.indexOf(e.key, from);
       if (i < 0) break;
       const end = i + e.key.length;
-      if (!taken.slice(i, end).some(Boolean)) {
+      if (!taken.slice(i, end).some(Boolean) && !crossesMid(i, end)) {
         // '동해'(바다) 같은 2글자 줄임말이 더 긴 일반 낱말 안에 묻힌 경우는 건너뛴다
         out.push({ entry: e, start: i, end });
         for (let k = i; k < end; k++) taken[k] = true;
@@ -157,7 +163,7 @@ export function findMentions(q: string, info: TravelInfo): Mention[] {
       from = end;
     }
   }
-  if (!out.length) {
+  if (!out.length && opts.typo !== false) {
     // 오타: 낱말마다 장소 검색 (강능 → 강릉). 흔한 낱말은 건너뛰고, 정확히 같거나 한 글자 차이만 받는다.
     const words = q.split(/\s+/).map((t) => t.replace(/[?!.,~]/g, '').replace(JOSA_END, '')).filter((t) => t.length >= 2 && !STOP.has(t));
     for (const tok of words) {

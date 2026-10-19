@@ -9,6 +9,7 @@ import { formatWhen, SEASON_LABEL } from '../dates';
 import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_CODE } from '../geo';
 import { candidates, THEMES } from '../recommend';
 import topicsData from '../../data/topics.json';
+import faqData from '../../data/faq.json';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
 import { cityFor, cityPlace, COST_LABEL, countryName, flyLabel, pickCities, tzLabel, WALK_LABEL, type WorldCity, type WorldData } from '../world';
@@ -136,7 +137,7 @@ function readPerson(q: string, trips: Trip[]): string | null {
 function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boolean, hasGroup = false): Intent {
   if (has(q, /^(안녕|하이|헬로|반가워|고마워|고맙|감사|잘\s*자|수고|사랑해|보라야|ㅎㅇ|ㅇㅋ)/) && q.length <= 12) return 'hello';
   if (has(q, /도움말|뭐\s*(물어|할\s*수)|어떻게\s*(써|사용)|사용법|뭘\s*할\s*수/)) return 'help';
-  if (faqFor(q)) return 'faq';
+  if (faqFor(q, places.length > 0)) return 'faq';
   if (has(q, /패턴|성향|스타일|취향|여행\s*습관|어떤\s*여행(을|자|가)|우리\s*(여행|부부|둘).*어때/)) return 'pattern';
   if (has(q, /축제|페스티벌|불꽃|행사/)) return 'festival';
   if (has(q, /준비물|뭐\s*챙|챙길|챙겨|짐\s*(싸|쌀)|가져갈/)) return 'packing';
@@ -484,17 +485,11 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   };
 }
 
-/** 여행 상식 (손으로 정리, 바뀌는 건 '떠나기 전 확인') */
-const FAQ: { re: RegExp; a: string; lines: string[]; link?: { label: string; href: string } }[] = [
-  { re: /국내선.*(여권|신분증)|(여권|신분증).*국내선|(제주|김포).*(여권|신분증)/, a: '국내선은 여권이 없어도 돼요. 신분증이면 충분해요', lines: ['주민등록증·운전면허증·여권, 모바일 신분증도 돼요.', '어린이는 주민등록등본이나 가족관계증명서를 챙겨요.'] },
-  { re: /공항.*여권|여권.*(필요|있어야|챙겨)/, a: '해외로 나가면 여권이 꼭 있어야 해요. 국내선은 신분증이면 돼요', lines: ['여권 남은 기간이 6개월 넘게 필요한 나라가 많아요. 떠나기 전 확인해요.', '나라마다 비자·전자여행허가(미국 ESTA, 캐나다 eTA 등)가 따로 필요할 수 있어요.'], link: { label: '외교부 해외안전여행', href: 'https://www.0404.go.kr' } },
-  { re: /여권.*(만드|발급|재발급|얼마나|며칠|걸려|기간)/, a: '여권은 신청하고 보통 1~2주쯤 걸려요', lines: ['방학·연휴 앞에는 더 걸릴 수 있으니 넉넉히 신청해요.', '급하면 긴급여권(한 번만 쓰는 여권)을 받을 수 있어요. 갈 나라에서 받아 주는지 먼저 확인해요.', '시·군·구청 여권 창구에서 신청해요.'], link: { label: '외교부 여권 안내', href: 'https://www.passport.go.kr' } },
-  { re: /보조\s*배터리|배터리.*(비행기|기내|수하물)/, a: '보조배터리는 부치는 짐에 넣으면 안 되고, 들고 타야 해요', lines: ['100Wh 넘으면 항공사 허락이 필요하고, 160Wh 넘으면 못 가져가요.', '기내에서 쓰거나 충전하는 걸 막는 항공사가 많아요. 단자를 테이프로 막아 두면 좋아요.'] },
-  { re: /액체|물\s*(가져|들고)|화장품.*기내|기내.*(화장품|물)/, a: '국제선 기내에는 100ml 이하 용기만, 1L 지퍼백 하나에 담아 가져갈 수 있어요', lines: ['면세점에서 산 액체는 봉인된 봉투째면 돼요.', '국내선은 기준이 더 느슨해요.'] },
-  { re: /공항.*(몇\s*시간|언제|미리|일찍)|몇\s*시간\s*전.*공항/, a: '국제선은 2~3시간 전, 국내선은 1시간 전쯤 공항에 가요', lines: ['연휴·아침 첫 비행기는 더 일찍 가요.', '온라인 체크인을 해 두면 줄이 짧아요.'] },
-  { re: /(비자|전자여행허가|esta|eta)/i, a: '나라마다 달라요. 무비자여도 전자여행허가가 필요한 곳이 있어요', lines: ['미국 ESTA, 캐나다 eTA, 영국 ETA, 호주 ETA는 떠나기 전에 온라인으로 받아요.', '일본·동남아 대부분은 짧은 여행이면 무비자예요.'], link: { label: '외교부 해외안전여행', href: 'https://www.0404.go.kr' } },
-];
-function faqFor(q: string) { return FAQ.find((f) => f.re.test(q)) ?? null; }
+/** 여행 상식 (src/data/faq.json, 손으로 정리). 지명이 있으면 지명 질문이 먼저 (이름에 지명이 든 상식만 예외) */
+interface Faq { id: string; re: RegExp; a: string; lines: string[]; volatile: boolean; link?: { label: string; href: string } }
+const FAQ: Faq[] = (faqData as { faq: (Omit<Faq, 're'> & { re: string })[] }).faq.map((f) => ({ ...f, re: new RegExp(f.re, 'i') }));
+const FAQ_WITH_PLACE = new Set(['dom-id', 'jeju-ferry', 'island-ferry', 'visa', 'plug', 'tipping', 'smoking', 'idp']);
+function faqFor(q: string, hasPlace = false) { return FAQ.find((f) => f.re.test(q) && (!hasPlace || FAQ_WITH_PLACE.has(f.id))) ?? null; }
 
 /** 우리 여행 패턴: 기록에서 계절·지역·국내외·동행·다시 간 곳 */
 function travelPattern(done: Trip[], d: AskData): Omit<Answer, 'ctx'> {
@@ -554,7 +549,8 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
   const q = question.trim().replace(/[?!.~]+$/g, '');
   // 여행 주제 낱말('케이블카'·'동굴')이 지명 사전의 볼거리 이름에 걸려 되묻지 않게: 주제 낱말 자리의 지명은 버린다
   const tp = topicOf(q);
-  const mentions: Mention[] = forced ? [] : findMentions(q, d.info).filter((m) => !tp || !tp.words.some((w) => { const i = q.indexOf(w); return i >= 0 && hasWord(q, w) && m.start < i + w.length && m.end > i; }));
+  // 여행 상식 질문('기내에 화장품', '카드', '환전')이면 오타 고치기를 하지 않는다: 흔한 말이 지명(기니·차드·인천)으로 바뀌지 않게
+  const mentions: Mention[] = forced ? [] : findMentions(q, d.info, { typo: !faqFor(q) }).filter((m) => !tp || !tp.words.some((w) => { const i = q.indexOf(w); return i >= 0 && hasWord(q, w) && m.start < i + w.length && m.end > i; }));
   const person = readPerson(q, d.trips);
   const year = readYear(q, now);
   const season = readSeason(q);
@@ -651,8 +647,12 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       break;
     }
     case 'faq': {
-      const f = faqFor(q)!;
-      a = { intent, text: f.a, lines: f.lines, buttons: f.link ? [{ label: f.link.label, url: f.link.href }] : [], source: '보라핀 여행 상식 · 2026년 10월 기준 · 떠나기 전 확인' };
+      const f = faqFor(q, places.length > 0) ?? faqFor(q)!;
+      // 나라를 말했으면 세계 도시 자료의 그 나라 입국·콘센트 메모를 앞에 (손 메모라 '떠나기 전 확인'과 함께)
+      const cty = places.find((x) => x.t === 'country');
+      const city = cty && cty.t === 'country' ? d.world?.cities.find((c) => c.c === cty.id) : undefined;
+      const extra = city ? [f.id === 'plug' ? `${countryName(city)} 콘센트: ${city.plug}` : `${countryName(city)} 입국: ${city.entry} (세계 도시 자료 · 떠나기 전 확인)`] : [];
+      a = { intent, text: f.a, lines: [...extra, ...f.lines], buttons: f.link ? [{ label: f.link.label, url: f.link.href }] : [], source: `보라핀 여행 상식 · ${(faqData as { updated: string }).updated} 기준${f.volatile ? ' · 규정이 자주 바뀌어요, 떠나기 전 확인' : ''}` };
       break;
     }
     case 'pattern': {
