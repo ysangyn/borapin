@@ -23,9 +23,14 @@
 | 8 | TourAPI 관광정보·사진·연관 | 진행 중 (7개 API 열림 확인: KorService2·PhotoGalleryService1·TarRlteTarService1·DataLabService·KorWithService2·TatsCnctrRateService) | scripts/tour-build.ts 작성됨(아직 빌드·화면에 안 붙임). 다음: gov-probe로 받기 확인(시·군 코드가 법정동 코드와 맞는지) → ci.yml 빌드 단계에 붙이고 지역 창에 관광지·무장애 표시 |
 | 9 | 버스·KTX 여행답게 가는 길 | 자료 모으는 중 (백그라운드, 매일 새벽 .github/workflows/bus.yml → bus-data 브랜치 state.json) | 다 모이면(진행 100%) 노선표를 src/data/routes.json으로 줄이고 길 찾기 화면 (FLAGS.transitRoute) |
 | 10 | AI 모델 비교 점검 | 완료: 기본 Llama 3.3 70B 유지 (2차: 사실 고친 뒤 기본 11/12·정확·짧음, Mistral 12/12·매끄럽지만 '밀양=바닷가'처럼 조금 지어냄·말투 섞임, gpt-oss 11/12·느림). 다시 비교하려면 커밋 메시지에 [모델비교] | 걷기 편한 국내 여행지 자료가 없어 '많이 안 걷는' 조건은 못 맞춤 → 8번 TourAPI 무장애 자료로 |
+| 11 | 전반 기획 재검토·보완 (사용자 요청: 여력 될 때) | 대기 | 화면별 흐름·중복 기능·빈 상태·용어 통일 점검 → 보완 목록 만들어 사용자에게 |
 | - | 우리 동네 지도(동 단위) | 보류 | |
 
 ## 항목별 결정 메모
+### 8. 관광공사
+- 관광빅데이터: 시·군 하루 방문자(현지인·외지인·외국인). '요즘 뜨는 곳'은 최근 4주 외지인을 작년 같은 4주와 비교. '한적한 곳'은 외지인 적은 곳. 장소 단위 혼잡은 집중률(TatsCnctrRateService).
+- 시·군 코드: 관광공사 법정동 코드표(ldongCode2)로 이름 맞춤. 2026-10-19 저녁 공공데이터포털이 연결 실패(fetch failed)해 확인 못 함 → 다시 돌리기.
+
 ### 9. 버스·KTX
 - API: `https://apis.data.go.kr/1613000/{SuburbsBusInfo|ExpBusInfo|TrainInfo}/Get…` (대문자 Get). 열차 역 목록은 도시별(cityCode)로만 됨. 역 이름 '판교(경기)'처럼 괄호.
 - 범위: 시외 1,945곳(160개 중 145), 고속 453(117), 열차 349(91), KTX 역 70. 고양종합 시외는 자료상 노선 0 → 고양 출발은 고양백석·고양화정(고속), 행신(KTX).
