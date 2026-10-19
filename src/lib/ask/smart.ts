@@ -47,7 +47,7 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
     const plan = await post('/plan', token, { question, context });
     const mention = findMentions(question, d.info)[0]?.entry.label ?? null;
     const calls = ensurePlan(question, (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[], mention, now);
-    const facts = runTools(calls, d, ctx.place ?? null, now);
+    const facts = runTools(calls, d, ctx.place ?? null, now, question);
     const factText = [facts.text, facts.actions.length ? `actions: ${facts.actions.map((x) => `${x.id}=${x.btn.label}`).join(', ')}` : ''].filter(Boolean).join('\n');
     const ans = await post('/answer', token, { question, context, facts: factText });
     const text = String(ans.text ?? '');

@@ -370,6 +370,7 @@ const KNOWN_RE: RegExp[] = [
 ];
 const GENERIC = new Set(('여행지 여행 곳 데 데가 곳들 장소 명소 코스 추천 추천해줘 추천해 좋은 좋을 좋아 좋은데 괜찮은 보기 가기 갈 갈만한 만한 가볼 가볼만한 볼만한 '
   + '어디 어디가 어디로 어디를 이번 다음 주 달 날씨 요즘 지금 우리 둘 다 같이 함께 놀러 알려줘 해줘 줘 좀 하기 할 하는 한 있는 없는 가면 갈까 가자 가고 싶은 싶어 '
+  + '중에 중 아직 정도 쯤 '
   + '보러 하러 먹으러 쉬러 여행하기 여행가기 어때 어떤 데요 곳이 곳을 곳은 거 것 수 있을까 있어 인 의 및 또는 그리고 가봐야 할만한 보면 맑은 비 안 오는 드라이브').split(' '));
 export function unusedWords(q: string, info: AskData['info']): string[] {
   let rest = ` ${q} `;
@@ -527,10 +528,10 @@ const TOPICS = (topicsData as { topics: Topic[] }).topics;
 const hasWord = (q: string, w: string) => new RegExp(`(^|[^가-힣])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(q);
 export const topicOf = (q: string) => TOPICS.find((t) => t.words.some((w) => hasWord(q, w))) ?? null;
 
-const STAR_Q = /은하수|별\s*(을|이)?\s*(보|관측|사진)|별자리|별빛|천문대|밤하늘|별\s*보러/;
+export const STAR_Q = /은하수|별\s*(을|이)?\s*(보|관측|사진)|별자리|별빛|천문대|밤하늘|별\s*보러/;
 const WEATHER_SOON = /날씨|맑|비\s*안/;
 /** 빛 공해가 적은 곳 (국제밤하늘보호공원·천문대) */
-const DARK_SKY: { code: string; spot: string }[] = [
+export const DARK_SKY: { code: string; spot: string }[] = [
   { code: '47760', spot: '반딧불이천문대 · 국제밤하늘보호공원' },
   { code: '51750', spot: '별마로천문대' },
   { code: '51760', spot: '육백마지기 · 청옥산' },

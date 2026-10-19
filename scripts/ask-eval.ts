@@ -86,7 +86,7 @@ for (const q of QUESTIONS) {
     const mention = findMentions(q, data.info)[0]?.entry.label ?? null;
     const calls = ensurePlan(q, (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[], mention, data.now);
     console.log(`   계획: ${JSON.stringify(calls)}`);
-    const facts = runTools(calls, data, null, data.now);
+    const facts = runTools(calls, data, null, data.now, q);
     const factText = [facts.text, facts.actions.length ? `actions: ${facts.actions.map((x) => `${x.id}=${x.btn.label}`).join(', ')}` : ''].filter(Boolean).join('\n');
     const ans = await post('/answer', tk, { question: q, context, facts: factText });
     const text = String(ans.text ?? '');

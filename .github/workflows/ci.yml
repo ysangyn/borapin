@@ -251,7 +251,8 @@ jobs:
           FIREBASE_API_KEY: AIzaSyAXT9E3jX2BBJwQv0dWS4Fqcx-7qK8bWt0
           EMAIL: bora.preview@example.com
         run: |
-          for m in "@cf/openai/gpt-oss-120b" "@cf/meta/llama-4-scout-17b-16e-instruct" "@cf/google/gemma-3-12b-it" "@cf/mistralai/mistral-small-3.1-24b-instruct"; do
+          for m in "@cf/mistralai/mistral-small-3.1-24b-instruct" "@cf/openai/gpt-oss-120b"; do
+            sleep 65
             echo "===== $m =====" | tee -a ask-eval.txt
             EVAL_MODEL="$m" PW="$PREVIEW_PW" timeout 600 npx tsx scripts/ask-eval.ts 2>&1 | tee -a ask-eval.txt || true
           done

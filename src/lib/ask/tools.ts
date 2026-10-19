@@ -7,6 +7,7 @@ import { cityFor, COST_LABEL, flyLabel, tzLabel, WALK_LABEL } from '../world';
 import { dday, formatWhen, SEASON_LABEL } from '../dates';
 import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, searchPlaces } from '../geo';
 import { candidates, THEMES } from '../recommend';
+import { DARK_SKY, STAR_Q, topicOf, unusedWords } from './engine';
 import { monthsLabel, seasonFor } from '../seasons';
 import { festivalPeriod, isOngoing, upcomingFestivals } from '../festivals';
 import { packFromTemplate } from '../packing';
@@ -30,7 +31,7 @@ export function resolvePlace(name: string, prev: Place | null): Place | null {
 
 const tripsAt = (d: AskData, p: Place) => d.trips.filter((t) => t.status === 'done' && t.places.some((x) => samePlace(x, p))).sort((a, b) => (b.when.y ?? 0) - (a.when.y ?? 0));
 
-export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now = new Date()): Facts {
+export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now = new Date(), question = ''): Facts {
   const out: string[] = [];
   const actions: { id: string; btn: Btn }[] = [];
   let act = 0;
@@ -179,6 +180,18 @@ export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now 
           const g = str(a.group);
           const groupId = g ? GROUPS.find((x) => x.name.includes(g) || g.includes(x.name))?.id ?? null : null;
           const stats = computeStats(d.trips);
+          // 질문에 여행 주제(케이블카·해돋이…)나 별·은하수가 있으면 주제 사전의 곳만 사실로 준다 (일반 후보를 주제에 맞는 척 쓰지 않게)
+          const tp = question ? topicOf(question) : null;
+          const star = question && STAR_Q.test(question);
+          if (tp || star) {
+            const pool = (tp ? tp.places : DARK_SKY).filter((x) => !unvisited || !stats.cellVisits.has(x.code));
+            const label = tp ? tp.label : '별·은하수(어두운 밤하늘)';
+            out.push(pool.length ? `${label} 하기 좋은 곳(보라핀 주제 사전): ${pool.slice(0, 6).map((x) => `${placeLong({ t: 'kr', code: x.code })} · ${x.spot} · 우리 ${tripsAt(d, { t: 'kr', code: x.code }).length}번`).join(' / ')}` : `${label}: 조건에 맞는 곳 없음`);
+            for (const x of pool.slice(0, 3)) out.push(`  ${addAction(`${placeLabel({ t: 'kr', code: x.code })} 담기`, { wish: { t: 'kr', code: x.code } })}`);
+            break;
+          }
+          const miss = question ? unusedWords(question, d.info) : [];
+          if (miss.length) out.push(`주의: 질문의 '${miss.join(', ')}'에 맞는 자료는 없음. 아래 후보는 그 조건과 상관없는 일반 후보이니 그 조건에 맞는다고 쓰지 말 것`);
           let list = candidates({ scope: groupId ?? 'kr', unvisitedOnly: unvisited, theme: themeId, stats, info: d.info, wishes: d.wishes });
           if (month) list = list.filter((c) => seasonFor(d.seasons, c.place)?.m.includes(month));
           const picks = dailyShuffle(list, 'ask').slice(0, Math.min(num(a.count) ?? 4, 6));
