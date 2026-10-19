@@ -18,7 +18,8 @@ const problems: string[] = [];
 function watch(page: Page) {
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !/permission|insufficient|Failed to load resource: the server responded with a status of 400/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`);
+    // 뒷단(물어보기·소식·장소 링크)은 바깥 사이트에 기대는 덤 기능: 앱은 실패해도 조용히 넘어가고, 뒷단 자체는 ask-eval이 따로 점검한다
+    if (m.type() === 'error' && !/permission|insufficient|Failed to load resource: the server responded with a status of 400/i.test(m.text()) && !/workers\.dev/.test(m.text()) && !/net::ERR_FAILED/.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`);
   });
   return page;
 }
