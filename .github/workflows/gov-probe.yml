@@ -1,0 +1,31 @@
+name: 공공 API 열림 확인
+
+# 손으로 돌린다. 외교부·관광공사·수출입은행 API가 키로 열리는지 확인해 ci-report/gov에 올린다.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 확인
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          TOUR_API_KEY: ${{ secrets.TOUR_API_KEY }}
+          KOREAEXIM_KEY: ${{ secrets.KOREAEXIM_KEY }}
+        run: npx tsx scripts/gov-probe.ts 2>&1 | tee gov-probe.txt
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh gov gov-probe.txt
