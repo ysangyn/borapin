@@ -1,21 +1,68 @@
-   계획: [{"tool":"recommend","args":{"month":"11","themes":"바다","unvisited":"true","count":"1"}}]
-✓ "다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까" (3297ms)
+   계획: [{"tool":"recommend","args":{"themes":["은하수"],"unvisited":true,"count":5}}]
+✓ "은하수 보기 좋은 데 중에 아직 안 가본 곳" (3113ms)
    도구: recommend
-   답: 거제시
-   · 경남 거제시
-   · 에메랄드빛 바다와 바람의 언덕
+   답: 은하수 보기 좋은 데
+   · 포천시
+   · 서울
+   · 청송군
+   · 오산시
+   · 광주시
+   단추: a1, a3, a5
+   계획: [{"tool":"recommend","args":{"month":10,"themes":["가을","단풍"],"unvisited":true,"group":"부모님","count":3}}]
+✓ "부모님 모시고 많이 안 걷는 가을 여행지" (3579ms)
+   도구: recommend
+   답: 포천시, 서울, 청송군
+   · 포천시: 폐채석장의 변신과 갈비 향 가득한 마을
+   · 서울: 과거와 미래가 공존하는 K-컬처의 심장
+   · 청송군: 주왕산의 기암괴석과 달기약수의 시원함
+   단추: a1, a3, a5
+   계획: [{"tool":"resolve_place","args":{"place":"서울 근처"}},{"tool":"recommend","args":{"themes":["실내"],"unvisited":false,"group":"보라, 영상","count":5}}]
+✓ "비 오는 주말 서울 근처 실내에서 놀 만한 곳" (3246ms)
+   도구: resolve_place, recommend
+   답: 서울 근처 실내 놀기
+   · 서울 근처는 앱에 없는 지명이에요
+   · 기록이 없어요
+   단추: 없음
+   계획: [{"tool":"recommend","args":{"themes":["바다","도시"],"count":5}}]
+✓ "케이블카 있는 바닷가 도시 추천" (2381ms)
+   도구: recommend
+   답: 케이블카 있는 바닷가 도시
+   · 부산: 바다를 품은 다이내믹한 해양 도시, 좋은 때 4~6, 10·11월
+   단추: a3, a4
+   계획: [{"tool":"recommend","args":{"themes":["온천"],"unvisited":true,"count":3}}]
+✓ "혼자 조용히 쉬기 좋은 곳 추천해줘" (2793ms)
+   도구: recommend
+   답: 온천 추천
+   · 대전: 과학의 도시와 노잼을 거부하는 빵의 성지
+   · 전남 영암군: 기찬 묏길과 월출산의 장엄한 바위
+   · 전북 임실군: 치즈 향 가득한 유럽풍 정원 산책
+   단추: a1, a3, a5
+   계획: [{"tool":"recommend","args":{"month":"12","themes":["온천"],"unvisited":true,"group":"国内","count":5}}]
+✓ "겨울에 따뜻한 국내 여행지" (12789ms)
+   도구: recommend
+   답: 기록이 없어요
+   · 기록이 없어요
+   단추: 없음
+   계획: [{"tool":"recommend","args":{"month":"11","themes":["바다"],"unvisited":"true","count":"1"}}]
+✓ "다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까" (2132ms)
+   도구: recommend
+   답: 남해군이 좋을 것 같아요
+   · 경남 남해군
+   · 죽방렴이 지키는 은빛 바다의 보물
    · 좋은 때: 4~6, 10·11월
-   · 우리가 아직 안 가본 곳이에요
+   · 우리 0번
    단추: a1, a2
    계획: [{"tool":"resolve_place","args":{"place":"강릉시"}},{"tool":"our_places","args":{"place":"강릉시"}},{"tool":"our_notes","args":{}},{"tool":"our_trips","args":{"place":"강릉시"}}]
-✓ "강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나" (5190ms)
+✓ "강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나" (10644ms)
    도구: resolve_place, our_places, our_notes, our_trips
    답: 강릉시에서 순두부
-   · 초당할머니순두부에서 식사했어요
+   · 초당할머니순두부에서 순두부를 먹었어요
    · 영상: "최고", 보라: "고소해요"
+   · 2019.5.3–4에 강릉시 여행을 했어요
+   · 바다 보며 커피 마신 날이라는 글이 있어요
    단추: a1, a2
    계획: [{"tool":"packing","args":{"place":"제주","kind":"etc"}}]
-✓ "제주 가기 전에 준비물 뭐 남았어" (2625ms)
+✓ "제주 가기 전에 준비물 뭐 남았어" (2709ms)
    도구: packing
    답: 준비물 확인
    · 신분증
@@ -25,36 +72,310 @@
    · 상비약
    · 세면도구
    단추: 없음
-   계획: [{"tool":"recommend","args":{"month":10,"themes":["도시"],"unvisited":true,"group":"가족"}}]
-✓ "엄마 모시고 갈 만한 데 추천해줘, 많이 걷지 않는 데로" (9571ms)
+   계획: [{"tool":"recommend","args":{"themes":["도시","카페","맛집"],"unvisited":true,"group":"가족"}}]
+✓ "엄마 모시고 갈 만한 데 추천해줘, 많이 걷지 않는 데로" (3154ms)
    도구: recommend
-   답: 포천시, 서울, 청송군, 오산시
-   · 포천시: 폐채석장의 변신과 갈비 향 가득한 마을
-   · 서울: 과거와 미래가 공존하는 K-컬처의 심장
-   · 청송군: 주왕산의 기암괴석과 달기약수의 시원함
-   · 오산시: 고인돌의 역사와 맑은 물 향기 수목원
-   단추: a1, a2, a3, a4
-   계획: [{"tool":"our_notes","args":{}},{"tool":"our_trips","args":{}}]
-✓ "커피 마시러 갔던 날 글 남긴 거 찾아줘" (4691ms)
-   도구: our_notes, our_trips
-   답: 바다 보며 커피 마신 날
-   · 강릉시 여행에서 바다 보며 커피 마신 날을 기록했어요
-   · 영상과 함께 강릉시에서 바다를 보며 커피를 마셨어요
-   단추: a1
-   계획: [{"tool":"recommend","args":{"month":"11","themes":["도시","카페","맛집","역사","온천"],"unvisited":"true","group":"false","count":"5"}}]
-✓ "11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳" (8375ms)
-   도구: recommend
-   답: 실내 활동
-   · 경남 통영시
-   · 경북 경주시
-   · 울산
+   답: 하남시, 익산시, 횡성군, 광주
+   · 하남시: 조정 경기장의 활기와 대형 쇼핑몰 투어
+   · 익산시: 백제의 미소와 보석처럼 빛나는 밤
+   · 횡성군: 명품 한우와 숲길 드라이브
+   · 광주: 민주주의의 상징과 예술의 향연
    단추: a1, a3, a5
-소식 "유류할증료 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 11462b 12"] · 첫 기사 "국제선 유류할증료 3개월 연속 상승…11월 27단계 적용" (2026-10-16T01:31:00.000Z)
-소식 "고창 여행 when:30d": 200 · 12개 · ["google 503 0b 0","bing 200 9350b 12"] · 첫 기사 "판소리 여섯 마당 집대성한 신재효의 집터에 선 박물관, 고창 신재효판소리박물관" (2026-10-15T10:39:00.000Z)
-소식 "경기 광주 축제 when:30d": 200 · 11개 · ["google 503 0b 0","bing 200 9937b 11"] · 첫 기사 "광주시 퇴촌청소년문화의집, 개관 4주년 축제 퇴툰(TOON) 성황리 개최" (2026-10-18T20:21:00.000Z)
-소식 "인기 여행지 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 12375b 12"] · 첫 기사 "네이버 파파고, 번역 넘어 '한국 여행 길잡이'로… 인기 상품·장소 추천" (2026-10-18T17:19:52.000Z)
+   계획: [{"tool":"our_notes","args":{}},{"tool":"our_trips","args":{}}]
+✗ "커피 마시러 갔던 날 글 남긴 거 찾아줘" → /answer 429 {"error":"too many requests","retry":60}
+   계획: [{"tool":"recommend","args":{"month":11,"themes":["도시","카페","맛집","역사"],"unvisited":true,"group":"실내","count":5}}]
+✗ "11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳" → /answer 429 {"error":"too many requests","retry":60}
+소식 "유류할증료 when:14d": 200 · 15개 · ["google 200 85246b 15"] · 첫 기사 "국제유가보다 더 뛴 항공유 … 11월 유류할증료 다시 27단계까지 오르나" (2026-10-06T07:00:00.000Z)
+소식 "고창 여행 when:30d": 200 · 12개 · ["google 503 0b 0","bing 200 9364b 12"] · 첫 기사 "판소리 여섯 마당 집대성한 신재효의 집터에 선 박물관, 고창 신재효판소리박물관" (2026-10-15T10:39:00.000Z)
+소식 "경기 광주 축제 when:30d": 200 · 11개 · ["google 503 0b 0","bing 200 9732b 11"] · 첫 기사 "광주시 퇴촌청소년문화의집, 개관 4주년 축제 퇴툰(TOON) 성황리 개최" (2026-10-18T20:21:00.000Z)
+소식 "인기 여행지 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 13050b 12"] · 첫 기사 "네이버 파파고, 번역 넘어 '한국 여행 길잡이'로… 인기 상품·장소 추천" (2026-10-18T17:19:52.000Z)
 장소 링크 https://naver.me/GlVmYk5l: 200 {"source":"naver","name":"슈츠","image":"https://search.pstatic.net/common/?autoRotate=true&quality=100&type=f640_380&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260704_62%2F1783146573867yOAvN_JPEG%2F7f00fd9e42168c22fcb943acf249a760.jpg","address":"경북 칠곡군 동명면 남원로3길 14 .","category":"카페,디저트","lat":36.0125,"lng":128.5869387,"placeId":"1244288249","steps":["→ place","naver 200"]}
 장소 링크 https://naver.me/GIVmYk5l: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/GIVmYk5l","geocode ok"]}
 장소 링크 https://naver.me/xYz12: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/xYz12","geocode ok"]}
 
-보라(AI) 점검: 6/6
+보라(AI) 점검: 10/12
+===== @cf/openai/gpt-oss-120b =====
+   계획: []
+✓ "은하수 보기 좋은 데 중에 아직 안 가본 곳" (10055ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+   계획: []
+✓ "부모님 모시고 많이 안 걷는 가을 여행지" (10155ms)
+   도구: 없음
+   답: 자료를 못 찾았어요, 다르게 물어봐 주세요
+   
+   단추: 없음
+   계획: []
+✓ "비 오는 주말 서울 근처 실내에서 놀 만한 곳" (7544ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+   계획: []
+✓ "케이블카 있는 바닷가 도시 추천" (9749ms)
+   도구: 없음
+   답: 자료를 못 찾았어요, 다르게 물어봐 주세요
+   
+   단추: 없음
+   계획: []
+✓ "혼자 조용히 쉬기 좋은 곳 추천해줘" (6636ms)
+   도구: 없음
+   답: 자료를 못 찾았어요, 다르게 물어봐 주세요
+   
+   단추: 없음
+   계획: []
+✗ "겨울에 따뜻한 국내 여행지" → /answer 502 {"error":"no answer"}
+   계획: [{"tool":"recommend","args":{"month":11,"themes":["바다"],"unvisited":true,"count":5}}]
+✗ "다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까" → /answer 502 {"error":"no answer"}
+   계획: [{"tool":"resolve_place","args":{"place":"강릉시"}},{"tool":"our_trips","args":{"place":"강릉시"}},{"tool":"our_places","args":{"place":"강릉시"}}]
+✓ "강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나" (11371ms)
+   도구: resolve_place, our_trips, our_places
+   답: 초당할머니순두부에서 순두부, 다시 가고 싶어요
+   · 2019년 5월 3~4일 강릉시 여행 기록이 있어요.
+   · 방문한 곳은 초당할머니순두부(강릉시)예요.
+   · 음식은 순두부였고, 영상은 "최고"라고 했어요.
+   · 보라는 "고소해요"라고 평가했어요.
+   · 메모에 "또 갈래요"라고 적혀 있어 다시 가고 싶다고 했어요.
+   단추: a1, a2
+   계획: []
+✓ "제주 가기 전에 준비물 뭐 남았어" (7565ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+   계획: [{"tool":"recommend","args":{"month":10,"themes":["온천","도시","카페","역사","꽃"],"unvisited":true,"group":"엄마","count":5}}]
+✗ "엄마 모시고 갈 만한 데 추천해줘, 많이 걷지 않는 데로" → /answer 502 {"error":"no answer"}
+   계획: [{"tool":"our_trips","args":{}},{"tool":"our_notes","args":{}}]
+✓ "커피 마시러 갔던 날 글 남긴 거 찾아줘" (6939ms)
+   도구: our_trips, our_notes
+   답: 강릉시 여행 중 바다 보며 커피 마신 날
+   · 글 제목: 바다 보며 커피 마신 날 (영상, 강릉시 여행)
+   · 관련 여행: 강릉시 여행 (2019.5.3–4)
+   단추: a1
+   계획: []
+✓ "11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳" (5404ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+소식 "유류할증료 when:14d": 200 · 15개 · ["google 200 85246b 15"] · 첫 기사 "국제유가보다 더 뛴 항공유 … 11월 유류할증료 다시 27단계까지 오르나" (2026-10-06T07:00:00.000Z)
+소식 "고창 여행 when:30d": 200 · 12개 · ["google 503 0b 0","bing 200 9364b 12"] · 첫 기사 "판소리 여섯 마당 집대성한 신재효의 집터에 선 박물관, 고창 신재효판소리박물관" (2026-10-15T10:39:00.000Z)
+소식 "경기 광주 축제 when:30d": 200 · 11개 · ["google 503 0b 0","bing 200 9732b 11"] · 첫 기사 "광주시 퇴촌청소년문화의집, 개관 4주년 축제 퇴툰(TOON) 성황리 개최" (2026-10-18T20:21:00.000Z)
+소식 "인기 여행지 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 13050b 12"] · 첫 기사 "네이버 파파고, 번역 넘어 '한국 여행 길잡이'로… 인기 상품·장소 추천" (2026-10-18T17:19:52.000Z)
+장소 링크 https://naver.me/GlVmYk5l: 200 {"source":"naver","name":"슈츠","image":"https://search.pstatic.net/common/?autoRotate=true&quality=100&type=f640_380&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260704_62%2F1783146573867yOAvN_JPEG%2F7f00fd9e42168c22fcb943acf249a760.jpg","address":"경북 칠곡군 동명면 남원로3길 14 .","category":"카페,디저트","lat":36.0125,"lng":128.5869387,"placeId":"1244288249","steps":["→ place","naver 200"]}
+장소 링크 https://naver.me/GIVmYk5l: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/GIVmYk5l","geocode ok"]}
+장소 링크 https://naver.me/xYz12: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/xYz12","geocode ok"]}
+
+보라(AI) 점검 [@cf/openai/gpt-oss-120b]: 9/12
+===== @cf/meta/llama-4-scout-17b-16e-instruct =====
+   계획: []
+✗ "은하수 보기 좋은 데 중에 아직 안 가본 곳" → /answer 502 {"error":"no answer"}
+   계획: []
+✗ "부모님 모시고 많이 안 걷는 가을 여행지" → /answer 502 {"error":"no answer"}
+   계획: []
+✗ "비 오는 주말 서울 근처 실내에서 놀 만한 곳" → /answer 502 {"error":"no answer"}
+   계획: []
+✗ "케이블카 있는 바닷가 도시 추천" → /answer 502 {"error":"no answer"}
+   계획: []
+✓ "혼자 조용히 쉬기 좋은 곳 추천해줘" (2689ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+   계획: []
+✓ "겨울에 따뜻한 국내 여행지" (2185ms)
+   도구: 없음
+   답: 국내 겨울 여행지 정보가 없어요
+   
+   단추: 없음
+   계획: []
+✓ "다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까" (2771ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+   계획: [{"tool":"resolve_place","args":{"place":"강릉시"}},{"tool":"our_trips","args":{"place":"강릉시"}},{"tool":"our_places","args":{"place":"강릉시"}}]
+✓ "강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나" (5753ms)
+   도구: resolve_place, our_trips, our_places
+   답: 2019년 강릉 여행 때 초당할머니순두부 먹었어요
+   · 2019.5.3–4 강릉시 여행
+   · 초당할머니순두부(강릉시, food, 또 갈래요, 영상: "최고", 보라: "고소해요")
+   단추: a1, a2
+   계획: []
+✓ "제주 가기 전에 준비물 뭐 남았어" (3951ms)
+   도구: 없음
+   답: 준비물을 확인할 수 없어요
+   
+   단추: 없음
+   계획: []
+✓ "엄마 모시고 갈 만한 데 추천해줘, 많이 걷지 않는 데로" (3078ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+   계획: [{"tool":"our_trips","args":{}},{"tool":"our_notes","args":{}}]
+✓ "커피 마시러 갔던 날 글 남긴 거 찾아줘" (3064ms)
+   도구: our_trips, our_notes
+   답: 커피 마시던 날 글 찾았어요
+   · 바다 보며 커피 마신 날
+   · 강릉시 여행 때 남긴 글
+   · 우리 기록: 2019.5.3–4 강릉시 여행
+   단추: a1
+   계획: []
+✓ "11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳" (13547ms)
+   도구: 없음
+   답: 기록이 없어요
+   
+   단추: 없음
+소식 "유류할증료 when:14d": 200 · 15개 · ["google 200 85246b 15"] · 첫 기사 "국제유가보다 더 뛴 항공유 … 11월 유류할증료 다시 27단계까지 오르나" (2026-10-06T07:00:00.000Z)
+소식 "고창 여행 when:30d": 200 · 12개 · ["google 503 0b 0","bing 200 9364b 12"] · 첫 기사 "판소리 여섯 마당 집대성한 신재효의 집터에 선 박물관, 고창 신재효판소리박물관" (2026-10-15T10:39:00.000Z)
+소식 "경기 광주 축제 when:30d": 200 · 11개 · ["google 503 0b 0","bing 200 9732b 11"] · 첫 기사 "광주시 퇴촌청소년문화의집, 개관 4주년 축제 퇴툰(TOON) 성황리 개최" (2026-10-18T20:21:00.000Z)
+소식 "인기 여행지 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 13050b 12"] · 첫 기사 "네이버 파파고, 번역 넘어 '한국 여행 길잡이'로… 인기 상품·장소 추천" (2026-10-18T17:19:52.000Z)
+장소 링크 https://naver.me/GlVmYk5l: 200 {"source":"naver","name":"슈츠","image":"https://search.pstatic.net/common/?autoRotate=true&quality=100&type=f640_380&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260704_62%2F1783146573867yOAvN_JPEG%2F7f00fd9e42168c22fcb943acf249a760.jpg","address":"경북 칠곡군 동명면 남원로3길 14 .","category":"카페,디저트","lat":36.0125,"lng":128.5869387,"placeId":"1244288249","steps":["→ place","naver 200"]}
+장소 링크 https://naver.me/GIVmYk5l: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/GIVmYk5l","geocode ok"]}
+장소 링크 https://naver.me/xYz12: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/xYz12","geocode ok"]}
+
+보라(AI) 점검 [@cf/meta/llama-4-scout-17b-16e-instruct]: 8/12
+===== @cf/google/gemma-3-12b-it =====
+✗ "은하수 보기 좋은 데 중에 아직 안 가본 곳" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "부모님 모시고 많이 안 걷는 가을 여행지" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "비 오는 주말 서울 근처 실내에서 놀 만한 곳" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "케이블카 있는 바닷가 도시 추천" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "혼자 조용히 쉬기 좋은 곳 추천해줘" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "겨울에 따뜻한 국내 여행지" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "제주 가기 전에 준비물 뭐 남았어" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "엄마 모시고 갈 만한 데 추천해줘, 많이 걷지 않는 데로" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "커피 마시러 갔던 날 글 남긴 거 찾아줘" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+✗ "11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳" → /plan 502 {"error":"model failed","detail":"5018: This account is not allowed to access @cf/google/gemma-3-12b-it."}
+소식 "유류할증료 when:14d": 200 · 15개 · ["google 200 85246b 15"] · 첫 기사 "국제유가보다 더 뛴 항공유 … 11월 유류할증료 다시 27단계까지 오르나" (2026-10-06T07:00:00.000Z)
+소식 "고창 여행 when:30d": 200 · 12개 · ["google 503 0b 0","bing 200 9364b 12"] · 첫 기사 "판소리 여섯 마당 집대성한 신재효의 집터에 선 박물관, 고창 신재효판소리박물관" (2026-10-15T10:39:00.000Z)
+소식 "경기 광주 축제 when:30d": 200 · 11개 · ["google 503 0b 0","bing 200 9732b 11"] · 첫 기사 "광주시 퇴촌청소년문화의집, 개관 4주년 축제 퇴툰(TOON) 성황리 개최" (2026-10-18T20:21:00.000Z)
+소식 "인기 여행지 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 13050b 12"] · 첫 기사 "네이버 파파고, 번역 넘어 '한국 여행 길잡이'로… 인기 상품·장소 추천" (2026-10-18T17:19:52.000Z)
+장소 링크 https://naver.me/GlVmYk5l: 200 {"source":"naver","name":"슈츠","image":"https://search.pstatic.net/common/?autoRotate=true&quality=100&type=f640_380&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260704_62%2F1783146573867yOAvN_JPEG%2F7f00fd9e42168c22fcb943acf249a760.jpg","address":"경북 칠곡군 동명면 남원로3길 14 .","category":"카페,디저트","lat":36.0125,"lng":128.5869387,"placeId":"1244288249","steps":["→ place","naver 200"]}
+장소 링크 https://naver.me/GIVmYk5l: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/GIVmYk5l","geocode ok"]}
+장소 링크 https://naver.me/xYz12: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/xYz12","geocode ok"]}
+
+보라(AI) 점검 [@cf/google/gemma-3-12b-it]: 0/12
+✗ 절반 넘게 실패
+===== @cf/mistralai/mistral-small-3.1-24b-instruct =====
+   계획: [{"tool":"recommend","args":{"count":5,"themes":["밤하늘"],"unvisited":true}}]
+✓ "은하수 보기 좋은 데 중에 아직 안 가본 곳" (8317ms)
+   도구: recommend
+   답: 은하수 보기 좋은 안 가본 곳 추천해요
+   · 포천시: 폐채석장의 변신과 갈비 향 가득한 마을, 4~6, 9·10월에 좋음
+   · 서울: 과거와 미래가 공존하는 K-컬처의 심장, 4~6, 9·10월에 좋음
+   · 청송군: 주왕산의 기암괴석과 달기약수의 시원함, 4~6, 9·10월에 좋음
+   · 오산시: 고인돌의 역사와 맑은 물 향기 수목원, 4~6, 9·10월에 좋음
+   · 광주시: 남한산성의 역사가 흐르는 숲길, 4·5, 9·10월에 좋음
+   단추: a1, a2, a3, a4
+   계획: [{"tool":"recommend","args":{"count":3,"group":"부모님","month":"10","themes":["산","온천","꽃","단풍"]}}]
+✓ "부모님 모시고 많이 안 걷는 가을 여행지" (3464ms)
+   도구: recommend
+   답: 부산은 가을에 방문하기 좋은 해양 도시입니다.
+   · 부산은 바다를 품은 다이내믹한 해양 도시입니다.
+   · 부산은 10월과 11월에 방문하기 좋습니다.
+   · 부산은 우리와 1번 함께 다녀왔어요.
+   단추: a3, a4
+   계획: [{"tool":"recommend","args":{"count":5,"group":true,"month":"10","themes":["도시"],"unvisited":true}}]
+✓ "비 오는 주말 서울 근처 실내에서 놀 만한 곳" (6929ms)
+   도구: recommend
+   답: 서울 근처 실내에서 즐길 수 있는 곳 추천해요
+   · 비오는 주말 서울 근처 실내에서 놀 만한 곳을 추천해드릴게요.
+   · 우리 기록에는 서울 근처 실내에서 즐길 수 있는 곳이 없어요.
+   · 서울은 과거와 미래가 공존하는 K-컬처의 심장이에요.
+   · 서울은 4~6월, 9~10월에 가기 좋은 곳이에요.
+   · 포천시는 폐채석장의 변신과 갈비 향 가득한 마을이에요.
+   · 포천시는 4~6월, 9~10월에 가기 좋은 곳이에요.
+   단추: a2, a4
+   계획: [{"tool":"recommend","args":{"count":1,"themes":["바다"]}}]
+✓ "케이블카 있는 바닷가 도시 추천" (2781ms)
+   도구: recommend
+   답: 태안군의 케이블카와 아름다운 바닷가 추천
+   · 태안군 안면도에는 소나무 숲과 끝없는 해안선이 있어요
+   · 좋은 때는 5·6월과 9·10월이에요
+   · 우리 기록에는 태안군이 있어요
+   단추: a1, a2
+   계획: [{"tool":"recommend","args":{"group":"1","month":"10","themes":["온천","카페"],"unvisited":true}}]
+✓ "혼자 조용히 쉬기 좋은 곳 추천해줘" (6797ms)
+   도구: recommend
+   답: 조용히 쉬기 좋은 곳 추천해드릴게요
+   · 대전: 과학의 도시와 노잼을 거부하는 빵의 성지
+   · 전남 영암군: 기찬 묏길과 월출산의 장엄한 바위
+   · 전북 임실군: 치즈 향 가득한 유럽풍 정원 산책
+   · 경남 거창군: 수승대의 시원한 물놀이와 우두산 출렁다리
+   단추: a1, a2, a3, a4
+   계획: [{"tool":"recommend","args":{"month":"12","themes":["온천"]}}]
+✓ "겨울에 따뜻한 국내 여행지" (2984ms)
+   도구: recommend
+   답: 기록이 없어요, 다르게 물어봐 주세요
+   
+   단추: 없음
+   계획: [{"tool":"recommend","args":{"count":1,"month":"11","themes":["바다"],"unvisited":true}}]
+✓ "다음 달에 둘 다 안 가본 바다 쪽으로 1박 가고 싶은데 어디가 좋을까" (3138ms)
+   도구: recommend
+   답: 다음 달에 둘 다 안 가본 바다로 1박 여행 추천
+   · 11월에는 경남 남해군이 좋아요.
+   · 죽방렴이 지키는 은빛 바다의 보물로 유명해요.
+   · 좋은 때: 4~6월, 10~11월
+   · 우리 둘 다 아직 안 가본 곳이에요.
+   단추: a1, a2
+   계획: [{"tool":"resolve_place","args":{"place":"강릉"}},{"tool":"our_places","args":{"place":"강릉"}},{"tool":"our_trips","args":{"place":"강릉"}},{"tool":"our_notes","args":{"query":"강릉"}},{"tool":"wishes","args":{}}]
+✓ "강릉 갔을 때 뭐 먹었더라, 또 가고 싶다고 한 데 있었나" (6199ms)
+   도구: resolve_place, our_places, our_trips, our_notes, wishes
+   답: 강릉 여행 때 초당할머니순두부에서 순두부를 먹었어요
+   · 강릉 여행 때 초당할머니순두부에서 순두부를 먹었어요
+   · 영상: '최고'
+   · 보라: '고소해요'
+   · 2019년 5월 3일~4일 강릉시 여행
+   · 보라와 영상, 엄마가 함께 갔어요
+   · 강릉시 여행 기록이 있어요
+   단추: a1, a2
+   계획: [{"tool":"resolve_place","args":{"place":"제주"}},{"tool":"our_trips","args":{"place":"제주"}},{"tool":"packing","args":{"place":"제주"}}]
+✓ "제주 가기 전에 준비물 뭐 남았어" (4916ms)
+   도구: resolve_place, our_trips, packing
+   답: 제주 여행 준비물 확인해볼게요
+   · 제주 여행 준비물 확인해볼게요
+   · 신분증, 지갑·카드, 휴대폰 충전기, 보조배터리, 상비약, 세면도구, 갈아입을 옷, 잠옷, 수영복, 선크림, 선글라스, 모자, 비치타월, 샌들
+   · 우리 기록은 없어요, 제주에 안 가봤어요
+   단추: 없음
+   계획: [{"tool":"recommend","args":{"group":"가족","themes":["온천"]}},{"tool":"our_trips","args":{"season":"가을"}},{"tool":"our_places","args":{}},{"tool":"our_notes","args":{}},{"tool":"our_photos","args":{}}]
+✓ "엄마 모시고 갈 만한 데 추천해줘, 많이 걷지 않는 데로" (4872ms)
+   도구: recommend, our_trips, our_places, our_notes, our_photos
+   답: 부산은 바다를 보며 편안히 즐길 수 있어요
+   · 부산은 바다를 품은 다이내믹한 해양 도시예요
+   · 부산은 4~6월, 10~11월에 가기 좋아요
+   · 우리도 부산에 가본 적이 있어요
+   · 부산은 많이 걷지 않아도 즐길 수 있어요
+   단추: a3, a4, a8
+   계획: [{"tool":"our_notes","args":{"query":"커피"}},{"tool":"our_trips","args":{}}]
+✓ "커피 마시러 갔던 날 글 남긴 거 찾아줘" (3750ms)
+   도구: our_notes, our_trips
+   답: 2019년 5월 강릉시 여행에서 바다 보며 커피 마신 기록 있어요
+   · 2019년 5월 3일~4일 강릉시 여행에서 바다를 보며 커피를 마셨어요
+   · 우리 여행 기록: 2019.5.3–4 강릉시 여행 (강릉시, 보라·영상·엄마)
+   · 강릉시 여행에 대한 더 많은 정보는 '강릉시 여행 보기'를 눌러 확인하세요
+   단추: a1
+   계획: [{"tool":"recommend","args":{"count":5,"group":true,"month":"11","themes":["도시"],"unvisited":true}}]
+✓ "11월 셋째 주에 비 오면 실내에서 뭐 할 수 있는 곳" (8000ms)
+   도구: recommend
+   답: 11월 셋째 주 비 온 날 실내 활동 추천
+   · 11월 셋째 주 비 온 날 실내 활동 추천
+   · 경남 거제시: 에메랄드빛 바다와 바람의 언덕
+   · 전남 영광군: 법성포 굴비와 노을 지는 백수해안도로
+   · 경남 진주시: 남강 유등 축제와 진주성 공원의 야경
+   · 경북 울릉군: 신비의 섬, 독도와 함께하는 태고의 풍경
+   · 전남 무안군: 붉은 황토와 연꽃 향기 가득한 바다
+   단추: a1, a3, a5
+소식 "유류할증료 when:14d": 200 · 15개 · ["google 200 85246b 15"] · 첫 기사 "국제유가보다 더 뛴 항공유 … 11월 유류할증료 다시 27단계까지 오르나" (2026-10-06T07:00:00.000Z)
+소식 "고창 여행 when:30d": 200 · 12개 · ["google 503 0b 0","bing 200 9364b 12"] · 첫 기사 "판소리 여섯 마당 집대성한 신재효의 집터에 선 박물관, 고창 신재효판소리박물관" (2026-10-15T10:39:00.000Z)
+소식 "경기 광주 축제 when:30d": 200 · 11개 · ["google 503 0b 0","bing 200 9732b 11"] · 첫 기사 "광주시 퇴촌청소년문화의집, 개관 4주년 축제 퇴툰(TOON) 성황리 개최" (2026-10-18T20:21:00.000Z)
+소식 "인기 여행지 when:14d": 200 · 12개 · ["google 503 0b 0","bing 200 13050b 12"] · 첫 기사 "네이버 파파고, 번역 넘어 '한국 여행 길잡이'로… 인기 상품·장소 추천" (2026-10-18T17:19:52.000Z)
+장소 링크 https://naver.me/GlVmYk5l: 200 {"source":"naver","name":"슈츠","image":"https://search.pstatic.net/common/?autoRotate=true&quality=100&type=f640_380&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260704_62%2F1783146573867yOAvN_JPEG%2F7f00fd9e42168c22fcb943acf249a760.jpg","address":"경북 칠곡군 동명면 남원로3길 14 .","category":"카페,디저트","lat":36.0125,"lng":128.5869387,"placeId":"1244288249","steps":["→ place","naver 200"]}
+장소 링크 https://naver.me/GIVmYk5l: 200 {"lat":36.0126428,"lng":128.5867355,"steps":["→ naver.me/GIVmYk5l","geocode ok"]}
+장소 링크 https://naver.me/xYz12: 429 {"error":"too many requests","retry":60}
+
+보라(AI) 점검 [@cf/mistralai/mistral-small-3.1-24b-instruct]: 12/12
