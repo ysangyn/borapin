@@ -27,7 +27,7 @@ jobs:
       - name: 범위 확인
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
-        run: npx tsx scripts/bus-probe.ts 2>&1 | tee bus-probe.txt
+        run: npx tsx scripts/train-probe.ts 2>&1 | tee bus-probe.txt
       - name: 결과 올리기
         if: always()
         env:
