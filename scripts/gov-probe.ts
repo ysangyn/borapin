@@ -18,7 +18,7 @@ for (const [l, p] of [
   ['여행경보 a', '1262000/TravelAlarmService2/getTravelAlarmList2'], ['여행경보 b', '1262000/TravelAlarmService0404/getTravelAlarmList0404'], ['여행경보 c', '1262000/TravelWarningService/getTravelWarningList'],
   ['여행경보 조정 a', '1262000/TravelAlarmAdjustService/getTravelAlarmAdjustList'], ['여행경보 조정 b', '1262000/TravelWarningAdjustService/getTravelWarningAdjustList'], ['여행경보 조정 c', '1262000/TrvlWarningAdjustService/getTrvlWarningAdjustList'],
   ['입국허가요건 a', '1262000/EntranceVisaService2/getEntranceVisaList2'], ['입국허가요건 b', '1262000/EntranceVisaService/getEntranceVisaList'],
-  ['안전공지 a', '1262000/CountrySafetyService6/getCountrySafetyList6'], ['안전공지 b', '1262000/CountrySafetyService3/getCountrySafetyList3'], ['안전공지 c', '1262000/CountrySafetyService/getCountrySafetyList'],
+  ['안전공지 a', '1262000/CountrySafetyService6/getCountrySafetyList6'], ['여행경보 조정', '1262000/CountryHistoryService2/getCountryHistoryList2'], ['안전공지 b', '1262000/CountrySafetyService3/getCountrySafetyList3'], ['안전공지 c', '1262000/CountrySafetyService/getCountrySafetyList'],
   ['특별여행주의보 a', '1262000/SptravelWarningService2/getSptravelWarningList2'],
 ]) await hit(l, D(p));
 

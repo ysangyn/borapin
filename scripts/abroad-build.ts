@@ -58,6 +58,18 @@ try {
 } catch (e) { console.log('입국허가요건 실패(지난 자료 유지):', (e as Error).message); }
 
 try {
+  // 여행경보 조정 이력: 최근 90일 바뀐 것만 (나라 · 날짜 · 내용)
+  const hist = await list('CountryHistoryService2/getCountryHistoryList2');
+  if (process.env.SAMPLE) console.log('여행경보 조정 예시', JSON.stringify(hist.slice(0, 3)));
+  const since = Date.now() - 90 * 86400000;
+  const pick = (x: Item, ...ks: string[]) => { for (const k of ks) if (x[k] != null && String(x[k]).trim()) return String(x[k]).trim(); return ''; };
+  const changes = hist.map((h) => ({ k: pick(h, 'country_iso_alp2', 'iso_alp2').toUpperCase(), d: pick(h, 'wrt_dt', 'written_dt', 'regist_dt', 'adjust_dt', 'reg_dt').slice(0, 10), t: pick(h, 'title', 'adjust_cn', 'txt_origin_cn', 'cn').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').slice(0, 120) }))
+    .filter((c) => c.k && c.d && Date.parse(c.d) >= since).sort((a, b) => b.d.localeCompare(a.d)).slice(0, 80);
+  out.changes = changes; out.changesAt = new Date().toISOString().slice(0, 10);
+  console.log(`여행경보 조정 ${hist.length}줄 → 최근 90일 ${changes.length}건`);
+} catch (e) { console.log('여행경보 조정 실패(지난 자료 유지):', (e as Error).message); }
+
+try {
   if (!EXIM) throw new Error('KOREAEXIM_KEY 없음');
   const day = lastBizDay();
   const r = await fetch(`https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=${EXIM}&searchdate=${day}&data=AP01`, { signal: AbortSignal.timeout(30000) });

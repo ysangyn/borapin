@@ -25,10 +25,11 @@ jobs:
           KOREAEXIM_KEY: ${{ secrets.KOREAEXIM_KEY }}
         run: |
           npx tsx scripts/gov-probe.ts 2>&1 | tee gov-probe.txt
+          SAMPLE=1 npx tsx scripts/abroad-build.ts 2>&1 | tee -a gov-probe.txt
           npx tsx scripts/tour-build.ts 2>&1 | tee -a gov-probe.txt
-          cp src/data/tour.json tour.json
+          cp src/data/tour.json tour.json; cp src/data/abroad.json abroad.json
       - name: 결과 올리기
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh gov gov-probe.txt tour.json
+        run: scripts/push-report.sh gov gov-probe.txt tour.json abroad.json
