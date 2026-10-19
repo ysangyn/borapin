@@ -53,6 +53,8 @@ export interface Answer {
   items?: AnswerItem[];
   buttons: Btn[];
   source?: string;
+  /** 추천 질문에서 알아듣지 못하고 버린 낱말 (있으면 규칙형이 자신 없음 → AI) */
+  unused?: string[];
   ctx: AskCtx;
 }
 
@@ -357,6 +359,29 @@ function worldRecommend(q: string, d: AskData, month: number | null): Omit<Answe
 /** 지도에 없는 바다·대륙 이름 같은 걸 물으면(북극해·카리브해…) 국내로 엉뚱하게 답하지 않게 */
 const UNKNOWN_FAR = /([가-힣]{2,}(해|양|대륙|반도|제도|사막))(\s|에|으로|로|쪽|의|$)/;
 
+/** 추천 질문에서 쓰지 못한 낱말: 아는 말(지명·테마·계절·조건)을 지우고 남은 핵심 낱말 */
+const KNOWN_RE: RegExp[] = [
+  /\d{1,2}\s*월/, /봄|여름|가을|겨울/, /가까운|근처|당일치기|당일|멀리|먼\s*곳/, /안\s*가\s*본|안가본|못\s*가\s*본|처음|새로운|또\s*가|다시/,
+  /부모님|엄마|아빠|아이|애들|아기|친구|혼자|둘이|가족|어르신|커플|부부|연인/, /[1-9]\s*박|[1-9]\s*일|주말|평일|연휴|이번\s*주|다음\s*주|이번\s*달|다음\s*달|내년|올해/,
+  /국내|해외|외국|우리나라/, /말고|빼고|싫/,
+];
+const GENERIC = new Set(('여행지 여행 곳 데 데가 곳들 장소 명소 코스 추천 추천해줘 추천해 좋은 좋을 좋아 좋은데 괜찮은 보기 가기 갈 갈만한 만한 가볼 가볼만한 볼만한 '
+  + '어디 어디가 어디로 어디를 이번 다음 주 달 날씨 요즘 지금 우리 둘 다 같이 함께 놀러 알려줘 해줘 줘 좀 하기 할 하는 한 있는 없는 가면 갈까 가자 가고 싶은 싶어 '
+  + '보러 하러 먹으러 쉬러 여행하기 여행가기 어때 어떤 데요 곳이 곳을 곳은 거 것 수 있을까 있어 인 의 및 또는 그리고 가봐야 할만한 보면 맑은 비 안 오는 드라이브').split(' '));
+export function unusedWords(q: string, info: AskData['info']): string[] {
+  let rest = ` ${q} `;
+  const cut = (re: RegExp) => { rest = rest.replace(new RegExp(re.source, 'g'), ' '); };
+  for (const m of findMentions(q, info)) rest = rest.replace(q.slice(m.start, m.end), ' ');
+  for (const t of THEMES) { cut(t.re); for (const w of t.label.split('·')) cut(new RegExp(w)); }
+  for (const x of SIGHT_WORDS) cut(x.re);
+  for (const x of WORLD_AREAS) cut(x.re);
+  for (const re of [...KNOWN_RE, STAR_Q, WEATHER_SOON]) cut(re);
+  return rest.split(/[\s,.?!~·]+/)
+    .map((w) => w.replace(JOSA_TAIL, ''))
+    .filter((w) => w.length >= 2 && /[가-힣a-z]/i.test(w) && !GENERIC.has(w) && !/^(가|보|하|먹|쉬|놀|좋)/.test(w.length <= 2 ? w : '_'));
+}
+const JOSA_TAIL = /(에서|으로|이랑|하고|에는|이나|같은|처럼|보다|까지|부터|은|는|이|가|을|를|에|로|와|과|도|만|랑|의)$/;
+
 function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, groupId?: string | null): Omit<Answer, 'ctx'> {
   const wr = worldRecommend(q, d, monthArg ?? readMonth(q));
   if (wr) return wr;
@@ -413,6 +438,7 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
       const s = seasonFor(d.seasons, c.place);
       return { title: placeName(c.place), sub: `${c.theme ?? ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''}`, open: { label: `${placeLabel(c.place)} 자세히`, ask: `${placeLabel(c.place)} 볼거리` }, wish: c.place };
     }),
+    unused: unusedWords(q, d.info),
     // 이번 주·주말 날씨를 물어도 예보는 보지 않는다 → 본 척하지 않고 평년 날씨라고 밝힌다
     ...(WEATHER_SOON.test(q) ? { lines: [`이번 주 날씨 예보는 아직 보지 못해요. ${month ?? new Date().getMonth() + 1}월 평년 날씨로 고른 곳이니 떠나기 전 예보를 확인해 주세요.`] } : {}),
     buttons: [{ label: '다른 곳', ask: q + ' ' }],

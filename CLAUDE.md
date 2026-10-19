@@ -35,6 +35,9 @@
 - 화면 글은 쉬운 우리말로. 버튼과 알림의 동사를 맞춘다 (예: '담기' → '담았어요'). 횟수는 `times()`, '로/으로'는 `withRo()`(src/lib/ko.ts).
 - 꾸밈: 장소는 위키미디어 공용의 실제 사진(media/picks.json → CI가 줄임), 사람이 나오는 순간은 보라 그림(public/art). 출처는 /credits에 자동으로 나온다.
 
+## 이어서 하기
+- 남은 일·결정·진행 상태는 `docs/ROADMAP.md`. 멈출 때 '다음 할 일'을 적고 커밋한다. 만들다 만 화면은 `src/lib/flags.ts`로 숨긴다.
+
 ## 손으로 정리한 자료 (빌드에 고정, 바깥 서비스 없음)
 - `src/data/world.json` 세계 도시 125곳 속성(좋은 달·물가·비행시간·꼬리표·걷기·동행·통화·말·콘센트·시차·입국 메모·먹을 것·볼 것). 원본은 작업 공간 `scratchpad/world/rows.py`가 아니라 이 JSON이 기준. 고칠 땐 `tests/unit/world.test.ts`가 지킴.
 - `src/data/phrases.json` 현지어 여행 표현 10개 말 × 30문장(우리말·현지 글·한글 발음). `tests/unit/phrases.test.ts`.

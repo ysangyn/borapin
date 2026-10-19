@@ -3,6 +3,8 @@ import type { Answer } from './engine';
 /** 규칙형이 자신 있게 답한 건지: 모르겠다·되묻기·'장소만 던진 긴 질문'·조건이 여럿이면 AI에게 */
 export function rulesConfident(q: string, a: Answer): boolean {
   if (a.intent === 'unknown') return false;
+  // 추천인데 핵심 낱말을 알아듣지 못했다(예: '은하수', '케이블카') → 엉뚱한 3곳 대신 AI에게
+  if (a.intent === 'recommend' && a.unused?.length) return false;
   // 해외 추천은 세계 도시 자료로 규칙형이 답한다 (AI 도구는 국내 추천만 알아서, 넘기면 엉뚱해진다)
   if (a.intent === 'recommend' && (a.items?.some((i) => i.wish?.t === 'country') || /자료가 없어요$/.test(a.text))) return true;
   const text = q.trim();
