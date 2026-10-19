@@ -1,3 +1,5 @@
+import { saveHome, useHome } from '../lib/home';
+import { REGION_BY_CODE, regionLong } from '../lib/geo';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScenicPhoto } from '../components/Scene';
 import { photoById } from '../lib/media';
@@ -41,7 +43,14 @@ export default function Ask() {
   const end = useRef<HTMLDivElement>(null);
   const ready = !!(trips && wishes && recs && info);
   const world = useWorld();
-  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [], world } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans, world]);
+  const home = useHome();
+  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [], world, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans, world, home]);
+  // 되묻기에서 알려 준 동네를 우리 집으로 저장 (둘이 같이 쓴다)
+  const keepHome = (p?: Place) => {
+    if (!p || p.t !== 'kr') return;
+    const r = REGION_BY_CODE.get(p.code);
+    if (r) void saveHome({ label: regionLong(r.code), code: r.code, lat: r.lat, lng: r.lng, exact: false }).catch(() => toast('우리 집을 저장하지 못했어요'));
+  };
 
   const [thinking, setThinking] = useState(false);
   // 말로 묻기 (폰 브라우저의 음성 인식, 무료). 지원하는 기기에서만 단추가 보인다
@@ -74,6 +83,7 @@ export default function Ask() {
       const history = msgs.flatMap((m, i) => (m.who === 'bot' && msgs[i - 1]?.who === 'me' ? [{ q: (msgs[i - 1] as { text: string }).text, a: m.a.text }] : []));
       const r = await askSmart(q, c, data, auth.status === 'ready' ? auth.user : null, history);
       setCtx(r.answer.ctx);
+      keepHome(r.answer.setHome);
       setMsgs((m) => [...m, { who: 'bot', a: r.answer, q }]);
     } finally {
       setThinking(false);

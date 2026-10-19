@@ -22,3 +22,22 @@ test('알아듣는 추천은 그대로 규칙형이 답한다', () => {
     assert.equal(sure(q), true, q);
   }
 });
+
+test('되묻기: 우리 집을 모르면 묻고, 시·군으로 답하면 그 근처로 처음 질문을 다시 푼다', () => {
+  const a1 = ask('단풍 놀이 장소 추천', {}, d);
+  assert.equal(a1.intent, 'recommend');
+  const a2 = ask('우리집 근처로', a1.ctx, d); // 앞 질문에 조건만 덧붙임
+  assert.match(a2.text, /어디 사세요/);
+  assert.equal(a2.ctx.pending?.need, 'home');
+  assert.ok(rulesConfident('우리집 근처로', a2));
+  const a3 = ask('고양', a2.ctx, d);
+  assert.equal(a3.setHome?.t, 'kr');
+  assert.match(a3.text, /우리 집에서 가까운/);
+  assert.ok((a3.lines ?? [])[0].includes('우리 집을 기억할게요'));
+  assert.ok((a3.items ?? []).length > 0);
+  // 집을 알면 바로 답한다
+  const withHome = { ...d, home: { lat: 37.66, lng: 126.83, code: '41280' } };
+  assert.match(ask('우리 집 근처 단풍 명소 추천', {}, withHome).text, /우리 집에서 가까운|단풍/);
+  // 되묻는 중에 다른 질문을 하면 되묻기를 그만두고 그 질문에 답한다
+  assert.notEqual(ask('제주 맛집 알려줘', a2.ctx, d).pending?.need, 'home');
+});

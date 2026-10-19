@@ -2,6 +2,8 @@ import type { Answer } from './engine';
 
 /** 규칙형이 자신 있게 답한 건지: 모르겠다·되묻기·'장소만 던진 긴 질문'·조건이 여럿이면 AI에게 */
 export function rulesConfident(q: string, a: Answer): boolean {
+  // 되묻는 중이거나 되묻기의 답을 받아 다시 푼 답은 규칙형이 끝까지 이어 간다
+  if (a.pending || a.setHome) return true;
   if (a.intent === 'unknown') return false;
   // 추천인데 핵심 낱말을 알아듣지 못했다(예: '은하수', '케이블카') → 엉뚱한 3곳 대신 AI에게
   if (a.intent === 'recommend' && a.unused?.length) return false;

@@ -10,6 +10,9 @@ import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, REGION_BY_COD
 import { candidates, THEMES } from '../recommend';
 import topicsData from '../../data/topics.json';
 import faqData from '../../data/faq.json';
+import { regionLong } from '../geo';
+import { withRo } from '../ko';
+import { straightKm } from '../placeApps';
 import { alarmFor, visaFor } from '../abroad';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
@@ -56,6 +59,10 @@ export interface Answer {
   items?: AnswerItem[];
   buttons: Btn[];
   source?: string;
+  /** 되묻기에서 받은 우리 집 (화면이 저장한다) */
+  setHome?: Place;
+  /** 되묻기: 이 정보가 있어야 답할 수 있다 */
+  pending?: { need: 'home'; q: string };
   /** 추천 질문에서 알아듣지 못하고 버린 낱말 (있으면 규칙형이 자신 없음 → AI) */
   unused?: string[];
   ctx: AskCtx;
@@ -64,6 +71,10 @@ export interface Answer {
 export interface AskCtx {
   place?: Place | null;
   intent?: Intent;
+  /** 되묻는 중: 무엇이 필요하고, 받으면 어떤 질문을 다시 풀지 */
+  pending?: { need: 'home'; q: string } | null;
+  /** 직전 추천 질문 ('우리 집 근처로'처럼 조건만 덧붙일 때 이어 쓴다) */
+  lastQ?: string | null;
 }
 
 export interface AskData {
@@ -82,6 +93,8 @@ export interface AskData {
   plans?: PlanItem[];
   /** 해외 도시 기본 정보 (world.json) */
   world?: WorldData | null;
+  /** 우리 집 (공간에 정해 둔 곳) — '우리 집 근처' 질문에 */
+  home?: { lat: number; lng: number; code: string; label?: string } | null;
   now?: Date;
 }
 
@@ -452,12 +465,16 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   const seasonQ = readSeason(q);
   const month = monthArg ?? readMonth(q) ?? sight?.month ?? (seasonQ ? SEASON_MONTH[seasonQ] : null);
   const { pos, neg } = readThemes(q);
-  // '가까운·당일치기'는 수도권 기준(서울·경기·인천·강원·충청)으로 좁힌다
-  const near = !groupId && /가까운|근처|당일치기|당일/.test(q);
+  // '우리 집 근처'인데 집을 모르면 되묻는다 (실패로 끝내지 않고 대화를 잇는다)
+  const homeQ = HOME_NEAR.test(q);
+  if (homeQ && !d.home) return { intent: 'recommend', text: '어디 사세요? 시·군 이름을 알려 주시면 그 근처로 찾아볼게요', lines: ['예: 고양, 강릉, 부산 해운대', '알려 주신 곳은 우리 집으로 기억해 둘게요 (둘이 같이 써요).'], buttons: [{ label: '우리 공간에서 정하기', to: '/space#home' }], pending: { need: 'home', q } };
+  // '가까운·당일치기': 우리 집을 알면 집에서 70km 안, 모르면 수도권(서울·경기·인천·강원·충청)
+  const near = !groupId && (homeQ || /가까운|근처|당일치기|당일/.test(q));
   const unvisited = /안\s*가\s*본|안가본|처음|새로운|못\s*가\s*본/.test(q);
   const stats = computeStats(d.trips);
   let list = candidates({ scope: groupId ?? 'kr', unvisitedOnly: unvisited, theme: pos[0] ?? null, stats, info: d.info, wishes: [] });
-  if (near) list = list.filter((c) => c.place.t === 'kr' && ['seoul', 'gyeonggi', 'incheon', 'gangwon', 'chungnam', 'chungbuk', 'daejeon', 'sejong'].includes(REGION_BY_CODE.get(c.place.code)?.group ?? ''));
+  if (near && d.home) { const h = d.home; list = list.filter((c) => { if (c.place.t !== 'kr' || c.place.code === h.code) return false; const r = REGION_BY_CODE.get(c.place.code); return !!r && straightKm(h, r) <= 70; }); }
+  else if (near) list = list.filter((c) => c.place.t === 'kr' && ['seoul', 'gyeonggi', 'incheon', 'gangwon', 'chungnam', 'chungbuk', 'daejeon', 'sejong'].includes(REGION_BY_CODE.get(c.place.code)?.group ?? ''));
   if (sight) {
     const hit = list.filter((c) => sight.re.test([c.theme ?? '', ...(c.spots ?? [])].join(' ')));
     if (hit.length >= 2) list = hit;
@@ -470,7 +487,7 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   const picks = dailyShuffle(list, q).slice(0, 3);
   const themeLabel = pos.map((p) => THEMES.find((t) => t.id === p)!.label).join('·');
   const sightWord = sight ? (q.match(sight.re)?.[0] ?? '') : '';
-  const head = [near ? '수도권에서 가까운' : '', month ? `${month}월에` : '', sightWord ? `${sightWord} 보러` : themeLabel ? `${themeLabel} 보러` : '', unvisited ? '안 가본' : ''].filter(Boolean).join(' ');
+  const head = [near ? (d.home ? '우리 집에서 가까운' : '수도권에서 가까운') : '', month ? `${month}월에` : '', sightWord ? `${sightWord} 보러` : themeLabel ? `${themeLabel} 보러` : '', unvisited ? '안 가본' : ''].filter(Boolean).join(' ');
   if (!picks.length) return { intent: 'recommend', text: '조건에 맞는 곳을 찾지 못했어요', lines: ['조건을 하나 빼고 다시 물어보세요.'], buttons: [{ label: '안 가본 곳 추천', ask: '안 가본 곳 추천' }] };
   return {
     intent: 'recommend',
@@ -529,6 +546,7 @@ const TOPICS = (topicsData as { topics: Topic[] }).topics;
 const hasWord = (q: string, w: string) => new RegExp(`(^|[^가-힣])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(q);
 export const topicOf = (q: string) => TOPICS.find((t) => t.words.some((w) => hasWord(q, w))) ?? null;
 
+const HOME_NEAR = /우리\s*집|집\s*(근처|에서|가까)|사는\s*(곳|데)\s*(근처|가까|에서)|동네\s*(근처|가까)/;
 export const STAR_Q = /은하수|별\s*(을|이)?\s*(보|관측|사진)|별자리|별빛|천문대|밤하늘|별\s*보러/;
 const WEATHER_SOON = /날씨|맑|비\s*안/;
 /** 빛 공해가 적은 곳 (국제밤하늘보호공원·천문대) */
@@ -551,6 +569,22 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
   const q = question.trim().replace(/[?!.~]+$/g, '');
   // 여행 주제 낱말('케이블카'·'동굴')이 지명 사전의 볼거리 이름에 걸려 되묻지 않게: 주제 낱말 자리의 지명은 버린다
   const tp = topicOf(q);
+  // 직전 추천에 조건만 덧붙이면('우리 집 근처로', '안 가본 데로') 앞 질문과 합쳐 다시 푼다
+  if (!forced && ctx.intent === 'recommend' && ctx.lastQ && !ctx.pending && q.replace(/\s/g, '').length <= 12 && /근처|가까|우리\s*집|안\s*가\s*본|처음|당일|말고|빼고/.test(q) && !/추천|어디/.test(q)) {
+    return ask(`${ctx.lastQ} ${q}`, { ...ctx, lastQ: null }, d, forced);
+  }
+  // 되묻기에 대한 답: '어디 사세요?' → 시·군 이름이면 우리 집으로 삼고 처음 질문을 다시 푼다
+  if (ctx.pending?.need === 'home' && !forced) {
+    const m = findMentions(q, d.info).find((x) => x.entry.places.length === 1 && x.entry.places[0].t === 'kr');
+    const at = m?.entry.places[0];
+    const r = at && at.t === 'kr' ? REGION_BY_CODE.get(at.code) : undefined;
+    if (at && r) {
+      const re = ask(ctx.pending.q, { place: null, intent: undefined }, { ...d, home: { lat: r.lat, lng: r.lng, code: r.code, label: regionLong(r.code) } }, undefined);
+      return { ...re, setHome: at, lines: [`${withRo(regionLong(r.code))} 우리 집을 기억할게요.`, ...(re.lines ?? [])] };
+    }
+    if (q.replace(/\s/g, '').length <= 8) return { intent: 'recommend', text: '시·군 이름으로 알려 주세요', lines: ['예: 고양, 강릉, 부산 해운대'], buttons: [{ label: '우리 공간에서 정하기', to: '/space#home' }], ctx: { ...ctx } };
+    // 다른 질문으로 넘어갔으면 되묻기를 그만둔다
+  }
   // 여행 상식 질문('기내에 화장품', '카드', '환전')이면 오타 고치기를 하지 않는다: 흔한 말이 지명(기니·차드·인천)으로 바뀌지 않게
   const mentions: Mention[] = forced ? [] : findMentions(q, d.info, { typo: !faqFor(q) }).filter((m) => !tp || !tp.words.some((w) => { const i = q.indexOf(w); return i >= 0 && hasWord(q, w) && m.start < i + w.length && m.end > i; }));
   const person = readPerson(q, d.trips);
@@ -761,7 +795,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         a.text = `${GROUPS.find((x) => x.id === groupId)!.name}: ${a.text}`;
       } else a = answerFor(intent, p, q, d, now);
   }
-  return { ...a, ctx: { place: p ?? ctx.place ?? null, intent: a.intent } };
+  return { ...a, ctx: { place: p ?? ctx.place ?? null, intent: a.intent, pending: a.pending ?? null, lastQ: a.intent === 'recommend' ? (a.pending?.q ?? q) : null } };
 }
 
 /** 첫 화면 버튼 (자유 입력을 줄인다) */
