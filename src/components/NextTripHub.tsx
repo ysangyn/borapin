@@ -15,6 +15,7 @@ import { newsAgo, useNews } from '../lib/news';
 import { answerAsk, questionFor, questionText, useTodayAsk } from '../lib/asks';
 import { useStudy } from '../lib/study/store';
 import HomeRoute from './HomeRoute';
+import { alarmFor, visaFor } from '../lib/abroad';
 import Stopovers from './Stopovers';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
@@ -247,7 +248,7 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
         {place.t === 'kr' && <Stopovers destCode={place.code} />}
         {place.t === 'kr' && accessLine(place) && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>}
         {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzText(place) || tzLabel(city.tz)}</span></button>}
-        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{city.entry}</b> · 떠나기 전 확인</span></button>}
+        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{visaFor(city.c)?.text ?? city.entry}</b>{alarmFor(city.c) ? <> · 여행경보 <b className={alarmFor(city.c)!.lvl >= 3 ? 'alarm-high' : ''}>{alarmFor(city.c)!.text}</b></> : null} · 떠나기 전 확인</span></button>}
         {city && phraseLangFor(city.lang) && phraseLangFor(city.lang) !== 'en' && <button className="hub-way-row" onClick={() => nav(`/phrases/${phraseLangFor(city.lang)}?city=${encodeURIComponent(city.city)}`)} data-testid="hub-phrases"><Icon name="play" size={16} /><span>{LANG_LABEL[phraseLangFor(city.lang)!]} 한마디 30문장 · 인사·식당·길</span></button>}
         {flights && <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label} · 인천에서 {city ? flyLabel(city.fly) : ''}{s ? ` · ${s.m[0]}월` : ''}</span></a>}
         {good && <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>}

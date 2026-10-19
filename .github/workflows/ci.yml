@@ -8,9 +8,9 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
-  # 매주 월요일 새벽(한국 03:17): 축제 자료를 새로 받아 같은 관문을 거쳐 다시 배포
+  # 매일 새벽(한국 03:17): 축제·여행경보·입국요건·환율을 새로 받아 같은 관문을 거쳐 다시 배포
   schedule:
-    - cron: '17 18 * * 0'
+    - cron: '17 18 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -103,6 +103,11 @@ jobs:
         env:
           TOUR_API_KEY: ${{ secrets.TOUR_API_KEY }}
         run: npx tsx scripts/tour-festivals.ts 2>&1 | tee festivals-output.txt
+      - name: 해외 자료 받기 (외교부 여행경보·입국허가요건, 환율 · 실패하면 지난 자료)
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          KOREAEXIM_KEY: ${{ secrets.KOREAEXIM_KEY }}
+        run: npx tsx scripts/abroad-build.ts 2>&1 | tee abroad-output.txt || true
       - name: 빌드 (이 파일을 끝까지 그대로 쓴다)
         env:
           VITE_ASK_URL: ${{ needs.worker.outputs.url }}

@@ -34,7 +34,7 @@ try {
     if (!k || !lvl) continue;
     // 한 나라에 지역별 경보가 여럿이면 가장 높은 단계와 '일부 지역' 표시
     const cur = by[k];
-    const part = String(a.region_ty ?? a.remark ?? '').trim();
+    const part = String(a.region_ty ?? '') === '일부' ? '일부 지역' : '';
     if (!cur || lvl > cur.lvl) by[k] = { lvl, ...(part ? { remark: part.slice(0, 80) } : {}) };
   }
   if (Object.keys(by).length > 30) { out.alarm = by; out.alarmAt = new Date().toISOString().slice(0, 10); }
@@ -48,10 +48,10 @@ try {
   for (const v of visa) {
     const k = String(v.country_iso_alp2 ?? '').toUpperCase();
     if (!k) continue;
-    const yn = String(v.gnrl_pspt_visa_yn ?? '').toUpperCase();
+    // 일반여권: 무비자 체류 기간 글(예 '90일'), 'X'면 무비자 입국 불가(비자 필요)
     const cn = String(v.gnrl_pspt_visa_cn ?? '').trim();
-    // 일반여권 무비자 가능 여부(Y=가능)와 체류 기간 글
-    by[k] = { free: yn === 'Y' ? true : yn === 'N' ? false : null, ...(cn && cn !== 'X' ? { stay: cn.slice(0, 40) } : {}), ...(v.nvisa_entry_evdc_cn ? { note: String(v.nvisa_entry_evdc_cn).slice(0, 120) } : {}) };
+    const ev = String(v.nvisa_entry_evdc_cn ?? '').split(/\\n|\n/).map((x) => x.trim()).find((x) => /일반여권/.test(x))?.replace(/^일반여권\s*소지자\s*:\s*/, '');
+    by[k] = { free: !cn ? null : cn !== 'X', ...(cn && cn !== 'X' ? { stay: cn.slice(0, 40) } : {}), ...(ev ? { note: ev.slice(0, 60) } : {}) };
   }
   if (Object.keys(by).length > 30) { out.visa = by; out.visaAt = new Date().toISOString().slice(0, 10); }
   console.log(`입국허가요건 ${visa.length}줄 → 나라 ${Object.keys(by).length}`);

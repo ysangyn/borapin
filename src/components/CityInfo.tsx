@@ -1,3 +1,4 @@
+import { alarmFor, fxFor, visaFor } from '../lib/abroad';
 import { Link } from 'react-router-dom';
 import { josa } from 'es-hangul';
 import { Icon } from './ui';
@@ -22,6 +23,7 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
   const place: Place = { t: 'country', id: w.c, city: w.city };
   const tz = tzText(place) || tzLabel(w.tz);
   const now = localTimeText(place);
+  const alarm = alarmFor(w.c), visa = visaFor(w.c), fx = fxFor(w.cur);
   return (
     <div className="city-info" data-testid="city-info">
       {!compact && <div className="small" style={{ color: 'var(--ink2)' }}>{w.line}</div>}
@@ -29,10 +31,11 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
         <div><dt>가기 좋은 때</dt><dd>{monthsLabel(w.best)} · {w.why}</dd></div>
         <div><dt>비행</dt><dd>인천에서 {flyLabel(w.fly)}</dd></div>
         <div><dt>시차</dt><dd data-testid="city-tz">{tz}{now ? ` · 지금 그곳은 ${now}` : ''}</dd></div>
-        <div><dt>돈</dt><dd>{w.cur} · {COST_LABEL[w.cost]}</dd></div>
+        <div><dt>돈</dt><dd>{w.cur} · {COST_LABEL[w.cost]}{fx ? <span className="tiny muted"> · {fx.text} ({fx.at})</span> : null}</dd></div>
         <div><dt>말·콘센트</dt><dd>{w.lang} · {w.plug}</dd></div>
         <div><dt>걷기</dt><dd>{WALK_LABEL[w.walk]}{w.with.length ? ` · ${josa(w.with.join('·'), '와/과')} 좋아요` : ''}</dd></div>
-        <div><dt>입국</dt><dd>{w.entry}{updated ? <span className="tiny muted"> · {updated.slice(0, 7).replace('-', '.')} 기준, 떠나기 전 확인</span> : null}</dd></div>
+        {alarm && <div data-testid="city-alarm"><dt>여행경보</dt><dd className={alarm.lvl >= 3 ? 'alarm-high' : alarm.lvl === 2 ? 'alarm-mid' : ''}>{alarm.text}<span className="tiny muted"> · 외교부 {alarm.at} 기준</span></dd></div>}
+        <div><dt>입국</dt><dd data-testid="city-visa">{visa ? <>{visa.text}<span className="tiny muted"> · 외교부 {visa.at} 기준{w.entry && !w.entry.startsWith(visa.text.slice(0, 3)) ? ` · 참고: ${w.entry}` : ''} · 떠나기 전 확인</span></> : <>{w.entry}{updated ? <span className="tiny muted"> · {updated.slice(0, 7).replace('-', '.')} 기준, 떠나기 전 확인</span> : null}</>}</dd></div>
       </dl>
       {phraseLink(w)}
       <div className="city-picks">

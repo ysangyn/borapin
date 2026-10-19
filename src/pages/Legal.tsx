@@ -102,6 +102,9 @@ function Credits() {
       <h2>기후 자료</h2>
       <p>NASA POWER 월별 기후값 (NASA Langley Research Center)</p>
       <p>지역 축제 정보: 한국관광공사 TourAPI (공공누리 제1유형). 이름과 기간만 매주 받아 씁니다.</p>
+      <p>여행경보·입국허가요건: 외교부 해외안전여행(공공데이터포털). 매일 받아 씁니다. 떠나기 전 0404.go.kr에서 확인하세요.</p>
+      <p>환율: 한국수출입은행 현재환율(매매기준율). 매일 받아 씁니다.</p>
+      <p>장소 자리 찾기: OpenStreetMap Nominatim (© OpenStreetMap 기여자).</p>
     </>
   );
 }
