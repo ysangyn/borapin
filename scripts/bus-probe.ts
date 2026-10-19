@@ -21,7 +21,7 @@ async function api(svc: string, op: string, params: Record<string, string | numb
   try {
     const r = await fetch(url);
     const t = await r.text();
-    if (!raw[`${svc}/${op}`]) raw[`${svc}/${op}`] = `${r.status} ${t.slice(0, 300)}`;
+    if (!raw[`${svc}/${op}`]) raw[`${svc}/${op}`] = `${r.status} ${t.slice(0, 600)}`;
     let j: { response?: { header?: { resultCode?: string; resultMsg?: string }; body?: { items?: { item?: Item | Item[] } | ''; totalCount?: number } } };
     try { j = JSON.parse(t); } catch { return { items: [], total: 0, err: `${r.status} ${t.slice(0, 120)}` }; }
     const code = j.response?.header?.resultCode;
@@ -41,9 +41,9 @@ const short = (n: string) => (n.length >= 3 ? n.replace(/[시군구]$/, '') : n)
 
 interface Svc { label: string; svc: string; cities: string; stops: string; stopsParam: string; idKey: string; nameKey: string; route: string; dep: string; arr: string }
 const SVCS: Svc[] = [
-  { label: '시외버스', svc: 'SuburbsBusInfoService', cities: 'getCtyCodeList', stops: 'getSuberbsBusTrminlList', stopsParam: 'cityCode', idKey: 'terminalId', nameKey: 'terminalNm', route: 'getStrtpntAlocFndSuberbsBusInfo', dep: 'depTerminalId', arr: 'arrTerminalId' },
-  { label: '고속버스', svc: 'ExpBusInfoService', cities: 'getCtyCodeList', stops: 'getExpBusTrminlList', stopsParam: 'cityCode', idKey: 'terminalId', nameKey: 'terminalNm', route: 'getStrtpntAlocFndExpbusInfo', dep: 'depTerminalId', arr: 'arrTerminalId' },
-  { label: '열차', svc: 'TrainInfoService', cities: 'getCtyCodeList', stops: 'getCtyAcctoTrainSttnList', stopsParam: 'cityCode', idKey: 'nodeid', nameKey: 'nodename', route: 'getStrtpntAlocFndTrainInfo', dep: 'depPlaceId', arr: 'arrPlaceId' },
+  { label: '시외버스', svc: 'SuburbsBusInfo', cities: 'GetCtyCodeList', stops: 'GetSuberbsBusTrminlList', stopsParam: 'cityCode', idKey: 'terminalId', nameKey: 'terminalNm', route: 'GetStrtpntAlocFndSuberbsBusInfo', dep: 'depTerminalId', arr: 'arrTerminalId' },
+  { label: '고속버스', svc: 'ExpBusInfo', cities: 'GetCtyCodeList', stops: 'GetExpBusTrminlList', stopsParam: 'cityCode', idKey: 'terminalId', nameKey: 'terminalNm', route: 'GetStrtpntAlocFndExpbusInfo', dep: 'depTerminalId', arr: 'arrTerminalId' },
+  { label: '열차', svc: 'TrainInfo', cities: 'GetCtyCodeList', stops: 'GetCtyAcctoTrainSttnList', stopsParam: 'cityCode', idKey: 'nodeid', nameKey: 'nodename', route: 'GetStrtpntAlocFndTrainInfo', dep: 'depPlaceId', arr: 'arrPlaceId' },
 ];
 
 const out: string[] = [];
