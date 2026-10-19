@@ -168,6 +168,18 @@ export const CASES: Case[] = [
   { q: '제주도 담아줘', intent: 'wishAdd', place: 'kr:50' },
   { q: '다음주 축제', intent: 'festival' },
   { q: '강릉 커피축제 언제야', intent: 'festival', place: 'kr:51150', has: '10.23' },
+  // 별·은하수: 대도시를 고르면 안 된다 (2026-10-19 실제로 대구·안산이 나옴)
+  { q: '은하수 보기 좋은 국내 여행지', intent: 'recommend', has: '밤하늘' },
+  { q: '별 보러 가기 좋은 곳', intent: 'recommend', has: '밤하늘' },
+  // 이번 주 날씨: 예보를 안 보면서 본 척하지 않는다
+  { q: '이번 주 날씨 좋은 여행지', intent: 'recommend', has: '예보' },
+  // 여행 상식 (손으로 정리한 답)
+  { q: '공항 갈 때 여권 필요해?', intent: 'faq', has: '국내선은 신분증' },
+  { q: '여권 만드는데 얼마나 걸려?', intent: 'faq', has: '1~2주' },
+  { q: '제주 갈 때 여권 필요해?', intent: 'faq', has: '여권이 없어도' },
+  { q: '보조배터리 비행기에 실어도 돼?', intent: 'faq', has: '들고 타야' },
+  // 우리 여행 패턴: '부부'가 '부여'로 읽히면 안 된다
+  { q: '우리 부부의 여행 패턴이 어때 보여?', intent: 'pattern' },
   // 모르는 질문은 지어내지 않는다
   { q: '오늘 저녁 뭐 해', intent: 'unknown' },
   { q: 'ㅎㅎ', intent: 'unknown' },

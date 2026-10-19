@@ -27,7 +27,7 @@ const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (
 export type Intent =
   | 'overview' | 'spots' | 'foods' | 'goods' | 'transport' | 'season'
   | 'count' | 'when' | 'time' | 'people' | 'again' | 'compare'
-  | 'recommend' | 'stats' | 'wishAdd' | 'wishList' | 'map' | 'choose'
+  | 'recommend' | 'stats' | 'pattern' | 'faq' | 'wishAdd' | 'wishList' | 'map' | 'choose'
   | 'festival' | 'next' | 'packing' | 'find' | 'hello' | 'help' | 'ai' | 'unknown';
 
 export interface Btn {
@@ -133,6 +133,8 @@ function readPerson(q: string, trips: Trip[]): string | null {
 function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boolean, hasGroup = false): Intent {
   if (has(q, /^(안녕|하이|헬로|반가워|고마워|고맙|감사|잘\s*자|수고|사랑해|보라야|ㅎㅇ|ㅇㅋ)/) && q.length <= 12) return 'hello';
   if (has(q, /도움말|뭐\s*(물어|할\s*수)|어떻게\s*(써|사용)|사용법|뭘\s*할\s*수/)) return 'help';
+  if (faqFor(q)) return 'faq';
+  if (has(q, /패턴|성향|스타일|취향|여행\s*습관|어떤\s*여행(을|자|가)|우리\s*(여행|부부|둘).*어때/)) return 'pattern';
   if (has(q, /축제|페스티벌|불꽃|행사/)) return 'festival';
   if (has(q, /준비물|뭐\s*챙|챙길|챙겨|짐\s*(싸|쌀)|가져갈/)) return 'packing';
   if (has(q, /다음\s*여행|예정(된|인)?\s*(여행|거)|언제\s*(떠나|출발)|디데이|d-?day/i)) return 'next';
@@ -362,6 +364,24 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   if (far && !findMentions(q, d.info).length && !/바다|동해|서해|남해/.test(far[1])) {
     return { intent: 'recommend', text: `${far[1]} 쪽 여행지는 아직 자료가 없어요`, lines: ['가까운 나라나 도시 이름으로 물어보면 찾아볼게요. 예: 노르웨이 트롬쇠, 아이슬란드'], buttons: [{ label: '오로라 보러 갈 만한 곳', ask: '오로라 보러 갈 만한 곳 추천' }, { label: '해외 도시 고르기', to: '/wishes?find=world' }] };
   }
+  // 별·은하수: 테마 글자로는 못 고른다(대도시 '야경'이 걸림) → 빛 공해가 적은 곳을 손으로 고른 목록
+  if (STAR_Q.test(q)) {
+    const visited = computeStats(d.trips).cellVisits;
+    const unv = /안\s*가\s*본|안가본|처음/.test(q);
+    const list = DARK_SKY.filter((x) => !unv || !visited.has(x.code));
+    const picks = dailyShuffle(list, q).slice(0, 3);
+    return {
+      intent: 'recommend',
+      text: `밤하늘이 어두워 별 보기 좋은 곳 ${picks.length}곳`,
+      lines: ['달이 없는 그믐 앞뒤, 맑은 날 밤 11시 넘어서가 가장 잘 보여요. 은하수는 5~9월이 좋아요.'],
+      items: picks.map((x) => {
+        const pl: Place = { t: 'kr', code: x.code };
+        return { title: placeName(pl), sub: x.spot, open: { label: `${placeLabel(pl)} 자세히`, ask: `${placeLabel(pl)} 볼거리` }, wish: pl };
+      }),
+      buttons: [{ label: '다른 곳', ask: q + ' ' }],
+      source: '보라핀이 고른 별 보기 좋은 곳 · 날씨는 떠나기 전 확인',
+    };
+  }
   const sight = SIGHT_WORDS.find((x) => x.re.test(q));
   const seasonQ = readSeason(q);
   const month = monthArg ?? readMonth(q) ?? sight?.month ?? (seasonQ ? SEASON_MONTH[seasonQ] : null);
@@ -393,10 +413,69 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
       const s = seasonFor(d.seasons, c.place);
       return { title: placeName(c.place), sub: `${c.theme ?? ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''}`, open: { label: `${placeLabel(c.place)} 자세히`, ask: `${placeLabel(c.place)} 볼거리` }, wish: c.place };
     }),
+    // 이번 주·주말 날씨를 물어도 예보는 보지 않는다 → 본 척하지 않고 평년 날씨라고 밝힌다
+    ...(WEATHER_SOON.test(q) ? { lines: [`이번 주 날씨 예보는 아직 보지 못해요. ${month ?? new Date().getMonth() + 1}월 평년 날씨로 고른 곳이니 떠나기 전 예보를 확인해 주세요.`] } : {}),
     buttons: [{ label: '다른 곳', ask: q + ' ' }],
     source: `${INFO_SRC(d)} · 날씨: NASA POWER 월평균`,
   };
 }
+
+/** 여행 상식 (손으로 정리, 바뀌는 건 '떠나기 전 확인') */
+const FAQ: { re: RegExp; a: string; lines: string[]; link?: { label: string; href: string } }[] = [
+  { re: /국내선.*(여권|신분증)|(여권|신분증).*국내선|(제주|김포).*(여권|신분증)/, a: '국내선은 여권이 없어도 돼요. 신분증이면 충분해요', lines: ['주민등록증·운전면허증·여권, 모바일 신분증도 돼요.', '어린이는 주민등록등본이나 가족관계증명서를 챙겨요.'] },
+  { re: /공항.*여권|여권.*(필요|있어야|챙겨)/, a: '해외로 나가면 여권이 꼭 있어야 해요. 국내선은 신분증이면 돼요', lines: ['여권 남은 기간이 6개월 넘게 필요한 나라가 많아요. 떠나기 전 확인해요.', '나라마다 비자·전자여행허가(미국 ESTA, 캐나다 eTA 등)가 따로 필요할 수 있어요.'], link: { label: '외교부 해외안전여행', href: 'https://www.0404.go.kr' } },
+  { re: /여권.*(만드|발급|재발급|얼마나|며칠|걸려|기간)/, a: '여권은 신청하고 보통 1~2주쯤 걸려요', lines: ['방학·연휴 앞에는 더 걸릴 수 있으니 넉넉히 신청해요.', '급하면 긴급여권(한 번만 쓰는 여권)을 받을 수 있어요. 갈 나라에서 받아 주는지 먼저 확인해요.', '시·군·구청 여권 창구에서 신청해요.'], link: { label: '외교부 여권 안내', href: 'https://www.passport.go.kr' } },
+  { re: /보조\s*배터리|배터리.*(비행기|기내|수하물)/, a: '보조배터리는 부치는 짐에 넣으면 안 되고, 들고 타야 해요', lines: ['100Wh 넘으면 항공사 허락이 필요하고, 160Wh 넘으면 못 가져가요.', '기내에서 쓰거나 충전하는 걸 막는 항공사가 많아요. 단자를 테이프로 막아 두면 좋아요.'] },
+  { re: /액체|물\s*(가져|들고)|화장품.*기내|기내.*(화장품|물)/, a: '국제선 기내에는 100ml 이하 용기만, 1L 지퍼백 하나에 담아 가져갈 수 있어요', lines: ['면세점에서 산 액체는 봉인된 봉투째면 돼요.', '국내선은 기준이 더 느슨해요.'] },
+  { re: /공항.*(몇\s*시간|언제|미리|일찍)|몇\s*시간\s*전.*공항/, a: '국제선은 2~3시간 전, 국내선은 1시간 전쯤 공항에 가요', lines: ['연휴·아침 첫 비행기는 더 일찍 가요.', '온라인 체크인을 해 두면 줄이 짧아요.'] },
+  { re: /(비자|전자여행허가|esta|eta)/i, a: '나라마다 달라요. 무비자여도 전자여행허가가 필요한 곳이 있어요', lines: ['미국 ESTA, 캐나다 eTA, 영국 ETA, 호주 ETA는 떠나기 전에 온라인으로 받아요.', '일본·동남아 대부분은 짧은 여행이면 무비자예요.'], link: { label: '외교부 해외안전여행', href: 'https://www.0404.go.kr' } },
+];
+function faqFor(q: string) { return FAQ.find((f) => f.re.test(q)) ?? null; }
+
+/** 우리 여행 패턴: 기록에서 계절·지역·국내외·동행·다시 간 곳 */
+function travelPattern(done: Trip[], d: AskData): Omit<Answer, 'ctx'> {
+  if (done.length < 3) return { intent: 'pattern', text: '패턴을 말하기엔 기록이 아직 적어요', lines: ['다녀온 여행을 3개 넘게 남기면 계절·지역·함께 간 사람을 모아 볼게요.'], buttons: [{ label: '기록하기', to: '/record' }] };
+  const s = computeStats(d.trips);
+  const SEASON: Record<string, string> = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
+  const ofM = (m: number) => (m >= 3 && m <= 5 ? 'spring' : m <= 8 && m >= 6 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter');
+  const seasons = new Map<string, number>();
+  for (const t of done) { const k = t.when.s ?? (t.when.m ? ofM(t.when.m) : null); if (k) seasons.set(k, (seasons.get(k) ?? 0) + 1); }
+  const sTop = [...seasons.entries()].sort((a, b) => b[1] - a[1]);
+  const abroad = done.filter((t) => t.places.some((p) => p.t === 'country')).length;
+  const groups = new Map<string, number>();
+  for (const t of done) for (const p of t.places) if (p.t === 'kr') { const g = REGION_BY_CODE.get(p.code)?.groupName; if (g) groups.set(g, (groups.get(g) ?? 0) + 1); }
+  const gTop = [...groups.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([g]) => g);
+  const again = [...s.cellVisits.values()].filter((n) => n >= 2).length;
+  const comp = new Map<string, number>();
+  for (const t of done) for (const c of t.companions ?? []) comp.set(c, (comp.get(c) ?? 0) + 1);
+  const people = [...comp.entries()].filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c]) => c);
+  const missing = ['spring', 'summer', 'autumn', 'winter'].filter((k) => !seasons.has(k)).map((k) => SEASON[k]);
+  const lines = [
+    sTop.length ? `계절: ${sTop.map(([k, n]) => `${SEASON[k]} ${n}`).join(' · ')}${missing.length ? ` (아직 ${missing.join('·')} 여행은 없어요)` : ''}` : '',
+    `국내 ${done.length - abroad} · 해외 ${abroad}`,
+    gTop.length ? `자주 가는 쪽: ${gTop.join(', ')}` : '',
+    again ? `두 번 넘게 간 곳 ${again}곳 · 마음에 들면 또 가는 편이에요` : '같은 곳을 다시 가기보다 새 곳을 찾는 편이에요',
+    people.length ? `자주 함께한 사람: ${people.join(', ')}` : '',
+  ].filter(Boolean);
+  const head = sTop[0] ? `${SEASON[sTop[0][0]]}에 ${abroad * 2 > done.length ? '해외로' : '국내로'} 떠나는 편이에요` : `${done.length}번의 여행을 모아 봤어요`;
+  return { intent: 'pattern', text: head, lines, buttons: [{ label: missing[0] ? `${missing[0]}에 갈 곳` : '안 가본 곳 추천', ask: missing[0] ? `${missing[0]}에 갈 만한 곳` : '안 가본 곳 추천' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
+}
+
+const STAR_Q = /은하수|별\s*(을|이)?\s*(보|관측|사진)|별자리|별빛|천문대|밤하늘|별\s*보러/;
+const WEATHER_SOON = /날씨|맑|비\s*안/;
+/** 빛 공해가 적은 곳 (국제밤하늘보호공원·천문대) */
+const DARK_SKY: { code: string; spot: string }[] = [
+  { code: '47760', spot: '반딧불이천문대 · 국제밤하늘보호공원' },
+  { code: '51750', spot: '별마로천문대' },
+  { code: '51760', spot: '육백마지기 · 청옥산' },
+  { code: '51770', spot: '만항재 · 가장 높은 포장도로 고개' },
+  { code: '51790', spot: '조경철천문대' },
+  { code: '43800', spot: '소백산 자락 · 별 보기 좋은 산골' },
+  { code: '52730', spot: '반디랜드 천문과학관' },
+  { code: '47230', spot: '보현산천문대' },
+  { code: '41830', spot: '중미산천문대' },
+  { code: '51190', spot: '매봉산 바람의 언덕' },
+];
 
 /** 질문 하나에 답한다. ctx는 직전 대화(지역·질문 틀) */
 export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): Answer {
@@ -496,6 +575,15 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         break;
       }
       a = { intent, text: `지금까지 ${s.tripsDone}번의 여행, 핀 ${s.pins}개`, lines: [`시·군 ${s.cellVisits.size}/${TOTAL_CELLS} (${Math.round((s.cellVisits.size / TOTAL_CELLS) * 100)}%)`, `광역 ${s.groupsVisited.size}/${TOTAL_GROUPS}`, `나라 ${s.countryVisits.size}곳 · 대륙 ${s.continents.size}곳`, `올해 ${thisYear}번`, top.length ? `자주 간 곳: ${top.join(', ')}` : ''].filter(Boolean), buttons: [{ label: '지도 보기', to: '/map' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
+      break;
+    }
+    case 'faq': {
+      const f = faqFor(q)!;
+      a = { intent, text: f.a, lines: f.lines, buttons: f.link ? [{ label: f.link.label, url: f.link.href }] : [], source: '보라핀 여행 상식 · 2026년 10월 기준 · 떠나기 전 확인' };
+      break;
+    }
+    case 'pattern': {
+      a = travelPattern(done, d);
       break;
     }
     case 'recommend': {
