@@ -19,7 +19,11 @@ async function api(svc: string, op: string, params: Record<string, string | numb
   const url = `${BASE}/${svc}/${op}?${qs}`;
   calls++;
   try {
-    const r = await fetch(url);
+    let r: Response | null = null;
+    for (let i = 0; i < 4 && !r; i++) {
+      try { r = await fetch(url, { signal: AbortSignal.timeout(20000) }); } catch (e) { if (i === 3) throw e; await pause(2000 * (i + 1)); }
+    }
+    if (!r) throw new Error('no response');
     const t = await r.text();
     if (!raw[`${svc}/${op}`]) raw[`${svc}/${op}`] = `${r.status} ${t.slice(0, 600)}`;
     let j: { response?: { header?: { resultCode?: string; resultMsg?: string }; body?: { items?: { item?: Item | Item[] } | ''; totalCount?: number } } };
