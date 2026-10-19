@@ -1,0 +1,92 @@
+버스·열차 공공데이터 범위 확인 · 내일 20261020 기준
+
+## 시외버스 (SuburbsBusInfoService)
+도시 코드 0개
+터미널·역 0곳
+우리 160개 시·군 중 이름이 맞는 곳: 0곳
+없는 곳(일부): 서울 서울, 부산 부산, 대구 대구, 인천 인천, 전남광주 광주, 대전 대전, 울산 울산, 세종 세종, 경기 파주시, 경기 연천군, 경기 수원시, 경기 성남시, 경기 의정부시, 경기 안양시, 경기 광명시, 경기 평택시, 경기 안산시, 경기 과천시, 경기 구리시, 경기 남양주시, 경기 오산시, 경기 시흥시, 경기 군포시, 경기 의왕시, 경기 하남시, 경기 용인시, 경기 이천시, 경기 안성시, 경기 광주시, 경기 여주시, 경기 가평군, 경기 양평군, 경기 부천시, 경기 동두천시, 경기 고양시, 경기 양주시, 경기 포천시, 경기 화성시, 경기 김포시, 충북 청주시 외 120
+고양 쪽: 없음
+
+## 고속버스 (ExpBusInfoService)
+도시 코드 0개
+터미널·역 0곳
+우리 160개 시·군 중 이름이 맞는 곳: 0곳
+없는 곳(일부): 서울 서울, 부산 부산, 대구 대구, 인천 인천, 전남광주 광주, 대전 대전, 울산 울산, 세종 세종, 경기 파주시, 경기 연천군, 경기 수원시, 경기 성남시, 경기 의정부시, 경기 안양시, 경기 광명시, 경기 평택시, 경기 안산시, 경기 과천시, 경기 구리시, 경기 남양주시, 경기 오산시, 경기 시흥시, 경기 군포시, 경기 의왕시, 경기 하남시, 경기 용인시, 경기 이천시, 경기 안성시, 경기 광주시, 경기 여주시, 경기 가평군, 경기 양평군, 경기 부천시, 경기 동두천시, 경기 고양시, 경기 양주시, 경기 포천시, 경기 화성시, 경기 김포시, 충북 청주시 외 120
+고양 쪽: 없음
+
+## 열차 (TrainInfoService)
+도시 코드 0개
+터미널·역 0곳
+우리 160개 시·군 중 이름이 맞는 곳: 0곳
+없는 곳(일부): 서울 서울, 부산 부산, 대구 대구, 인천 인천, 전남광주 광주, 대전 대전, 울산 울산, 세종 세종, 경기 파주시, 경기 연천군, 경기 수원시, 경기 성남시, 경기 의정부시, 경기 안양시, 경기 광명시, 경기 평택시, 경기 안산시, 경기 과천시, 경기 구리시, 경기 남양주시, 경기 오산시, 경기 시흥시, 경기 군포시, 경기 의왕시, 경기 하남시, 경기 용인시, 경기 이천시, 경기 안성시, 경기 광주시, 경기 여주시, 경기 가평군, 경기 양평군, 경기 부천시, 경기 동두천시, 경기 고양시, 경기 양주시, 경기 포천시, 경기 화성시, 경기 김포시, 충북 청주시 외 120
+고양 쪽: 없음
+
+시외버스: 고양 출발 또는 도착 후보 없음 (출발 0, 도착 0)
+
+고속버스: 고양 출발 또는 도착 후보 없음 (출발 0, 도착 0)
+
+열차: 고양 출발 또는 도착 후보 없음 (출발 0, 도착 0)
+
+호출 6번
+
+## 응답 첫머리 (형식 확인용)
+SuburbsBusInfoService/getCtyCodeList: 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+SuburbsBusInfoService/getSuberbsBusTrminlList: 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+ExpBusInfoService/getCtyCodeList: 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+ExpBusInfoService/getExpBusTrminlList: 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+TrainInfoService/getCtyCodeList: 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+TrainInfoService/getCtyAcctoTrainSttnList: 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
