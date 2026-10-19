@@ -21,7 +21,7 @@
 | 6 | 우리 집 설정 + 길찾기 버튼 | 대기 | |
 | 7 | 차 경유 추천 | 대기 | |
 | 8 | TourAPI 관광정보·사진·연관 | 대기 | 사용자: TourAPI 신청 |
-| 9 | 버스·KTX 여행답게 가는 길 | 대기 | 자료 확인 끝(bus-probe 브랜치·ci-report/bus) |
+| 9 | 버스·KTX 여행답게 가는 길 | 자료 모으는 중 (백그라운드, 매일 새벽 .github/workflows/bus.yml → bus-data 브랜치 state.json) | 다 모이면(진행 100%) 노선표를 src/data/routes.json으로 줄이고 길 찾기 화면 (FLAGS.transitRoute) |
 | 10 | AI 모델 비교 점검 | 대기 | |
 | - | 우리 동네 지도(동 단위) | 보류 | |
 

@@ -1,22 +1,27 @@
-name: 버스·열차 자료 확인
+name: 버스·KTX 노선 모으기
 
-# bus-probe 브랜치에 올리면 공공데이터(국토교통부 TAGO) 범위를 확인해 ci-report/bus에 보고서를 올린다. 앱 배포와 무관.
+# 매일 새벽(한국 4시) 하루 한도 안에서 대표 정류지끼리 노선 있는 짝을 모은다. 상태는 이 작업만 쓰는 bus-data 브랜치에 이어 쓴다 (다른 CI 보고서와 섞이지 않게).
+# 앱 배포와 무관. 다 모이면 앱 자료(src/data/routes.json)로 옮기는 건 사람이 확인 뒤에.
 on:
-  push:
-    branches: [bus-probe]
+  schedule:
+    - cron: '7 19 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: bus-collect
+  cancel-in-progress: false
 
 defaults:
   run:
     shell: bash
 
 jobs:
-  probe:
+  collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -24,12 +29,21 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: 범위 확인
+      - name: 지난 상태 받기
+        run: |
+          git clone -q --depth 1 --branch bus-data "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" prev || true
+          mkdir -p bus && cp prev/state.json bus/state.json 2>/dev/null || true
+      - name: 노선 모으기
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
-        run: npx tsx scripts/train-probe.ts 2>&1 | tee bus-probe.txt
-      - name: 결과 올리기
+          STATE: bus/state.json
+        run: npx tsx scripts/bus-collect.ts 2>&1 | tee bus/collect-output.txt
+      - name: 상태 올리기
         if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh bus bus-probe.txt bus-probe.json
+        run: |
+          d=$(mktemp -d)
+          git -C "$d" init -q -b bus-data
+          cp bus/state.json bus/collect-output.txt "$d"/ 2>/dev/null || true
+          git -C "$d" add -A
+          git -C "$d" -c user.name=borapin-ci -c user.email=ci@users.noreply.github.com commit -q -m "bus state $(date -u +%F)"
+          git -C "$d" push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:bus-data
