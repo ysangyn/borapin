@@ -36,6 +36,7 @@ console.log('시도 코드', [...regnOf.entries()].map(([n, c]) => `${n}=${c}`).
 const regionList = (JSON.parse(fs.readFileSync('src/data/regions.json', 'utf8')) as { regions: { code: string; name: string; groupName: string; sido: string }[] }).regions;
 function areas(code: string): Record<string, string>[] {
   const r = regionList.find((x) => x.code === code)!;
+  if ([...regnOf.values()].includes(code)) return [{ lDongRegnCd: code }]; // 세종처럼 시도 코드가 곧 우리 코드
   const base = code.length === 5 ? [{ lDongRegnCd: code.slice(0, 2), lDongSignguCd: code.slice(2) }] : [{ lDongRegnCd: code.slice(0, 2) }];
   // 이름으로 다시 찾기: 시도(옛 이름 포함)에서 시·군 이름이 같거나 '수원시 장안구'처럼 시작하는 곳
   const sidoKeys = [r.sido, r.groupName, ...(r.groupName === '전남광주' ? ['전라남도', '광주광역시', '전남', '광주'] : [])];

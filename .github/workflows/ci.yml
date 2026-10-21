@@ -103,6 +103,10 @@ jobs:
         env:
           TOUR_API_KEY: ${{ secrets.TOUR_API_KEY }}
         run: npx tsx scripts/tour-festivals.ts 2>&1 | tee festivals-output.txt
+      - name: 관광공사 자료 받기 (시·군 관광지·무장애 · 실패하면 지난 자료)
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: npx tsx scripts/tour-build.ts 2>&1 | tee tour-output.txt || true
       - name: 해외 자료 받기 (외교부 여행경보·입국허가요건, 환율 · 실패하면 지난 자료)
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}

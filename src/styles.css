@@ -961,3 +961,9 @@ a.hub-way-row { text-decoration: none; }
 .stopover-main .tiny { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .alarm-mid { color: #8a5a00; }
 .alarm-high { color: var(--danger, #c0392b); font-weight: 800; }
+.tour-spots { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.tour-strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.tour-strip::-webkit-scrollbar { display: none; }
+.tour-card { flex: none; width: 104px; display: flex; flex-direction: column; gap: 3px; color: var(--ink); text-decoration: none; font-size: 12px; font-weight: 700; }
+.tour-card img { width: 104px; height: 78px; object-fit: cover; border-radius: 10px; background: var(--mist2); }
+.tour-card span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTravelInfo } from '../lib/travelinfo';
 import { accessLine } from '../lib/transport';
+import TourSpots from './TourSpots';
 
 /** 지역 여행정보: 한 줄 테마, 볼거리·먹거리, 더보기로 특산물·교통·구·군별 */
 export default function RegionInfo({ code }: { code: string }) {
@@ -18,6 +19,7 @@ export default function RegionInfo({ code }: { code: string }) {
       <div className="info-theme">{m.theme}</div>
       {line('볼거리', m.spots)}
       {line('먹거리', m.foods)}
+      <TourSpots code={code} />
       {accessLine({ t: 'kr', code }) && <div className="info-line" data-testid="region-access"><span className="k">가는 길</span><span>{accessLine({ t: 'kr', code })}</span></div>}
       {more && (
         <>

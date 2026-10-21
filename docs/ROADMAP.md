@@ -17,10 +17,10 @@
 | 2 | 물어보기: 대량 채점 문제(주제×표현) | 완료 (tests/unit/askBulk.test.ts: 주제 20개×낱말×말투 8 + 모르는 활동 20×8) | 주제를 늘릴 때 topics.json만 고치면 시험이 같이 늘어남 |
 | 3 | 물어보기: 여행 주제 사전 확장(자료로) | 완료 (src/data/topics.json 20주제·100곳, 지명 사전의 볼거리 이름도 자동 주제) | |
 | 4 | 여행 상식 + 바뀌는 규정 감시 | 완료 (src/data/faq.json 42개·예시 질문으로 시험, 매주 .github/workflows/faq-watch.yml → ci-report/faq-watch) | 분기마다 faq.json updated 갱신 |
-| 5 | 외교부 입국요건·여행경보 + 환율 | 완료 (scripts/abroad-build.ts → src/data/abroad.json, CI 매일 03:17 / lib/abroad.ts, 도시 카드·홈 가는 길·물어보기) | 안전공지·여행경보 조정: 키 미등록 또는 주소 모름 → 사용자에게 End Point 받기 |
+| 5 | 외교부 입국요건·여행경보 + 환율 | 완료 (scripts/abroad-build.ts → src/data/abroad.json, CI 매일 03:17 / lib/abroad.ts, 도시 카드·홈 가는 길·물어보기) | 여행경보 조정 받기 완료(abroad.json changes, 화면 알림은 아직). 안전공지는 10-21에도 '등록되지 않은 키' → 사용자에게 신청 확인 요청 |
 | 6 | 우리 집 설정 + 길찾기 버튼 | 완료 (HomeSetting·HomeRoute·home.ts, 공간 문서 home 칸·규칙, 뒷단 /geo) | |
 | 7 | 차 경유 추천 | 완료 (src/lib/stopover.ts·Stopovers.tsx, 홈 '가는 길'에) | 여행 계획하기 뼈대에 끼우기는 9번과 함께 |
-| 8 | TourAPI 관광정보·사진·연관 | 진행 중 (7개 API 열림 확인: KorService2·PhotoGalleryService1·TarRlteTarService1·DataLabService·KorWithService2·TatsCnctrRateService) | scripts/tour-build.ts 작성됨(아직 빌드·화면에 안 붙임). 다음: gov-probe로 받기 확인(시·군 코드가 법정동 코드와 맞는지) → ci.yml 빌드 단계에 붙이고 지역 창에 관광지·무장애 표시 |
+| 8 | TourAPI 관광정보·사진·연관 | 1차 완료 (scripts/tour-build.ts → src/data/tour.json 시·군 159/160, CI 빌드 때 갱신 / TourSpots.tsx 지역 창에 관광지 사진·무장애 수) | 2차: 연관 관광지·관광빅데이터(요즘 뜨는 곳·한적한 곳)·무장애로 '많이 안 걷는' 답, 물어보기 연결 |
 | 9 | 버스·KTX 여행답게 가는 길 | 자료 모으는 중 (백그라운드, 매일 새벽 .github/workflows/bus.yml → bus-data 브랜치 state.json) | 다 모이면(진행 100%) 노선표를 src/data/routes.json으로 줄이고 길 찾기 화면 (FLAGS.transitRoute) |
 | 10 | AI 모델 비교 점검 | 완료: 기본 Llama 3.3 70B 유지 (2차: 사실 고친 뒤 기본 11/12·정확·짧음, Mistral 12/12·매끄럽지만 '밀양=바닷가'처럼 조금 지어냄·말투 섞임, gpt-oss 11/12·느림). 다시 비교하려면 커밋 메시지에 [모델비교] | 걷기 편한 국내 여행지 자료가 없어 '많이 안 걷는' 조건은 못 맞춤 → 8번 TourAPI 무장애 자료로 |
 | 12 | 물어보기 되묻기 | 완료 (AskCtx.pending·lastQ: '우리 집 근처'인데 집을 모르면 '어디 사세요?' → 시·군 답하면 우리 집으로 저장하고 처음 질문 다시 풀기, 직전 추천에 조건만 덧붙이기) | 같은 틀로 다른 되묻기(언제·누구와)도 늘릴 수 있음 |
