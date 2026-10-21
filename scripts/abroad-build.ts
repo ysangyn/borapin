@@ -70,6 +70,25 @@ try {
 } catch (e) { console.log('여행경보 조정 실패(지난 자료 유지):', (e as Error).message); }
 
 try {
+  // 안전공지: 나라마다 최근 60일 공지 제목 3개까지 (나라 · 날짜 · 제목)
+  const ns = await list('CountrySafetyService7/getCountrySafetyList7');
+  if (process.env.SAMPLE) console.log('안전공지 예시', JSON.stringify(ns.slice(0, 2)).slice(0, 1500));
+  const since = Date.now() - 60 * 86400000;
+  const pick = (x: Item, ...ks: string[]) => { for (const k of ks) if (x[k] != null && String(x[k]).trim()) return String(x[k]).trim(); return ''; };
+  const by: Record<string, { d: string; t: string }[]> = {};
+  for (const n of ns) {
+    const k = pick(n, 'country_iso_alp2', 'iso_alp2').toUpperCase();
+    const d = pick(n, 'wrt_dt', 'written_dt', 'regist_dt', 'reg_dt').slice(0, 10);
+    const t = pick(n, 'title', 'sfty_notice_title').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').slice(0, 100);
+    if (!k || !d || !t || Date.parse(d) < since) continue;
+    (by[k] ??= []).push({ d, t });
+  }
+  for (const k of Object.keys(by)) by[k] = by[k].sort((a, b) => b.d.localeCompare(a.d)).slice(0, 3);
+  if (ns.length) { out.notices = by; out.noticesAt = new Date().toISOString().slice(0, 10); }
+  console.log(`안전공지 ${ns.length}줄 → 최근 60일 나라 ${Object.keys(by).length}`);
+} catch (e) { console.log('안전공지 실패(지난 자료 유지):', (e as Error).message); }
+
+try {
   if (!EXIM) throw new Error('KOREAEXIM_KEY 없음');
   const day = lastBizDay();
   const r = await fetch(`https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=${EXIM}&searchdate=${day}&data=AP01`, { signal: AbortSignal.timeout(30000) });
