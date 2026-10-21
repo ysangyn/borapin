@@ -17,7 +17,7 @@
 | 2 | 물어보기: 대량 채점 문제(주제×표현) | 완료 (tests/unit/askBulk.test.ts: 주제 20개×낱말×말투 8 + 모르는 활동 20×8) | 주제를 늘릴 때 topics.json만 고치면 시험이 같이 늘어남 |
 | 3 | 물어보기: 여행 주제 사전 확장(자료로) | 완료 (src/data/topics.json 20주제·100곳, 지명 사전의 볼거리 이름도 자동 주제) | |
 | 4 | 여행 상식 + 바뀌는 규정 감시 | 완료 (src/data/faq.json 42개·예시 질문으로 시험, 매주 .github/workflows/faq-watch.yml → ci-report/faq-watch) | 분기마다 faq.json updated 갱신 |
-| 5 | 외교부 입국요건·여행경보 + 환율 | 완료 (scripts/abroad-build.ts → src/data/abroad.json, CI 매일 03:17 / lib/abroad.ts, 도시 카드·홈 가는 길·물어보기) | 여행경보 조정 받기 완료(abroad.json changes, 화면 알림은 아직). 안전공지는 10-21에도 '등록되지 않은 키' → 사용자에게 신청 확인 요청 |
+| 5 | 외교부 입국요건·여행경보 + 환율 | 완료 (scripts/abroad-build.ts → src/data/abroad.json, CI 매일 03:17 / lib/abroad.ts, 도시 카드·홈 가는 길·물어보기) | 여행경보 조정(changes)·안전공지(notices, CountrySafetyService7, 나라별 최근 60일 3개) 받기 완료. 화면: 가고 싶은·계획한 나라의 공지·경보 변화를 홈/도시 카드에 |
 | 6 | 우리 집 설정 + 길찾기 버튼 | 완료 (HomeSetting·HomeRoute·home.ts, 공간 문서 home 칸·규칙, 뒷단 /geo) | |
 | 7 | 차 경유 추천 | 완료 (src/lib/stopover.ts·Stopovers.tsx, 홈 '가는 길'에) | 여행 계획하기 뼈대에 끼우기는 9번과 함께 |
 | 8 | TourAPI 관광정보·사진·연관 | 1차 완료 (scripts/tour-build.ts → src/data/tour.json 시·군 159/160, CI 빌드 때 갱신 / TourSpots.tsx 지역 창에 관광지 사진·무장애 수) | 2차: 연관 관광지·관광빅데이터(요즘 뜨는 곳·한적한 곳)·무장애로 '많이 안 걷는' 답, 물어보기 연결 |
