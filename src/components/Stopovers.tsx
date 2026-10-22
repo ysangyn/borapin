@@ -39,7 +39,7 @@ export default function Stopovers({ destCode }: { destCode: string }) {
               <span className="tiny muted">{s.extraMin <= 5 ? '거의 안 돌아가요' : `약 ${s.extraMin}분 더`}{s.visited ? ' · 가 봤어요' : ' · 처음'}{s.theme ? ` · ${s.theme}` : ''}</span>
             </Link>
             {touch() && <a className="icon-btn" href={nav} aria-label={`${r.name} 들러 내비로 열기`}><Icon name="flag" size={15} /></a>}
-            <button className="icon-btn" onClick={() => void add(s.code)} aria-label={`${r.name} 가고 싶은 곳에 담기`}><Icon name="heart" size={15} /></button>
+            <button className="icon-btn" onClick={() => void add(s.code)} aria-label={`${r.name} 가고 싶은 곳에 담기`}><Icon name="pin" size={15} /></button>
           </div>
         );
       })}

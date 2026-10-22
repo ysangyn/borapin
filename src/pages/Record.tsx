@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
 import PlacePicker from '../components/PlacePicker';
 import PlaceHint from '../components/PlaceHint';
@@ -122,17 +122,19 @@ export default function Record() {
         const wishId = sp.get('wish');
         if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
         if (news) celebrate();
+        // 단추 말과 맞춘다: '기록 남기기' → '기록했어요', '계획 남기기' → '계획을 남겼어요'
+        const did = status === 'planned' ? '계획을 남겼어요' : '기록했어요';
         if (pending.length) {
           const block = await uploadBlocker(flags);
-          if (block) toast(`기록했어요 · 사진은 못 올렸어요: ${block}`);
+          if (block) toast(`${did} · 사진은 못 올렸어요: ${block}`);
           else {
             const r = await uploader.run(pending, newId, auth.user);
-            toast(`기록했어요 · ${uploadSummary(r.ok, r.fails)}`);
+            toast(`${did} · ${uploadSummary(r.ok, r.fails)}`);
           }
           nav(`/trips/${newId}?tab=photos`, { replace: true });
           return;
         }
-        toast(status === 'planned' ? '여행 계획을 담았어요' : `기록했어요${news ? ` · ${news}` : ''}`);
+        toast(`${did}${news ? ` · ${news}` : ''}`);
         nav(`/trips/${newId}`, { replace: true });
       }
     } catch (e) {
@@ -149,7 +151,13 @@ export default function Record() {
       return (
         <>
           <TopBar back backTo="/trips" title="기록 고치기" />
-          <div className="empty" style={{ margin: 20 }}><b>이 기록을 찾을 수 없어요</b><span className="small">지워졌거나 주소가 바뀌었어요.</span></div>
+          <div className="empty" style={{ margin: 20 }} data-testid="record-missing">
+            <b>이 기록을 찾을 수 없어요</b><span className="small">지워졌거나 주소가 바뀌었어요.</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Link to="/trips" className="btn sm">여행 목록 보기</Link>
+              <Link to="/" className="btn sm ghost">홈으로</Link>
+            </div>
+          </div>
         </>
       );
     return <Spinner />;
@@ -157,9 +165,9 @@ export default function Record() {
 
   return (
     <>
-      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? '기록 고치기' : '기록 남기기'} />
+      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? '기록 고치기' : status === 'planned' ? '계획 남기기' : '기록 남기기'} />
       <div className="page" style={{ paddingTop: 4, gap: 20 }}>
-        <div className="small muted" style={{ marginTop: -8 }}>어디, 대략 언제만 있으면 저장돼요.</div>
+        <div className="small muted" style={{ marginTop: -8 }}>어디와 언제만 있으면 남길 수 있어요.</div>
 
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
           <div className="seg-labeled"><span className="tiny muted">종류</span>
@@ -167,10 +175,11 @@ export default function Record() {
             <button role="radio" aria-checked={kind === 'trip'} className={kind === 'trip' ? 'on' : ''} onClick={() => setKind('trip')}>여행</button>
             <button role="radio" aria-checked={kind === 'outing'} className={kind === 'outing' ? 'on' : ''} onClick={() => setKind('outing')}>나들이</button>
           </div></div>
-          <div className="seg-labeled"><span className="tiny muted">언제</span>
-          <div className="seg" role="radiogroup" aria-label="상태">
+          {/* 다녀왔는지·갈 건지는 단추 글 자체가 이름이라 작은 제목을 따로 두지 않는다 ('언제'는 아래 날짜 칸 하나만) */}
+          <div className="seg-labeled" style={{ justifyContent: 'flex-end' }}>
+          <div className="seg" role="radiogroup" aria-label="다녀왔어요 또는 갈 거예요">
             <button role="radio" aria-checked={status === 'done'} className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀왔어요</button>
-            <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 예정</button>
+            <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 거예요</button>
           </div></div>
         </div>
 
@@ -181,7 +190,7 @@ export default function Record() {
         </div>
 
         <div className="field">
-          <span className="label">{status === 'planned' ? '언제쯤' : '대략 언제'}<span className="req">*</span></span>
+          <span className="label">언제<span className="req">*</span> <span className="muted small">(대략이어도 돼요)</span></span>
           <div className="chips">
             {PRECISIONS.map((x) => (
               <button key={x.p} type="button" aria-pressed={when.p === x.p} className={'chip' + (when.p === x.p ? ' on' : '')} onClick={() => setP(x.p)}>{x.label}</button>
@@ -247,7 +256,7 @@ export default function Record() {
 
         {!editing && (
           <div className="field">
-            <span className="label">사진 <span className="muted" style={{ fontWeight: 500 }}>(선택 · 저장하면 같이 올라가요)</span></span>
+            <span className="label">사진 <span className="muted" style={{ fontWeight: 500 }}>(선택 · 남기면 같이 올라가요)</span></span>
             <div className="pending-photos">
               {previews.map((u, i) => (
                 <button key={u} type="button" className="pending-photo" aria-label={`${pending[i].name} 빼기`} onClick={() => setPending((l) => l.filter((_, j) => j !== i))}>
@@ -271,10 +280,10 @@ export default function Record() {
 
         {uploader.queue.length > 0 && <div className="small muted" role="status">사진 올리는 중 {uploader.queue.filter((q) => q.pct >= 1).length}/{uploader.queue.length}…</div>}
         <button className="btn block" disabled={!canSave} onClick={save} data-testid="save">
-          {saving ? '저장 중…' : editing ? '고친 내용 저장' : '저장하기'}
+          {saving ? (editing ? '저장 중…' : '남기는 중…') : editing ? '고친 내용 저장' : status === 'planned' ? '계획 남기기' : '기록 남기기'}
         </button>
         {!places.length && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">어디를 하나 이상 골라 주세요</div>}
-        {places.length > 0 && !whenOk && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">대략 언제인지 골라 주세요 · 모르면 '몰라요'를 눌러요</div>}
+        {places.length > 0 && !whenOk && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">언제인지 골라 주세요 · 모르면 '몰라요'를 눌러요</div>}
       </div>
     </>
   );

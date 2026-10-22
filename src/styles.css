@@ -313,7 +313,8 @@ a { color: var(--violet); text-decoration: none; }
 
 /* ---------- 여행 상세 탭 ---------- */
 .seg.tabs { display: flex; width: 100%; position: sticky; top: 0; z-index: 4; }
-.seg.tabs button { flex: 1; }
+/* 탭 넷이 375px에서 한 줄에: 글자는 줄바꿈하지 않고 여백만 줄인다 */
+.seg.tabs button { flex: 1; min-width: 0; padding: 0 8px; white-space: nowrap; }
 .plan-row { padding: 10px 0; display: flex; flex-direction: column; gap: 8px; }
 .plan-row + .plan-row { border-top: 1px solid var(--line); }
 .plan-row.done .plan-name span:not(.tag) { color: var(--ink4); text-decoration: line-through; }
@@ -548,6 +549,10 @@ a { color: var(--violet); text-decoration: none; }
 /* 여행 전·중·후 카드: 그 지역 사진 위에 글, 오른쪽 아래 보라 */
 .stage-card { position: relative; display: flex; align-items: flex-end; min-height: 168px; border-radius: 22px; overflow: hidden; color: #fff; text-decoration: none; background: linear-gradient(135deg, #5b3fd1, #8a6cf0) center / cover; isolation: isolate; }
 .stage-card::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(23, 16, 60, 0.78) 0%, rgba(23, 16, 60, 0.55) 60%, rgba(23, 16, 60, 0.15) 100%); }
+/* 카드 전체를 덮는 링크(여행 개요로) 위에 단추(그 탭으로)만 떠 있다 — 링크 안에 링크를 넣지 않으려고 */
+.stage-main { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.stage-actions { position: relative; z-index: 2; }
+.stage-actions .btn { text-decoration: none; }
 .stage-copy { display: flex; flex-direction: column; gap: 3px; padding: 16px 16px 14px; flex: 1; min-width: 0; }
 .stage-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.01em; opacity: 0.9; }
 .stage-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -732,10 +737,11 @@ a { color: var(--violet); text-decoration: none; }
 .hub-answer.locked { grid-template-columns: auto 1fr; color: var(--ink3); }
 .hub-answer-text { font-size: 15px; line-height: 1.35; word-break: keep-all; }
 .hub-answer .link-btn { margin: 0; padding: 4px 0; font-size: 12.5px; }
-/* 오늘의 영어 */
+/* 오늘의 영어: 해외 여행을 앞뒀을 때만 카드, 아니면 묶음 맨 아래 한 줄 링크 */
 .hub-english { color: inherit; }
 .hub-en { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; }
 .hub-english-foot { font-weight: 700; color: var(--violet); }
+.hub-english-line { align-self: center; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--violet); }
 /* 가는 길 */
 .hub-way-rows { display: flex; flex-direction: column; }
 .hub-way-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 8px 0; border: none; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; font-size: 14px; text-align: left; }
@@ -827,10 +833,6 @@ a { color: var(--violet); text-decoration: none; }
 .setting-row.invite-new { background: var(--mist); }
 .wish-tabs { display: flex; }
 .wish-tabs button { flex: 1; padding: 0 6px; white-space: nowrap; }
-.plan-again { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line2); background: #fff; color: var(--ink4); display: inline-flex; align-items: center; justify-content: center; }
-.plan-again svg { fill: none; stroke: currentColor; stroke-width: 2; }
-.plan-again.on { background: var(--coral-mist); border-color: transparent; color: var(--coral-ink); }
-.plan-again.on svg { fill: var(--coral-ink); stroke: var(--coral-ink); }
 /* 지도 바로가기: 글자 대신 작은 동그라미 */
 .map-ico { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; letter-spacing: -0.02em; border: 1px solid var(--line); background: #fff; color: var(--ink2); flex: none; }
 .map-ico.naver { color: #03c75a; }

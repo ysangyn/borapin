@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useToast } from './ui';
 import { CARD_KINDS, drawCard, shareOrSave, type CardKind } from '../lib/shareCard';
 import { useTravelInfo } from '../lib/travelinfo';
@@ -37,6 +37,19 @@ export default function ShareCards({ trips, year }: { trips: Trip[]; year: numbe
   }, [kind, trips, notes, info, year]);
 
   const label = CARD_KINDS.find((c) => c.k === kind)?.label ?? '';
+  // 단추 말은 실제로 일어나는 일대로: 휴대폰 공유창이 열리면 '공유하기', 아니면(PC 등) 그림 파일로 내려받으니 '그림 저장'
+  const canShare = useMemo(() => {
+    try {
+      const n = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+      return !!n.canShare?.({ files: [new File([''], 'a.png', { type: 'image/png' })] });
+    } catch { return false; }
+  }, []);
+  const send = async () => {
+    if (!img) return;
+    const r = await shareOrSave(img.blob, `보라핀_${label}.png`);
+    if (r === 'saved') toast('그림을 저장했어요');
+    else if (r === 'shared') toast('공유했어요');
+  };
   return (
     <section data-testid="share-cards">
       <h2 className="h2" style={{ marginBottom: 6 }}>공유 카드</h2>
@@ -49,7 +62,7 @@ export default function ShareCards({ trips, year }: { trips: Trip[]; year: numbe
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
           <div className="share-preview">{img ? <img src={img.url} alt={`${label} 공유 카드`} data-testid="card-img" /> : <span className="small muted">만드는 중…</span>}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn" style={{ flex: 1 }} disabled={!img || busy} onClick={async () => img && (await shareOrSave(img.blob, `보라핀_${label}.png`)) === 'saved' && toast('그림을 저장했어요')}>공유하기</button>
+            <button className="btn" style={{ flex: 1 }} disabled={!img || busy} onClick={send} data-testid="share-card-send">{canShare ? '공유하기' : '그림 저장'}</button>
           </div>
         </div>
       )}

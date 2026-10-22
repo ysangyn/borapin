@@ -63,7 +63,7 @@ export default function WishRolling({ wishes, trips, stats, bare }: { wishes: Wi
                 <span style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>{placeLong(c.place)}<Icon name="chev" size={14} /></span>
                 {c.theme && <span className="tiny muted" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.theme}</span>}
               </Link>
-              <button className="btn sm coral" onClick={() => add(c)}><Icon name="heart" size={14} stroke={2.2} />담기</button>
+              <button className="btn sm coral" onClick={() => add(c)}><Icon name="pin" size={14} stroke={2.2} />담기</button>
             </div>
           ))}
         </div>

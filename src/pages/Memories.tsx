@@ -16,6 +16,7 @@ import { Art } from '../components/Scene';
 import PhotoImg from '../components/PhotoImg';
 import { photoForPlace } from '../lib/media';
 import { formatWhen } from '../lib/dates';
+import { times } from '../lib/ko';
 import { Icon } from '../components/ui';
 
 export default function Memories() {
@@ -136,7 +137,7 @@ export default function Memories() {
                     <div key={y} style={{ display: 'contents' }}>
                       <span className="hm-y">{y}</span>
                       {row.map((n, i) => (
-                        <span key={i} className="hm-c" style={{ background: n ? `rgba(91, 63, 209, ${0.25 + 0.75 * (n / maxCell)})` : undefined }} title={`${y}년 ${i + 1}월 ${n}번`} />
+                        <span key={i} className="hm-c" style={{ background: n ? `rgba(91, 63, 209, ${0.25 + 0.75 * (n / maxCell)})` : undefined }} title={`${y}년 ${i + 1}월 ${times(n)}`} />
                       ))}
                     </div>
                   ))}

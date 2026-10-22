@@ -79,11 +79,14 @@ function Terms() {
   );
 }
 
+/** 출처와 버전: 사진·영상·지도·자료 출처와 지금 올라간 버전 (우리 공간엔 이 화면으로 가는 링크만 둔다) */
 function Credits() {
   const items = [...PHOTOS.map((p) => ({ what: p.name, c: p.credit })), ...VIDEOS.map((v) => ({ what: `${v.name} (영상)`, c: v.credit }))];
   return (
     <>
-      <h1>사진·영상 출처</h1>
+      <h1>출처와 버전</h1>
+      <p className="muted small" data-testid="app-version">보라핀 v{__APP_VERSION__} · 빌드 {__COMMIT__}</p>
+      <h2>사진·영상</h2>
       <p>앱을 꾸미는 여행지 사진과 영상은 위키미디어 공용(Wikimedia Commons)에서 자유 이용이 허락된 자료를 줄여서 썼습니다. 각 자료의 이용 허락 조건을 따릅니다(CC BY-SA 자료를 줄인 것은 같은 조건으로 나눕니다).</p>
       <ul className="credits">
         {items.map(({ what, c }) => (
@@ -94,7 +97,7 @@ function Credits() {
         {items.length === 0 && <li>아직 실린 자료가 없어요.</li>}
       </ul>
       <h2>지도 경계</h2>
-      <ul>
+      <ul data-testid="map-credits">
         <li>통계청 SGIS 행정구역 경계 (공공누리 1유형)</li>
         <li>vuski/admdongkor (CC BY 4.0)</li>
         <li>Natural Earth (퍼블릭 도메인)</li>
@@ -109,7 +112,7 @@ function Credits() {
   );
 }
 
-/** 약관·개인정보 처리방침·사진 출처 (로그인 없이 볼 수 있음) */
+/** 약관·개인정보 처리방침·출처와 버전 (로그인 없이 볼 수 있음) */
 export default function Legal({ kind }: { kind: 'privacy' | 'terms' | 'credits' }) {
   return (
     <div className="page legal" style={{ paddingTop: 20, paddingBottom: 40 }}>
@@ -118,7 +121,7 @@ export default function Legal({ kind }: { kind: 'privacy' | 'terms' | 'credits' 
       <div className="small" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <Link to="/privacy">개인정보 처리방침</Link>
         <Link to="/terms">이용약관</Link>
-        <Link to="/credits">사진·영상 출처</Link>
+        <Link to="/credits">출처와 버전</Link>
       </div>
     </div>
   );

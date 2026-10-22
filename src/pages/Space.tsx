@@ -1,4 +1,4 @@
-import { withRo } from '../lib/ko';
+import { times, withRo } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatars, Icon, TopBar, useToast } from '../components/ui';
@@ -122,7 +122,7 @@ export default function Space() {
           <Avatars size={44} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }} data-testid="space-title">{spaceTitle()}{spaceRelation() && <span className="tag coral" data-testid="space-relation">{RELATION_ICON[spaceRelation()!]} {RELATION_LABEL[spaceRelation()!]}</span>}</div>
-            <div className="small muted">{stats ? `함께 다닌 여행 ${stats.tripsDone}번 · 핀 ${stats.pins}개` : '기록을 불러오는 중…'}</div>
+            <div className="small muted">{stats ? `함께 다닌 여행 ${times(stats.tripsDone)} · 핀 ${stats.pins}개` : '기록을 불러오는 중…'}</div>
             <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{withRo(nameOf(user.email))} 들어와 있어요 · {user.email}</div>
             <div className="tiny" style={{ color: 'var(--violet)', marginTop: 2 }}>각자 계정으로 들어와도 같은 기록을 함께 봐요</div>
           </div>
@@ -259,12 +259,9 @@ export default function Space() {
             <span style={{ flex: 1 }}>로그아웃</span>
           </button>
         </div>
-        <div className="tiny muted" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span>
-            <Link to="/terms" style={{ color: 'inherit' }}>이용약관</Link> · <Link to="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link> · <Link to="/credits" style={{ color: 'inherit' }}>사진·영상·지도 출처</Link>
-          </span>
-          <span data-testid="app-version">보라핀 v{__APP_VERSION__} ({__COMMIT__})</span>
-          <span>지도 경계: 통계청 SGIS(공공누리 1유형) · vuski/admdongkor(CC BY 4.0) · Natural Earth</span>
+        {/* 버전·커밋·자료 출처 같은 개발자 글은 /credits에만 */}
+        <div className="tiny muted" style={{ textAlign: 'center' }}>
+          <Link to="/terms" style={{ color: 'inherit' }}>이용약관</Link> · <Link to="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link> · <Link to="/credits" style={{ color: 'inherit' }} data-testid="credits-link">출처와 버전</Link>
         </div>
       </div>
     </div>

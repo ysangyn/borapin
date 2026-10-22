@@ -4,7 +4,7 @@ import PlanTab from '../components/PlanTab';
 import NotesTab from '../components/NotesTab';
 import PrepTab from '../components/PrepTab';
 import ShareLinkCard, { useShareSync } from '../components/ShareLinkCard';
-import { useNotes } from '../lib/tripExtras';
+import { dayLabel, tripDays, useNotes, usePlan } from '../lib/tripExtras';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
 import { computeStats, deleteTripAll, patchTrip, usePlaces, useTrips } from '../lib/data';
@@ -19,7 +19,8 @@ import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
 import { COUNTRY_BY_ID, placeLabel, placeLong, REGION_BY_CODE } from '../lib/geo';
-import type { Place, Trip } from '../lib/types';
+import { tripTabs, type TripTab } from '../lib/stage';
+import type { Place, PlaceRec, Trip } from '../lib/types';
 
 function mapLinks(p: Place) {
   let q = '';
@@ -42,7 +43,6 @@ export default function TripDetail() {
   const [confirm, setConfirm] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [sp, setSp] = useSearchParams();
-  const tab = (sp.get('tab') as 'info' | 'plan' | 'prep' | 'photos' | 'notes' | null) ?? 'info';
   const setTab = (t: string) => setSp(t === 'info' ? {} : { tab: t }, { replace: true });
   const notes = useNotes(id);
   const trip = trips?.find((t) => t.id === id);
@@ -61,6 +61,9 @@ export default function TripDetail() {
       </>
     );
   }
+  // 주소의 tab이 이 여행에 없는 탭이면(예정 여행의 '글', 다녀온 여행의 '준비') 개요로
+  const tabs = tripTabs(trip.status);
+  const tab: TripTab = tabs.find((t) => t === sp.get('tab')) ?? 'info';
   const photos = tripPhotos ?? [];
   const tripPlace = () => (trip ? trip.places.map(placeLong).join(', ') : null);
   const dd = trip.status === 'planned' ? dday(trip.when) : null;
@@ -83,6 +86,13 @@ export default function TripDetail() {
   const sugPlaces = suggestPlaces(trip, photos);
   const nd = nightsDays(trip.when);
   const abroad = trip.places.every((p) => p.t === 'country');
+  const label: Record<TripTab, string> = {
+    info: '개요',
+    plan: trip.status === 'done' ? '들른 곳' : '일정',
+    prep: '준비',
+    photos: `사진${photos.length ? ` ${photos.length}` : ''}`,
+    notes: `글${notes?.length ? ` ${notes.length}` : ''}`,
+  };
 
   return (
     <>
@@ -114,20 +124,20 @@ export default function TripDetail() {
           </button>
         )}
 
-        <div className="seg tabs" role="tablist" aria-label="여행 보기">
-          {([['info', '개요'], ['plan', trip.status === 'done' ? '들른 곳' : '일정'], ...(trip.status === 'planned' ? [['prep', '준비'] as const] : []), ['photos', `사진${photos.length ? ` ${photos.length}` : ''}`], ['notes', `글${notes?.length ? ` ${notes.length}` : ''}`]] as const).map(([k, label]) => (
-            <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>
+        <div className="seg tabs" role="tablist" aria-label="여행 보기" data-testid="trip-tabs">
+          {tabs.map((k) => (
+            <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label[k]}</button>
           ))}
         </div>
 
-        {tab === 'plan' && <PlanTab trip={trip} recs={recs ?? []} />}
+        {tab === 'plan' && (trip.status === 'done' ? <VisitedTab trip={trip} recs={tripRecs} /> : <PlanTab trip={trip} recs={recs ?? []} />)}
         {tab === 'prep' && trip.status === 'planned' && <PrepTab trip={trip} trips={trips} />}
         {tab === 'notes' && <NotesTab trip={trip} />}
 
         {tab === 'info' && <>
         <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} interactive={false} />
 
-        {trip.status === 'planned' && <PackingSummary trip={trip} onOpen={() => setTab('prep')} />}
+        {trip.status === 'planned' ? <PackingSummary trip={trip} onOpen={() => setTab('prep')} /> : <PlacesSummary trip={trip} recs={tripRecs} onOpen={() => setTab('plan')} />}
 
         <div className="card white" style={{ padding: '4px 16px' }}>
           <div className="kv"><span className="k">어디</span>
@@ -147,9 +157,16 @@ export default function TripDetail() {
           <div className="kv"><span className="k">누구와</span><span>{trip.companions.length ? trip.companions.join(', ') : <span className="muted">적지 않음</span>}</span></div>
           {trip.memo && <div className="kv"><span className="k">메모</span><span style={{ whiteSpace: 'pre-wrap' }}>{trip.memo}</span></div>}
           {trip.tags.length > 0 && <div className="kv"><span className="k">태그</span><span className="chips">{trip.tags.map((t) => <span key={t} className="tag">{t}</span>)}</span></div>}
-          <div className="kv"><span className="k">남긴 사람</span><span className="muted small">{trip.createdBy?.name ?? '-'}{trip.source === 'v22' ? ' · v22에서 가져옴' : ''}</span></div>
+          <div className="kv"><span className="k">남긴 사람</span><span className="muted small">{trip.createdBy?.name ?? '-'}</span></div>
         </div>
 
+        {/* 예정 여행은 '글' 탭이 없는 대신 개요 아래에서 바로 쓴다 */}
+        {trip.status === 'planned' && (
+          <section data-testid="trip-notes">
+            <h2 className="h2" style={{ fontSize: 17, marginBottom: 6 }}>메모·글{notes?.length ? ` · ${notes.length}` : ''}</h2>
+            <NotesTab trip={trip} />
+          </section>
+        )}
         </>}
 
         {tab === 'photos' && <section data-testid="trip-photos">
@@ -189,18 +206,6 @@ export default function TripDetail() {
         </section>}
 
         {tab === 'info' && <>
-        <section data-testid="trip-places">
-          <div className="row-between" style={{ marginBottom: 2 }}>
-            <h2 className="h2" style={{ fontSize: 17 }}>장소</h2>
-            <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 700 }}>+ 장소 남기기</Link>
-          </div>
-          {(recs ?? []).filter((r) => r.tripId === trip.id).length === 0 ? (
-            <div className="tiny muted">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요.</div>
-          ) : (
-            <div className="list">{(recs ?? []).filter((r) => r.tripId === trip.id).map((r) => <PlaceRecRow key={r.id} rec={r} />)}</div>
-          )}
-        </section>
-
         <ShareLinkCard trip={trip} photos={photos} recs={tripRecs ?? []} />
 
         {!confirm ? (
@@ -250,5 +255,68 @@ function PackingSummary({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
       <span style={{ flex: 1 }}><b>준비</b><div className="tiny muted">{list.length ? `준비물 ${done}/${list.length} 챙김 · 가는 길 · 항공권 · 현지어` : '준비물 목록 만들기 · 가는 길 · 항공권 · 현지어'}</div></span>
       <Icon name="chev" size={16} />
     </button>
+  );
+}
+
+/** 다녀온 여행 개요의 들른 곳 요약 한 줄 (목록은 '들른 곳' 탭에만) */
+function PlacesSummary({ trip, recs, onOpen }: { trip: Trip; recs: PlaceRec[] | null; onOpen: () => void }) {
+  const names = (recs ?? []).map((r) => r.name);
+  return (
+    <div className="card white" style={{ display: 'flex', alignItems: 'center', gap: 10 }} data-testid="trip-places">
+      <button style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', padding: 0, textAlign: 'left', font: 'inherit', color: 'inherit' }} onClick={onOpen} data-testid="places-summary">
+        <span className="ico"><Icon name="pin" size={17} /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <b>들른 곳</b>
+          <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {names.length ? `우리 장소 ${names.length}곳 · ${names.slice(0, 3).join(', ')}${names.length > 3 ? ` 외 ${names.length - 3}` : ''}` : '맛집·카페·명소를 둘의 한 줄 평과 함께'}
+          </div>
+        </span>
+      </button>
+      <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 700, flex: 'none' }}>+ 장소 남기기</Link>
+    </div>
+  );
+}
+
+/**
+ * 다녀온 여행의 '들른 곳' 탭: 위는 이 여행의 우리 장소(평가·한 줄 평), 아래는 일정에 적어 두었던 곳.
+ * '또 갈래요'는 우리 장소의 평가로 남긴다 (일정 줄의 하트는 없앴다).
+ */
+function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
+  const plans = usePlan(trip.id);
+  const days = tripDays(trip.when);
+  const recIds = new Set((recs ?? []).map((r) => r.id));
+  // 우리 장소에서 넣었던 줄은 위에 이미 보이니 뺀다
+  const rest = (plans ?? []).filter((p) => !(p.recId && recIds.has(p.recId)));
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-testid="trip-visited">
+      <section>
+        <div className="row-between" style={{ marginBottom: 2 }}>
+          <h2 className="h2" style={{ fontSize: 17 }}>우리 장소{recs?.length ? ` · ${recs.length}` : ''}</h2>
+          <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 700 }}>+ 장소 남기기</Link>
+        </div>
+        {recs && recs.length === 0 ? (
+          <div className="small muted">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요. 또 가고 싶은 곳은 평가로 남겨요.</div>
+        ) : (
+          <div className="list">{(recs ?? []).map((r) => <PlaceRecRow key={r.id} rec={r} />)}</div>
+        )}
+      </section>
+      {rest.length > 0 && (
+        <section data-testid="trip-planned-places">
+          <h2 className="h2" style={{ fontSize: 17, marginBottom: 2 }}>일정에 있던 곳</h2>
+          <div className="list">
+            {rest.map((it) => (
+              <div key={it.id} className="plan-row" data-testid="planned-place">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  {it.time && <span className="tag violet">{it.time}</span>}
+                  <span style={{ fontWeight: 600 }}>{it.name}</span>
+                  {it.day && days.includes(it.day) && <span className="tiny muted">{dayLabel(it.day, days)}</span>}
+                  {it.info && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.info}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }

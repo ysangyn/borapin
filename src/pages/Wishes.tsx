@@ -32,7 +32,11 @@ export default function Wishes() {
   const nav = useNavigate();
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const [who, setWho] = useState<string>('all'); // all · both · 이름
-  const [dice, setDice] = useState<false | 'kr' | 'world'>(() => (new URLSearchParams(location.search).get('find') === 'world' ? 'world' : false));
+  // ?find=dice 면 여행지 뽑기를, ?find=world 면 해외 도시 고르기를 바로 연다 (홈 묶음·챗봇 단추가 말한 곳으로 바로)
+  const [dice, setDice] = useState<false | 'kr' | 'world'>(() => {
+    const find = new URLSearchParams(location.search).get('find');
+    return find === 'world' ? 'world' : find === 'dice' ? 'kr' : false;
+  });
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   const withState = useMemo(
@@ -131,7 +135,7 @@ export default function Wishes() {
                           {season && <span className="tiny muted">가기 좋은 때 {monthsLabel(season.m)}</span>}
                         </span>
                       </div>
-                      <button className="btn sm coral" onClick={() => addPick(c.place, c.name)}><Icon name="heart" size={15} stroke={2.2} />담기</button>
+                      <button className="btn sm coral" onClick={() => addPick(c.place, c.name)}><Icon name="pin" size={15} stroke={2.2} />담기</button>
                     </div>
                   );
                 })}
@@ -150,7 +154,7 @@ export default function Wishes() {
               {done.map(({ w }) => (
                 <div key={w.id} className="wish-card done">
                   <span className="t" style={{ flex: 1 }}>{wishTitle(w)}</span>
-                  <button className="btn sm ghost" onClick={() => reviveWish(w.id).then(() => toast('다시 가고 싶은 곳에 담았어요'), () => toast('바꾸지 못했어요'))}>또 가고 싶어요</button>
+                  <button className="btn sm ghost" onClick={() => reviveWish(w.id).then(() => toast('가고 싶은 곳에 담았어요'), () => toast('담지 못했어요. 다시 해 주세요'))}>다시 가고 싶어요</button>
                   <button className="btn sm line" onClick={() => { deleteWish(w.id).catch(() => toast('지우지 못했어요')); toast('목록에서 지웠어요', { label: '되돌리기', onClick: () => void restoreWish(w) }); }}>지우기</button>
                 </div>
               ))}

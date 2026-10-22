@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Icon, useToast } from './ui';
 import { tileText } from './TripRow';
 import { formatWhen } from '../lib/dates';
-import { placeLabel, placeLong, placeParam } from '../lib/geo';
+import { placeLabel, placeLong } from '../lib/geo';
 import { monthsLabel, seasonFor, type SeasonData } from '../lib/seasons';
 import { bothWant, type WishState } from '../lib/wishes';
 import { everyoneLabel, memberNames } from '../lib/members';
@@ -57,7 +57,7 @@ export function MyHeart({ wish, size = 'md' }: { wish: Wish; size?: 'sm' | 'md' 
     const next = on ? (wish.wantedBy ?? []).filter((n) => n !== me) : [...(wish.wantedBy ?? []), me];
     try {
       await updateWish(wish.id, { wantedBy: next });
-      toast(on ? '내 하트를 뺐어요' : next.length >= Math.max(2, memberNames().length) ? `${everyoneLabel()}! 여행 만들기를 눌러 보세요` : '나도 원해요에 하트를 눌렀어요');
+      toast(on ? '내 하트를 뺐어요' : next.length >= Math.max(2, memberNames().length) ? `${everyoneLabel()}! 여행 만들기를 눌러 보세요` : '하트를 보냈어요');
     } catch { toast('바꾸지 못했어요. 다시 해 주세요'); }
   };
   return (
@@ -73,8 +73,8 @@ function useWishMeta(wish: Wish, seasons: SeasonData | null) {
   const festData = useFestivals();
   const fest = wish.place.t === 'kr' ? upcomingFestivals(festData, wish.place.code, new Date(), 45)[0] : undefined;
   const memo = [
-    wish.spots.length ? `가볼 곳 ${wish.spots[0]}${wish.spots.length > 1 ? ` 외 ${wish.spots.length - 1}` : ''}` : '',
-    wish.foods.length ? `먹을 것 ${wish.foods[0]}` : '',
+    wish.spots.length ? `볼거리 ${wish.spots[0]}${wish.spots.length > 1 ? ` 외 ${wish.spots.length - 1}` : ''}` : '',
+    wish.foods.length ? `먹거리 ${wish.foods[0]}` : '',
     wish.todos.length ? `해볼 것 ${wish.todos[0]}` : '',
   ].filter(Boolean);
   return { season, fest, memo, photo: photoForPlace(wish.place) };
@@ -90,11 +90,14 @@ function SeasonLine({ season, fest }: { season: ReturnType<typeof seasonFor>; fe
   );
 }
 
+/** 아직 마음을 안 보낸 사람 (나는 빼고) */
+const waitingNames = (wish: Wish, me: string) => memberNames().filter((n) => n !== me && !(wish.wantedBy ?? []).includes(n));
+
 /**
- * 가고 싶은 곳 카드.
+ * 가고 싶은 곳 카드. 규칙은 어느 모양이든 같다: 둘 다 원하면 '여행 만들기', 아니면 하트로 마음 맞추기.
  * - hero: 둘 다 원하는 곳 — 사진 크게, 아래에 가기 좋은 때·메모, 주요 단추 '여행 만들기'
  * - row(기본): 한 명만 원하거나 예정인 곳 — 한 줄, 오른쪽에 내 하트(나도 원해요) 또는 예정 꼬리표
- * - compact: 홈 접힌 목록용 작은 줄
+ * - compact: 홈·여행 탭의 작은 줄 — 내 하트가 없으면 하트, 내가 보냈으면 '○○ 마음 기다리는 중'
  */
 export default function WishCard({ wish, state, seasons, compact, hero }: {
   wish: Wish;
@@ -104,8 +107,18 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
   hero?: boolean;
 }) {
   const { season, fest, memo, photo } = useWishMeta(wish, seasons);
+  const auth = useAuth();
+  const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const both = bothWant(wish);
   const flights = !compact && wish.place.t === 'country' ? flightLinks(wish.place, season?.m[0] ?? null) : null;
+  const planLink = <Link to={`/plan?wish=${wish.id}`} className={hero && !compact ? 'btn sm' : 'btn sm soft'} data-testid="wish-plan">여행 만들기</Link>;
+  // 오른쪽 단추: 둘 다 원하면 여행 만들기 → 내 하트가 없으면 하트 → (작은 줄에서는) 상대 마음 기다리는 중
+  const waiting = waitingNames(wish, me);
+  const action = both || !waiting.length
+    ? planLink
+    : !compact || !(wish.wantedBy ?? []).includes(me)
+      ? <MyHeart wish={wish} size={compact ? 'sm' : 'md'} />
+      : <span className="tiny muted" style={{ flex: 'none', textAlign: 'right', maxWidth: 96 }} data-testid="wish-waiting">{waiting.join('·')} 마음 기다리는 중</span>;
 
   if (hero && !compact) {
     return (
@@ -128,7 +141,7 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
             {memo.length > 0 && <span className="tiny muted ellipsis">{memo.join(' · ')}</span>}
             {flights && <span className="wish-flights row" data-testid="wish-flights"><a href={flights.skyscanner} target="_blank" rel="noreferrer">항공권</a><a href={flights.google} target="_blank" rel="noreferrer" title="구글 항공권에서 가격 알림을 켤 수 있어요">가격 알림</a></span>}
           </span>
-          {state.kind === 'wish' && <Link to={`/record?status=planned&place=${placeParam(wish.place)}&wish=${wish.id}`} className="btn sm" data-testid="wish-plan">여행 만들기</Link>}
+          {state.kind === 'wish' && action}
           {state.kind === 'planned' && <Link to={`/trips/${state.trip.id}`} className="tag violet">예정 · {formatWhen(state.trip.when)}</Link>}
         </div>
       </div>
@@ -149,7 +162,7 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
           {!compact && memo.length > 0 && <span className="tiny muted ellipsis">{memo.join(' · ')}</span>}
         </span>
       </Link>
-      {state.kind === 'wish' && (compact ? <Link to={`/record?status=planned&place=${placeParam(wish.place)}&wish=${wish.id}`} className="btn sm soft" data-testid="wish-plan">여행 만들기</Link> : both ? <Link to={`/record?status=planned&place=${placeParam(wish.place)}&wish=${wish.id}`} className="btn sm soft" data-testid="wish-plan">여행 만들기</Link> : <MyHeart wish={wish} />)}
+      {state.kind === 'wish' && action}
       {state.kind === 'planned' && <Link to={`/trips/${state.trip.id}`} className="tag violet">예정 · {formatWhen(state.trip.when)}</Link>}
       {state.kind === 'done' && <span className="tag">다녀왔어요</span>}
     </div>

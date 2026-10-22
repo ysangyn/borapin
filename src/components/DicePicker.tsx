@@ -98,7 +98,7 @@ export default function DicePicker({ stats, info, seasons, wishes, initialScope 
           {season && <div className="tiny" style={{ color: '#b4472c' }}>가기 좋은 때 {monthsLabel(season.m)}</div>}
           {!rolling && (
             <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-              <button className="btn sm coral" onClick={add} data-testid="dice-add"><Icon name="heart" size={15} stroke={2.2} />담기</button>
+              <button className="btn sm coral" onClick={add} data-testid="dice-add"><Icon name="pin" size={15} stroke={2.2} />담기</button>
               <Link to={`/map?sel=${placeParam(face.place)}`} className="btn sm ghost">지도에서 보기</Link>
             </div>
           )}

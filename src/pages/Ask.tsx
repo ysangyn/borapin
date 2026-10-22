@@ -162,7 +162,8 @@ export default function Ask() {
                         <b>{it.title}</b>
                         {it.sub && <span className="tiny muted">{it.sub}</span>}
                       </button>
-                      {it.wish && <button type="button" className="ask-item-heart" aria-label={`${it.title} 가고 싶은 곳에 담기`} onClick={() => press({ label: `${it.title} 담기`, wish: it.wish }, m.q)}><Icon name="heart" size={18} stroke={2.2} /></button>}
+                      {/* 담기는 핀 모양 (하트는 마음에만) */}
+                      {it.wish && <button type="button" className="ask-item-heart" aria-label={`${it.title} 가고 싶은 곳에 담기`} onClick={() => press({ label: `${it.title} 담기`, wish: it.wish }, m.q)}><Icon name="pin" size={18} stroke={2.2} /></button>}
                     </div>
                   ))}
                 </div>
@@ -172,7 +173,7 @@ export default function Ask() {
                 <div className="chips ask-actions">
                   {[...m.a.buttons.filter((b) => !b.url)].sort((x, y) => rank(x) - rank(y)).map((b, j) => (
                     <button key={j} className={'chip' + (b.wish ? ' on-coral' : b.choose ? ' soft-on' : b.to ? ' soft' : '')} onClick={() => press(b, m.q)}>
-                      {b.wish && <Icon name="heart" size={13} stroke={2.2} />}
+                      {b.wish && <Icon name="pin" size={13} stroke={2.2} />}
                       {b.label}
                     </button>
                   ))}

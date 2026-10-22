@@ -86,9 +86,12 @@ export default function Trips() {
           {planned.length ? (
             <div className="list">{planned.map((t) => <TripRow key={t.id} trip={t} />)}</div>
           ) : (
-            <Link to="/record?status=planned" className="trip-row" style={{ color: 'var(--ink2)' }}>
-              <span className="trip-tile planned"><Icon name="plus" size={20} stroke={2.2} /></span>
-              <span style={{ fontWeight: 700 }}>여행 계획하기</span>
+            <Link to="/plan" className="trip-row" style={{ color: 'var(--ink2)' }} data-testid="trips-plan">
+              <span className="trip-tile planned"><Icon name="calendar" size={20} stroke={2.2} /></span>
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontWeight: 700 }}>여행 계획하기</span>
+                <span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에서 둘이 고르기</span>
+              </span>
             </Link>
           )}
         </section>
@@ -137,7 +140,7 @@ export default function Trips() {
           <span style={{ flex: 1 }}>
             <b>우리 장소</b>
             <span className="tiny muted" style={{ display: 'block' }}>
-              {recs?.length ? `${recs.length}곳 · 또 갈래요 ${recs.filter((r) => r.verdict === 'again').length}곳` : '맛집·카페·명소를 둘의 한 줄 평과 함께'}
+              {recs?.length ? `${recs.length}곳 · 또 갈래요 ${recs.filter((r) => r.verdict === 'again').length}곳` : '맛집·카페·볼거리를 둘의 한 줄 평과 함께'}
             </span>
           </span>
           <Icon name="chev" size={18} />

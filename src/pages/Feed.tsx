@@ -15,14 +15,12 @@ import { markFeedSeen } from '../lib/feedSeen';
 import { openSlideshow } from '../components/slideshow';
 import { wishTitle } from '../components/WishCard';
 import QuickUpload from '../components/QuickUpload';
-import NewsDigest from '../components/NewsDigest';
-import { sortWishes, wishState } from '../lib/wishes';
 import { photoForPlace } from '../lib/media';
 import { heartKey, toggleHeart, useHearts, type Heart } from '../lib/hearts';
 import { asksForFeed, useRecentAsks } from '../lib/asks';
 import { memberNames } from '../lib/members';
 
-/** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로 */
+/** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로. 둘의 소식만 (여행 소식은 홈 묶음·지역 창에) */
 export default function Feed() {
   const auth = useAuth();
   const { trips } = useTrips();
@@ -46,14 +44,17 @@ export default function Feed() {
       <TopBar title="피드" right={<Link to="/memories" className="btn sm soft" data-testid="to-memories">추억 돌아보기</Link>} />
       <div className="page feed" style={{ paddingTop: 4 }} data-testid="feed">
         {trips && trips.length > 0 && <QuickUpload trips={trips} />}
-        {wishes && trips && <NewsDigest places={sortWishes(wishes.filter((w) => wishState(w, trips).kind !== 'done')).map((w) => w.place).slice(0, 3)} compact />}
         {!items && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
         {items && items.length === 0 && (
           <div className="card art-row" data-testid="feed-empty">
             <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} decoding="async" />
             <span>
               <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>아직 소식이 없어요</b>
-              <span className="small muted">사진을 올리거나 글을 남기면 여기에 둘의 소식이 쌓여요.</span>
+              <span className="small muted" style={{ display: 'block', marginBottom: 10 }}>기록을 남기거나 가고 싶은 곳을 담으면 여기에 둘의 소식이 쌓여요.</span>
+              <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <Link to="/record" className="btn sm" data-testid="feed-empty-record">기록 남기기</Link>
+                <Link to="/wishes" className="btn sm soft" data-testid="feed-empty-wish">가고 싶은 곳 담기</Link>
+              </span>
             </span>
           </div>
         )}

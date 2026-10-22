@@ -9,7 +9,10 @@ import { useTravelInfo } from '../lib/travelinfo';
 /** 00:00~23:45, 15분 간격 (24시간 표기) */
 const TIMES = Array.from({ length: 96 }, (_, i) => `${String(Math.floor(i / 4)).padStart(2, '0')}:${String((i % 4) * 15).padStart(2, '0')}`);
 
-/** 일정은 필요한 만큼만: ① 가볼 곳 목록 → ② 날짜별 배치 → ③ 시간·예약 정보 */
+/**
+ * 예정 여행의 일정은 필요한 만큼만: ① 가볼 곳 목록 → ② 날짜별 배치 → ③ 시간·예약 정보.
+ * 다녀온 여행의 '들른 곳' 탭은 우리 장소(평가·한 줄 평)로 남기므로 여기 오지 않는다 (TripDetail VisitedTab).
+ */
 export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }) {
   // 기기에 먼저 저장돼 누르면 바로 보이고, 상대가 바꾼 것도 그대로 보인다
   const items = usePlan(trip.id);
@@ -18,12 +21,10 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
   const [open, setOpen] = useState<string | null>(null);
   const days = tripDays(trip.when);
   const ours = trip.places.flatMap((p) => recsAt(recs, p)).filter((r) => !items?.some((i) => i.recId === r.id));
-  // 다녀온 여행이면 '가볼 곳'이 아니라 '들른 곳': 보기는 그 지역의 명소로, 다음에 또 갈지 표시할 수 있게
-  const done = trip.status === 'done';
   const info = useTravelInfo();
   const first = trip.places[0];
   const example = (first?.t === 'kr' ? info?.cells[first.code]?.main.spots[0] : undefined) ?? (first?.t === 'country' ? '시내 시장' : '경포대');
-  const noun = done ? '들른 곳' : '가볼 곳';
+  const noun = '가볼 곳';
 
   const add = async (n = name, recId?: string) => {
     if (!n.trim()) return;
@@ -81,8 +82,8 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
       )}
       {items && items.length === 0 && (
         <div className="empty" style={{ padding: '18px 8px' }}>
-          <b>{done ? '들른 곳을 적어 두세요' : '가볼 곳을 적어 보세요'}</b>
-          <span className="small">{done ? '어디어디 들렀는지 적어 두면 다음에 또 갈 때 바로 꺼내 봐요. 또 가고 싶은 곳엔 하트를.' : '순서와 날짜 없이 적기만 해도 돼요. 원하면 날짜와 시간, 예약 정보까지 넣어요.'}</span>
+          <b>가볼 곳을 적어 보세요</b>
+          <span className="small">순서와 날짜 없이 적기만 해도 돼요. 원하면 날짜와 시간, 예약 정보까지 넣어요.</span>
         </div>
       )}
       {groups.map((g) => (
@@ -95,13 +96,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
               return (
                 <div key={it.id} className={'plan-row' + (it.done ? ' done' : '')} data-testid="plan-item">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {done ? (
-                      <button type="button" className={'plan-again' + (it.again ? ' on' : '')} aria-pressed={!!it.again} aria-label={it.again ? `${it.name} 또 갈래요 취소` : `${it.name} 또 갈래요`} onClick={() => updatePlan(it.id, { again: !it.again }).then(() => toast(it.again ? '또 갈래요를 뺐어요' : '또 갈래요!'), () => toast('저장하지 못했어요'))} data-testid="plan-again">
-                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>
-                      </button>
-                    ) : (
-                      <input type="checkbox" checked={it.done} onChange={(e) => updatePlan(it.id, { done: e.target.checked }).catch(() => toast('저장하지 못했어요'))} aria-label={`${it.name} 다녀옴`} />
-                    )}
+                    <input type="checkbox" checked={it.done} onChange={(e) => updatePlan(it.id, { done: e.target.checked }).catch(() => toast('저장하지 못했어요'))} aria-label={`${it.name} 다녀옴`} />
                     <button className="plan-name" onClick={() => setOpen(isOpen ? null : it.id)} aria-expanded={isOpen}>
                       {it.time && <span className="tag violet">{it.time}</span>}
                       <span>{it.name}</span>
@@ -125,7 +120,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
                         {it.time && !TIMES.includes(it.time) && <option value={it.time}>{it.time}</option>}
                       </select>
                       <input className="input" aria-label="예약·메모" placeholder="예약번호, 메모" defaultValue={it.info} onBlur={(e) => e.target.value !== it.info && updatePlan(it.id, { info: e.target.value.trim() })} maxLength={200} />
-                      <button className="btn sm line" onClick={() => { const copy = it; setOpen(null); deletePlan(copy.id).catch(() => toast('빼지 못했어요')); toast(`'${copy.name}'${josa.pick(copy.name, '을/를')} 일정에서 뺐어요`, { label: '되돌리기', onClick: () => void restorePlan(copy) }); }}><Icon name="trash" size={15} />{done ? '목록에서 빼기' : '일정에서 빼기'}</button>
+                      <button className="btn sm line" onClick={() => { const copy = it; setOpen(null); deletePlan(copy.id).catch(() => toast('빼지 못했어요')); toast(`'${copy.name}'${josa.pick(copy.name, '을/를')} 일정에서 뺐어요`, { label: '되돌리기', onClick: () => void restorePlan(copy) }); }}><Icon name="trash" size={15} />일정에서 빼기</button>
                     </div>
                   )}
                 </div>

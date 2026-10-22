@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { josa } from 'es-hangul';
 import { Icon, useBusy, useToast } from './ui';
 import { Hearts, wishTitle } from './WishCard';
 import WishRolling from './WishRolling';
@@ -20,6 +21,7 @@ import Stopovers from './Stopovers';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
 import { upcomingTrips } from '../lib/stats';
+import { nextAbroadTrip } from '../lib/stage';
 import { cityFor, flyLabel, tzLabel, useWorld } from '../lib/world';
 import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { accessLine } from '../lib/transport';
@@ -31,7 +33,7 @@ import type { Place, Trip, Wish } from '../lib/types';
 
 /**
  * 여행과 여행 사이의 홈 묶음 "다음 여행 준비".
- * 다음은 어디 → 오늘의 한 질문 → 오늘의 영어 → 가는 길.
+ * 다음은 어디 → 오늘의 한 질문 → 가는 길 → 오늘의 영어(해외 여행을 앞뒀을 때만 카드, 아니면 한 줄 링크).
  * 기준 장소는 하나: 예정된 여행이 있으면 그 여행, 없으면 가고 싶은 곳 1순위(둘 다 원하는 곳 먼저).
  * 질문·가는 길은 모두 그 장소에 매달린다. 가고 싶은 곳이 하나도 없으면 '3곳만 담아볼까요'가 첫 블록.
  */
@@ -39,6 +41,8 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
   // 홈 위 카드가 이미 맡은 여행(떠나기 전·여행 중·막 다녀옴)은 여기서 또 보여 주지 않는다
   const upcoming = useMemo(() => upcomingTrips(trips).filter((t) => t.id !== excludeTripId), [trips, excludeTripId]);
   const nextTrip = upcoming[0] ?? null;
+  // 영어 카드는 다음 예정 여행(홈 위 카드가 맡은 여행 포함)이 해외일 때만
+  const abroadNext = useMemo(() => !!nextAbroadTrip(trips), [trips]);
   const active = useMemo(() => {
     const list = sortWishes(wishes.filter((w) => wishState(w, trips).kind === 'wish'));
     return [...list.filter(bothWant), ...list.filter((w) => !bothWant(w))];
@@ -51,7 +55,7 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
     <section className="hub" data-testid="next-hub" data-anchor={nextTrip ? 'trip' : firstWish ? 'wish' : 'none'}>
       <div className="hub-head">
         <h2 className="h2 hub-title">다음 여행 준비</h2>
-        <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{active.length ? `가고 싶은 곳 ${active.length}곳` : '여행지 뽑기'}</Link>
+        {active.length ? <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>가고 싶은 곳 {active.length}곳</Link> : <Link to="/wishes?find=dice" className="small" style={{ fontWeight: 700 }}>여행지 뽑기</Link>}
       </div>
       <DraftNudge />
       {nextTrip ? <NextTripHero trip={nextTrip} more={upcoming.slice(1, 3)} wishes={active.slice(0, 2)} />
@@ -59,7 +63,7 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
         : <WishRolling wishes={wishes} trips={trips} stats={stats} bare />}
       {anchor && <TodayAsk place={anchor.place} wish={anchor.wish} />}
       {anchor && <WayThere place={anchor.place} months={anchor.wish?.months} wishId={anchor.wish?.id ?? null} />}
-      <TodayEnglish />
+      <TodayEnglish card={abroadNext} />
     </section>
   );
 }
@@ -126,7 +130,7 @@ function WhereNext({ top }: { top: Wish[] }) {
           ))}
         </div>
       )}
-      {both && <Link to={`/record?status=planned&place=${placeParam(first.place)}&wish=${first.id}`} className="btn block" data-testid="hub-confirm">{placeLabel(first.place)} 여행 만들기</Link>}
+      {both && <Link to={`/plan?wish=${first.id}`} className="btn block" data-testid="hub-confirm">{placeLabel(first.place)} 여행 만들기</Link>}
     </div>
   );
 }
@@ -195,8 +199,8 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
   );
 }
 
-/** 3. 오늘의 영어 — 한 문장 미리 보기 + 진도 */
-function TodayEnglish() {
+/** 4. 오늘의 영어 — 해외 여행을 앞뒀으면 한 문장 미리 보기 + 진도 카드, 아니면 묶음 맨 아래 한 줄 링크 */
+function TodayEnglish({ card }: { card: boolean }) {
   const { data } = useStudy();
   const today = useMemo(() => new Date(), []);
   const set = useMemo(() => (data ? todaySet(data.progress, today) : []), [data, today]);
@@ -205,6 +209,13 @@ function TodayEnglish() {
   // 홈 미리 보기는 오늘의 새 문장(날마다 바뀜). 밀린 복습이 있어도 같은 문장이 며칠씩 걸려 있지 않게
   const reviews = data ? set.filter((i) => data.progress[i.id]).length : 0;
   const first = set.find((i) => !data?.progress[i.id]) ?? set[0];
+  if (!card) {
+    return (
+      <Link to="/study" className="hub-english-line" data-testid="hub-english-line">
+        오늘의 영어{set.length ? ` ${set.length}문장` : ''}{doneToday ? ' · 오늘 했어요' : ' · 90초'}<Icon name="chev" size={14} />
+      </Link>
+    );
+  }
   return (
     <Link to="/study" className="hub-block card white hub-english" data-testid="hub-english">
       <div className="hub-label">
@@ -267,7 +278,7 @@ function DraftNudge() {
   const d = drafts?.[0];
   if (!d) return null;
   const mineDone = (d.hearts[uid] ?? []).length > 0;
-  const text = d.by.uid !== uid && !mineDone ? `${d.by.name}이(가) 여행 후보 ${d.cands.length}곳을 골라 뒀어요` : mineDone ? '여행 후보 · 상대 하트를 기다리는 중' : '고르던 여행 후보가 있어요';
+  const text = d.by.uid !== uid && !mineDone ? `${josa(d.by.name, '이/가')} 여행 후보 ${d.cands.length}곳을 골라 뒀어요` : mineDone ? '여행 후보 · 상대 하트를 기다리는 중' : '고르던 여행 후보가 있어요';
   return (
     <Link to={`/plan/${d.id}`} className="card coral-soft draft-nudge" data-testid="draft-nudge">
       <Icon name="heart" size={18} stroke={2.2} />

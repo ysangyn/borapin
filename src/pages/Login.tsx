@@ -1,12 +1,13 @@
 import { pendingInvite } from '../lib/invites';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Logo } from '../components/ui';
+import { Logo, useToast } from '../components/ui';
 import KoreaMosaic from '../components/KoreaMosaic';
 import { SceneVideo } from '../components/Scene';
 import { videoById } from '../lib/media';
 import { artById } from '../lib/art';
 import { withRo } from '../lib/ko';
+import { inAppBrowser } from '../lib/speech';
 import { authErrorText, logOut, resendVerification, resetPassword, signInWithEmail, signInWithGoogle, signUpWithEmail, useRecheckAuth } from '../lib/auth';
 
 const Footer = () => (
@@ -17,10 +18,21 @@ const Footer = () => (
   </div>
 );
 
+// 이 기기에서 마지막으로 메일로 들어왔으면 다음엔 메일 칸을 펼쳐 둔다 (한 번 더 안 누르게)
+const METHOD_KEY = 'borapin:login-method';
+const lastMethod = () => { try { return localStorage.getItem(METHOD_KEY); } catch { return null; } };
+const rememberMethod = (m: 'google' | 'email') => { try { localStorage.setItem(METHOD_KEY, m); } catch { /* */ } };
+
+/**
+ * 로그인: 구글 단추가 맨 위(초대받은 사람이 가장 쉽게 들어오는 길), 메일 칸은 접어 둔다.
+ * 카카오톡·인스타 같은 앱 안 브라우저는 구글 창이 막히니 먼저 알려 준다.
+ */
 export function Login() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(() => lastMethod() === 'email');
   const hasVideo = !!videoById('clouds');
+  const invited = !!pendingInvite();
   return (
     <div className={'login' + (hasVideo ? ' has-media' : '')}>
       {/* 화면 전체에 깔리는 구름 영상 (소리 없음). 영상이 없으면 보라빛 하늘 */}
@@ -37,14 +49,20 @@ export function Login() {
       <main className="login-card">
         {/* 로그인 칸 윗선에 서 있는 보라 (배경 투명 그림이 있을 때만) */}
         {artById('bora-login') && <img className="login-mascot" src={artById('bora-login')!.src.s} alt="" aria-hidden="true" width={540} height={584} decoding="async" />}
-        <EmailLogin />
-        <div className="login-or"><span>간편 로그인</span></div>
+        {inAppBrowser() && <InAppNotice />}
+        {invited && (
+          <div className="card coral-soft" style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '12px 14px' }} data-testid="login-invite">
+            <b>초대받으셨군요!</b>
+            <span className="small muted">아래 구글 단추를 누르면 바로 함께 쓸 수 있어요. 메일로 가입해도 돼요.</span>
+          </div>
+        )}
         <button
           className="btn block google" disabled={busy} data-testid="login"
           onClick={async () => {
             setBusy(true);
             setErr('');
             try {
+              rememberMethod('google');
               await signInWithGoogle();
             } catch (e) {
               setErr('로그인하지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -58,13 +76,36 @@ export function Login() {
           {busy ? '로그인 중…' : '구글로 계속하기'}
         </button>
         {err && <div className="small" style={{ color: 'var(--danger)' }} role="alert">{err}</div>}
-        {pendingInvite() ? (
-          <div className="small" style={{ textAlign: 'center', color: 'var(--violet-dark)', fontWeight: 700 }} data-testid="login-invite">초대 링크로 오셨네요. 구글이나 메일로 로그인하면 바로 들어가요.</div>
+        {!invited && <div className="tiny muted" style={{ textAlign: 'center' }}>초대받은 메일 주소로만 들어올 수 있어요.</div>}
+        <div className="login-or"><span>또는</span></div>
+        {emailOpen ? (
+          <EmailLogin />
         ) : (
-          <div className="tiny muted" style={{ textAlign: 'center' }}>초대받은 메일 주소로만 들어올 수 있어요.</div>
+          <button type="button" className="btn block line" onClick={() => setEmailOpen(true)} data-testid="email-open">메일로 들어가기</button>
         )}
         <Footer />
       </main>
+    </div>
+  );
+}
+
+/** 카카오톡·인스타그램 같은 앱 안 브라우저: 구글 로그인 창이 막힐 수 있으니 바깥 브라우저로 안내 */
+function InAppNotice() {
+  const toast = useToast();
+  const kakao = /KAKAOTALK/i.test(navigator.userAgent);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      toast('주소를 복사했어요 · 사파리나 크롬에 붙여 넣어 열어 주세요');
+    } catch {
+      toast('복사하지 못했어요. 주소창의 주소를 길게 눌러 복사해 주세요');
+    }
+  };
+  return (
+    <div className="card coral-soft" role="note" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 14px' }} data-testid="inapp-notice">
+      <b>{kakao ? '카카오톡 안에서 열렸어요' : '앱 안 브라우저에서 열렸어요'}</b>
+      <span className="small muted">여기서는 구글 로그인이 막힐 수 있어요. {kakao ? '오른쪽 아래 ⋯ → 다른 브라우저로 열기를 누르거나, ' : ''}주소를 복사해 사파리·크롬에 붙여 넣어 열어 주세요.</span>
+      <button type="button" className="btn sm line" style={{ alignSelf: 'flex-start' }} onClick={copy}>주소 복사</button>
     </div>
   );
 }
@@ -83,6 +124,7 @@ function EmailLogin() {
     try {
       if (mode === 'in') await signInWithEmail(email, pw);
       else await signUpWithEmail(email, pw);
+      rememberMethod('email');
     } catch (e) {
       setMsg({ text: authErrorText(e) });
     } finally {

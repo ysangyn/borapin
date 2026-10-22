@@ -12,13 +12,14 @@ import { usePlaceSpots } from '../lib/placeSpots';
 import WishRolling from '../components/WishRolling';
 import NextTripHub from '../components/NextTripHub';
 import MonthPick, { useMonthPick } from '../components/MonthPick';
-import { pickMemory } from '../lib/memories';
+import { pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
 import { usePhotos } from '../lib/photos';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 import { spaceTitle } from '../lib/members';
+import { times } from '../lib/ko';
 
 export default function Home() {
   const { trips } = useTrips();
@@ -39,6 +40,8 @@ export default function Home() {
   const stage = useMemo(() => (trips ? tripStage(trips) : null), [trips]);
   const { photos } = usePhotos();
   const few = stats ? stats.cellVisits.size < 8 : true;
+  // 기록이 하나도 없으면(불러오기 끝) '아직 기록이 없어요'를 지도 바로 아래에 둔다
+  const noRecords = !!trips && trips.length === 0;
   // 홈 지도는 최근 핀 둘레를 가까이, 기록이 없으면 오늘의 추천 둘레를
   const pick = useMonthPick(stats, wishes ?? []);
   // 최근 핀(국내)이 있으면 그 시·군이 보이게 가까이, 없으면(기록 없음·최근이 해외) 추천 둘레를 도 단위로만
@@ -52,16 +55,13 @@ export default function Home() {
     <>
       <div className="topbar">
         <span className="brand"><Logo />보라핀</span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link to="/ask" className="icon-btn" aria-label="보라에게 물어봐"><Icon name="search" size={20} stroke={2} /></Link>
-          <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
-        </div>
+        <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
       </div>
       <div className="page" style={{ paddingTop: 4 }}>
         <div>
           <div className="small muted">{spaceTitle()}의 지도</div>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }} data-testid="headline">
-            {stats ? (stats.tripsDone ? `${stats.tripsDone}번의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
+            {stats ? (stats.tripsDone ? `${times(stats.tripsDone)}의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
           </div>
         </div>
 
@@ -76,7 +76,7 @@ export default function Home() {
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
           <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} nearZoom={nearZoom} />
-          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6, lineHeight: 1.5 }}>지역을 누르면 바로 핀을 꽂을 수 있어요<br />⛶ 를 누르면 전국이 보여요</div>
+          <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6, lineHeight: 1.5 }} data-testid="map-hint">지역을 누르면 핀 꽂기 단추가 나와요<br />전체 보기 단추를 누르면 전국이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">
               {few ? (
@@ -103,6 +103,9 @@ export default function Home() {
           <input aria-label="보라에게 물어봐" placeholder="보라에게 물어봐: 강릉 맛집, 11월 축제" value={q} onChange={(e) => setQ(e.target.value)} />
         </form>
 
+        {/* 기록이 하나도 없으면 첫 핀으로 가는 길이 묶음보다 먼저 */}
+        {noRecords && <EmptyRecords />}
+
         {overdue[0] && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
             <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
@@ -110,60 +113,66 @@ export default function Home() {
           </div>
         )}
 
-        {/* 여행 사이엔 아래 '다음 여행 준비'가 예정 여행을 맡으므로, 여기는 여행 전·중·후일 때만 */}
-        {stage && planned.some((t) => t.id !== stage.trip.id) && (
-          <section>
-            <div className="small" style={{ fontWeight: 700, color: 'var(--violet)', marginBottom: 4 }}>다가오는 여행</div>
-            <div className="list">{planned.filter((t) => t.id !== stage.trip.id).slice(0, 2).map((t) => <TripRow key={t.id} trip={t} />)}</div>
-          </section>
-        )}
-
-        {/* 여행 전·중·후 카드가 있을 땐 지금 중요한 것만 크게 보이게, 둘러보기는 접어 둔다 */}
-        {/* 다음 여행 준비(다음은 어디 → 오늘의 한 질문 → 오늘의 영어 → 가는 길)는 여행 전·중·후에도 보인다 (영어·소식은 매일 쓰는 것) */}
+        {/* 예정 여행은 아래 '다음 여행 준비' 묶음이 맡는다 (같은 여행을 두 번 보여 주지 않게) */}
+        {/* 여행 전·중·후 카드가 있을 땐 지금 중요한 것만 크게 보이게, 둘러보기(추천·가고 싶은 곳·추억)는 접어 둔다 */}
         {trips && wishes && <NextTripHub wishes={wishes} trips={trips} stats={stats} excludeTripId={stage?.trip.id ?? null} />}
         {stage ? (
           <details className="home-more" data-testid="home-more">
-            <summary><span>이달의 추천 · 가고 싶은 곳{memory ? ' · 추억' : ''}</span><Icon name="chev" size={16} /></summary>
+            <summary><span>이달의 추천 · 가고 싶은 곳</span><Icon name="chev" size={16} /></summary>
             <div className="home-more-body">
               {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
               {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
+              {memory && <MemoryCard memory={memory} />}
             </div>
           </details>
         ) : (
-          trips && wishes && <MonthPick stats={stats} wishes={wishes} />
+          <>
+            {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
+            {memory && <MemoryCard memory={memory} />}
+          </>
         )}
 
-        {memory && !stage && (
-          <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
-            <span className="trip-tile">{memory.trip.places[0] ? placeLabel(memory.trip.places[0]).slice(0, 4) : '여행'}</span>
-            <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</span>
-              <span style={{ fontWeight: 700 }}>{memory.trip.title}</span>
-              <span className="tiny muted">{formatWhen(memory.trip.when)}</span>
-            </span>
-            <Icon name="chev" size={18} />
-          </Link>
-        )}
-
-        <section>
-          <div className="row-between" style={{ marginBottom: 2 }}>
-            <h2 className="h2">최근에 남긴 기록</h2>
-            <Link to="/trips" className="small" style={{ fontWeight: 600 }}>전체 보기</Link>
-          </div>
-          {trips && recent.length === 0 && (
-            <div className="card art-row" data-testid="home-empty">
-              <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} decoding="async" />
-              <span>
-                <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>아직 기록이 없어요</b>
-                <span className="small muted" style={{ display: 'block', marginBottom: 10 }}>위 지도에서 다녀온 곳을 누르면 바로 핀이 꽂혀요. 날짜·메모는 나중에 적어도 돼요.</span>
-                <Link to="/record" className="btn sm">기록 남기기</Link>
-              </span>
+        {!noRecords && (
+          <section>
+            <div className="row-between" style={{ marginBottom: 2 }}>
+              <h2 className="h2">최근에 남긴 기록</h2>
+              <Link to="/trips" className="small" style={{ fontWeight: 600 }}>전체 보기</Link>
             </div>
-          )}
-          <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
-        </section>
+            {trips && recent.length === 0 && <EmptyRecords />}
+            <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
+          </section>
+        )}
       </div>
       {sel && trips && <PlaceSheet key={JSON.stringify(sel)} place={sel} trips={trips} stats={stats} wishes={wishes ?? []} recs={recs ?? []} onClose={() => setSel(null)} />}
     </>
+  );
+}
+
+/** 아직 다녀온 기록이 없을 때: 지도에서 핀을 꽂는 길과 '기록 남기기' */
+function EmptyRecords() {
+  return (
+    <div className="card art-row" data-testid="home-empty">
+      <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} decoding="async" />
+      <span>
+        <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>아직 기록이 없어요</b>
+        <span className="small muted" style={{ display: 'block', marginBottom: 10 }}>위 지도에서 다녀온 곳을 누르면 핀 꽂기 단추가 나와요. 날짜·메모는 나중에 적어도 돼요.</span>
+        <Link to="/record" className="btn sm">기록 남기기</Link>
+      </span>
+    </div>
+  );
+}
+
+/** 몇 년 전 오늘 같은 추억 한 장 */
+function MemoryCard({ memory }: { memory: Memory }) {
+  return (
+    <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
+      <span className="trip-tile">{memory.trip.places[0] ? placeLabel(memory.trip.places[0]).slice(0, 4) : '여행'}</span>
+      <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</span>
+        <span style={{ fontWeight: 700 }}>{memory.trip.title}</span>
+        <span className="tiny muted">{formatWhen(memory.trip.when)}</span>
+      </span>
+      <Icon name="chev" size={18} />
+    </Link>
   );
 }

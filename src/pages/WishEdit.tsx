@@ -8,7 +8,7 @@ import PlaceHint from '../components/PlaceHint';
 import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
-import { parsePlaceParam, placeParam } from '../lib/geo';
+import { parsePlaceParam } from '../lib/geo';
 import { lines, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
@@ -126,7 +126,13 @@ export default function WishEdit() {
       return (
         <>
           <TopBar back backTo="/wishes" title="가고 싶은 곳" />
-          <div className="empty" style={{ margin: 20 }}><b>이곳을 찾을 수 없어요</b><span className="small">이미 빠졌거나 주소가 바뀌었어요.</span></div>
+          <div className="empty" style={{ margin: 20 }} data-testid="wish-missing">
+            <b>이곳을 찾을 수 없어요</b><span className="small">이미 빠졌거나 주소가 바뀌었어요.</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Link to="/wishes" className="btn sm">가고 싶은 곳 보기</Link>
+              <Link to="/" className="btn sm ghost">홈으로</Link>
+            </div>
+          </div>
         </>
       );
     return <Spinner />;
@@ -140,7 +146,7 @@ export default function WishEdit() {
           <span className="label">어디<span className="req">*</span></span>
           <PlacePicker value={place ? [place] : []} onChange={(v) => setPlaces(v.slice(-1))} />
           <span className="tiny muted" style={{ marginTop: 4 }}>특정 장소 (선택)</span>
-          <input className="input" aria-label="가게·명소 이름" placeholder="예: 성산일출봉, 단골 카페" value={spotName} onChange={(e) => setSpotName(e.target.value)} maxLength={60} />
+          <input className="input" aria-label="특정 장소 이름" placeholder="예: 성산일출봉, 단골 카페" value={spotName} onChange={(e) => setSpotName(e.target.value)} maxLength={60} />
         </div>
 
         <div className="field">
@@ -177,21 +183,21 @@ export default function WishEdit() {
               const cur = kind === 'foods' ? foods : spots;
               if (lines(cur).includes(text)) return toast('이미 메모에 있어요');
               (kind === 'foods' ? setFoods : setSpots)(cur.trim() ? `${cur.replace(/\s+$/, '')}\n${text}` : text);
-              toast(`${kind === 'foods' ? '먹을 것' : '가볼 곳'}에 넣었어요`);
+              toast(`${kind === 'foods' ? '먹거리' : '볼거리'}에 넣었어요`);
             }} />
           </div>
         )}
         <div className="field">
-          <span className="label">가볼 곳 <span className="muted small">(한 줄에 하나)</span></span>
-          <textarea className="textarea" aria-label="가볼 곳" rows={3} value={spots} onChange={(e) => setSpots(e.target.value)} placeholder={'성산일출봉\n우도'} />
+          <span className="label">볼거리 <span className="muted small">(한 줄에 하나)</span></span>
+          <textarea className="textarea" aria-label="볼거리" rows={3} value={spots} onChange={(e) => setSpots(e.target.value)} placeholder={'성산일출봉\n우도'} />
         </div>
         <div className="field">
           <span className="label">해볼 것</span>
           <textarea className="textarea" aria-label="해볼 것" rows={2} value={todos} onChange={(e) => setTodos(e.target.value)} placeholder="일출 보기" />
         </div>
         <div className="field">
-          <span className="label">먹을 것</span>
-          <textarea className="textarea" aria-label="먹을 것" rows={2} value={foods} onChange={(e) => setFoods(e.target.value)} placeholder="고기국수" />
+          <span className="label">먹거리</span>
+          <textarea className="textarea" aria-label="먹거리" rows={2} value={foods} onChange={(e) => setFoods(e.target.value)} placeholder="고기국수" />
         </div>
 
         <div className="field">
@@ -228,7 +234,7 @@ export default function WishEdit() {
         </button>
 
         {editing && existing && state?.kind === 'wish' && (
-          <Link to={`/record?status=planned&place=${placeParam(existing.place)}&wish=${existing.id}`} className="btn soft block">이곳으로 여행 만들기</Link>
+          <Link to={`/plan?wish=${existing.id}`} className="btn soft block" data-testid="wish-edit-plan">이곳으로 여행 만들기</Link>
         )}
         {editing && existing && (
           !confirm ? (

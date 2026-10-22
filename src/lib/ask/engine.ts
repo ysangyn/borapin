@@ -191,7 +191,7 @@ function placeButtons(p: Place, extra: Btn[] = []): Btn[] {
   return [
     { label: '지도에서 보기', to: `/map?sel=${placeParam(p)}` },
     { label: '가고 싶은 곳에 담기', wish: p },
-    { label: '여행 만들기', to: `/record?status=planned&place=${placeParam(p)}` },
+    { label: '여행 만들기', to: `/plan?place=${placeParam(p)}` },
     ...extra,
     { label: '네이버지도', url: `https://map.naver.com/p/search/${encodeURIComponent(name)}` },
   ];
@@ -512,7 +512,7 @@ function faqFor(q: string, hasPlace = false) { return FAQ.find((f) => f.re.test(
 
 /** 우리 여행 패턴: 기록에서 계절·지역·국내외·동행·다시 간 곳 */
 function travelPattern(done: Trip[], d: AskData): Omit<Answer, 'ctx'> {
-  if (done.length < 3) return { intent: 'pattern', text: '패턴을 말하기엔 기록이 아직 적어요', lines: ['다녀온 여행을 3개 넘게 남기면 계절·지역·함께 간 사람을 모아 볼게요.'], buttons: [{ label: '기록하기', to: '/record' }] };
+  if (done.length < 3) return { intent: 'pattern', text: '패턴을 말하기엔 기록이 아직 적어요', lines: ['다녀온 여행을 3개 넘게 남기면 계절·지역·함께 간 사람을 모아 볼게요.'], buttons: [{ label: '기록 남기기', to: '/record' }] };
   const s = computeStats(d.trips);
   const SEASON: Record<string, string> = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
   const ofM = (m: number) => (m >= 3 && m <= 5 ? 'spring' : m <= 8 && m >= 6 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter');
@@ -658,7 +658,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
     case 'people': {
       const list = done.filter((t) => t.companions.some((c) => c.includes(person!) || person!.includes(c)));
       a = list.length
-        ? { intent, text: `${jo(person, '와/과')} 간 여행 ${list.length}번`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: list.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
+        ? { intent, text: `${jo(person, '와/과')} 간 여행 ${times(list.length)}`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: list.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
         : { intent, text: `${jo(person, '와/과')} 간 기록을 찾지 못했어요`, lines: ['기록할 때 "누구와"에 이름을 넣으면 여기서 찾을 수 있어요.'], buttons: [{ label: '기록 남기기', to: '/record' }] };
       break;
     }
@@ -666,7 +666,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const list = done.filter((t) => (year == null || t.when.y === year) && (season == null || (t.when.s ?? (t.when.m ? (['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter'] as Season[])[t.when.m - 1] : null)) === season));
       const label = [year ? (year === now.getFullYear() ? '올해' : year === now.getFullYear() - 1 ? '작년' : `${year}년`) : '', season ? SEASON_LABEL[season] : ''].filter(Boolean).join(' ');
       a = list.length
-        ? { intent, text: `${label}에 간 곳 ${list.length}번`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: list.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
+        ? { intent, text: `${label}에 간 곳 ${times(list.length)}`, lines: list.slice(0, 8).map((t) => `${formatWhen(t.when)} · ${t.title}`), buttons: list.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
         : { intent, text: `${label}에 간 기록이 없어요`, lines: ['날짜를 모르는 기록은 추억 탭의 "날짜 채우기 놀이"로 채울 수 있어요.'], buttons: [{ label: '추억', to: '/memories' }] };
       break;
     }
@@ -679,7 +679,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         a = { intent, text: top.length ? `제일 많이 간 곳은 ${top[0]}` : '아직 기록이 없어요', lines: top.slice(1).map((t, i) => `${i + 2}위 ${t}`), buttons: [{ label: '지도 보기', to: '/map' }], source: '우리 기록' };
         break;
       }
-      a = { intent, text: `지금까지 ${s.tripsDone}번의 여행, 핀 ${s.pins}개`, lines: [`시·군 ${s.cellVisits.size}/${TOTAL_CELLS} (${Math.round((s.cellVisits.size / TOTAL_CELLS) * 100)}%)`, `광역 ${s.groupsVisited.size}/${TOTAL_GROUPS}`, `나라 ${s.countryVisits.size}곳 · 대륙 ${s.continents.size}곳`, `올해 ${thisYear}번`, top.length ? `자주 간 곳: ${top.join(', ')}` : ''].filter(Boolean), buttons: [{ label: '지도 보기', to: '/map' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
+      a = { intent, text: `지금까지 여행 ${times(s.tripsDone)}, 핀 ${s.pins}개`, lines: [`시·군 ${s.cellVisits.size}/${TOTAL_CELLS} (${Math.round((s.cellVisits.size / TOTAL_CELLS) * 100)}%)`, `광역 ${s.groupsVisited.size}/${TOTAL_GROUPS}`, `나라 ${s.countryVisits.size}곳 · 대륙 ${s.continents.size}곳`, `올해 ${times(thisYear)}`, top.length ? `자주 간 곳: ${top.join(', ')}` : ''].filter(Boolean), buttons: [{ label: '지도 보기', to: '/map' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
       break;
     }
     case 'faq': {
@@ -742,7 +742,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const planned = d.trips.filter((t) => t.status === 'planned').sort((x, y) => (x.when.y ? x.when.y * 10000 + (x.when.m ?? 0) * 100 + (x.when.d ?? 0) : 9e9) - (y.when.y ? y.when.y * 10000 + (y.when.m ?? 0) * 100 + (y.when.d ?? 0) : 9e9));
       a = planned.length
         ? { intent, text: `다음 여행은 ${planned[0].title}${dday(planned[0].when, now) ? ` · ${dday(planned[0].when, now)}` : ''}`, lines: planned.slice(0, 6).map((t) => `${formatWhen(t.when)} · ${t.title} · ${t.places.map(placeLabel).join(', ')}${(t.packing?.length ?? 0) ? ` · 준비물 ${t.packing!.filter((x) => x.done).length}/${t.packing!.length}` : ''}`), buttons: planned.slice(0, 3).map((t) => ({ label: t.title, to: `/trips/${t.id}` })), source: '우리 기록' }
-        : { intent, text: '예정된 여행이 아직 없어요', lines: ['가고 싶은 곳에서 "여행 만들기"를 누르거나, 기록하기에서 "갈 예정"으로 남겨 보세요.'], buttons: [{ label: '가고 싶은 곳', to: '/wishes' }, { label: '여행 계획하기', to: '/record?status=planned' }] };
+        : { intent, text: '예정된 여행이 아직 없어요', lines: ['가고 싶은 곳에서 "여행 만들기"를 누르거나, 여행 계획하기에서 후보 3곳 중에 골라 보세요.'], buttons: [{ label: '가고 싶은 곳', to: '/wishes' }, { label: '여행 계획하기', to: '/plan' }] };
       break;
     }
     case 'packing': {
@@ -755,7 +755,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         intent,
         text: `${p ? placeName(p) + ' ' : ''}준비물 ${items.length}가지${abroad ? ' (해외)' : ''}`,
         lines: [items.join(', '), s2?.why ? `날씨: ${s2.why}` : ''].filter(Boolean),
-        buttons: [{ label: '여행 만들고 준비물 넣기', to: p ? `/record?status=planned&place=${placeParam(p)}` : '/record?status=planned' }, ...(p ? placeButtons(p) : [])],
+        buttons: [{ label: '여행 만들기', to: p ? `/plan?place=${placeParam(p)}` : '/plan' }, ...(p ? placeButtons(p).filter((b) => b.label !== '여행 만들기') : [])],
         source: '보라핀 기본 준비물',
       };
       break;

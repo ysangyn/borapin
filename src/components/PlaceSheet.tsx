@@ -149,7 +149,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       </div>
 
       <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
-        <span style={{ flex: 1 }}>아래 '다녀왔어요'는 날짜 없이 핀만 꽂아요</span>
+        <span style={{ flex: 1 }}>'핀 꽂기'는 날짜 없이 다녀온 표시만 해요</span>
         <a href={links.naver} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>네이버지도</a>
         <a href={links.google} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>구글지도</a>
       </div>
@@ -158,16 +158,19 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="sheet-actions">
         <button className="btn" style={{ flex: 1.15 }} disabled={busy || auth.status !== 'ready'} onClick={quickPin} data-testid="quick-pin">
           <Icon name="plus" size={17} stroke={2.4} />
-          {busy ? '꽂는 중…' : done.length ? '또 다녀왔어요' : '다녀왔어요'}
+          {busy ? '꽂는 중…' : done.length ? '핀 하나 더 꽂기' : '핀 꽂기'}
         </button>
         <Link to={`/record?place=${placeParam}`} className="btn soft" style={{ flex: 1 }}>자세히 기록</Link>
+        {/* 담기(가고 싶은 곳)는 핀 모양: 하트는 '마음'(나도 원해요·좋아요)에만 쓴다 */}
         {wish ? (
-          <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 52, padding: 0 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" /></svg>
+          <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 52, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fillRule="evenodd" d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21zM12 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" /></svg>
+            담겼어요
           </Link>
         ) : (
-          <button className="btn coral-soft" style={{ width: 52, padding: 0 }} onClick={addWish} aria-label="가고 싶은 곳에 담기" data-testid="sheet-wish">
-            <Icon name="heart" size={20} stroke={2.2} />
+          <button className="btn coral-soft" style={{ width: 52, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10 }} onClick={addWish} aria-label="가고 싶은 곳에 담기" data-testid="sheet-wish">
+            <Icon name="pin" size={20} stroke={2.2} />
+            담기
           </button>
         )}
       </div>
