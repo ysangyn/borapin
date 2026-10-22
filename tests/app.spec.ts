@@ -231,10 +231,11 @@ test.describe.serial('보라핀 1단계', () => {
 
     // 확대하면 시·군 이름이 보이고, 다녀온 곳은 진하게
     await page.evaluate(() => (window as unknown as { __map: { jumpTo: (o: object) => void } }).__map.jumpTo({ center: [128.95, 35.25], zoom: 7.6 }));
-    const busan = page.locator('.map-label', { hasText: /^부산$/ });
+    // 이름표는 숨길 때 지우지 않고 display:none으로 두므로(끌 때 같이 움직이게), 보이는 것만 고른다
+    const busan = page.locator('.map-label:visible', { hasText: /^부산$/ });
     await expect(busan).toBeVisible();
     await expect(busan).toHaveClass(/\bon\b/);
-    await expect(page.locator('.map-label', { hasText: /^김해시$/ })).toBeVisible();
+    await expect(page.locator('.map-label:visible', { hasText: /^김해시$/ })).toBeVisible();
     await page.getByTestId('map').first().scrollIntoViewIfNeeded();
     await shot(page, '09b-labels-cells');
 
