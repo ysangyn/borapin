@@ -140,7 +140,7 @@ Call log:
               - link "여기 기록" [ref=e109] [cursor=pointer]:
                 - /url: /record?place=kr:47150
         - link "교토 작년 가을 교토 단풍 여행 2025년 가을" [ref=e110] [cursor=pointer]:
-          - /url: /trips/Qd30xiKXlbeQX1Xu1Lc7
+          - /url: /trips/OOqbBPAHh3fnPAOnxz5N
           - generic [ref=e111]: 교토
           - generic [ref=e112]:
             - generic [ref=e113]: 작년 가을
@@ -153,17 +153,17 @@ Call log:
               - /url: /trips
           - generic [ref=e122]:
             - link "부산 여행 부산 · 날짜 모름" [ref=e123] [cursor=pointer]:
-              - /url: /trips/WxYtvqcd3rexr2BVulWy
+              - /url: /trips/fA3ohYllih3GlARGpwc1
               - generic [ref=e125]:
                 - generic [ref=e126]: 부산 여행
                 - generic [ref=e127]: 부산 · 날짜 모름
             - link "교토 단풍 여행 일본 교토 · 2025년 가을" [ref=e128] [cursor=pointer]:
-              - /url: /trips/Qd30xiKXlbeQX1Xu1Lc7
+              - /url: /trips/OOqbBPAHh3fnPAOnxz5N
               - generic [ref=e130]:
                 - generic [ref=e131]: 교토 단풍 여행
                 - generic [ref=e132]: 일본 교토 · 2025년 가을
             - link "강릉시 여행 강원 강릉시 · 2024년쯤 엄마와 함께" [ref=e133] [cursor=pointer]:
-              - /url: /trips/TxV7xdI3D1WKxfxbb8yl
+              - /url: /trips/2N3uCECLTMmNx7C6atCP
               - generic [ref=e135]:
                 - generic [ref=e136]: 강릉시 여행
                 - generic [ref=e137]: 강원 강릉시 · 2024년쯤
