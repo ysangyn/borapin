@@ -113,10 +113,12 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
   const flights = !compact && wish.place.t === 'country' ? flightLinks(wish.place, season?.m[0] ?? null) : null;
   const planLink = <Link to={`/plan?wish=${wish.id}`} className={hero && !compact ? 'btn sm' : 'btn sm soft'} data-testid="wish-plan">여행 만들기</Link>;
   // 오른쪽 단추: 둘 다 원하면 여행 만들기 → 내 하트가 없으면 하트 → (작은 줄에서는) 상대 마음 기다리는 중
+  // (상대만 원하고 나는 아직이면 기다릴 사람은 없어도 '여행 만들기'가 아니라 내 하트)
   const waiting = waitingNames(wish, me);
-  const action = both || !waiting.length
+  const mine = !!me && (wish.wantedBy ?? []).includes(me);
+  const action = both || (mine && !waiting.length)
     ? planLink
-    : !compact || !(wish.wantedBy ?? []).includes(me)
+    : !compact || !mine
       ? <MyHeart wish={wish} size={compact ? 'sm' : 'md'} />
       : <span className="tiny muted" style={{ flex: 'none', textAlign: 'right', maxWidth: 96 }} data-testid="wish-waiting">{waiting.join('·')} 마음 기다리는 중</span>;
 

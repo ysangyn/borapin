@@ -9,8 +9,9 @@ import type { Place } from '../lib/types';
 import { localTimeText, tzText } from '../lib/tz';
 
 /**
- * 해외 도시 기본 정보 (world.json): 통화·말·콘센트·시차·비행시간·입국 메모 + 먹을 것·볼 것.
- * 준비에 바로 쓰이게, 먹을 것·볼 것은 눌러서 가고 싶은 곳 메모에 넣을 수 있다.
+ * 해외 도시 기본 정보 (world.json): 통화·말·콘센트·시차·비행시간·입국 메모 + 먹거리·볼거리.
+ * 현지어 한마디 단추는 여기 하나만 둔다(준비 탭도 이걸 쓴다).
+ * 준비에 바로 쓰이게, 먹거리·볼거리는 눌러서 가고 싶은 곳 메모에 넣을 수 있다.
  */
 export default function CityInfo({ place, onAdd, compact }: { place: Place; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean }) {
   const world = useWorld();
@@ -39,9 +40,9 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
       </dl>
       {phraseLink(w)}
       <div className="city-picks">
-        <span className="tiny muted" style={{ fontWeight: 800 }}>먹을 것</span>
+        <span className="tiny muted" style={{ fontWeight: 800 }}>먹거리</span>
         <div className="chips">{w.eat.map((t) => <Pick key={t} text={t} onAdd={onAdd ? () => onAdd('foods', t) : undefined} />)}</div>
-        <span className="tiny muted" style={{ fontWeight: 800 }}>볼 것</span>
+        <span className="tiny muted" style={{ fontWeight: 800 }}>볼거리</span>
         <div className="chips">{w.see.map((t) => <Pick key={t} text={t} onAdd={onAdd ? () => onAdd('spots', t) : undefined} />)}</div>
       </div>
     </div>

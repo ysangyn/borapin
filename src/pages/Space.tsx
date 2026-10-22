@@ -1,3 +1,4 @@
+import { josa } from 'es-hangul';
 import { times, withRo } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -210,7 +211,7 @@ export default function Space() {
                   </span>
                   <span style={{ display: 'flex', gap: 6 }}>
                     <button className="btn sm soft" onClick={async () => {
-                      const r = await shareAnyhow({ title: '보라핀에 초대해요', description: `${nameOf(user.email)}이(가) 함께 여행 기록을 남기자고 초대했어요. 링크를 눌러 로그인하면 들어와요.`, url: inviteUrl(inv.code), button: '들어가기' }, () => toast('링크를 복사했어요'));
+                      const r = await shareAnyhow({ title: '보라핀에 초대해요', description: `${josa(nameOf(user.email), '이/가')} 함께 여행 기록을 남기자고 초대했어요. 링크를 눌러 로그인하면 들어와요.`, url: inviteUrl(inv.code), button: '들어가기' }, () => toast('링크를 복사했어요'));
                       if (r === 'kakao') toast('카카오톡을 열었어요 · 보낼 사람을 골라 주세요');
                     }} data-testid="invite-share">보내기</button>
                     <button className="btn sm line" onClick={() => deleteInvite(inv.code).then(() => toast('초대 링크를 지웠어요'), () => toast('지우지 못했어요'))} aria-label="초대 링크 지우기">지우기</button>

@@ -44,7 +44,7 @@ export default function WishRolling({ wishes, trips, stats, bare }: { wishes: Wi
     <section data-testid="home-wishes">
       {!bare && <div className="row-between" style={{ marginBottom: 6 }}>
         <h2 className="h2" style={{ color: '#b4472c' }}>가고 싶은 곳</h2>
-        <Link to="/wishes" className="small" style={{ fontWeight: 600 }}>{items.length ? `모두 보기 ${items.length}` : '여행지 뽑기'}</Link>
+        {items.length ? <Link to="/wishes" className="small" style={{ fontWeight: 600 }}>모두 보기 {items.length}</Link> : <Link to="/wishes?find=dice" className="small" style={{ fontWeight: 600 }} data-testid="home-wishes-dice">여행지 뽑기</Link>}
       </div>}
       {items.length > 0 ? (
         <div className="card white wish-home" data-testid="wish-home">

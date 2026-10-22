@@ -6,14 +6,13 @@ import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { flightLinks } from '../lib/flights';
 import { accessLine } from '../lib/transport';
 import { cityFor, useWorld } from '../lib/world';
-import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 import type { Trip } from '../lib/types';
 
 /**
  * 갈 예정 여행의 '준비' 탭: 흩어져 있던 준비를 한곳에.
- * 준비물 → 가는 길(가까운 역·공항, 항공권) → 도시 정보(통화·말·입국·먹을 것) → 현지어 한마디 → 가기 좋은 때·축제
+ * 준비물 → 가는 길(가까운 역·공항, 항공권) → 도시 정보(통화·말·입국·먹거리, 현지어 한마디 단추는 도시 정보 안에 하나만) → 가기 좋은 때·축제
  */
 export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) {
   const seasons = useSeasons();
@@ -50,12 +49,10 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
 
       {places.filter((p) => p.t === 'country').map((p) => {
         const c = cityFor(world, p);
-        const code = c ? phraseLangFor(c.lang) : null;
         return (
           <section key={placeParam(p)} className="card white prep-card" data-testid="prep-city">
             <div className="hub-label">{placeLong(p)} 기본 정보</div>
             {c ? <CityInfo place={p} compact /> : <div className="small muted">이 곳의 도시 정보는 아직 없어요. 나라만 고른 여행이면 도시를 넣어 보세요.</div>}
-            {code && code !== 'en' && <Link to={`/phrases/${code}?city=${encodeURIComponent(c!.city)}`} className="btn soft block" style={{ marginTop: 8 }}>{LANG_LABEL[code]} 한마디 30문장 익히기</Link>}
           </section>
         );
       })}

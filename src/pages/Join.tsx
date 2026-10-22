@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { logOut, useRecheckAuth } from '../lib/auth';
 import { clearPendingInvite, joinByInvite, readInvite, type Invite, type JoinResult } from '../lib/invites';
+import { withRo } from '../lib/ko';
 import type { User } from 'firebase/auth';
 
 /** 초대 링크로 들어오기: 로그인은 됐지만 아직 멤버가 아닐 때 보이는 화면 */
@@ -29,7 +30,7 @@ export default function Join({ code, user }: { code: string; user: User }) {
         <>
           <div style={{ fontSize: 20, fontWeight: 800 }}>보라핀에 초대받았어요</div>
           <div className="small muted" style={{ maxWidth: 320 }}>
-            {invite.name ? <>앞으로 앱에서 <b>{invite.name}</b>(으)로 불려요. </> : null}
+            {invite.name ? <>앞으로 앱에서 <b>{invite.name}</b>{withRo(invite.name).slice(invite.name.trim().length)} 불려요. </> : null}
             <b>{user.email}</b> 계정으로 들어가요. 들어가면 함께 쓰는 사람들의 기록과 사진을 같이 보게 돼요.
           </div>
           <button className="btn block" style={{ maxWidth: 320 }} onClick={go} disabled={state === 'busy'} data-testid="join-go">{state === 'busy' ? '들어가는 중…' : '들어가기'}</button>

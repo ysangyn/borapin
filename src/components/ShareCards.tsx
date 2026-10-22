@@ -6,7 +6,7 @@ import { useAllNotes } from '../lib/tripExtras';
 import type { Trip } from '../lib/types';
 import { spaceTitle } from '../lib/members';
 
-/** 공유카드 7종: 골라서 미리 보고, 휴대폰 공유창으로 보내거나 저장 */
+/** 공유카드 7종: 골라서 미리 보고, 휴대폰이면 공유창으로 보내고(공유하기) PC면 그림으로 내려받는다(그림 저장) */
 export default function ShareCards({ trips, year }: { trips: Trip[]; year: number }) {
   const info = useTravelInfo();
   const toast = useToast();
@@ -47,8 +47,9 @@ export default function ShareCards({ trips, year }: { trips: Trip[]; year: numbe
   const send = async () => {
     if (!img) return;
     const r = await shareOrSave(img.blob, `보라핀_${label}.png`);
-    if (r === 'saved') toast('그림을 저장했어요');
-    else if (r === 'shared') toast('공유했어요');
+    // 단추 '공유하기' → '공유했어요', '그림 저장' → '그림을 저장했어요'. 공유창이 안 열려 내려받았으면 그대로 알린다
+    if (r === 'shared') toast('공유했어요');
+    else if (r === 'saved') toast(canShare ? '공유창이 열리지 않아 그림을 저장했어요' : '그림을 저장했어요');
   };
   return (
     <section data-testid="share-cards">

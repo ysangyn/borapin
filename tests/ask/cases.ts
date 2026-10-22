@@ -11,6 +11,8 @@ export interface Case {
   has?: string;
   /** 이어서 묻기: 직전 질문 */
   after?: string;
+  /** 행동 단추 중 하나가 가리켜야 할 주소(앞부분). tests/unit/askLinks.test.ts가 본다 */
+  link?: string;
 }
 
 export const CASES: Case[] = [
@@ -21,7 +23,7 @@ export const CASES: Case[] = [
   { q: '1월에 동남아 어디 갈까', intent: 'recommend', has: '동남아' },
   { q: '부모님 모시고 유럽 추천', intent: 'recommend', has: '유럽' },
   // 볼거리·먹거리·특산물·교통 (지명 + 조사·띄어쓰기·오타·초성)
-  { q: '강릉 볼거리', intent: 'spots', place: 'kr:51150', has: '안목 커피거리' },
+  { q: '강릉 볼거리', intent: 'spots', place: 'kr:51150', has: '안목 커피거리', link: '/plan?place=kr:51150' },
   { q: '강릉에서 뭐 하지?', intent: 'spots', place: 'kr:51150' },
   { q: '강릉 가볼 만한 곳', intent: 'spots', place: 'kr:51150' },
   { q: '강능 맛집', intent: 'foods', place: 'kr:51150', has: '초당 순두부' },
@@ -130,10 +132,10 @@ export const CASES: Case[] = [
   { q: '이번 달 축제 뭐 있어', intent: 'festival', has: '축제' },
   { q: '요즘 축제', intent: 'festival' },
   // 다음 여행·예정
-  { q: '다음 여행 언제야', intent: 'next', has: '제주 여행' },
+  { q: '다음 여행 언제야', intent: 'next', has: '제주 여행', link: '/trips/' },
   { q: '예정된 여행', intent: 'next', has: '제주' },
   // 준비물
-  { q: '제주 준비물', intent: 'packing', place: 'kr:50', has: '선크림' },
+  { q: '제주 준비물', intent: 'packing', place: 'kr:50', has: '선크림', link: '/plan?place=kr:50' },
   { q: '교토 갈 때 뭐 챙겨', intent: 'packing', place: 'country:JPN', has: '여권' },
   // 우리 장소·글 찾기
   { q: '순두부 어디였지', intent: 'find', has: '초당할머니순두부' },

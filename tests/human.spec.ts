@@ -123,7 +123,7 @@ test.describe('사람처럼 쓰기', () => {
     // 약관 화면은 로그인 없이 보는 길(early return)이라, 앱 안에서 오갈 때 훅 개수가 달라지면 흰 화면이 됐다
     const page = await phone(browser);
     await page.goto('/');
-    await expect(page.getByTestId('email-form')).toBeVisible();
+    await expect(page.getByTestId('login')).toBeVisible();
     await page.getByRole('link', { name: '이용약관' }).click();
     await expect(page).toHaveURL(/\/terms$/);
     await expect(page.getByRole('heading', { name: '이용약관', level: 1 })).toBeVisible();
@@ -133,7 +133,7 @@ test.describe('사람처럼 쓰기', () => {
     // 로고를 누르면 로그인 화면으로 돌아오고, 오류 화면이 아니어야 한다
     await page.getByRole('link', { name: /보라핀 로고/ }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByTestId('email-form')).toBeVisible();
+    await expect(page.getByTestId('login')).toBeVisible();
     await expect(page.getByText('이 화면을 여는 중에 문제가 생겼어요')).toHaveCount(0);
     // 로그인한 뒤 우리 공간의 약관 링크로도 같은 길을 오간다
     await signIn(page);
@@ -149,8 +149,10 @@ test.describe('사람처럼 쓰기', () => {
   test('375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다', async ({ browser }) => {
     const page = await phone(browser);
     await googleSignIn(page);
-    await page.getByRole('button', { name: '기록하기', exact: true }).click();
-    await page.getByRole('menuitem', { name: /다녀온 곳 기록하기/ }).click();
+    await page.getByRole('button', { name: '남기기', exact: true }).click();
+    await page.getByRole('menuitem', { name: /다녀온 곳 남기기/ }).click();
+    // 단추 말과 알림 말이 같은 동사: '기록 남기기' → '기록했어요'
+    await expect(page.getByTestId('save')).toHaveText('기록 남기기');
     // 장소: 한 글자씩 쳐서 찾기
     await page.getByLabel('어디 검색').click();
     await page.keyboard.type('경주', { delay: 60 });
@@ -160,11 +162,12 @@ test.describe('사람처럼 쓰기', () => {
     await page.keyboard.type('경주 첫 벚꽃 여행', { delay: 30 });
     // 언제를 안 골랐으면 저장 버튼 아래에 무엇이 빠졌는지 알려 준다
     await expect(page.getByTestId('save')).toBeDisabled();
-    await expect(page.getByTestId('save-hint')).toContainText('대략 언제');
+    await expect(page.getByTestId('save-hint')).toContainText('언제인지 골라');
     await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByLabel('연도').selectOption('2024');
     await expect(page.getByTestId('save-hint')).toHaveCount(0);
     await page.getByTestId('save').click();
+    await expect(page.getByRole('status')).toContainText('기록했어요');
     await expect(page.getByTestId('trip-title')).toHaveText('경주 첫 벚꽃 여행');
     const url = page.url();
     // 새로 고침해도 그대로
@@ -190,6 +193,9 @@ test.describe('사람처럼 쓰기', () => {
     await expect(sheet.getByTestId('sheet-title')).toContainText('전주');
     // 가장 많이 쓰는 버튼은 창을 열자마자 보여야 한다 (스크롤해야 보이면 안 됨)
     await expect(sheet.getByTestId('quick-pin')).toBeInViewport({ ratio: 1 });
+    // 단추 '핀 꽂기' → 알림 '핀을 꽂았어요'. 가고 싶은 곳 담기는 하트가 아니라 핀 모양 '담기'
+    await expect(sheet.getByTestId('quick-pin')).toContainText('핀 꽂기');
+    await expect(sheet.getByTestId('sheet-wish').or(sheet.getByTestId('sheet-wished'))).toContainText(/담기|담겼어요/);
     await sheet.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
     await sheet.getByRole('button', { name: '닫기' }).click();
@@ -281,7 +287,7 @@ test.describe('사람처럼 쓰기', () => {
   test('375px: 어느 화면도 옆으로 넘치지 않는다', async ({ browser }) => {
     const page = await phone(browser);
     await page.goto('/');
-    await expect(page.getByTestId('email-form')).toBeVisible();
+    await expect(page.getByTestId('login')).toBeVisible();
     const found: string[] = [];
     const check = async (where: string) => {
       const o = await overflowing(page);
@@ -527,7 +533,10 @@ test.describe('사람처럼 쓰기', () => {
     await page.getByLabel('제목').fill('속초 단풍 여행');
     await page.getByRole('button', { name: '날짜', exact: true }).click();
     await page.getByLabel('시작 날짜').fill(ymd);
+    // 갈 거예요로 남기면 단추는 '계획 남기기', 알림은 '계획을 남겼어요'
+    await expect(page.getByTestId('save')).toHaveText('계획 남기기');
     await page.getByTestId('save').click();
+    await expect(page.getByRole('status')).toContainText('계획을 남겼어요');
     await expect(page.getByTestId('trip-title')).toHaveText('속초 단풍 여행');
     await page.goto('/');
     const card = page.getByTestId('stage-card');
@@ -603,6 +612,66 @@ test.describe('사람처럼 쓰기', () => {
     await expect(quiz.locator('.study-opt')).toHaveCount(4);
     await quiz.locator('.study-opt').first().click();
     await expect(quiz.getByRole('button', { name: /다음|끝/ })).toBeVisible();
+    // 끝까지 풀면 막다른 곳이 아니라 다음 공부(빈칸)로 가는 단추가 있다
+    for (let n = 0; n < 12 && (await page.getByTestId('study-finish').count()) === 0; n++) {
+      if (await quiz.locator('.study-opt:not([disabled])').count()) await quiz.locator('.study-opt').first().click();
+      await quiz.getByRole('button', { name: /다음|끝/ }).click();
+    }
+    await expect(page.getByTestId('study-finish')).toBeVisible();
+    await page.getByTestId('study-next').click();
+    await expect(page.getByTestId('study-blank')).toBeVisible();
+    // 단어장 안내는 실제 아이콘(깃발) 이름으로
+    await page.getByRole('tab', { name: '단어장' }).click();
+    await expect(page.getByText(/깃발/)).toBeVisible();
+    await page.context().close();
+  });
+
+  test('로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다', async ({ browser }) => {
+    const page = await phone(browser);
+    await page.goto('/');
+    const google = page.getByTestId('login');
+    const open = page.getByTestId('email-open');
+    await expect(google).toBeVisible();
+    await expect(page.getByTestId('email-form')).toHaveCount(0);
+    expect((await google.boundingBox())!.y).toBeLessThan((await open.boundingBox())!.y);
+    await open.click();
+    await expect(page.getByTestId('email-form')).toBeVisible();
+    await page.getByRole('radio', { name: '처음이에요' }).click();
+    await expect(page.getByTestId('email-submit')).toHaveText('가입하기');
+    await page.context().close();
+  });
+
+  test('카카오톡 안 브라우저로 열면 바깥 브라우저 안내와 주소 복사 단추가 먼저 보인다', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 KAKAOTALK 10.4.0', permissions: ['clipboard-read', 'clipboard-write'] });
+    const page = watch(await ctx.newPage());
+    await page.goto('/');
+    const note = page.getByTestId('inapp-notice');
+    await expect(note).toBeVisible();
+    await expect(note).toContainText('카카오톡');
+    await note.getByRole('button', { name: '주소 복사' }).click();
+    await expect(page.getByRole('status')).toContainText(/복사했어요|복사하지 못했어요/);
+    await ctx.close();
+  });
+
+  test('가고 싶은 곳에서 여행 만들기: /plan?wish= 로 가서 목적지가 미리 채워지고, 뽑기는 ?find=dice 로 바로 열린다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/wishes/new');
+    await page.getByLabel('어디 검색').fill('통영');
+    await page.getByRole('option', { name: /통영시/ }).first().click();
+    await page.getByTestId('wish-save').click();
+    await expect(page).toHaveURL(/\/wishes$/);
+    await page.getByRole('link', { name: /통영시.*가고 싶은 곳 보기/ }).first().click();
+    const id = page.url().split('/wishes/')[1];
+    await page.getByTestId('wish-edit-plan').click();
+    await expect(page).toHaveURL(new RegExp(`/plan\\?wish=${id}$`));
+    await expect(page.getByTestId('planner-dest')).toContainText('통영');
+    await expect(page.getByTestId('planner-make')).toHaveText('여행 만들기');
+    await page.getByTestId('planner-make').click();
+    await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=plan/);
+    // 여행 탭·메뉴의 '여행 계획하기'도 /plan 하나로
+    await page.goto('/wishes?find=dice');
+    await expect(page.getByTestId('dice')).toBeVisible();
     await page.context().close();
   });
 

@@ -56,7 +56,7 @@ export default function HomeSetting() {
             <label className="check-row"><input type="checkbox" checked={exact} onChange={(e) => setExact(e.target.checked)} /><span>정확한 자리로 저장 (기본은 500m쯤 흐리게)</span></label>
             <div style={{ display: 'flex', gap: 8 }}>
               {home && <button className="btn ghost" style={{ flex: 1 }} onClick={() => { void clearHome(); setEdit(false); toast('우리 집을 지웠어요'); }}>지우기</button>}
-              <button className="btn ghost" style={{ flex: 1 }} onClick={() => setEdit(false)}>그만두기</button>
+              <button className="btn ghost" style={{ flex: 1 }} onClick={() => setEdit(false)}>그대로 두기</button>
               <button className="btn" style={{ flex: 1 }} disabled={!where || busy} onClick={save} data-testid="home-save">{busy ? '찾는 중…' : '정하기'}</button>
             </div>
             <span className="tiny muted">우리 집 위치는 함께 쓰는 사람만 봐요. 공유 링크·엑셀·물어보기에는 넣지 않아요.</span>

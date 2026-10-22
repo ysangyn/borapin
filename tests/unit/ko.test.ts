@@ -31,3 +31,23 @@ test('계절만 아는 날짜는 "2022년 여름"', () => {
   assert.equal(formatWhen({ p: 'season', y: 2022, s: 'summer' }), '2022년 여름');
   assert.equal(formatWhen({ p: 'season', s: 'winter' }), '겨울');
 });
+
+test("'이/가' 같은 조사도 받침대로, 영어 이름은 읽는 소리대로 (Planner '○○이(가)' 대신)", async () => {
+  const { withIGa, withJosa, josaOnly } = await import('../../src/lib/ko');
+  assert.equal(withIGa('보라'), '보라가');
+  assert.equal(withIGa('영상'), '영상이');
+  assert.equal(withIGa('YUN'), 'YUN이'); // 엔
+  assert.equal(withIGa('Bora'), 'Bora가');
+  assert.equal(withJosa('제주', '은/는'), '제주는');
+  assert.equal(withJosa('부산', '을/를'), '부산을');
+  assert.equal(withJosa('보라', '과/와'), '보라와');
+  assert.equal(withJosa('영상', '과/와'), '영상과');
+  assert.equal(josaOnly('보라', '이/가'), '가');
+  assert.equal(josaOnly('영상', '이/가'), '이');
+});
+
+test("'로/으로'만 떼어 쓰기 (이름을 굵게 쓰고 조사만 이어 붙일 때)", () => {
+  assert.equal(withRo('보라').slice('보라'.length), '로');
+  assert.equal(withRo('영상').slice('영상'.length), '으로');
+  assert.equal(withRo('제주 여행').slice('제주 여행'.length), '으로');
+});

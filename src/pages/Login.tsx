@@ -156,8 +156,9 @@ function EmailLogin() {
       <input className="input" type="email" inputMode="email" autoComplete="email" aria-label="메일 주소" placeholder="메일 주소" value={email} onChange={(e) => setEmail(e.target.value)} />
       <input className="input" type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} aria-label="비밀번호" placeholder={mode === 'up' ? '비밀번호 (6자 이상)' : '비밀번호'} value={pw} onChange={(e) => setPw(e.target.value)} />
       {msg && <div className="small" style={{ color: msg.ok ? 'var(--ok)' : 'var(--danger)' }} role="alert">{msg.text}</div>}
+      {mode === 'up' && !msg && <div className="tiny muted">가입하면 인증 메일을 보내 드려요.</div>}
       <button className="btn block" disabled={busy || !email.trim() || pw.length < 6} data-testid="email-submit">
-        {busy ? '잠시만요…' : mode === 'in' ? '로그인' : '가입하고 인증 메일 받기'}
+        {busy ? '잠시만요…' : mode === 'in' ? '로그인' : '가입하기'}
       </button>
       {mode === 'in' && <button type="button" className="link-btn" style={{ alignSelf: 'center' }} onClick={forgot}>비밀번호를 잊었어요</button>}
     </form>
@@ -200,6 +201,7 @@ export function VerifyEmail({ email }: { email: string | null }) {
 }
 
 export function Denied({ email }: { email: string | null }) {
+  const toast = useToast();
   return (
     <div className="center-screen">
       <KoreaMosaic className="auth-mosaic" />
@@ -209,7 +211,7 @@ export function Denied({ email }: { email: string | null }) {
       </div>
       <div className="denied-mail" data-testid="denied-mail">
         <code>{email}</code>
-        <button className="btn sm" onClick={async () => { try { await navigator.clipboard.writeText(email ?? ''); alert('메일 주소를 복사했어요'); } catch { /* 복사 못 해도 보이니 괜찮다 */ } }}>복사</button>
+        <button className="btn sm" onClick={async () => { try { await navigator.clipboard.writeText(email ?? ''); toast('메일 주소를 복사했어요'); } catch { toast('복사하지 못했어요. 주소를 길게 눌러 복사해 주세요'); } }}>복사</button>
       </div>
       <button className="btn line" onClick={() => logOut()}>다른 계정으로 로그인</button>
       <Footer />

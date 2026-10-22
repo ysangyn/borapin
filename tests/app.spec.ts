@@ -98,6 +98,15 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.locator('.topbar').getByRole('link', { name: '보라에게 물어봐' })).toHaveCount(0);
     await expect(page.getByTestId('home-ask').getByLabel('보라에게 물어봐')).toBeVisible();
     await expect(page.getByTestId('home-more')).toHaveCount(0);
+    // '다가오는 여행' 칸은 없고(묶음이 맡음), 가고 싶은 곳이 없으면 '여행지 뽑기'는 뽑기를 바로 연다
+    await expect(page.getByText('다가오는 여행', { exact: true })).toHaveCount(0);
+    const nextHub = page.getByTestId('next-hub');
+    await expect(nextHub.getByRole('link', { name: '여행지 뽑기' })).toHaveAttribute('href', '/wishes?find=dice');
+    // 해외 예정 여행이 없으면 오늘의 영어는 큰 카드 대신 한 줄 링크
+    await expect(nextHub.getByTestId('hub-english')).toHaveCount(0);
+    await expect(nextHub.getByTestId('hub-english-line')).toHaveAttribute('href', '/study');
+    await nextHub.getByRole('link', { name: '여행지 뽑기' }).click();
+    await expect(page.getByTestId('dice-roll')).toBeVisible();
   });
 
   test('피드는 둘의 소식만: 일반 소식 묶음이 없고, 비어 있으면 다음 단추가 있다', async ({ page }) => {
@@ -427,7 +436,7 @@ test.describe.serial('보라핀 1단계', () => {
     const firstEat = info.getByRole('button', { name: /메모에 넣기$/ }).first();
     const eatText = (await firstEat.getAttribute('aria-label'))!.replace(' 메모에 넣기', '');
     await firstEat.click();
-    await expect(page.getByLabel('먹을 것')).toHaveValue(new RegExp(eatText));
+    await expect(page.getByLabel('먹거리')).toHaveValue(new RegExp(eatText));
     await shot(page, '10f-city-info');
     await page.getByTestId('wish-save').click();
     await expect(page.getByRole('status')).toContainText('고쳤어요');
@@ -499,10 +508,13 @@ test.describe.serial('보라핀 1단계', () => {
       await expect.poll(() => page.locator('textarea').evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value).join('\n')), { timeout: 15_000 }).toContain('흑돼지랑 고기국수');
       await page.goto('/');
     }
-    // 3. 오늘의 영어: 영어 한 문장이 보이고 누르면 공부 화면
-    const en = hub.getByTestId('hub-english');
-    await expect(en.locator('.hub-en')).toHaveText(/[A-Za-z]{3,}/);
+    // 3. 오늘의 영어: 다음 예정 여행(제주)이 국내라 큰 카드 대신 묶음 맨 아래 한 줄 링크
+    await expect(hub.getByTestId('hub-english')).toHaveCount(0);
+    const en = hub.getByTestId('hub-english-line');
+    await expect(en).toContainText('오늘의 영어');
     await expect(en).toContainText(/\d문장 · 90초/);
+    // 한 줄 링크는 묶음의 맨 아래 (가는 길 뒤)
+    expect((await en.boundingBox())!.y).toBeGreaterThan((await hub.getByTestId('hub-way').boundingBox())!.y);
     // 4. 가는 길: 같은 곳(제주)의 가기 좋은 때
     const way = hub.getByTestId('hub-way');
     await expect(way).toContainText('제주');
@@ -518,7 +530,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('여행 계획하기: + → 조건만 고르면 후보 3곳 → 둘이 하트 → 여기로 정해요 → 갈 예정 여행과 하루 뼈대', async ({ page, browser }) => {
     await signIn(page, OWNER);
     await expect(page.getByTestId('headline')).toBeVisible();
-    await page.getByRole('button', { name: '기록하기', exact: true }).click();
+    await page.getByRole('button', { name: '남기기', exact: true }).click();
     await expect(page.getByTestId('plus-sheet')).toBeVisible();
     await page.getByRole('menuitem', { name: /여행 계획하기/ }).click();
     await expect(page).toHaveURL(/\/plan$/);
@@ -584,10 +596,16 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '또 갈래요' }).click();
     await shot(page, '11-place-edit');
     await page.getByTestId('place-save').click();
+    // 개요엔 들른 곳 요약 한 줄만, 평가·한 줄 평은 '들른 곳' 탭에
     const tp = page.getByTestId('trip-places');
+    await expect(tp).toContainText('우리 장소 1곳');
     await expect(tp).toContainText('초당할머니순두부');
-    await expect(tp).toContainText('또 갈래요');
-    await expect(tp).toContainText('순두부 젤라또까지 완벽');
+    await tp.getByTestId('places-summary').click();
+    await expect(page.getByRole('tab', { name: '들른 곳' })).toHaveAttribute('aria-selected', 'true');
+    const visited = page.getByTestId('trip-visited');
+    await expect(visited.getByTestId('place-rec')).toContainText('초당할머니순두부');
+    await expect(visited).toContainText('또 갈래요');
+    await expect(visited).toContainText('순두부 젤라또까지 완벽');
 
     // 지도에서 강릉을 누르면 우리 장소가 모여 보인다
     await page.goto('/');
@@ -673,32 +691,71 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '12c-memories');
   });
 
-  test('여행 상세: 일정 3단계, 둘의 기록, 예정 여행 준비물', async ({ page }) => {
+  test('여행 상세: 탭 넷, 일정 3단계, 들른 곳, 둘의 기록, 예정 여행 준비물', async ({ page }) => {
     await signIn(page, OWNER);
-    // 일정: 날짜가 있는 강릉 여행(사진으로 2019.5.3–4)
+    // 홈 단계 카드: 다음 주말 여행(계획하기로 만든 것). 단추는 말한 탭(준비)으로, 카드는 개요로
+    await expect(page.getByTestId('headline')).toBeVisible();
+    const stage = page.getByTestId('stage-card');
+    await expect(stage).toHaveAttribute('data-stage', 'before');
+    await expect(stage.getByTestId('stage-action')).toHaveText('준비물 보기');
+    await expect(stage.getByTestId('stage-action')).toHaveAttribute('href', /^\/trips\/[^/?]+\?tab=prep$/);
+    // 접힌 둘러보기 칸 제목엔 '추억'이 없다 (추억 카드는 있으면 접힌 칸 안에)
+    await expect(page.getByTestId('home-more').locator('summary')).toHaveText('이달의 추천 · 가고 싶은 곳');
+    await stage.getByTestId('stage-action').click();
+    await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=prep$/);
+    await expect(page.getByRole('tab', { name: '준비' })).toHaveAttribute('aria-selected', 'true');
+    // 예정 여행의 탭은 개요·일정·준비·사진 (글은 개요 아래)
+    const tabs = page.getByTestId('trip-tabs').getByRole('tab');
+    await expect(tabs).toHaveText(['개요', '일정', '준비', /^사진/]);
+    // 주소로 없는 탭(글)을 열면 개요로, 개요 아래에 글 쓰는 칸
+    await page.goto(page.url().replace(/\?tab=prep$/, '?tab=notes'));
+    await expect(page.getByRole('tab', { name: '개요' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('trip-notes').getByTestId('notes-tab')).toBeVisible();
+
+    // 일정 ① 적기(한글 Enter·추가 단추) ② 날짜 ③ 시간
+    await page.getByRole('tab', { name: '일정' }).click();
+    const plan = page.getByTestId('plan-tab');
+    const n0 = await plan.getByTestId('plan-item').count();
+    await plan.getByLabel('가볼 곳 추가').fill('시장 구경');
+    await plan.getByLabel('가볼 곳 추가').press('Enter');
+    await plan.getByLabel('가볼 곳 추가').fill('저녁 산책');
+    await plan.getByRole('button', { name: '추가', exact: true }).click();
+    await expect(plan.getByTestId('plan-item')).toHaveCount(n0 + 2);
+    // 예정 여행의 일정엔 '또 갈래요' 하트가 없고 체크만
+    await expect(plan.getByTestId('plan-again')).toHaveCount(0);
+    await plan.locator('.plan-name', { hasText: '시장 구경' }).click();
+    await plan.getByLabel('날짜').selectOption({ index: 2 });
+    await expect(plan.getByLabel('날짜')).not.toHaveValue('');
+    await plan.getByLabel('시간').selectOption('18:30');
+    await expect(plan).toContainText('2일째');
+    await expect(plan.getByTestId('plan-item').filter({ hasText: '시장 구경' })).toContainText('18:30');
+    await shot(page, '13-plan');
+
+    // 다녀온 강릉 여행: 개요·들른 곳·사진·글, 탭 글은 375px에서도 한 줄
+    const vp = page.viewportSize()!;
+    await page.setViewportSize({ width: 375, height: 760 });
     await page.goto('/trips');
     await page.getByText('강릉시 여행', { exact: true }).click();
-    // 다녀온 여행이라 '일정'이 아니라 '들른 곳', 보기는 그 지역 명소, 또 갈래요 하트
+    await expect(tabs).toHaveText(['개요', '들른 곳', /^사진/, /^글/]);
+    await expect(page.getByRole('tab', { name: '준비' })).toHaveCount(0);
+    const boxes = await tabs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { y: r.y, h: r.height, wrap: getComputedStyle(e).whiteSpace, over: e.scrollWidth > e.clientWidth + 1 }; }));
+    for (const b of boxes) {
+      expect(b.y).toBe(boxes[0].y);
+      expect(b.wrap).toBe('nowrap');
+      expect(b.over).toBe(false);
+    }
+    // 개요엔 '장소' 목록 구역이 없고(요약 한 줄), 옛 개발자 글도 없다
+    await expect(page.getByRole('heading', { name: '장소', exact: true })).toHaveCount(0);
+    await expect(page.getByText('v22에서 가져옴')).toHaveCount(0);
+    // 들른 곳 = 우리 장소 기록(평가·한 줄 평). 일정 줄의 '또 갈래요' 하트·적는 칸은 없다
     await page.getByRole('tab', { name: '들른 곳' }).click();
-    const plan = page.getByTestId('plan-tab');
-    await expect(plan.getByLabel('들른 곳 추가')).toHaveAttribute('placeholder', /예: 안목 커피거리/);
-    await plan.getByLabel('들른 곳 추가').fill('경포대');
-    await plan.getByLabel('들른 곳 추가').press('Enter');
-    await plan.getByLabel('들른 곳 추가').fill('안목 커피거리');
-    await plan.getByRole('button', { name: '추가', exact: true }).click();
-    // 우리 장소에서 바로 넣기
-    await plan.getByRole('button', { name: '초당할머니순두부' }).click();
-    await expect(plan.getByTestId('plan-item')).toHaveCount(3);
-    const again = plan.getByTestId('plan-item').filter({ hasText: '경포대' }).getByTestId('plan-again');
-    await again.click();
-    await expect(again).toHaveAttribute('aria-pressed', 'true');
-    // ② 날짜 ③ 시간·예약
-    await plan.locator('.plan-name', { hasText: '경포대' }).click();
-    await plan.getByLabel('날짜').selectOption('2019-05-04');
-    await plan.getByLabel('시간').selectOption('18:30');
-    await expect(plan).toContainText('2일째 · 5.4 (토)');
-    await expect(plan.getByTestId('plan-item').filter({ hasText: '경포대' })).toContainText('18:30');
-    await shot(page, '13-plan');
+    const visited = page.getByTestId('trip-visited');
+    await expect(visited.getByTestId('place-rec')).toContainText('초당할머니순두부');
+    await expect(page.getByTestId('plan-tab')).toHaveCount(0);
+    await expect(page.getByTestId('plan-again')).toHaveCount(0);
+    await expect(page.getByLabel('들른 곳 추가')).toHaveCount(0);
+    await shot(page, '13a-visited');
+    await page.setViewportSize(vp);
 
     // 기록: 쓴 사람이 보인다
     await page.getByRole('tab', { name: /글/ }).click();
@@ -876,6 +933,21 @@ test.describe.serial('보라핀 1단계', () => {
     expect(buf.length).toBeGreaterThan(5000);
   });
 
+  test('우리 공간엔 개발자 글 대신 출처와 버전 링크, 버전·지도 출처는 /credits에', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/space');
+    await expect(page.getByTestId('space-title')).toBeVisible();
+    // 횟수는 우리말로 ('3번'이 아니라 '세 번')
+    await expect(page.locator('.page')).not.toContainText(/여행 \d+번/);
+    await expect(page.getByTestId('app-version')).toHaveCount(0);
+    await expect(page.getByText(/SGIS/)).toHaveCount(0);
+    await page.getByTestId('credits-link').click();
+    await expect(page).toHaveURL(/\/credits$/);
+    await expect(page.getByRole('heading', { name: '출처와 버전' })).toBeVisible();
+    await expect(page.getByTestId('app-version')).toContainText(/보라핀 v\S+ · 빌드 /);
+    await expect(page.getByTestId('map-credits')).toContainText('통계청 SGIS');
+  });
+
   test('관리자: 사용량, 사진 올리기 멈춤, 문제 신고', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/space');
@@ -915,7 +987,8 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '추가', exact: true }).click();
     await expect(page.getByText(MAIL).first()).toBeVisible();
     await page.getByRole('button', { name: '로그아웃' }).click();
-    // 가입
+    // 가입 (메일 칸은 접혀 있다)
+    await page.getByTestId('email-open').click();
     const form = page.getByTestId('email-form');
     await form.getByRole('radio', { name: '처음이에요' }).click();
     await form.getByLabel('메일 주소').fill(MAIL);
@@ -939,6 +1012,7 @@ test.describe.serial('보라핀 1단계', () => {
     expected = [/accounts:signInWithPassword/];
     await page.goto('/space');
     await page.getByRole('button', { name: '로그아웃' }).click();
+    await page.getByTestId('email-open').click();
     await page.getByLabel('메일 주소').fill(MAIL);
     await page.getByLabel('비밀번호').fill('wrong-pass');
     await page.getByTestId('email-submit').click();

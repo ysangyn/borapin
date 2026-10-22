@@ -72,7 +72,7 @@ test('빈 화면 (처음 쓰는 사람)', async ({ browser }) => {
   const page = await mobile(browser);
   // 로그인 화면 (구름 영상이 움직이기 시작한 뒤)
   await page.goto('/');
-  await expect(page.getByTestId('email-form')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('email-open')).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(2500);
   await snap(page, 'e00-login', false);
   await signIn(page);
@@ -276,7 +276,7 @@ test('가득 찬 화면 · PC', async ({ browser }) => {
   test.setTimeout(480_000);
   const page = await desktop(browser);
   await page.goto('/');
-  await expect(page.getByTestId('email-form')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('email-open')).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(2500);
   await snap(page, 'd00-login', false);
   await signIn(page);

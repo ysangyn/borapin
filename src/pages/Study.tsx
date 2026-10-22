@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
 import { useStudy, speak } from '../lib/study/store';
 import { choices, cloze, ITEMS, speakScore, summary, todaySet, ymd, type Item } from '../lib/study/srs';
@@ -46,12 +47,12 @@ export default function Study() {
             {extra >= 6 && <div className="small muted" style={{ textAlign: 'center' }}>오늘은 여기까지 — 내일 또 봐요. 많이보다 매일이 이겨요.</div>}
           </div>
         )}
-        {data && mode === 'pick' && <PickQuiz items={set} onGrade={grade} />}
-        {data && mode === 'blank' && <BlankQuiz items={set} onGrade={grade} />}
-        {data && mode === 'speak' && <SpeakDrill items={set} onGrade={grade} />}
+        {data && mode === 'pick' && <PickQuiz items={set} onGrade={grade} go={setMode} />}
+        {data && mode === 'blank' && <BlankQuiz items={set} onGrade={grade} go={setMode} />}
+        {data && mode === 'speak' && <SpeakDrill items={set} onGrade={grade} go={setMode} />}
         {data && mode === 'saved' && (
           <div className="study-list">
-            {saved.length === 0 && <div className="empty"><b>단어장이 비어 있어요</b><span className="small">문장 카드의 책갈피를 누르면 여기에 모여요.</span></div>}
+            {saved.length === 0 && <div className="empty"><b>단어장이 비어 있어요</b><span className="small">문장 카드 오른쪽 위 깃발을 누르면 여기에 모여요.</span></div>}
             {saved.map((it) => (
               <div key={it.id} className="card white study-word">
                 {it.words.map(([w, m]) => <div key={w} className="study-word-row"><b>{w}</b><span className="muted">{m}</span><button className="icon-btn" aria-label={`${w} 읽어 주기`} onClick={() => speak(w)}><Icon name="play" size={16} /></button></div>)}
@@ -87,13 +88,13 @@ function LearnCard({ item, n, saved, box, onGrade, onSave }: { item: Item; n: nu
   );
 }
 
-function PickQuiz({ items, onGrade }: { items: Item[]; onGrade: (id: string, ok: boolean) => void }) {
+function PickQuiz({ items, onGrade, go }: { items: Item[]; onGrade: (id: string, ok: boolean) => void; go: (m: Mode) => void }) {
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const item = items[i];
   const opts = useMemo(() => (item ? choices(item, `${item.id}-${i}`) : []), [item, i]);
-  if (!item) return <Finish score={score} total={items.length} />;
+  if (!item) return <Finish score={score} total={items.length} next="blank" go={go} />;
   const answer = (id: string) => {
     if (picked) return;
     setPicked(id);
@@ -115,14 +116,14 @@ function PickQuiz({ items, onGrade }: { items: Item[]; onGrade: (id: string, ok:
   );
 }
 
-function BlankQuiz({ items, onGrade }: { items: Item[]; onGrade: (id: string, ok: boolean) => void }) {
+function BlankQuiz({ items, onGrade, go }: { items: Item[]; onGrade: (id: string, ok: boolean) => void; go: (m: Mode) => void }) {
   const list = useMemo(() => items.map((it) => ({ it, z: cloze(it) })).filter((x) => x.z), [items]);
   const [i, setI] = useState(0);
   const [text, setText] = useState('');
   const [result, setResult] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const cur = list[i];
-  if (!cur) return <Finish score={score} total={list.length} />;
+  if (!cur) return <Finish score={score} total={list.length} next="speak" go={go} />;
   const check = () => {
     const ok = text.trim().toLowerCase() === cur.z!.answer.toLowerCase();
     setResult(ok);
@@ -147,7 +148,7 @@ function BlankQuiz({ items, onGrade }: { items: Item[]; onGrade: (id: string, ok
   );
 }
 
-function SpeakDrill({ items, onGrade }: { items: Item[]; onGrade: (id: string, ok: boolean) => void }) {
+function SpeakDrill({ items, onGrade, go }: { items: Item[]; onGrade: (id: string, ok: boolean) => void; go: (m: Mode) => void }) {
   const [i, setI] = useState(0);
   const [heard, setHeard] = useState('');
   const [score, setScore] = useState<number | null>(null);
@@ -155,7 +156,7 @@ function SpeakDrill({ items, onGrade }: { items: Item[]; onGrade: (id: string, o
   const [total, setTotal] = useState(0);
   const item = items[i];
   const SR = typeof window !== 'undefined' ? ((window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition ?? (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition) : undefined;
-  if (!item) return <Finish score={total} total={items.length} />;
+  if (!item) return <Finish score={total} total={items.length} next="saved" go={go} />;
   const listen = () => {
     if (!SR || listening) return;
     const rec = new (SR as new () => { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void })();
@@ -195,11 +196,18 @@ function SpeakDrill({ items, onGrade }: { items: Item[]; onGrade: (id: string, o
   );
 }
 
-function Finish({ score, total }: { score: number; total: number }) {
+const NEXT_LABEL: Partial<Record<Mode, string>> = { blank: '빈칸 풀기', speak: '말하기 해 보기', saved: '단어장 보기' };
+
+/** 오늘 몫 끝: 막다른 곳이 되지 않게 다음 공부 방법과 홈으로 가는 단추를 둔다 */
+function Finish({ score, total, next, go }: { score: number; total: number; next: Mode; go: (m: Mode) => void }) {
   return (
     <div className="card white study-quiz" data-testid="study-finish">
       <div className="study-q">오늘 몫 끝! {score}/{total}</div>
       <div className="small muted">틀린 건 내일 묶음에 먼저 나와요. 내일 또 봐요 👋</div>
+      <div className="study-actions">
+        <button className="btn sm" onClick={() => go(next)} data-testid="study-next">{NEXT_LABEL[next]}</button>
+        <Link to="/" className="btn sm ghost">홈으로</Link>
+      </div>
     </div>
   );
 }

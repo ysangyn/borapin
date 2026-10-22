@@ -232,12 +232,12 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
         const oursLines = ours.slice(0, 3).map((r) => `우리 장소: ${r.name}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`);
         if (w) {
           const lines: string[] = [];
-          if (intent === 'foods') lines.push(`먹을 것: ${w.eat.join(', ')}`);
+          if (intent === 'foods') lines.push(`먹거리: ${w.eat.join(', ')}`);
           else if (intent === 'transport') lines.push(`인천에서 ${flyLabel(w.fly)} · ${tzLabel(w.tz)} · ${WALK_LABEL[w.walk]}`);
           else if (intent === 'goods') lines.push(`돈: ${w.cur} · ${COST_LABEL[w.cost]} · 콘센트 ${w.plug}`);
           else {
-            lines.push(w.line, `볼 것: ${w.see.join(', ')}`);
-            if (intent === 'overview') lines.push(`먹을 것: ${w.eat.join(', ')}`, `돈·말: ${w.cur} · ${w.lang} · 콘센트 ${w.plug}`, `입국: ${w.entry} (떠나기 전 확인)`);
+            lines.push(w.line, `볼거리: ${w.see.join(', ')}`);
+            if (intent === 'overview') lines.push(`먹거리: ${w.eat.join(', ')}`, `돈·말: ${w.cur} · ${w.lang} · 콘센트 ${w.plug}`, `입국: ${w.entry} (떠나기 전 확인)`);
           }
           const sl = seasonLine(d, p); if (sl) lines.push(sl);
           lines.push(visitsLine(d, p), ...oursLines);
@@ -535,7 +535,7 @@ function travelPattern(done: Trip[], d: AskData): Omit<Answer, 'ctx'> {
     again ? `두 번 넘게 간 곳 ${again}곳 · 마음에 들면 또 가는 편이에요` : '같은 곳을 다시 가기보다 새 곳을 찾는 편이에요',
     people.length ? `자주 함께한 사람: ${people.join(', ')}` : '',
   ].filter(Boolean);
-  const head = sTop[0] ? `${SEASON[sTop[0][0]]}에 ${abroad * 2 > done.length ? '해외로' : '국내로'} 떠나는 편이에요` : `${done.length}번의 여행을 모아 봤어요`;
+  const head = sTop[0] ? `${SEASON[sTop[0][0]]}에 ${abroad * 2 > done.length ? '해외로' : '국내로'} 떠나는 편이에요` : `${times(done.length)}의 여행을 모아 봤어요`;
   return { intent: 'pattern', text: head, lines, buttons: [{ label: missing[0] ? `${missing[0]}에 갈 곳` : '안 가본 곳 추천', ask: missing[0] ? `${missing[0]}에 갈 만한 곳` : '안 가본 곳 추천' }, { label: '추억', to: '/memories' }], source: '우리 기록' };
 }
 
@@ -633,7 +633,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const row = (pl: Place) => {
         const c = info(d, pl);
         const s = seasonFor(d.seasons, pl);
-        return `${placeName(pl)}: ${c ? c.main.theme : ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''} · 우리 ${tripsAt(d.trips, pl).length}번${c ? ` · 먹거리 ${c.main.foods.slice(0, 2).join(', ')}` : ''}`;
+        return `${placeName(pl)}: ${c ? c.main.theme : ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''} · 우리 ${tripsAt(d.trips, pl).length ? times(tripsAt(d.trips, pl).length) : '아직 안 가 봤어요'}${c ? ` · 먹거리 ${c.main.foods.slice(0, 2).join(', ')}` : ''}`;
       };
       a = { intent, text: `${jo(placeLabel(x), '와/과')} ${placeLabel(y)} 비교`, lines: [row(x), row(y)], buttons: [{ label: `${placeLabel(x)} 자세히`, ask: `${placeLabel(x)} 볼거리` }, { label: `${placeLabel(y)} 자세히`, ask: `${placeLabel(y)} 볼거리` }], source: INFO_SRC(d) };
       break;
