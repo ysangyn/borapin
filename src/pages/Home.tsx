@@ -135,7 +135,7 @@ export default function Home() {
 
         {memory && !stage && (
           <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
-            <span className="trip-tile">{placeLabel(memory.trip.places[0]).slice(0, 4)}</span>
+            <span className="trip-tile">{memory.trip.places[0] ? placeLabel(memory.trip.places[0]).slice(0, 4) : '여행'}</span>
             <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</span>
               <span style={{ fontWeight: 700 }}>{memory.trip.title}</span>

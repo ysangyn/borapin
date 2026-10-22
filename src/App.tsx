@@ -42,6 +42,15 @@ export default function App() {
     const t = setTimeout(preloadCheer, 3000);
     return () => clearTimeout(t);
   }, [auth.status]);
+  // 글자를 치는 동안은 떠 있는 보라를 숨긴다 (입력칸·단추를 가리지 않게)
+  // 훅은 모두 아래 early return보다 위에: 약관 화면을 오가며 훅 개수가 달라지면 React가 멈춘다
+  useEffect(() => {
+    const on = (e: FocusEvent) => { const t = e.target as HTMLElement | null; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) document.body.classList.add('typing'); };
+    const off = () => window.setTimeout(() => { const a = document.activeElement as HTMLElement | null; if (!a || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) document.body.classList.remove('typing'); }, 80);
+    document.addEventListener('focusin', on);
+    document.addEventListener('focusout', off);
+    return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off); };
+  }, []);
   // 링크 공개된 여행과 약관·개인정보 처리방침은 로그인 없이 본다
   if (loc.pathname.startsWith('/s/') || ['/privacy', '/terms', '/credits'].includes(loc.pathname)) {
     return (
@@ -59,14 +68,6 @@ export default function App() {
       </div>
     );
   }
-  // 글자를 치는 동안은 떠 있는 보라를 숨긴다 (입력칸·단추를 가리지 않게)
-  useEffect(() => {
-    const on = (e: FocusEvent) => { const t = e.target as HTMLElement | null; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) document.body.classList.add('typing'); };
-    const off = () => window.setTimeout(() => { const a = document.activeElement as HTMLElement | null; if (!a || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) document.body.classList.remove('typing'); }, 80);
-    document.addEventListener('focusin', on);
-    document.addEventListener('focusout', off);
-    return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off); };
-  }, []);
   if (auth.status === 'loading') return <div className="app"><Spinner /></div>;
   if (auth.status === 'signedOut') { rememberInviteFromUrl(); return <div className="app bare"><Login /></div>; }
   if (auth.status === 'denied') {

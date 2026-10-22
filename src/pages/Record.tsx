@@ -7,7 +7,7 @@ import { useAuth } from '../lib/auth';
 import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } from '../lib/data';
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
 import { parsePlaceParam, placeLabel } from '../lib/geo';
-import type { Place, Precision, Season, TripInput, TripKind, TripStatus, When } from '../lib/types';
+import type { Place, Precision, Season, Trip, TripInput, TripKind, TripStatus, When } from '../lib/types';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { memberNames } from '../lib/members';
 import { pickImages, uploadBlocker, uploadSummary, useUploader } from '../lib/uploader';
@@ -55,6 +55,9 @@ export default function Record() {
   const [memo, setMemo] = useState('');
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(!editing);
+  // 고치는 칸을 '연 때'의 여행. 저장할 때 이것과 견줘 고친 칸만 보낸다
+  // (실시간 existing과 견주면 상대가 그사이 고친 칸이 내 옛 값으로 덮인다)
+  const [opened, setOpened] = useState<Trip | null>(null);
 
   useEffect(() => {
     if (editing && existing && !loaded) {
@@ -65,6 +68,7 @@ export default function Record() {
       setCompanions(existing.companions);
       setTitle(existing.title);
       setMemo(existing.memo);
+      setOpened(existing);
       setLoaded(true);
     }
   }, [editing, existing, loaded]);
@@ -79,8 +83,8 @@ export default function Record() {
   const whenOk = when.p === 'unknown' || (when.p === 'day' ? !!(when.y && when.m && when.d) : when.p === 'month' ? !!(when.y && when.m) : when.p === 'season' ? !!when.s : !!when.y);
   const endBeforeStart = when.p === 'day' && !!when.d2 && toInputDate(when.y2 ?? when.y, when.m2 ?? when.m, when.d2) < toInputDate(when.y, when.m, when.d);
   const canSave = places.length > 0 && whenOk && !endBeforeStart && !saving;
-  // 쓰던 내용이 있는지 (나갈 때 묻기)
-  const dirty = !saving && (editing ? loaded && !!existing && (title !== existing.title || memo !== existing.memo || JSON.stringify(places) !== JSON.stringify(existing.places) || JSON.stringify(when) !== JSON.stringify(existing.when)) : !!memo.trim() || !!title.trim());
+  // 쓰던 내용이 있는지 (나갈 때 묻기): 연 때 모습과 견준다
+  const dirty = !saving && (editing ? loaded && !!opened && (title !== opened.title || memo !== opened.memo || JSON.stringify(places) !== JSON.stringify(opened.places) || JSON.stringify(when) !== JSON.stringify(opened.when)) : !!memo.trim() || !!title.trim());
   useLeaveGuard(dirty);
 
   const setP = (p: Precision) => setWhen((w) => ({ p, y: w.y ?? (p === 'unknown' ? undefined : thisYear), m: p === 'day' || p === 'month' ? w.m : undefined, d: p === 'day' ? w.d : undefined, d2: p === 'day' ? w.d2 : undefined, m2: p === 'day' ? w.m2 : undefined, y2: p === 'day' ? w.y2 : undefined, s: p === 'season' ? w.s : undefined }));
@@ -103,12 +107,13 @@ export default function Record() {
       places,
       companions,
       memo: memo.trim(),
-      tags: existing?.tags ?? [],
-      source: existing?.source ?? 'app',
+      // 화면에 없는 칸은 연 때 값 그대로 (고친 칸만 보내지므로 실제로는 보내지지 않는다)
+      tags: opened?.tags ?? [],
+      source: opened?.source ?? 'app',
     };
     try {
-      if (editing && id && existing) {
-        await updateTrip(id, existing, input);
+      if (editing && id && opened) {
+        await updateTrip(id, opened, input);
         toast('고쳤어요');
         goBack(`/trips/${id}`);
       } else {

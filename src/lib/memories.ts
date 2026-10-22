@@ -12,9 +12,12 @@ function seasonOf(m: number): Season {
 const agoYears = (y: number, now: Date) => now.getFullYear() - y;
 const yearsLabel = (n: number) => (n === 1 ? '작년' : n === 2 ? '재작년' : `${n}년 전`);
 
-/** 아는 만큼만 말하는 추억 찾기: 정확한 날짜 → 같은 달 → 같은 계절 → 날짜 모르는 기록은 장소로 */
+/**
+ * 아는 만큼만 말하는 추억 찾기: 정확한 날짜 → 같은 달 → 같은 계절 → 날짜 모르는 기록은 장소로.
+ * 장소가 빈 옛 기록(v22)은 건너뛴다: 추억 카드는 첫 장소 이름으로 네모를 그리므로 보여 줄 게 없다.
+ */
 export function pickMemory(trips: Trip[], now = new Date(), seed = now.getDate()): Memory | null {
-  const done = trips.filter((t) => t.status === 'done');
+  const done = trips.filter((t) => t.status === 'done' && t.places.length > 0);
   if (!done.length) return null;
   const m = now.getMonth() + 1, d = now.getDate();
   const past = done.filter((t) => t.when.y && t.when.y < now.getFullYear());

@@ -13,7 +13,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { Bytes, FieldPath, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
+import { Bytes, FieldPath, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc, writeBatch, type Firestore } from 'firebase/firestore';
 
 const OWNER = 'ysangyn@gmail.com';
 const BORA = 'bora@example.com';
@@ -173,6 +173,21 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertFails(updateDoc(doc(db, 'spaces/main/notes/n-bora'), { text: '고쳐 쓰기' }));
     await assertSucceeds(deleteDoc(doc(db, 'spaces/main/notes/n-bora')));
   });
+  test('장소 한 줄 평: 이름별 점 경로(reviews.이름)로 고쳐도 되고, 상대 칸은 그대로 남는다', async () => {
+    const db = as.bora();
+    const P = doc(db, 'spaces/main/places/p1');
+    await assertSucceeds(setDoc(P, { name: '슈츠', kind: 'cafe', region: { t: 'kr', code: '47850' }, reviews: { 영상: '최고' }, verdict: null, v: 1 }));
+    // 앱(data.ts patchEdits)은 고친 칸만 FieldPath로 보낸다: 내 칸 쓰기 → 지우기 → 다시 쓰기
+    await assertSucceeds(updateDoc(P, new FieldPath('reviews', '보라'), '고소해요', 'updatedAt', 1));
+    await assertSucceeds(updateDoc(P, new FieldPath('reviews', '보라'), deleteField(), 'updatedAt', 2));
+    await assertSucceeds(updateDoc(P, new FieldPath('reviews', '보라'), '다시 씀', 'memo', '줄 30분', 'updatedAt', 3));
+    const after = await getDoc(doc(as.owner(), 'spaces/main/places/p1'));
+    assert.deepEqual(after.data()?.reviews, { 영상: '최고', 보라: '다시 씀' });
+    // 한 줄 평이 11명분이 되는 점 경로 쓰기는 막힌다 (validPlace는 고친 뒤 문서 전체를 본다)
+    const many = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`사람${i}`, '글']));
+    await assertSucceeds(updateDoc(P, { reviews: many }));
+    await assertFails(updateDoc(P, new FieldPath('reviews', '열한번째'), '글'));
+  });
   test('피드 하트: 자기 이름으로만 누르고 뗀다, 남의 하트는 못 건드린다', async () => {
     const db = as.bora();
     await assertSucceeds(setDoc(doc(db, 'spaces/main/hearts/note_n1'), { by: { bora: '보라' }, v: 1 }));
@@ -294,6 +309,42 @@ describe('초대 링크', () => {
       await setDoc(doc(ctx.firestore() as unknown as Firestore, 'config/access'), { allowed: [OWNER, BORA, STRANGER], admins: [OWNER], names: {}, via: 'abcdefgh1234' });
     });
     await assertSucceeds(updateDoc(doc(as.owner(), 'config/access'), new FieldPath('names', STRANGER), '막내', 'updatedAt', 1));
+  });
+});
+
+describe('여행 지우기 (deleteTripAll: 여행 문서를 첫 묶음에 넣고 글·사진을 뒤따라 지운다)', () => {
+  const N = (db: Firestore, id: string) => doc(db, 'spaces/main/notes', id);
+  test('여행이 살아 있을 땐 남의 글은 못 지운다 (다른 여행을 지우는 묶음에 끼워도)', async () => {
+    const db = as.bora();
+    await assertFails(deleteDoc(N(db, 'n-owner')));
+    await assertSucceeds(setDoc(T(db, 't2'), trip({ title: '다른 여행' })));
+    const b = writeBatch(db);
+    b.delete(T(db, 't2'));
+    b.delete(N(db, 'n-owner'));
+    await assertFails(b.commit());
+    const still = await getDoc(N(as.owner(), 'n-owner'));
+    assert.equal(still.exists(), true);
+  });
+  test('여행을 지우는 묶음에서는 상대 글도 함께 지워지고, 여행이 먼저 사라진 뒤 남은 글도 지워진다', async () => {
+    const db = as.bora();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(N(ctx.firestore() as unknown as Firestore, 'n-owner2'), { tripId: 't1', text: '영상이 쓴 글 2', by: { uid: 'owner', name: '영상' }, v: 1 });
+    });
+    // 첫 묶음: 여행 문서 + 남의 글 하나 (같은 묶음에서 여행이 없어지므로 허용)
+    const b = writeBatch(db);
+    b.delete(T(db));
+    b.delete(N(db, 'n-owner'));
+    await assertSucceeds(b.commit());
+    // 뒤 묶음(400개가 넘어 나뉜 경우): 여행은 이미 없으니 남은 남의 글도 지워진다
+    await assertSucceeds(deleteDoc(N(db, 'n-owner2')));
+    const left = await getDocs(collection(as.owner(), 'spaces/main/notes'));
+    assert.equal(left.size, 0);
+  });
+  test('초대 안 된 계정은 여행이 없어진 뒤에도 글을 못 지운다', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await deleteDoc(T(ctx.firestore() as unknown as Firestore));
+    });
+    await assertFails(deleteDoc(N(as.stranger(), 'n-owner')));
   });
 });
 

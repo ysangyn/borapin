@@ -11,7 +11,7 @@ import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { parsePlaceParam, placeParam } from '../lib/geo';
 import { lines, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
-import type { Place, WishInput, WishPriority } from '../lib/types';
+import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
 
 export default function WishEdit() {
   const { id } = useParams();
@@ -39,6 +39,8 @@ export default function WishEdit() {
   const [months, setMonths] = useState<number[]>([]);
   const [pickMonths, setPickMonths] = useState(false);
   const [loaded, setLoaded] = useState(!editing);
+  // 고치는 칸을 '연 때'의 문서. 저장할 때 이것과 견줘 고친 칸만 보낸다 (실시간 existing과 견주면 상대가 그사이 고친 칸이 덮인다)
+  const [opened, setOpened] = useState<Wish | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
@@ -55,6 +57,7 @@ export default function WishEdit() {
       setNote(existing.note ?? '');
       setMonths(existing.months ?? []);
       setPickMonths(!!existing.months?.length);
+      setOpened(existing);
       setLoaded(true);
     }
   }, [editing, existing, loaded]);
@@ -77,11 +80,11 @@ export default function WishEdit() {
       links: lines(links),
       note: note.trim(),
       months: pickMonths ? months : [],
-      source: existing?.source ?? 'app',
+      source: opened?.source ?? 'app',
     };
     try {
-      if (editing && id && existing) {
-        await saveWishEdits(id, existing, input);
+      if (editing && id && opened) {
+        await saveWishEdits(id, opened, input);
         toast('고쳤어요');
         goBack('/wishes');
       } else {

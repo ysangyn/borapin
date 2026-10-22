@@ -100,7 +100,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);
-  const [failed, setFailed] = useState(false);
+  // 'data': 경계 자료를 못 받음(다시 받으면 됨) · 'gl': 이 기기가 WebGL을 못 써서 지도를 아예 못 그림
+  const [failed, setFailed] = useState<'' | 'data' | 'gl'>('');
   // 같은 장소 목록이면 다시 맞추지 않게 (상대가 다른 여행을 고쳐도 지도가 튀지 않게)
   const focusKey = focus ? JSON.stringify(focus) : '';
   const onSelectRef = useRef(onSelect);
@@ -185,25 +186,33 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   // 지도 만들기
   useEffect(() => {
     if (!el.current) return;
-    const map = new maplibregl.Map({
-      container: el.current,
-      style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': COLORS.sea } }] },
-      ...(mode === 'kr' ? { bounds: BOUNDS.kr, fitBoundsOptions: { padding: 16 } } : { center: [KOREA[0], 30] as [number, number], zoom: 1.6 }),
-      minZoom: 0.6,
-      maxZoom: 11,
-      attributionControl: false,
-      // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
-      cooperativeGestures: !!cooperative && !(typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches),
-      interactive,
-      locale: {
-        'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl을 누른 채 스크롤하면 확대돼요',
-        'CooperativeGesturesHandler.MacHelpText': '⌘를 누른 채 스크롤하면 확대돼요',
-        'CooperativeGesturesHandler.MobileHelpText': '두 손가락으로 움직여 주세요',
-      },
-      dragRotate: false,
-      pitchWithRotate: false,
-      renderWorldCopies: false,
-    });
+    let map: MLMap;
+    try {
+      map = new maplibregl.Map({
+        container: el.current,
+        style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': COLORS.sea } }] },
+        ...(mode === 'kr' ? { bounds: BOUNDS.kr, fitBoundsOptions: { padding: 16 } } : { center: [KOREA[0], 30] as [number, number], zoom: 1.6 }),
+        minZoom: 0.6,
+        maxZoom: 11,
+        attributionControl: false,
+        // 폰(손가락)에서는 한 손가락으로 바로 움직이고 두 손가락으로 확대. PC에서만 '⌘/Ctrl + 휠'로 확대해 페이지 스크롤을 막지 않는다
+        cooperativeGestures: !!cooperative && !(typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches),
+        interactive,
+        locale: {
+          'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl을 누른 채 스크롤하면 확대돼요',
+          'CooperativeGesturesHandler.MacHelpText': '⌘를 누른 채 스크롤하면 확대돼요',
+          'CooperativeGesturesHandler.MobileHelpText': '두 손가락으로 움직여 주세요',
+        },
+        dragRotate: false,
+        pitchWithRotate: false,
+        renderWorldCopies: false,
+      });
+    } catch (e) {
+      // WebGL을 못 쓰는 기기(옛 폰·그래픽 가속 꺼짐)에서는 만들다 예외가 난다 → 지도 칸 안에만 안내하고 나머지 화면은 그대로 둔다
+      console.warn(e);
+      setFailed('gl');
+      return;
+    }
     map.touchZoomRotate.disableRotation();
     // 시험용: 지금 가운데 (손가락으로 움직였는지 확인)
     map.on('moveend', () => { const c = map.getCenter(); if (el.current) el.current.dataset.center = `${c.lng.toFixed(3)},${c.lat.toFixed(3)}`; });
@@ -215,7 +224,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         g = await loadGeo();
       } catch (e) {
         console.warn(e);
-        if (!cancelled) setFailed(true);
+        if (!cancelled) setFailed('data');
         return;
       }
       if (cancelled) return;
@@ -445,13 +454,19 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     <div className={'map-wrap ' + (className ?? '')} style={{ height }}>
       <div ref={el} style={{ position: 'absolute', inset: 0 }} data-testid="map" />
       <div ref={labelBox} className="map-labels" aria-hidden="true" />
-      {failed && (
+      {failed === 'data' && (
         <div className="map-failed" role="alert">
           <span>지도를 불러오지 못했어요</span>
           <button className="btn sm" onClick={() => location.reload()}>다시 불러오기</button>
         </div>
       )}
-      {controls && (
+      {failed === 'gl' && (
+        <div className="map-failed" role="alert" data-testid="map-unsupported">
+          <span>이 기기에서는 지도를 그릴 수 없어요</span>
+          <span className="tiny muted" style={{ padding: '0 24px', textAlign: 'center' }}>기록은 그대로예요. 브라우저를 최신으로 바꾸거나 다른 기기에서 열면 지도가 보여요.</span>
+        </div>
+      )}
+      {controls && failed !== 'gl' && (
         <div className="map-ctrls" style={{ top: controlsTop }}>
           <button aria-label="확대" onClick={() => zoom(1)}><Icon name="plus" size={18} stroke={2.2} /></button>
           <hr />

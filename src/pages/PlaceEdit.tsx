@@ -16,7 +16,7 @@ import { parsePlaceParam } from '../lib/geo';
 import { KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
 import { memberNames, toneOf } from '../lib/members';
-import type { Place, PlaceKind, PlaceRecInput, Verdict } from '../lib/types';
+import type { Place, PlaceKind, PlaceRec, PlaceRecInput, Verdict } from '../lib/types';
 
 /** 장소 남기기·고치기: 이름, 종류, 어디, 어느 여행, 둘의 한 줄 평, 평가, 네이버 링크 */
 export default function PlaceEdit() {
@@ -44,6 +44,9 @@ export default function PlaceEdit() {
   const [paste, setPaste] = useState('');
   const [visited, setVisited] = useState(false);
   const [loaded, setLoaded] = useState(!editing);
+  // 고치는 칸을 '연 때'의 장소. 저장할 때 이것과 견줘 고친 칸만 보낸다
+  // (실시간 existing과 견주면 상대가 그사이 고친 칸이 내 옛 값으로 덮이고, 상대 한 줄 평이 지워진다)
+  const [opened, setOpened] = useState<PlaceRec | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' ? 'view' : 'form');
@@ -79,6 +82,7 @@ export default function PlaceEdit() {
       setPhotoUrl(existing.photoUrl ?? '');
       setCoords(existing.lat != null && existing.lng != null ? { lat: existing.lat, lng: existing.lng } : null);
       setKindTouched(true);
+      setOpened(existing);
       setLoaded(true);
     }
   }, [editing, existing, loaded]);
@@ -156,7 +160,7 @@ export default function PlaceEdit() {
       lng: coords?.lng,
     };
     try {
-      if (editing && id && existing) await updatePlace(id, existing, input);
+      if (editing && id && opened) await updatePlace(id, opened, input, me);
       else await createPlace(input, auth.user);
       if (news) celebrate();
       toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
@@ -169,7 +173,8 @@ export default function PlaceEdit() {
     }
   };
 
-  const dirty = !saving && mode === 'form' && (editing ? loaded && !!existing && (name !== existing.name || memo !== (existing.memo ?? '') || JSON.stringify(reviews) !== JSON.stringify(existing.reviews ?? {})) : !!(name.trim() || memo.trim() || Object.values(reviews).some((v) => v.trim())));
+  // 쓰던 내용이 있는지: 연 때 모습과 견준다 (상대가 그사이 고쳐도 '내가' 안 고쳤으면 안 묻게)
+  const dirty = !saving && mode === 'form' && (editing ? loaded && !!opened && (name !== opened.name || memo !== (opened.memo ?? '') || JSON.stringify(reviews) !== JSON.stringify(opened.reviews ?? {})) : !!(name.trim() || memo.trim() || Object.values(reviews).some((v) => v.trim())));
   useLeaveGuard(dirty);
 
   const remove = () => {
@@ -196,7 +201,8 @@ export default function PlaceEdit() {
       <PlaceView
         rec={existing}
         trip={trips?.find((t) => t.id === existing.tripId) ?? null}
-        onEdit={() => setMode('form')}
+        // 고칠 때마다 지금 문서로 새로 연다 (지난 저장 뒤 상대가 고친 것이 폼과 스냅샷에 들어오게)
+        onEdit={() => { setMode('form'); setLoaded(false); }}
         onRemove={remove}
         onEnrich={(f) => void enrichPlace(existing.id, f).catch(() => {})}
       />

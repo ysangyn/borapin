@@ -242,8 +242,11 @@ service cloud.firestore {
         allow read: if inSpace(spaceId);
         allow create: if inSpace(spaceId) && validNote(request.resource.data);
         allow update: if false;
-        // 글은 쓴 사람만 지운다
-        allow delete: if inSpace(spaceId) && resource.data.by.uid == request.auth.uid;
+        // 글은 쓴 사람만 지운다. 다만 여행을 통째로 지울 때는 남의 글도 함께 지운다:
+        // 그 글의 여행 문서가 이 요청(묶음) 뒤에 없으면(같은 묶음에서 지워지거나 이미 없으면) 허용 (deleteTripAll)
+        allow delete: if inSpace(spaceId)
+          && (resource.data.by.uid == request.auth.uid
+            || !existsAfter(/databases/$(database)/documents/spaces/$(spaceId)/trips/$(resource.data.tripId)));
       }
 
       match /wishes/{wishId} {

@@ -12,7 +12,7 @@ import { useWorld } from '../lib/world';
 import { useFestivals } from '../lib/festivals';
 import { useAllNotes, useAllPlans } from '../lib/tripExtras';
 import { usePhotos } from '../lib/photos';
-import { useTravelInfo } from '../lib/travelinfo';
+import { EMPTY_TRAVEL_INFO, useTravelInfoState } from '../lib/travelinfo';
 import { quickWish } from '../lib/wishActions';
 import { ask, STARTERS, type Answer, type AskCtx, type Btn } from '../lib/ask/engine';
 import { askSmart } from '../lib/ask/smart';
@@ -31,7 +31,8 @@ export default function Ask() {
   const { trips } = useTrips();
   const { wishes } = useWishes();
   const { places: recs } = usePlaces();
-  const info = useTravelInfo();
+  // 여행정보 조각을 못 받아도 입력칸은 열어 둔다 (우리 기록으로는 답할 수 있으니). 안내와 '다시 받기'는 아래 카드로
+  const { info, failed: infoFailed, loading: infoLoading, retry: retryInfo } = useTravelInfoState();
   const seasons = useSeasons();
   const festivals = useFestivals();
   const notes = useAllNotes();
@@ -41,10 +42,10 @@ export default function Ask() {
   const [ctx, setCtx] = useState<AskCtx>({});
   const [text, setText] = useState('');
   const end = useRef<HTMLDivElement>(null);
-  const ready = !!(trips && wishes && recs && info);
+  const ready = !!(trips && wishes && recs && (info || infoFailed));
   const world = useWorld();
   const home = useHome();
-  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info!, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [], world, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans, world, home]);
+  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info ?? EMPTY_TRAVEL_INFO, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [], world, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans, world, home]);
   // 되묻기에서 알려 준 동네를 우리 집으로 저장 (둘이 같이 쓴다)
   const keepHome = (p?: Place) => {
     if (!p || p.t !== 'kr') return;
@@ -122,6 +123,15 @@ export default function Ask() {
     <>
       <TopBar back title="보라에게 물어봐" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); }}>처음으로</button> : undefined} />
       <div className="page ask-page" style={{ paddingTop: 4 }} data-testid="ask">
+        {infoFailed && !info && (
+          <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} role="status" data-testid="info-failed">
+            <span className="small" style={{ flex: 1 }}>
+              <b>여행 정보 자료를 못 받았어요</b>
+              <span className="tiny muted" style={{ display: 'block' }}>우리 기록으로는 지금도 찾아 드려요. 연결을 확인하고 다시 받아 보세요.</span>
+            </span>
+            <button type="button" className="btn sm" onClick={retryInfo} disabled={infoLoading}>{infoLoading ? '받는 중…' : '다시 받기'}</button>
+          </div>
+        )}
         {msgs.length === 0 && (
           <div className={'card' + (photoById('seorak') ? ' ask-hero' : '')} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: photoById('seorak') ? '64px 16px 16px' : undefined }}>
             {photoById('seorak') && <ScenicPhoto id="seorak" alt="" label="top" />}

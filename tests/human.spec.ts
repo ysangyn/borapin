@@ -119,6 +119,33 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('로그인 화면에서 이용약관 링크를 눌러 열고 로고로 돌아와도 화면이 살아 있다', async ({ browser }) => {
+    // 약관 화면은 로그인 없이 보는 길(early return)이라, 앱 안에서 오갈 때 훅 개수가 달라지면 흰 화면이 됐다
+    const page = await phone(browser);
+    await page.goto('/');
+    await expect(page.getByTestId('email-form')).toBeVisible();
+    await page.getByRole('link', { name: '이용약관' }).click();
+    await expect(page).toHaveURL(/\/terms$/);
+    await expect(page.getByRole('heading', { name: '이용약관', level: 1 })).toBeVisible();
+    // 약관 화면끼리도 오간다
+    await page.getByRole('link', { name: '개인정보 처리방침' }).click();
+    await expect(page).toHaveURL(/\/privacy$/);
+    // 로고를 누르면 로그인 화면으로 돌아오고, 오류 화면이 아니어야 한다
+    await page.getByRole('link', { name: /보라핀 로고/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId('email-form')).toBeVisible();
+    await expect(page.getByText('이 화면을 여는 중에 문제가 생겼어요')).toHaveCount(0);
+    // 로그인한 뒤 우리 공간의 약관 링크로도 같은 길을 오간다
+    await signIn(page);
+    await page.goto('/space');
+    await page.getByRole('link', { name: '이용약관' }).click();
+    await expect(page.getByRole('heading', { name: '이용약관', level: 1 })).toBeVisible();
+    await page.getByRole('link', { name: /보라핀 로고/ }).click();
+    await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('이 화면을 여는 중에 문제가 생겼어요')).toHaveCount(0);
+    await page.context().close();
+  });
+
   test('375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다', async ({ browser }) => {
     const page = await phone(browser);
     await googleSignIn(page);

@@ -6,7 +6,7 @@ import App from './App';
 import { AuthProvider } from './lib/auth';
 import { ToastProvider } from './components/ui';
 import { installErrorReporting } from './lib/admin';
-import { installChunkRecovery, UpdateWatcher } from './components/system';
+import { ErrorBoundary, installChunkRecovery, UpdateWatcher } from './components/system';
 import { IS_PREVIEW } from './lib/firebase';
 
 installErrorReporting();
@@ -32,8 +32,11 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
-          <UpdateWatcher />
-          <App />
+          {/* 맨 바깥 오류 경계: 화면 안쪽 경계가 못 잡는 오류(App 자체·새 버전 감시)도 흰 화면 대신 안내로 */}
+          <ErrorBoundary>
+            <UpdateWatcher />
+            <App />
+          </ErrorBoundary>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

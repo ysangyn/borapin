@@ -17,12 +17,14 @@ import {
   arrayRemove,
   arrayUnion,
   type DocumentReference,
+  type WriteBatch,
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { displayName } from './auth';
 import { useStore } from './store';
 import { queued } from './writes';
+import { DELETE, editsOf, isTimestampLike, restoreFields, type Edit } from './tripActions';
 import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation } from './types';
 import { whenSortKey } from './dates';
 
@@ -55,38 +57,29 @@ function clean<T extends object>(o: T): T {
 
 const author = (user: User) => ({ uid: user.uid, email: user.email ?? '', name: displayName(user) });
 
-/**
- * 고친 칸만 보낸다. 둘이 동시에 다른 칸을 고쳐도 서로 지우지 않고,
- * 비운 선택 칸은 실제로 지운다(deleteField).
- * mapKeys에 든 칸(예: reviews)은 안쪽 이름별로 따로 보낸다.
- */
-export function changedFields(before: object, after: object, mapKeys: string[] = []): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  const a = before as Record<string, unknown>;
-  const b = after as Record<string, unknown>;
-  const same = (x: unknown, y: unknown) => JSON.stringify(x ?? null) === JSON.stringify(y ?? null);
-  for (const k of Object.keys(b)) {
-    const nv = b[k];
-    if (mapKeys.includes(k) && nv && typeof nv === 'object') {
-      const ov = (a[k] ?? {}) as Record<string, unknown>;
-      const nm = nv as Record<string, unknown>;
-      for (const sub of new Set([...Object.keys(ov), ...Object.keys(nm)])) {
-        if (same(ov[sub], nm[sub])) continue;
-        out[`${k}.${sub}`] = nm[sub] === undefined || nm[sub] === '' ? deleteField() : nm[sub];
-      }
-      continue;
-    }
-    if (same(a[k], nv)) continue;
-    if (nv === undefined || nv === '') out[k] = k in a ? deleteField() : undefined;
-    else out[k] = JSON.parse(JSON.stringify(nv));
-    if (out[k] === undefined) delete out[k];
-  }
-  return out;
-}
-
 async function patch(ref: DocumentReference, fields: Record<string, unknown>) {
   if (!Object.keys(fields).length) return;
   await queued(updateDoc(ref, { ...fields, updatedAt: serverTimestamp() }));
+}
+
+/**
+ * 편집 화면 저장: 고친 칸만 보낸다(editsOf). 둘이 동시에 다른 칸을 고쳐도 서로 지우지 않는다.
+ * 안쪽 칸(reviews.이름)은 FieldPath로 보내 이름에 점이 있어도 안전하고, 남의 칸은 건드리지 않는다.
+ */
+async function patchEdits(ref: DocumentReference, edits: Edit[]) {
+  if (!edits.length) return;
+  const args: unknown[] = [];
+  for (const e of edits) args.push(new FieldPath(...e.path), e.value === DELETE ? deleteField() : e.value);
+  const [field, value, ...rest] = args;
+  await queued(updateDoc(ref, field as FieldPath, value, ...rest, 'updatedAt', serverTimestamp()));
+}
+
+/** 되돌리기용 문서: createdAt(Timestamp)을 지켜 피드·정렬에서 빠지지 않게. 서버 시각이 아직 없던 것은 지금으로 */
+function restoreDoc(rest: object) {
+  const f = restoreFields(rest);
+  if (!isTimestampLike(f.createdAt)) f.createdAt = serverTimestamp();
+  f.updatedAt = serverTimestamp();
+  return f;
 }
 
 // ---------- 여행 ----------
@@ -96,9 +89,9 @@ export async function createTrip(input: TripInput, user: User): Promise<string> 
   return ref.id;
 }
 
-/** 고친 칸만 저장 */
-export async function updateTrip(id: string, before: Trip, input: TripInput) {
-  await patch(doc(tripsCol(), id), changedFields(before, input));
+/** 고친 칸만 저장. opened는 편집 화면을 '연 때'의 여행(폼 초기값의 바탕)이어야 한다 — 최신 문서를 넘기면 상대가 그사이 고친 칸이 덮인다 */
+export async function updateTrip(id: string, opened: Trip, input: TripInput) {
+  await patchEdits(doc(tripsCol(), id), editsOf(opened, input));
 }
 
 /** 여행 일부만 고치기 (사진으로 날짜·장소 채우기 등) */
@@ -136,20 +129,24 @@ export async function deleteTrip(id: string) {
   await queued(deleteDoc(doc(tripsCol(), id)));
 }
 
-/** 여행 하나와 딸린 것(사진·일정·글) 모두 지우기. 우리 장소·가고 싶은 곳은 남기고 연결만 푼다. */
+/**
+ * 여행 하나와 딸린 것(사진·일정·글) 모두 지우기. 우리 장소·가고 싶은 곳은 남기고 연결만 푼다.
+ * 여행 문서 삭제를 첫 묶음에 넣는다: 상대가 쓴 글은 '그 여행이 (같은 묶음에서) 없어질 때'만 지울 수 있고(firestore.rules notes),
+ * 400개가 넘어 여러 묶음이 될 때 중간에 멈춰도 '여행은 사라지고 고아 자료만 남는' 쪽이 된다(여행이 반쯤 빈 채 남지 않게).
+ */
 export async function deleteTripAll(trip: Trip, onStep?: (done: number, total: number) => void) {
   const byTrip = async (name: string) => (await getDocs(query(sp(name), where('tripId', '==', trip.id)))).docs;
   const [photos, plans, notes, recs, wishes] = await Promise.all(['photos', 'plans', 'notes', 'places', 'wishes'].map(byTrip));
-  const ops: ((b: ReturnType<typeof writeBatch>) => void)[] = [];
+  const ops: ((b: WriteBatch) => void)[] = [(b) => b.delete(doc(tripsCol(), trip.id))];
+  if (trip.share?.token) ops.push((b) => b.delete(doc(db, 'shares', trip.share!.token)));
+  for (const d of notes) ops.push((b) => b.delete(d.ref));
   for (const p of photos) {
     ops.push((b) => b.delete(doc(sp('photoData'), `${p.id}_l`)));
     ops.push((b) => b.delete(doc(sp('photoData'), `${p.id}_t`)));
     ops.push((b) => b.delete(p.ref));
   }
-  for (const d of [...plans, ...notes]) ops.push((b) => b.delete(d.ref));
+  for (const d of plans) ops.push((b) => b.delete(d.ref));
   for (const d of [...recs, ...wishes]) ops.push((b) => b.update(d.ref, { tripId: null }));
-  if (trip.share?.token) ops.push((b) => b.delete(doc(db, 'shares', trip.share!.token)));
-  ops.push((b) => b.delete(doc(tripsCol(), trip.id)));
   for (let i = 0; i < ops.length; i += 400) {
     const b = writeBatch(db);
     ops.slice(i, i + 400).forEach((op) => op(b));
@@ -164,8 +161,9 @@ export async function createPlace(input: PlaceRecInput, user: User): Promise<str
   await queued(setDoc(ref, { ...clean(input), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
   return ref.id;
 }
-export async function updatePlace(id: string, before: PlaceRec, input: PlaceRecInput) {
-  await patch(doc(placesCol(), id), changedFields(before, input, ['reviews']));
+/** 고친 칸만 저장. opened는 편집 화면을 '연 때'의 장소. 한 줄 평은 이름별(reviews.이름)로만 보내고 남의 칸은 지우지 않는다(me = 내 이름) */
+export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecInput, me: string) {
+  await patchEdits(doc(placesCol(), id), editsOf(opened, input, { perPerson: ['reviews'], me }));
 }
 /** 링크에서 가져온 사진·자리만 조용히 채우기 (이미 있는 값은 건드리지 않는다) */
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
@@ -175,10 +173,10 @@ export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?:
 export async function deletePlace(id: string) {
   await queued(deleteDoc(doc(placesCol(), id)));
 }
-/** 지운 장소 되돌리기 */
+/** 지운 장소 되돌리기 (createdAt을 지켜 피드·정렬 자리도 돌아온다) */
 export async function restorePlace(p: PlaceRec) {
   const { id, ...rest } = p;
-  await queued(setDoc(doc(placesCol(), id), clean(rest)));
+  await queued(setDoc(doc(placesCol(), id), restoreDoc(rest)));
 }
 
 // ---------- 가고 싶은 곳 ----------
@@ -191,18 +189,18 @@ export async function createWish(input: WishInput, user: User): Promise<string> 
 export async function updateWish(id: string, fields: Partial<WishInput>) {
   await queued(updateDoc(doc(wishesCol(), id), { ...clean(fields), updatedAt: serverTimestamp() }));
 }
-/** 편집 화면: 고친 칸만 */
-export async function saveWishEdits(id: string, before: Wish, input: WishInput) {
-  await patch(doc(wishesCol(), id), changedFields(before, input));
+/** 편집 화면: 고친 칸만. opened는 편집 화면을 '연 때'의 것 */
+export async function saveWishEdits(id: string, opened: Wish, input: WishInput) {
+  await patchEdits(doc(wishesCol(), id), editsOf(opened, input));
 }
 
 export async function deleteWish(id: string) {
   await queued(deleteDoc(doc(wishesCol(), id)));
 }
-/** 지운 가고 싶은 곳 되돌리기 */
+/** 지운 가고 싶은 곳 되돌리기 (createdAt을 지켜 피드·정렬 자리도 돌아온다) */
 export async function restoreWish(w: Wish) {
   const { id, ...rest } = w;
-  await queued(setDoc(doc(wishesCol(), id), clean(rest)));
+  await queued(setDoc(doc(wishesCol(), id), restoreDoc(rest)));
 }
 
 /** 다녀온 뒤 '또 가고 싶어요': 새로 담은 것처럼 되돌린다 */
