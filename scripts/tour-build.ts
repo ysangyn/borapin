@@ -1,12 +1,20 @@
 /**
  * 관광공사 자료 (CI 빌드 때, 실패하면 지난 자료): 시·군마다 관광지 12곳(이름·좌표·사진) + 무장애 관광지 수
- * → src/data/tour.json  { updated, cells: { [우리 시군 코드]: { s: [[이름, 위도, 경도, 사진]], easy: 무장애 곳 수 } } }
+ * → src/data/tour.json  { updated, cells: { [우리 시군 코드]: { s: [[이름, 위도, 경도, 사진]], easy: 무장애 곳 수 } } } (+ public/data/tour.json 사본)
  * 우리 시·군 코드 = 법정동 시군구 코드(5자리). 광역 하나인 칸(서울 '11' 등)은 시도 코드로 묻는다.
+ * 지난 자료: 로컬 파일에 내용이 없으면(새 체크아웃·자리표시) 실제 주소(/data/tour.json)의 것을 먼저 받아 둔다 (scripts/data-health.ts).
  */
 import fs from 'node:fs';
+import { loadPrevious, seedFiles, tourHealth, writeJsonTo } from './data-health';
 
 const KEY = process.env.DATA_GO_KR_KEY || process.env.TOUR_API_KEY;
 const OUT = 'src/data/tour.json';
+const OUTS = [OUT, 'public/data/tour.json']; // public 쪽 사본은 실제 주소에 올라가 다음 CI의 지난 자료가 된다
+const LIVE = 'https://borapin.web.app/data/tour.json';
+type TourFile = { updated?: string; note?: string; cells: Record<string, unknown> };
+// 지난 자료부터 자리에 두기 (키가 없거나 적게 받아 '그대로' 둘 때도 자리표시가 아니라 이 자료가 남게)
+const prev = await loadPrevious<TourFile>('관광공사', OUTS, LIVE, tourHealth);
+seedFiles(OUTS, prev.data, tourHealth); // 비어 있는 쪽(public 사본 등)에만 쓴다
 if (!KEY) { console.log('키 없음: 지난 자료 그대로'); process.exit(0); }
 type Item = Record<string, string>;
 async function q(svc: string, op: string, p: Record<string, string>): Promise<Item[]> {
@@ -47,7 +55,7 @@ function areas(code: string): Record<string, string>[] {
 }
 const https = (u: string) => (u ? u.replace(/^http:/, 'https:') : '');
 
-const prev = (() => { try { return JSON.parse(fs.readFileSync(OUT, 'utf8')) as { cells: Record<string, unknown> }; } catch { return { cells: {} }; } })();
+const prevCells = prev.data?.cells ?? {};
 const cells: Record<string, { s: [string, number, number, string][]; easy: number }> = {};
 let ok = 0;
 const codes = regionList.map((r) => r.code).filter((c) => /^\d+$/.test(c));
@@ -70,5 +78,6 @@ for (let i = 0; i < codes.length; i += 6) {
   }));
 }
 console.log(`관광공사: 시·군 ${codes.length} 중 ${ok}곳 받음`);
-if (ok < codes.length * 0.6) { console.log('너무 적게 받아 지난 자료 그대로'); process.exit(0); }
-fs.writeFileSync(OUT, JSON.stringify({ updated: new Date().toISOString().slice(0, 10), note: '한국관광공사 TourAPI(국문 관광정보·무장애 여행), 공공누리 제1유형', cells: { ...prev.cells, ...cells } }));
+if (ok < codes.length * 0.6) { console.log(`너무 적게 받아 지난 자료 그대로 (${prev.from ? tourHealth(prev.data).why : '지난 자료 없음'})`); process.exit(0); }
+writeJsonTo(OUTS, { updated: new Date().toISOString().slice(0, 10), note: '한국관광공사 TourAPI(국문 관광정보·무장애 여행), 공공누리 제1유형', cells: { ...prevCells, ...cells } });
+console.log(`저장 → ${OUTS.join(', ')}`);

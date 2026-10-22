@@ -20,6 +20,12 @@ test('빙 뉴스 RSS: 진짜 기사 주소와 언론사', () => {
   assert.equal(bingQuery('KTX OR SRT 예매 when:14d'), 'KTX OR SRT 예매');
 });
 
+test('구글 뉴스도 http(s) 주소가 아닌 링크는 버린다 (앱이 그대로 <a href>에 넣으므로)', () => {
+  const item = (link: string) => `<item><title>제목 - 언론사</title><link>${link}</link></item>`;
+  const got = parseGoogleRss(`<rss>${item('javascript:alert(1)')}${item('ftp://x.example/a')}${item('')}${item('https://news.google.com/rss/articles/ok')}</rss>`);
+  assert.deepEqual(got.map((x) => x.link), ['https://news.google.com/rss/articles/ok']);
+});
+
 test('숫자로 쓴 글자(&#183; 등)도 풀어 쓴다', () => {
   const [a] = parseBingRss('<item><title>하나&#183;모두투어 &#x27;한숨&#x27;</title><link>https://a.example/1</link></item>');
   assert.equal(a.title, "하나·모두투어 '한숨'");

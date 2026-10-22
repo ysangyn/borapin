@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Icon, useToast } from './ui';
+import { Icon, useBusy, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import { deletePhoto, photoUsage, uploadPhoto } from '../lib/photos';
 import { useFlags } from '../lib/admin';
@@ -16,6 +16,8 @@ export default function PhotoGrid({ photos, tripId, max, readOnly, placeOf }: { 
   const input = useRef<HTMLInputElement>(null);
   const [queue, setQueue] = useState<{ name: string; pct: number; failed?: boolean }[]>([]);
   const [checking, setChecking] = useState(false);
+  // 사진을 올리는 중에는 새 버전 자동 새로 고침이 기다린다 (올리다 만 사진이 끊기지 않게)
+  useBusy(queue.length > 0 || checking);
   const flags = useFlags();
 
   const [dragging, setDragging] = useState(false);

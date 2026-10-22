@@ -1,9 +1,10 @@
-import { Component, useEffect, useState, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { sendReport } from '../lib/admin';
 import { useStore } from '../lib/store';
 import { onLateWriteError } from '../lib/writes';
-import { hasUnsavedInput, useToast } from './ui';
+import { IDLE_MS, isTextField, shouldApplyUpdate, type GateState, type Moment } from '../lib/updateGate';
+import { busyCount, useToast } from './ui';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RestArt } from './Scene';
 
@@ -114,9 +115,26 @@ export function ScrollManager() {
   return null;
 }
 
+// 마지막으로 누르거나 친 때 (새 버전이 막 왔을 때 손을 대고 있는지 보려고)
+let lastInputAt = 0;
+const INPUT_EVENTS = ['pointerdown', 'keydown', 'touchstart'] as const;
+function watchInput() {
+  const mark = () => {
+    lastInputAt = Date.now();
+  };
+  for (const ev of INPUT_EVENTS) window.addEventListener(ev, mark, { capture: true, passive: true });
+  return () => {
+    for (const ev of INPUT_EVENTS) window.removeEventListener(ev, mark, { capture: true });
+  };
+}
+/** 지금 상태: 작업 중인 화면 수(ui.tsx useBusy·useLeaveGuard), 입력칸에 커서, 손을 뗀 지 얼마나 됐는지 */
+const gateState = (): GateState => ({ busy: busyCount(), typing: isTextField(document.activeElement), idleMs: lastInputAt ? Date.now() - lastInputAt : Infinity });
+
 /**
- * 새 버전 받기: 새 버전이 올라오면 바로 새로 고친다 (옛 버전이 남지 않게).
- * 다만 쓰던 내용이 있으면 날아가지 않게, 저장할 때까지 기다리며 띠로 알려 준다.
+ * 새 버전 받기: 새 버전이 올라오면 되도록 바로 새로 고친다 (옛 버전이 남지 않게).
+ * 다만 쓰던 내용(기록 편집·글·오늘의 질문 답·올리는 중인 사진)이 날아가지 않게:
+ * 작업 중이거나 입력칸에 커서가 있으면 절대 바로 새로 고치지 않고, 다음 화면으로 넘어갈 때나 화면을 숨겼다가 돌아올 때
+ * (그때도 작업 중이 아니면) 받는다. 언제 받을지의 판단은 lib/updateGate.ts (시험됨).
  */
 export function UpdateWatcher() {
   const {
@@ -132,21 +150,53 @@ export function UpdateWatcher() {
     },
   });
   const [waiting, setWaiting] = useState(false);
-  useEffect(() => {
-    if (!need) return;
-    const tryNow = () => {
-      if (hasUnsavedInput()) return setWaiting(true);
+  const needRef = useRef(false);
+  needRef.current = need;
+  /** 이 순간에 받아도 되면 받고 true, 아니면 띠를 띄우고 false */
+  const apply = useCallback(
+    (at: Moment) => {
+      if (!needRef.current) return false;
+      if (!shouldApplyUpdate(gateState(), at)) {
+        setWaiting(true);
+        return false;
+      }
       void updateServiceWorker(true);
+      return true;
+    },
+    [updateServiceWorker],
+  );
+
+  useEffect(watchInput, []);
+  // 1) 막 왔을 때: 아무것도 안 하고 있으면 바로. 손을 대고 있어서 미뤘다면 잠시 뒤 한 번만 다시 본다 (그 뒤로는 2·3번 기회를 기다린다)
+  useEffect(() => {
+    if (!need || apply('arrived')) return;
+    const t = window.setTimeout(() => apply('arrived'), IDLE_MS);
+    return () => window.clearTimeout(t);
+  }, [need, apply]);
+  // 2) 다음 화면으로 넘어갈 때 (처음 그릴 때는 빼고)
+  const { pathname } = useLocation();
+  const firstPath = useRef(true);
+  useEffect(() => {
+    if (firstPath.current) {
+      firstPath.current = false;
+      return;
+    }
+    apply('route');
+  }, [pathname, apply]);
+  // 3) 화면을 숨겼다가 돌아올 때 (다른 앱에 갔다 오기, 화면 껐다 켜기)
+  useEffect(() => {
+    const h = () => {
+      if (document.visibilityState === 'visible') apply('visible');
     };
-    tryNow();
-    const t = window.setInterval(tryNow, 3000);
-    return () => window.clearInterval(t);
-  }, [need, updateServiceWorker]);
+    document.addEventListener('visibilitychange', h);
+    return () => document.removeEventListener('visibilitychange', h);
+  }, [apply]);
+
   if (!need || !waiting) return null;
   return (
     <div className="status-banner" role="status" data-testid="update-banner">
-      새 버전이 있어요. 쓰던 내용을 저장하면 바로 바뀌어요.
-      <button onClick={() => void updateServiceWorker(true)}>지금 새로 고침</button>
+      새 버전이 나왔어요. 하던 일을 마치고 다른 화면으로 넘어가면 바뀌어요.
+      <button onClick={() => apply('button')}>지금 바꾸기</button>
     </div>
   );
 }

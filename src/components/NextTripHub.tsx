@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Icon, useToast } from './ui';
+import { Icon, useBusy, useToast } from './ui';
 import { Hearts, wishTitle } from './WishCard';
 import WishRolling from './WishRolling';
 import { useAuth } from '../lib/auth';
@@ -141,6 +141,8 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
   const doc = useTodayAsk(day);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  // 답을 쓰는 중(또는 남기는 중)에는 새 버전 자동 새로 고침이 기다린다 (쓰던 답이 날아가지 않게)
+  useBusy(!!text.trim() || busy);
   const uid = auth.status === 'ready' ? auth.user.uid : '';
   const answers = doc?.answers ?? {};
   const mine = answers[uid];

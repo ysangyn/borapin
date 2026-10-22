@@ -6,7 +6,8 @@
  * - 지난 1년부터 앞으로 열릴 축제까지 받아, 좌표(경도·위도)로 우리 지도 160칸 중 어디인지 정한다.
  *   좌표가 없으면 주소 글자로 정한다.
  * - 결과: public/data/festivals.json (축제 이름·기간만. 사진·설명은 담지 않는다)
- * - 키가 없거나 받기에 실패하면 기존 파일을 그대로 둔다 (앱은 축제 없이도 돌아간다).
+ * - 키가 없거나 받기에 실패하면 지난 자료를 그대로 둔다 (앱은 축제 없이도 돌아간다).
+ *   저장소의 festivals.json은 자리표시(cells 0)라서, 로컬에 내용이 없으면 실제 주소(/data/festivals.json)의 지난 자료를 먼저 받아 둔다 (scripts/data-health.ts).
  * 출처 표시: 한국관광공사 (공공누리 제1유형)
  */
 import fs from 'node:fs';
@@ -15,13 +16,20 @@ import { feature } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
 import type { Feature, Polygon, MultiPolygon } from 'geojson';
 import regionsData from '../src/data/regions.json' with { type: 'json' };
+import { festivalsHealth, loadPrevious, seedFiles } from './data-health';
 
 const KEY = process.env.TOUR_API_KEY;
 const OUT = path.resolve(import.meta.dirname, '../public/data/festivals.json');
+const LIVE = 'https://borapin.web.app/data/festivals.json';
 const BASE = 'https://apis.data.go.kr/B551011/KorService2/searchFestival2';
 
+// 지난 자료부터 자리에 두기: 새 체크아웃(자리표시)이면 실제 주소 것을 받아 OUT에 써 둔다. 그 뒤의 '그대로 둡니다'는 모두 이 자료를 둔다
+const prev = await loadPrevious<{ cells: Record<string, unknown> }>('축제', [OUT], LIVE, festivalsHealth);
+seedFiles([OUT], prev.data, festivalsHealth);
+const prevNote = prev.from === 'local' ? '로컬의 지난 자료' : prev.from === 'live' ? '실제 주소에서 받아 둔 지난 자료' : '자리표시(지난 자료 없음)';
+
 if (!KEY) {
-  console.log('TOUR_API_KEY가 없어 축제 자료를 그대로 둡니다');
+  console.log(`TOUR_API_KEY가 없어 축제 자료를 그대로 둡니다 (${prevNote})`);
   process.exit(0);
 }
 
@@ -111,7 +119,7 @@ try {
   for (let p = 2; p <= Math.min(pages, 30); p++) items.push(...(await page(p)).items);
   console.log(`축제 ${first.total}건 받음 (${ymd(from)} 이후 시작)`);
 } catch (e) {
-  console.warn(`::warning::축제 자료를 받지 못해 기존 파일을 둡니다 — ${(e as Error).message}`);
+  console.warn(`::warning::축제 자료를 받지 못해 ${prevNote}를 둡니다 — ${(e as Error).message}`);
   process.exit(0);
 }
 
@@ -132,7 +140,7 @@ for (const it of items) {
 for (const list of Object.values(byCell)) list.sort((a, b) => a.s.localeCompare(b.s));
 const total = Object.values(byCell).reduce((n, l) => n + l.length, 0);
 if (total < 30) {
-  console.warn(`::warning::축제가 ${total}건뿐이라 이상해서 기존 파일을 둡니다`);
+  console.warn(`::warning::축제가 ${total}건뿐이라 이상해서 ${prevNote}를 둡니다`);
   process.exit(0);
 }
 fs.writeFileSync(OUT, JSON.stringify({ updated: new Date().toISOString().slice(0, 10), source: '한국관광공사 TourAPI', cells: byCell }));

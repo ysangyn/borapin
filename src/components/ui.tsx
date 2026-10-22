@@ -134,24 +134,35 @@ export function useGoBack() {
   }, [nav, loc.key]);
 }
 
-/** 쓰던 내용이 있으면 새로고침·창 닫기 전에 묻는다 */
-// 지금 화면에 저장하지 않은 입력이 있는지 (새 버전으로 바로 새로 고쳐도 되는지 판단할 때 쓴다)
-let unsaved = 0;
-export const hasUnsavedInput = () => unsaved > 0;
+// ---------- 작업 중 세기 ----------
+// 지금 '작업 중'인 화면 수: 기록·장소·가고 싶은 곳 편집(useLeaveGuard), 글·오늘의 질문 답 쓰는 중, 사진 올리는 중(useBusy).
+// 새 버전 자동 새로 고침(system.tsx UpdateWatcher)이 이 수가 0이 아닐 때는 기다린다 (쓰던 내용이 날아가지 않게).
+let busyScreens = 0;
+export const busyCount = () => busyScreens;
+export const isBusy = () => busyScreens > 0;
 
+/** 작업 중이라고 알리기 (active인 동안 셈). 새로고침·창 닫기 때 묻지는 않는다 */
+export function useBusy(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    busyScreens++;
+    return () => {
+      busyScreens--;
+    };
+  }, [active]);
+}
+
+/** 쓰던 내용이 있으면 작업 중으로 세고, 새로고침·창 닫기 전에 묻는다 */
 export function useLeaveGuard(dirty: boolean) {
+  useBusy(dirty);
   useEffect(() => {
     if (!dirty) return;
-    unsaved++;
     const h = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = '';
     };
     window.addEventListener('beforeunload', h);
-    return () => {
-      unsaved--;
-      window.removeEventListener('beforeunload', h);
-    };
+    return () => window.removeEventListener('beforeunload', h);
   }, [dirty]);
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { addNote, deleteNote, useNotes } from '../lib/tripExtras';
-import { useToast } from './ui';
+import { useBusy, useToast } from './ui';
 import type { Trip } from '../lib/types';
 import { toneOf } from '../lib/members';
 
@@ -19,6 +19,8 @@ export default function NotesTab({ trip }: { trip: Trip }) {
   const [text, setText] = useState('');
   const [who, setWho] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // 글을 쓰는 중(또는 남기는 중)에는 새 버전 자동 새로 고침이 기다린다 (쓰던 글이 날아가지 않게)
+  useBusy(!!text.trim() || busy);
   const writers = [...new Set((notes ?? []).map((n) => n.by.name))];
   const shown = (notes ?? []).filter((n) => !who || n.by.name === who);
 

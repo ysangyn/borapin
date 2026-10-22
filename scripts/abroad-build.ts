@@ -1,11 +1,15 @@
 /**
- * 해외 자료 만들기 (CI, 매일): 외교부 여행경보·입국허가요건 + 수출입은행 환율 → src/data/abroad.json
- * 실패하면 기존 파일을 그대로 둔다(앱은 '○일 기준'으로 보여 준다). SAMPLE=1 이면 필드 모양만 출력.
+ * 해외 자료 만들기 (CI, 매일): 외교부 여행경보·입국허가요건 + 수출입은행 환율 → src/data/abroad.json (+ public/data/abroad.json 사본)
+ * 실패하면 지난 자료를 그대로 둔다(앱은 '○일 기준'으로 보여 준다). SAMPLE=1 이면 필드 모양만 출력.
+ * 지난 자료: 저장소의 src/data/abroad.json은 자리표시({note})라서, 로컬에 내용이 없으면 실제 주소(/data/abroad.json)의 것을 먼저 받아 둔다 (scripts/data-health.ts).
  */
-import fs from 'node:fs';
+import { abroadHealth, loadPrevious, writeJsonTo } from './data-health';
 
 const DATA = process.env.DATA_GO_KR_KEY ?? '', EXIM = process.env.KOREAEXIM_KEY ?? '';
 const OUT = 'src/data/abroad.json';
+// public 쪽 사본은 실제 주소 https://borapin.web.app/data/abroad.json 에 올라가 다음 CI(새 체크아웃)의 '지난 자료'가 된다
+const OUTS = [OUT, 'public/data/abroad.json'];
+const LIVE = 'https://borapin.web.app/data/abroad.json';
 type Item = Record<string, string | number | null>;
 async function list(path: string): Promise<Item[]> {
   const out: Item[] = [];
@@ -21,7 +25,7 @@ async function list(path: string): Promise<Item[]> {
 }
 const lastBizDay = () => { const d = new Date(Date.now() + 9 * 3600_000); if (d.getUTCHours() < 11) d.setUTCDate(d.getUTCDate() - 1); while ([0, 6].includes(d.getUTCDay())) d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10).replace(/-/g, ''); };
 
-const prev = (() => { try { return JSON.parse(fs.readFileSync(OUT, 'utf8')); } catch { return null; } })();
+const prev = (await loadPrevious<Record<string, unknown>>('해외 자료', OUTS, LIVE, abroadHealth)).data;
 const out: Record<string, unknown> = { ...(prev ?? {}), note: '외교부 해외안전여행(여행경보·입국허가요건)·한국수출입은행 환율. 매일 CI가 갱신, 실패하면 지난 자료.' };
 
 try {
@@ -99,4 +103,7 @@ try {
   console.log(`환율 ${Object.keys(fx).length}개 (${day})`);
 } catch (e) { console.log('환율 실패(지난 자료 유지):', (e as Error).message); }
 
-fs.writeFileSync(OUT, JSON.stringify(out));
+writeJsonTo(OUTS, out);
+const health = abroadHealth(out);
+if (!health.ok) console.warn(`::warning::해외 자료가 비어 있어요 (${health.why}) — 새로 받지도 못했고 지난 자료도 없음`);
+else console.log(`해외 자료 저장: ${health.why}, 입국 ${Object.keys((out.visa as object) ?? {}).length}곳, 환율 ${Object.keys((out.fx as object) ?? {}).length}개 (여행경보 ${String(out.alarmAt ?? '-')} 기준) → ${OUTS.join(', ')}`);

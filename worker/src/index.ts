@@ -6,12 +6,15 @@
  *   2) POST /answer : 질문 + 폰이 모은 사실 → 사실만으로 쓴 한국어 답 (JSON).
  *
  * 지키는 것
- * - Firebase 로그인 토큰(ID 토큰)이 맞는 요청만 받는다 (구글 공개 키로 서명 확인, 프로젝트 확인).
- * - 사람당 분당 20번, 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
+ * - Firebase 로그인 토큰(ID 토큰)이 맞는 요청만 받는다 (구글 공개 키로 서명 확인, 프로젝트 확인, 메일 인증 확인).
+ * - 우리 공간 멤버만: 사용자 토큰으로 Firestore의 멤버 전용 문서(config/access)를 읽어 본다 (규칙이 멤버만 허용 → 200이면 멤버).
+ *   결과는 사람(uid)마다 메모리에 1시간 두어 Firestore 읽기를 아낀다. 아무나 이메일 가입만으로 무료 한도를 쓰지 못하게.
+ * - 사람당 분당 20번(/news는 따로 메모리로 분당 20번), 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
+import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, RateCounter, TtlCache, type TokenPayload } from './guard';
 
 export interface Env {
   AI: Ai;
@@ -45,23 +48,53 @@ async function jwks(): Promise<JsonWebKey[]> {
 }
 const b64url = (s: string) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=')), (c) => c.charCodeAt(0));
 
-async function verifyIdToken(token: string, projects: string[]): Promise<{ uid: string; email?: string; project: string } | null> {
+interface Who { uid: string; email: string; project: string }
+async function verifyIdToken(token: string, projects: string[]): Promise<Who | null> {
   const parts = token.split('.');
   if (parts.length !== 3) return null;
-  const header = JSON.parse(new TextDecoder().decode(b64url(parts[0]))) as { alg: string; kid: string };
-  const payload = JSON.parse(new TextDecoder().decode(b64url(parts[1]))) as { aud: string; iss: string; sub: string; exp: number; iat: number; email?: string; email_verified?: boolean };
+  let header: { alg: string; kid: string }, payload: TokenPayload;
+  try {
+    header = JSON.parse(new TextDecoder().decode(b64url(parts[0])));
+    payload = JSON.parse(new TextDecoder().decode(b64url(parts[1])));
+  } catch {
+    return null;
+  }
   if (header.alg !== 'RS256') return null;
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp <= now || payload.iat > now + 300) return null;
-  const project = projects.find((p) => payload.aud === p && payload.iss === `https://securetoken.google.com/${p}`);
-  if (!project || !payload.sub) return null;
+  // 내용 검사(만료·프로젝트·메일 인증)는 guard.ts의 순수 함수 (시험됨)
+  const c = checkPayload(payload, projects, Math.floor(Date.now() / 1000));
+  if (!c.ok) return null;
   const key = (await jwks()).find((k) => (k as JsonWebKey & { kid?: string }).kid === header.kid);
   if (!key) return null;
   const pub = await crypto.subtle.importKey('jwk', key, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
   const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pub, b64url(parts[2]), new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
   if (!ok) return null;
-  return { uid: payload.sub, email: payload.email, project };
+  return { uid: c.uid, email: c.email, project: c.project };
 }
+
+// ---------- 우리 공간 멤버인지 ----------
+// 사용자 토큰으로 멤버 전용 문서를 읽어 본다: 규칙(firestore.rules `config/access` read: isMember)이 판단하므로 뒷단이 멤버 목록을 알 필요가 없다.
+// 실제(borapin)·시험용(borapin-test) 모두 토큰의 프로젝트로 묻는다. 결과는 uid마다 메모리에 (Worker가 바뀌면 비워지는 '아껴 쓰기'용 캐시).
+const memberCache = new TtlCache<boolean>(500);
+/** true 멤버 · false 아님 · null 지금은 모름(Firestore 장애 등 → 이번 요청만 거절, 캐시 안 함) */
+async function isMember(who: Who, token: string): Promise<boolean | null> {
+  const key = `${who.project}:${who.uid}`;
+  const hit = memberCache.get(key);
+  if (hit !== undefined) return hit;
+  let status = 0;
+  try {
+    const r = await fetch(memberDocUrl(who.project), { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) });
+    status = r.status;
+    await r.body?.cancel().catch(() => undefined); // 내용은 필요 없다 (상태만 본다)
+  } catch {
+    status = 0; // 연결 실패·시간 초과 → 모름
+  }
+  const v = memberFromStatus(status);
+  if (v === 'unknown') return null;
+  memberCache.set(key, v === 'member', v === 'member' ? MEMBER_TTL_MS.member : MEMBER_TTL_MS.denied);
+  return v === 'member';
+}
+// 소식(/news)은 AI 한도와 무관하지만 밖(RSS)을 부르므로 사람마다 분당 20번 (메모리)
+const newsRate = new RateCounter(20, 60_000);
 
 // ---------- 모델에 주는 지시 ----------
 const TOOLS = `
@@ -249,9 +282,15 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
     const who = token ? await verifyIdToken(token, env.FIREBASE_PROJECTS.split(',').map((s) => s.trim())) : null;
     if (!who) return json({ error: 'unauthorized' }, 401);
+    // 로그인했어도 우리 공간 멤버가 아니면(초대 안 된 계정) 아무것도 안 준다 — 모든 길(/plan·/answer·/news·/place·/geo, ?model= 포함)에 적용
+    const member = await isMember(who, token);
+    if (member === null) return json({ error: 'member check failed' }, 503);
+    if (!member) return json({ error: 'not a member' }, 403);
 
     // 여행 소식: 구글 뉴스 RSS(키 없음)를 6시간 캐시해 지역별 머리기사 5개만 준다 (AI 한도와 무관)
     if (isNews) {
+      const nr = newsRate.hit(`${who.project}:${who.uid}`);
+      if (!nr.ok) return json({ error: 'too many requests', retry: nr.retryAfter }, 429);
       const qs = [...new Set(url.searchParams.getAll('q').map((q) => q.trim().slice(0, 60)).filter(Boolean))].slice(0, 24);
       if (!qs.length) return json({ error: 'empty' }, 400);
       return news(qs);

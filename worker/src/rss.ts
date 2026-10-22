@@ -11,7 +11,8 @@ export function parseGoogleRss(xml: string, max = 15): NewsItem[] {
   for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
     const b = m[1];
     const title = tag(b, 'title'), link = tag(b, 'link'), source = tag(b, 'source');
-    if (title && link) out.push({ title: title.replace(/\s+-\s+[^-]+$/, ''), link, source, at: iso(tag(b, 'pubDate')) });
+    // 링크는 http(s) 주소만 (앱이 그대로 <a href>에 넣는다 · 빙 쪽과 같은 검사)
+    if (title && /^https?:\/\//.test(link)) out.push({ title: title.replace(/\s+-\s+[^-]+$/, ''), link, source, at: iso(tag(b, 'pubDate')) });
     if (out.length >= max) break;
   }
   return out;
