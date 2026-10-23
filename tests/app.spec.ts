@@ -1020,7 +1020,8 @@ test.describe.serial('보라핀 1단계', () => {
     expected = [/accounts:signInWithPassword/];
     await page.goto('/space');
     await page.getByRole('button', { name: '로그아웃' }).click();
-    await page.getByTestId('email-open').click();
+    // 지난번에 메일로 들어왔으면 메일 칸이 이미 펼쳐져 있다
+    await expect(page.getByTestId('email-form')).toBeVisible();
     await page.getByLabel('메일 주소').fill(MAIL);
     await page.getByLabel('비밀번호').fill('wrong-pass');
     await page.getByTestId('email-submit').click();
