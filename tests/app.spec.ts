@@ -95,8 +95,8 @@ test.describe.serial('보라핀 1단계', () => {
     // 기록이 없을 땐 '최근에 남긴 기록' 빈 칸을 또 보여 주지 않는다
     await expect(page.getByRole('heading', { name: '최근에 남긴 기록' })).toHaveCount(0);
     // 홈 위 돋보기는 없다 (입력칸과 떠 있는 보라가 물어보기 입구)
-    await expect(page.locator('.topbar').getByRole('link', { name: '보라에게 물어봐' })).toHaveCount(0);
-    await expect(page.getByTestId('home-ask').getByLabel('보라에게 물어봐')).toBeVisible();
+    await expect(page.locator('.topbar').getByRole('link', { name: '물어보기' })).toHaveCount(0);
+    await expect(page.getByTestId('home-ask').getByLabel('물어보기')).toBeVisible();
     await expect(page.getByTestId('home-more')).toHaveCount(0);
     // '다가오는 여행' 칸은 없고(묶음이 맡음), 가고 싶은 곳이 없으면 '여행지 뽑기'는 뽑기를 바로 연다
     await expect(page.getByText('다가오는 여행', { exact: true })).toHaveCount(0);
@@ -228,7 +228,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('홈 통계와 지도', async ({ page }) => {
     await signIn(page, OWNER);
     // 횟수는 우리말로 (times): '2번'이 아니라 '두 번'
-    await expect(page.getByTestId('headline')).toHaveText('두 번의 여행, 핀 2개');
+    await expect(page.getByTestId('headline')).toContainText('두 번의 여행,핀 2개 꽂았어요');
     await expectMapDrawn(page);
     await shot(page, '06-home');
     await page.goto('/map');
@@ -270,7 +270,7 @@ test.describe.serial('보라핀 1단계', () => {
     // 다시 꽂아 둔다
     await sheet.getByTestId('quick-pin').click();
     await expect(sheet.getByTestId('trip-row')).toHaveCount(1);
-    await expect(page.getByTestId('headline')).toHaveText('세 번의 여행, 핀 3개');
+    await expect(page.getByTestId('headline')).toContainText('세 번의 여행,핀 3개 꽂았어요');
     await shot(page, '09-sheet');
     await sheet.getByRole('button', { name: '닫기' }).click();
     await expect(sheet).toHaveCount(0);
@@ -793,7 +793,7 @@ test.describe.serial('보라핀 1단계', () => {
 
   test('찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기', async ({ page }) => {
     await signIn(page, OWNER);
-    const box = page.getByTestId('home-ask').getByLabel('보라에게 물어봐');
+    const box = page.getByTestId('home-ask').getByLabel('물어보기');
     await box.fill('강릉 맛집');
     await box.press('Enter');
     await expect(page).toHaveURL(/\/ask/);

@@ -144,7 +144,7 @@ export default function Ask() {
 
   return (
     <>
-      <TopBar back title="보라에게 물어봐" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); saveChat([], {}); }}>처음으로</button> : undefined} />
+      <TopBar back title="물어보기" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); saveChat([], {}); }}>처음으로</button> : undefined} />
       <div className="page ask-page" style={{ paddingTop: 4 }} data-testid="ask">
         {infoFailed && !info && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} role="status" data-testid="info-failed">
@@ -159,7 +159,7 @@ export default function Ask() {
           <div className={'card' + (photoById('seorak') ? ' ask-hero' : '')} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: photoById('seorak') ? '64px 16px 16px' : undefined }}>
             {photoById('seorak') && <ScenicPhoto id="seorak" alt="" label="top" />}
             <div className="ask-head">
-              <img src="/art/bora-face.webp" alt="" width={56} height={56} decoding="async" />
+              <img src="/art/pini.svg" alt="" width={56} height={56} decoding="async" />
               <b style={{ fontSize: photoById('seorak') ? 20 : undefined }}>어디 갈지, 어디 갔었는지 물어보세요</b>
             </div>
             <span className="small muted">국내 160곳 여행정보와 가기 좋은 때, 우리 기록에서 바로 찾아 드려요.</span>
@@ -173,7 +173,7 @@ export default function Ask() {
             <div key={i} className="bubble me">{m.text}</div>
           ) : (
             <div key={i} className="bot-row">
-            <img className="bot-face" src="/art/bora-face.webp" alt="" aria-hidden="true" width={28} height={28} decoding="async" />
+            <img className="bot-face" src="/art/pini.svg" alt="" aria-hidden="true" width={28} height={28} decoding="async" />
             <div className="bubble bot" data-testid="answer">
               <p className="bot-text">{m.a.text}</p>
               {m.a.lines && m.a.lines.length > 0 && <ul>{m.a.lines.map((l, j) => <li key={j}>{l}</li>)}</ul>}
@@ -213,7 +213,7 @@ export default function Ask() {
             </div>
           ),
         )}
-        {thinking && <div className="bot-row" aria-live="polite"><img className="bot-face" src="/art/bora-face.webp" alt="" aria-hidden="true" width={28} height={28} /><div className="bubble bot thinking"><span className="dots-typing"><i /><i /><i /></span><span className="tiny muted">보라가 기록을 뒤져 보는 중…</span></div></div>}
+        {thinking && <div className="bot-row" aria-live="polite"><img className="bot-face" src="/art/pini.svg" alt="" aria-hidden="true" width={28} height={28} /><div className="bubble bot thinking"><span className="dots-typing"><i /><i /><i /></span><span className="tiny muted">핀이가 기록을 뒤져 보는 중…</span></div></div>}
         <div ref={end} />
       </div>
       <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); send(text); }}>

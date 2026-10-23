@@ -58,11 +58,14 @@ export default function Home() {
         <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
       </div>
       <div className="page" style={{ paddingTop: 4 }}>
-        <div>
-          <div className="small muted">{spaceTitle()}의 지도</div>
-          <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }} data-testid="headline">
-            {stats ? (stats.tripsDone ? `${times(stats.tripsDone)}의 여행, 핀 ${stats.pins}개` : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
+        <div className="home-head">
+          <div style={{ minWidth: 0 }}>
+            <div className="small" style={{ fontWeight: 700, color: 'var(--ink3)' }}>{spaceTitle()}의 지도</div>
+            <div className="headline" data-testid="headline">
+              {stats ? (stats.tripsDone ? <>{times(stats.tripsDone)}의 여행,<br />핀 <b>{stats.pins}</b>개 꽂았어요</> : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
+            </div>
           </div>
+          <img className="home-bora" src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />
         </div>
 
         {stage && <StageCard stage={stage} photos={photos} />}
@@ -99,8 +102,8 @@ export default function Home() {
         </div>
 
         <form className="ask-home" onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/ask?q=${encodeURIComponent(q.trim())}`); }} data-testid="home-ask">
-          <img src="/art/bora-face.webp" alt="" width={30} height={30} decoding="async" />
-          <input aria-label="보라에게 물어봐" placeholder="보라에게 물어봐: 강릉 맛집, 11월 축제" value={q} onChange={(e) => setQ(e.target.value)} />
+          <img src="/art/pini.svg" alt="" width={30} height={30} decoding="async" />
+          <input aria-label="물어보기" placeholder="물어보기: 강릉 맛집, 11월 축제" value={q} onChange={(e) => setQ(e.target.value)} />
         </form>
 
         {/* 기록이 하나도 없으면 첫 핀으로 가는 길이 묶음보다 먼저 */}

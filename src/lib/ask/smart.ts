@@ -58,7 +58,7 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
     if (!buttons.length) buttons.push(...facts.actions.slice(0, 3).map((x) => x.btn));
     const place = lastPlace(calls, ctx.place ?? null);
     return {
-      answer: { intent: 'ai' as Intent, text, lines, buttons, source: '보라(AI) · 우리 기록과 여행정보만으로 답했어요', ctx: { place, intent: 'ai' as Intent } },
+      answer: { intent: 'ai' as Intent, text, lines, buttons, source: '핀이 · 우리 기록과 여행정보만으로 답했어요', ctx: { place, intent: 'ai' as Intent } },
       via: 'ai',
     };
   } catch (e) {

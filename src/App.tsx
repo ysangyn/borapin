@@ -133,9 +133,9 @@ export default function App() {
 /** 우하단에 떠 있는 보라 얼굴 + 말풍선: 누르면 물어보기(챗봇)로 */
 function AskFab() {
   return (
-    <Link to="/ask" className="ask-fab" aria-label="보라에게 물어봐" data-testid="ask-fab">
+    <Link to="/ask" className="ask-fab" aria-label="물어보기" data-testid="ask-fab">
       <span className="ask-fab-bubble" aria-hidden="true">물어봐요</span>
-      <img src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />
+      <img src="/art/pini.svg" alt="" width={80} height={80} decoding="async" />
     </Link>
   );
 }

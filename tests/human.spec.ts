@@ -474,7 +474,7 @@ test.describe('사람처럼 쓰기', () => {
     expect(f.y + f.height).toBeLessThanOrEqual(nav.y + 1);
     await fab.click();
     await expect(page).toHaveURL(/\/ask/);
-    await expect(page.getByText('보라에게 물어봐')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '물어보기' })).toBeVisible();
     await expect(page.getByTestId('ask-fab')).toHaveCount(0);
     await page.goto('/map');
     await expect(page.getByTestId('ask-fab')).toHaveCount(0);

@@ -86,5 +86,6 @@ export default defineConfig({
   ],
   define: { __APP_VERSION__: JSON.stringify(pkg.version), __COMMIT__: JSON.stringify(COMMIT) },
   server: { port: 5173, host: true },
-  build: { chunkSizeWarningLimit: 1500 },
+  // 글꼴 조각은 작아도 CSS에 넣지 않는다 (쓰는 글자 조각만 받게). 그 밖의 작은 그림은 그대로 인라인
+  build: { chunkSizeWarningLimit: 1500, assetsInlineLimit: (file) => (/\.(woff2?|ttf)$/.test(file) ? false : undefined) },
 });
