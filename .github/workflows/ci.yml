@@ -82,7 +82,7 @@ jobs:
   check:
     name: 1. 코드 검사와 빌드
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: worker
     steps:
       - uses: actions/checkout@v5
@@ -106,12 +106,13 @@ jobs:
       - name: 관광공사 자료 받기 (시·군 관광지·무장애 · 실패하면 지난 자료)
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
-        run: npx tsx scripts/tour-build.ts 2>&1 | tee tour-output.txt || true
+        # 공공데이터 서버가 느린 날은 6분에서 끊고 지난 자료를 쓴다 (빌드 전체가 시간 초과로 취소되지 않게)
+        run: timeout 360 npx tsx scripts/tour-build.ts 2>&1 | tee tour-output.txt || echo '관광공사 자료 받기 시간 초과 → 지난 자료 유지'
       - name: 해외 자료 받기 (외교부 여행경보·입국허가요건, 환율 · 실패하면 지난 자료)
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           KOREAEXIM_KEY: ${{ secrets.KOREAEXIM_KEY }}
-        run: npx tsx scripts/abroad-build.ts 2>&1 | tee abroad-output.txt || true
+        run: timeout 240 npx tsx scripts/abroad-build.ts 2>&1 | tee abroad-output.txt || echo '해외 자료 받기 시간 초과 → 지난 자료 유지'
       - name: 빌드 (이 파일을 끝까지 그대로 쓴다)
         env:
           VITE_ASK_URL: ${{ needs.worker.outputs.url }}
