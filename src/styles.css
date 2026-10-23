@@ -1139,3 +1139,5 @@ a.hub-way-row { text-decoration: none; }
 .headline { font-size: 29px; line-height: 1.15; margin-top: 2px; color: var(--ink); }
 .headline b { color: var(--violet); font-weight: 400; }
 .home-bora { width: 84px; height: 84px; flex: none; border-radius: 50%; border: 2px solid var(--outline); background: var(--butter); box-shadow: 4px 4px 0 var(--line2); object-fit: cover; }
+/* 날짜 입력칸은 고유 폭이 있어 2px 윤곽을 더하면 넘친다 → 줄 안에서 줄어들게 */
+input[type='date'].input { min-width: 0; flex: 1 1 0; width: auto; }
