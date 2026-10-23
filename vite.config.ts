@@ -50,7 +50,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,mjs,css,html,svg,png}', 'art/bora-rest.webp'],
         // 설치용 큰 아이콘은 설치할 때 브라우저가 따로 받는다
         // 처음 열 때 화면과 받기 경쟁하지 않게: 가끔 쓰는 큰 조각(엑셀·사진 넘기기)과 지도 경계(화면이 이미 받음)는 쓸 때 저장
-        globIgnores: ['icons/bora-512.png', 'icons/bora-maskable-512.png', 'assets/write-excel-file-*.js', 'assets/tour-*.js', 'assets/photoswipe*.js', 'assets/photoswipe*.css'],
+        globIgnores: ['icons/bora-512.png', 'icons/bora-maskable-512.png', 'assets/write-excel-file-*.js', 'assets/tour-*.js', 'assets/trend-*.js', 'assets/photoswipe*.js', 'assets/photoswipe*.css'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/__/],

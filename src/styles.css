@@ -1227,3 +1227,22 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
   content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   width: max(100%, 44px); height: max(100%, 44px); border-radius: inherit;
 }
+
+/* ---------- 요즘 자료 (검토 A6): 지역 꼬리표(뜨는 곳=버터·한적=민트), 관광지 붐빔 칩(붐벼요=피치), 같이 가면 좋은 곳 칩 ---------- */
+.trend-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 2px; }
+.trend-tags .chip { height: 30px; padding: 0 11px; font-size: 12.5px; box-shadow: 2px 2px 0 var(--line2); }
+.trend-tags .chip small { font-size: 11.5px; font-weight: 600; opacity: .9; }
+.chip.trend-hot, .sheet .chip.trend-hot, .card .chip.trend-hot { background: var(--butter); color: var(--butter-ink); border-color: var(--outline); }
+.chip.trend-quiet, .sheet .chip.trend-quiet, .card .chip.trend-quiet { background: var(--mint); color: var(--mint-ink); border-color: var(--outline); }
+.tour-pic { position: relative; display: block; width: 104px; }
+.tour-pic img { display: block; }
+.crowd-tag { position: absolute; left: 5px; top: 5px; height: 20px; padding: 0 7px; font-size: 11px; box-shadow: 1.5px 1.5px 0 var(--outline); }
+.crowd-tag.busy { background: var(--peach); color: var(--peach-ink); }
+.crowd-tag.calm { background: var(--mint); color: var(--mint-ink); }
+.trend-related { display: flex; flex-direction: column; gap: 6px; }
+.trend-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 5px; }
+.trend-chips::-webkit-scrollbar { display: none; }
+.trend-chips .chip { flex: none; position: relative; text-decoration: none; font-size: 13px; box-shadow: 2px 2px 0 var(--line2); transition: transform .08s, box-shadow .08s; }
+.trend-chips .chip::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: max(100%, 44px); height: max(100%, 44px); border-radius: inherit; }
+.trend-chips .chip:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--line2); }
+@media (prefers-reduced-motion: reduce) { .trend-chips .chip { transition: none; } }

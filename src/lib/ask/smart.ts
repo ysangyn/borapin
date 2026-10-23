@@ -4,7 +4,7 @@
  * - AI가 없거나(주소 없음·오프라인·한도 초과·실패) 답이 사실 밖이면 규칙형 답으로 돌아간다.
  */
 import type { User } from 'firebase/auth';
-import { ask, type Answer, type AskCtx, type AskData, type Btn, type Intent } from './engine';
+import { ask, trendTopicOf, type Answer, type AskCtx, type AskData, type Btn, type Intent } from './engine';
 import { lastPlace, runTools, type ToolCall } from './tools';
 import { ensurePlan } from './plan';
 import { findMentions } from './gazetteer';
@@ -46,6 +46,8 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
     const plan = await post('/plan', token, { question, context });
     const mention = findMentions(question, d.info)[0]?.entry.label ?? null;
     const calls = ensurePlan(question, (Array.isArray(plan.calls) ? plan.calls : []) as ToolCall[], mention, now);
+    // 요즘 뜨는 곳·한적한 곳·많이 안 걷는 곳은 추천 도구가 요즘 자료(또는 '자료 없음')를 사실로 준다: 모델이 빼먹었으면 보탠다
+    if (trendTopicOf(question) && !calls.some((c) => c.tool === 'recommend')) calls.push({ tool: 'recommend', args: {} });
     const facts = runTools(calls, d, ctx.place ?? null, now, question);
     const factText = [facts.text, facts.actions.length ? `actions: ${facts.actions.map((x) => `${x.id}=${x.btn.label}`).join(', ')}` : ''].filter(Boolean).join('\n');
     const ans = await post('/answer', token, { question, context, facts: factText });

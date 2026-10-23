@@ -7,7 +7,8 @@ import { cityFor, COST_LABEL, flyLabel, tzLabel, WALK_LABEL } from '../world';
 import { dday, formatWhen, SEASON_LABEL } from '../dates';
 import { COUNTRY_BY_ID, GROUPS, placeLabel, placeLong, placeParam, searchPlaces } from '../geo';
 import { candidates, THEMES } from '../recommend';
-import { DARK_SKY, STAR_Q, topicOf, unusedWords } from './engine';
+import { DARK_SKY, STAR_Q, topicOf, tourOf, trendOf, trendTopicOf, unusedWords } from './engine';
+import { rankTrend, tagShort, trendAt, trendSummary } from '../trend';
 import { monthsLabel, seasonFor } from '../seasons';
 import { festivalPeriod, isOngoing, upcomingFestivals } from '../festivals';
 import { packFromTemplate } from '../packing';
@@ -71,6 +72,10 @@ export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now 
             out.push(`${placeLong(p)}: 국내 여행정보 없음${p.t === 'country' ? ` (해외 · ${COUNTRY_BY_ID.get(p.id)?.continent ?? ''})` : ''}`); break;
           }
           out.push(`${placeLong(p)} 여행정보: 테마 ${c2.main.theme} / 볼거리 ${c2.main.spots.join(', ')} / 먹거리 ${c2.main.foods.join(', ')} / 특산물 ${c2.main.goods.join(', ') || '없음'} / 교통 ${c2.main.transport.join(', ') || '없음'}${c2.main.note ? ` / 참고 ${c2.main.note}` : ''}${c2.subs.length ? ` / 구·군: ${c2.subs.slice(0, 5).map((s) => `${s.name}(${s.spots.slice(0, 2).join('·')})`).join(', ')}` : ''}`);
+          // 요즘 자료(뜨는 곳·한적·붐빔·같이 가면 좋은 곳)와 무장애 수: 있는 것만 한 줄
+          const tf = p.t === 'kr' ? trendSummary(p.code, trendOf(d), tourOf(d)) : { tag: '', crowd: '', related: '', easy: '' };
+          const tl = [tf.tag ? `요즘 ${tf.tag}` : '', tf.crowd ? `붐빔: ${tf.crowd}` : '', tf.related ? `같이 가면 좋은 곳: ${tf.related}` : '', tf.easy ? `편하게: ${tf.easy}` : ''].filter(Boolean);
+          if (tl.length) out.push(`${placeLong(p)} 요즘(한국관광공사 관광빅데이터): ${tl.join(' / ')}`);
           out.push(`  ${addAction(`${placeLabel(p)} 지도에서 보기`, { to: `/map?sel=${placeParam(p)}` })} ${addAction('가고 싶은 곳에 담기', { wish: p })} ${addAction('여행 만들기', { to: `/plan?place=${placeParam(p)}` })}`);
           break;
         }
@@ -190,12 +195,25 @@ export function runTools(calls: ToolCall[], d: AskData, prev: Place | null, now 
             for (const x of pool.slice(0, 3)) out.push(`  ${addAction(`${placeLabel({ t: 'kr', code: x.code })} 담기`, { wish: { t: 'kr', code: x.code } })}`);
             break;
           }
+          const trend = trendOf(d);
+          // 요즘 뜨는 곳·한적한 곳·많이 안 걷는 곳: 요즘 자료(외지인 흐름)·무장애 수로 고른 사실만 준다 (없으면 없다고)
+          const tt = question ? trendTopicOf(question) : null;
+          if (tt) {
+            const allow = groupId || themeId ? new Set(candidates({ scope: groupId ?? 'kr', unvisitedOnly: false, theme: themeId, stats, info: d.info, wishes: [] }).flatMap((c) => (c.place.t === 'kr' ? [c.place.code] : []))) : null;
+            const ranked = rankTrend(tt.kind, { trend, tour: tourOf(d), visited: new Set(stats.cellVisits.keys()), home: d.home ?? null, allow, unvisitedOnly: unvisited });
+            const by = tt.kind === 'hot' ? '외지인 늘어난 순' : tt.kind === 'quiet' ? '외지인 적은 순' : '무장애 관광지 많은 순';
+            if (!ranked) { out.push(`${tt.label}: 요즘 자료가 아직 없음 (없다고 솔직히 말하고 다른 추천은 그 조건에 맞는다고 쓰지 말 것)`); break; }
+            const picks = ranked.slice(0, Math.min(num(a.count) ?? 4, 6));
+            out.push(picks.length ? `${tt.label}(${by}, 안 가본 곳 먼저${d.home ? ', 우리 집 가까운 곳 가산' : ''}${tt.kind === 'easy' ? '' : `, ${trendAt(trend)}`}): ${picks.map((x) => { const pl: Place = { t: 'kr', code: x.code }; return `${placeLong(pl)} · ${x.why} · ${d.info.cells[x.code]?.main.theme ?? ''} · 우리 ${tripsAt(d, pl).length}번`; }).join(' / ')}` : `${tt.label}: 조건에 맞는 곳 없음`);
+            for (const x of picks.slice(0, 3)) out.push(`  ${addAction(`${placeLabel({ t: 'kr', code: x.code })} 담기`, { wish: { t: 'kr', code: x.code } })} ${addAction(`${placeLabel({ t: 'kr', code: x.code })} 자세히`, { to: `/map?sel=${placeParam({ t: 'kr', code: x.code })}` })}`);
+            break;
+          }
           const miss = question ? unusedWords(question, d.info) : [];
           if (miss.length) out.push(`주의: 질문의 '${miss.join(', ')}'에 맞는 자료는 없음. 아래 후보는 그 조건과 상관없는 일반 후보이니 그 조건에 맞는다고 쓰지 말 것`);
           let list = candidates({ scope: groupId ?? 'kr', unvisitedOnly: unvisited, theme: themeId, stats, info: d.info, wishes: d.wishes });
           if (month) list = list.filter((c) => seasonFor(d.seasons, c.place)?.m.includes(month));
           const picks = dailyShuffle(list, 'ask').slice(0, Math.min(num(a.count) ?? 4, 6));
-          out.push(picks.length ? `추천 후보${month ? ` (${month}월)` : ''}${themes.length ? ` (${themes.join('·')})` : ''}${unvisited ? ' (안 가본 곳)' : ''}: ${picks.map((c) => { const s = seasonFor(d.seasons, c.place); const fest = c.place.t === 'kr' ? upcomingFestivals(d.festivals ?? null, c.place.code, now, 45)[0] : undefined; return `${placeLong(c.place)} · ${c.theme ?? ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''}${fest ? ` · 축제 ${fest.t}(${festivalPeriod(fest)})` : ''} · 우리 ${tripsAt(d, c.place).length}번`; }).join(' / ')}` : '조건에 맞는 후보 없음');
+          out.push(picks.length ? `추천 후보${month ? ` (${month}월)` : ''}${themes.length ? ` (${themes.join('·')})` : ''}${unvisited ? ' (안 가본 곳)' : ''}: ${picks.map((c) => { const s = seasonFor(d.seasons, c.place); const fest = c.place.t === 'kr' ? upcomingFestivals(d.festivals ?? null, c.place.code, now, 45)[0] : undefined; const tg = c.place.t === 'kr' ? tagShort(c.place.code, trend) : ''; return `${placeLong(c.place)} · ${c.theme ?? ''}${s ? ` · 좋은 때 ${monthsLabel(s.m)}` : ''}${fest ? ` · 축제 ${fest.t}(${festivalPeriod(fest)})` : ''}${tg ? ` · ${tg}` : ''} · 우리 ${tripsAt(d, c.place).length}번`; }).join(' / ')}` : '조건에 맞는 후보 없음');
           for (const c of picks.slice(0, 3)) out.push(`  ${addAction(`${placeLabel(c.place)} 담기`, { wish: c.place })} ${addAction(`${placeLabel(c.place)} 자세히`, { to: `/map?sel=${placeParam(c.place)}` })}`);
           break;
         }

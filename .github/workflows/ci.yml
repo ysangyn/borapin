@@ -108,6 +108,11 @@ jobs:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
         # 공공데이터 서버가 느린 날은 6분에서 끊고 지난 자료를 쓴다 (빌드 전체가 시간 초과로 취소되지 않게)
         run: timeout 360 npx tsx scripts/tour-build.ts 2>&1 | tee tour-output.txt || echo '관광공사 자료 받기 시간 초과 → 지난 자료 유지'
+      - name: 관광빅데이터 받기 (요즘 뜨는 곳·한적한 곳·연관 관광지·붐빔 · 실패하면 지난 자료)
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          SAMPLE: '1'
+        run: timeout 360 npx tsx scripts/tour-trend.ts 2>&1 | tee trend-output.txt || echo '관광빅데이터 받기 시간 초과 → 지난 자료 유지'
       - name: 해외 자료 받기 (외교부 여행경보·입국허가요건, 환율 · 실패하면 지난 자료)
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
@@ -132,7 +137,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt festivals-output.txt
+        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt festivals-output.txt trend-output.txt
 
   emulator:
     name: 2. 에뮬레이터 시험 (보안 규칙 + 화면)

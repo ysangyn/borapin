@@ -1,21 +1,32 @@
 import { useState } from 'react';
 import { useTravelInfo } from '../lib/travelinfo';
 import { accessLine } from '../lib/transport';
+import { trendAt, trendTags, useTrend } from '../lib/trend';
 import TourSpots from './TourSpots';
 
-/** 지역 여행정보: 한 줄 테마, 볼거리·먹거리, 더보기로 특산물·교통·구·군별 */
+/** 지역 여행정보: 요즘 꼬리표(뜨는 곳·한적해요), 한 줄 테마, 볼거리·먹거리, 더보기로 특산물·교통·구·군별 */
 export default function RegionInfo({ code }: { code: string }) {
   const info = useTravelInfo();
+  const trend = useTrend();
   const [more, setMore] = useState(false);
   const cell = info?.cells[code];
   if (!info || !cell) return null;
   const m = cell.main;
+  const tags = trendTags(code, trend);
   const line = (label: string, items: string[]) =>
     items.length ? (
       <div className="info-line"><span className="k">{label}</span><span>{items.join(' · ')}</span></div>
     ) : null;
   return (
     <div className="region-info" data-testid="region-info">
+      {tags.length > 0 && (
+        <div className="trend-tags" data-testid="trend-tags">
+          {tags.map((t) => (
+            <span key={t.k} className={`chip trend-${t.k}`}>{t.t}{t.why && <small> · {t.why}</small>}</span>
+          ))}
+          {trendAt(trend) && <span className="tiny muted">{trendAt(trend)}</span>}
+        </div>
+      )}
       <div className="info-theme">{m.theme}</div>
       {line('볼거리', m.spots)}
       {line('먹거리', m.foods)}

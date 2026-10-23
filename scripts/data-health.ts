@@ -27,6 +27,11 @@ export function tourHealth(d: unknown): Health {
   const n = count(isObj(d) ? d.cells : null);
   return { ok: n > 100, why: `시·군 ${n}곳` };
 }
+/** 관광빅데이터(trend.json): regions에 시·군 100곳 이상이어야 (저장소의 자리표시는 regions 비어 있음) */
+export function trendHealth(d: unknown): Health {
+  const n = count(isObj(d) ? d.regions : null);
+  return { ok: n >= 100, why: `시·군 ${n}곳` };
+}
 
 export type PrevPick<T> = { data: T | null; from: 'local' | 'live' | null; why: string };
 /** 지난 자료 고르기: 내용 있는 로컬 파일이 먼저(적힌 순서), 없으면 실제 주소 것, 둘 다 없으면 null */

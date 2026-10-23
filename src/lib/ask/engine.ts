@@ -26,9 +26,11 @@ import { findMentions, type Mention } from './gazetteer';
 import { josa } from 'es-hangul';
 import { times } from '../ko';
 import { isMemberName } from '../members';
+import { loadTour, loadTrend, rankTrend, tourNow, trendAt, trendNow, trendSummary, type TourData, type TrendData, type TrendTopicKind } from '../trend';
 
 // 외교부 자료는 번들 밖(/data/abroad.json): 물어보기 화면이 열리면(엔진이 실려 오면) 미리 받아 두어 첫 답부터 붙게. 시험(브라우저 밖)에선 받지 않는다
-if (typeof window !== 'undefined') void loadAbroad();
+// 요즘 자료(뜨는 곳·한적한 곳·붐빔)와 관광지(무장애 수)도 같이 받아 둔다 (둘 다 번들 조각이라 설치 뒤엔 네트워크 없이 온다)
+if (typeof window !== 'undefined') { void loadAbroad(); void loadTrend(); void loadTour(); }
 
 /** 이름 뒤 조사: '강릉시는', '부산을' */
 const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (w ? josa(w, pair) : '');
@@ -98,8 +100,14 @@ export interface AskData {
   world?: WorldData | null;
   /** 우리 집 (공간에 정해 둔 곳) — '우리 집 근처' 질문에 */
   home?: { lat: number; lng: number; code: string; label?: string } | null;
+  /** 요즘 자료(뜨는 곳·한적한 곳·붐빔). 안 주면 엔진이 받아 둔 것(trendNow)을 쓴다. null이면 '자료 없음' */
+  trend?: TrendData | null;
+  /** 관광지 자료(무장애 수). 안 주면 받아 둔 것(tourNow) */
+  tour?: TourData | null;
   now?: Date;
 }
+export const trendOf = (d: AskData) => (d.trend !== undefined ? d.trend : trendNow());
+export const tourOf = (d: AskData) => (d.tour !== undefined ? d.tour : tourNow());
 
 const has = (q: string, re: RegExp) => re.test(q);
 const search = (q: string) => [
@@ -158,7 +166,7 @@ function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boole
   if (has(q, /패턴|성향|스타일|취향|여행\s*습관|어떤\s*여행(을|자|가)|우리\s*(여행|부부|둘).*어때/)) return 'pattern';
   if (has(q, /축제|페스티벌|불꽃|행사/)) return 'festival';
   if (has(q, /준비물|뭐\s*챙|챙길|챙겨|짐\s*(싸|쌀)|가져갈/)) return 'packing';
-  if ((topicOf(q) || STAR_Q.test(q)) && !places.length && !hasTime && !has(q, /(간|갔|다녀온|다녀왔)\s*(곳|데|적)/)) return 'recommend';
+  if ((topicOf(q) || trendTopicOf(q) || STAR_Q.test(q)) && !places.length && !hasTime && !has(q, /(간|갔|다녀온|다녀왔)\s*(곳|데|적)/)) return 'recommend';
   if (has(q, /다음\s*여행|예정(된|인)?\s*(여행|거)|언제\s*(떠나|출발)|디데이|d-?day/i)) return 'next';
   if (has(q, /어디였지|어디였더라|뭐였지|이름이\s*뭐|기억\s*안|찾아\s*줘|검색/) || has(q, /(마신|먹은|갔던|봤던|했던)\s*(날|곳|데)$/)) return 'find';
   if (places.length >= 2 && has(q, /비교|vs|어디가\s*(더|나아)|중에|랑.*중|차이/)) return 'compare';
@@ -275,6 +283,14 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
         if (sights.length) lines.push(`우리가 남긴 곳: ${sights.map((r) => r.name).join(', ')}`);
       }
       if (m.note) lines.push(`참고: ${m.note}`);
+      // 요즘 자료(뜨는 곳·한적·붐빔·같이 가면 좋은 곳)와 무장애 수: 있을 때만 한 줄씩
+      if ((intent === 'overview' || intent === 'spots') && p.t === 'kr') {
+        const f = trendSummary(p.code, trendOf(d), tourOf(d));
+        if (f.tag) lines.push(`요즘: ${f.tag}`);
+        if (intent === 'spots' && f.crowd) lines.push(`붐빔: ${f.crowd}`);
+        if (f.related) lines.push(`같이 가면 좋은 곳: ${f.related}`);
+        if (intent === 'spots' && f.easy) lines.push(`편하게: ${f.easy}`);
+      }
       const sl = seasonLine(d, p);
       if (sl && intent !== 'transport') lines.push(sl);
       if (intent === 'overview') lines.push(visitsLine(d, p));
@@ -387,7 +403,7 @@ const KNOWN_RE: RegExp[] = [
 ];
 const GENERIC = new Set(('여행지 여행 곳 데 데가 곳들 장소 명소 코스 추천 추천해줘 추천해 좋은 좋을 좋아 좋은데 괜찮은 보기 가기 갈 갈만한 만한 가볼 가볼만한 볼만한 '
   + '어디 어디가 어디로 어디를 이번 다음 주 달 날씨 요즘 지금 우리 둘 다 같이 함께 놀러 알려줘 해줘 줘 좀 하기 할 하는 한 있는 없는 가면 갈까 가자 가고 싶은 싶어 '
-  + '중에 중 아직 정도 쯤 '
+  + '중에 중 아직 정도 쯤 어디야 어디예요 어디에요 모시고 끌고 다니기 다닐 편한 편하게 다른 '
   + '보러 하러 먹으러 쉬러 여행하기 여행가기 어때 어떤 데요 곳이 곳을 곳은 거 것 수 있을까 있어 인 의 및 또는 그리고 가봐야 할만한 보면 맑은 비 안 오는 드라이브').split(' '));
 export function unusedWords(q: string, info: AskData['info']): string[] {
   let rest = ` ${q} `;
@@ -398,7 +414,7 @@ export function unusedWords(q: string, info: AskData['info']): string[] {
   for (const t of THEMES) { cut(t.re); for (const w of t.label.split('·')) cut(new RegExp(w)); }
   for (const x of SIGHT_WORDS) cut(x.re);
   for (const x of WORLD_AREAS) cut(x.re);
-  for (const re of [...KNOWN_RE, STAR_Q, WEATHER_SOON]) cut(re);
+  for (const re of [...KNOWN_RE, STAR_Q, WEATHER_SOON, ...TREND_TOPICS.map((t) => t.re)]) cut(re);
   return rest.split(/[\s,.?!~·]+/)
     .map((w) => w.replace(JOSA_TAIL, ''))
     .filter((w) => w.length >= 2 && /[가-힣a-z]/i.test(w) && !GENERIC.has(w) && !/^(가|보|하|먹|쉬|놀|좋)/.test(w.length <= 2 ? w : '_'));
@@ -412,6 +428,9 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
   if (far && !findMentions(q, d.info).length && !/바다|동해|서해|남해/.test(far[1])) {
     return { intent: 'recommend', text: `${far[1]} 쪽 여행지는 아직 자료가 없어요`, lines: ['가까운 나라나 도시 이름으로 물어보면 찾아볼게요. 예: 노르웨이 트롬쇠, 아이슬란드'], buttons: [{ label: '오로라 보러 갈 만한 곳', ask: '오로라 보러 갈 만한 곳 추천' }, { label: '해외 도시 고르기', to: '/wishes?find=world' }] };
   }
+  // 요즘 뜨는 곳·한적한 곳·많이 안 걷는 곳: 요즘 자료(외지인 흐름)와 무장애 관광지 수로 고른다
+  const tt = trendTopicOf(q);
+  if (tt) return trendRecommend(q, d, tt, groupId ?? null);
   // 볼거리 이름('공룡발자국'·'출렁다리')이 지명 사전에 있으면: 그 볼거리가 있는 곳들 (사전에 없는 주제도 자료가 있으면 답한다)
   const spotM = findMentions(q, d.info).filter((m) => m.entry.kind === 'spot');
   if (spotM.length && !topicOf(q)) {
@@ -549,6 +568,77 @@ const TOPICS = (topicsData as { topics: Topic[] }).topics;
 const hasWord = (q: string, w: string) => new RegExp(`(^|[^가-힣])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(q);
 export const topicOf = (q: string) => TOPICS.find((t) => t.words.some((w) => hasWord(q, w))) ?? null;
 
+/**
+ * 요즘 자료로 고르는 주제: 뜨는 곳·한적한 곳(trend.json의 외지인 흐름), 많이 안 걷는 곳(tour.json의 무장애 관광지 수).
+ * 낱말은 띄어쓰기 없이도 맞게 \s* 로 쓴다 (지명 사전처럼 공백 뺀 글에도 대 본다). 한적한 곳을 먼저 본다 ('요즘 사람 많지 않은 곳'이 뜨는 곳으로 읽히지 않게)
+ */
+export interface TrendTopic { kind: TrendTopicKind; label: string; re: RegExp }
+export const TREND_TOPICS: TrendTopic[] = [
+  { kind: 'quiet', label: '한적한 곳', re: /사람\s*(없|적)는|사람\s*(안\s*)?많지\s*않|사람\s*(별로\s*)?없|사람\s*적은|조용한|조용히|조용하게|붐비지\s*않|안\s*붐비|한산한|한적|북적(이|거리)?지\s*않|덜\s*붐비|덜\s*북적|한갓진|호젓한/ },
+  { kind: 'easy', label: '많이 안 걷는 곳', re: /휠체어|유모차|(부모님|어르신|할머니|할아버지|어머니|아버지)\s*모시고|무릎|편하게\s*다니|편하게\s*다닐|편히\s*다니|많이\s*안\s*걷|안\s*걷는|안\s*걷고|걷기\s*힘|걷기\s*싫|덜\s*걷|오래\s*못\s*걷|걷지\s*않|걷는\s*(게|거)\s*힘|계단\s*없는|무장애|배리어\s*프리|조금만\s*걷/ },
+  { kind: 'hot', label: '요즘 뜨는 곳', re: /핫한|핫플|핫하다는|요즘\s*(인기|뜨|뜬다|핫|유행|많이\s*(가|찾)|잘\s*나가)|요새\s*(인기|뜨|핫)|인기\s*(있는|많은|좋은|여행지|있다는)|(?<!(해|달|해가|달이)\s*)뜨는\s*(곳|데|여행지|지역|동네)|뜨고\s*있는|떠오르는|유행하는/ },
+];
+export const trendTopicOf = (q: string) => TREND_TOPICS.find((t) => t.re.test(q)) ?? null;
+/** 요즘 주제 낱말이 차지하는 자리(공백 뺀 글 기준): 그 자리에 걸린 지명 후보('한산'·'조용')는 버린다 */
+function trendSpan(q: string): [number, number] | null {
+  const tt = trendTopicOf(q);
+  if (!tt) return null;
+  const m = q.replace(/\s+/g, '').match(tt.re);
+  return m && m.index != null ? [m.index, m.index + m[0].length] : null;
+}
+const TREND_HEAD: Record<TrendTopicKind, string> = { hot: '요즘 뜨는 곳', quiet: '한적한 곳', easy: '많이 안 걷고 편하게 다닐 곳' };
+const SRC_MONTH = (s: string) => s.replace(/^(\d{4})-(\d{2}).*/, (_, y, m) => `${y}년 ${Number(m)}월`);
+
+function trendRecommend(q: string, d: AskData, tt: TrendTopic, groupId: string | null): Omit<Answer, 'ctx'> {
+  const trend = trendOf(d), tour = tourOf(d);
+  const stats = computeStats(d.trips);
+  const visited = new Set(stats.cellVisits.keys());
+  const unv = /안\s*가\s*본|안가본|처음|못\s*가\s*본/.test(q);
+  // 테마는 주제 낱말을 뺀 나머지에서 읽는다 ('한산한'의 '산'이 산·숲으로 읽히지 않게)
+  const { pos } = readThemes(q.replace(tt.re, ' '));
+  // 광역·테마 조건이 있으면 그 조건에 맞는 시·군만
+  const allow = groupId || pos.length
+    ? new Set(candidates({ scope: groupId ?? 'kr', unvisitedOnly: false, theme: pos[0] ?? null, stats, info: d.info, wishes: [] }).flatMap((c) => (c.place.t === 'kr' ? [c.place.code] : [])))
+    : null;
+  // '우리 집 근처'인데 집을 모르면 되묻는다 (일반 추천과 같은 흐름)
+  const homeQ = HOME_NEAR.test(q);
+  if (homeQ && !d.home) return { intent: 'recommend', text: '어디 사세요? 시·군 이름을 알려 주시면 그 근처로 찾아볼게요', lines: ['예: 고양, 강릉, 부산 해운대', '알려 주신 곳은 우리 집으로 기억해 둘게요 (둘이 같이 써요).'], buttons: [{ label: '우리 공간에서 정하기', to: '/space#home' }], pending: { need: 'home', q } };
+  const near = homeQ || /가까운|근처|당일치기|당일/.test(q);
+  const ranked = rankTrend(tt.kind, { trend, tour, visited, home: d.home ?? null, allow, unvisitedOnly: unv, kmPerStep: near ? 15 : 60 });
+  const groupName = groupId ? GROUPS.find((g) => g.id === groupId)?.name ?? '' : '';
+  const themeLabel = pos.map((x) => THEMES.find((t) => t.id === x)!.label).join('·');
+  const head = [groupName ? `${groupName}에서` : '', near && d.home ? '우리 집에서 가까운' : '', unv ? '안 가본' : '', themeLabel ? `${themeLabel} 쪽` : '', TREND_HEAD[tt.kind]].filter(Boolean).join(' ');
+  if (!ranked) {
+    return {
+      intent: 'recommend',
+      text: `${jo(head, '은/는')} 아직 자료가 없어요`,
+      lines: [tt.kind === 'easy' ? '관광지 자료를 아직 못 받았어요. 잠시 뒤 다시 물어봐 주세요.' : '요즘 자료가 아직 없어요. 들어오면 바로 보여 드릴게요.'],
+      buttons: [{ label: '안 가본 곳 추천', ask: '안 가본 곳 추천' }, { label: '이번 달 가기 좋은 곳', ask: '이번 달 가기 좋은 곳' }],
+    };
+  }
+  // '다른 곳'을 누를 때마다 다음 3곳 (순위라 섞지 않는다)
+  const page = (q.match(/다른\s*곳/g) ?? []).length;
+  const picks = ranked.slice(page * 3, page * 3 + 3);
+  if (!picks.length) return { intent: 'recommend', text: `${jo(head, '을/를')} 더 찾지 못했어요`, lines: ['조건을 하나 빼고 다시 물어보세요.'], buttons: [{ label: '처음부터', ask: q.replace(/\s*다른\s*곳/g, '') }] };
+  const others: Btn[] = tt.kind === 'hot' ? [{ label: '한적한 곳은?', ask: '요즘 한적한 곳' }] : tt.kind === 'quiet' ? [{ label: '요즘 뜨는 곳은?', ask: '요즘 뜨는 곳' }] : [{ label: '한적한 곳은?', ask: '요즘 한적한 곳' }];
+  return {
+    intent: 'recommend',
+    text: `${head} ${picks.length}곳`,
+    lines: tt.kind === 'easy' ? ['휠체어·유모차 정보가 등록된 관광지가 많은 순이에요. 지역 창의 관광지 띠에서 볼 수 있어요.'] : [`외지인 방문 흐름으로 골랐어요${trendAt(trend) ? ` · ${trendAt(trend)}` : ''}`],
+    items: picks.map((x) => {
+      const pl: Place = { t: 'kr', code: x.code };
+      const s = seasonFor(d.seasons, pl);
+      const n = stats.cellVisits.get(x.code) ?? 0;
+      const sub = [x.why, d.info.cells[x.code]?.main.theme ?? '', s ? `좋은 때 ${monthsLabel(s.m)}` : '', n ? `우리 ${times(n)} 다녀왔어요` : ''].filter(Boolean).join(' · ');
+      return { title: placeName(pl), sub, open: { label: `${placeLabel(pl)} 자세히`, ask: `${placeLabel(pl)} 볼거리` }, wish: pl };
+    }),
+    buttons: [...(ranked.length > (page + 1) * 3 ? [{ label: '다른 곳', ask: `${q} 다른 곳` }] : []), ...others],
+    // 주제를 알아들었으니 남은 낱말('모시고'·'끌고')로 자신 없어 하지 않는다
+    unused: [],
+    source: tt.kind === 'easy' ? `한국관광공사 무장애 관광 정보${tour?.updated ? ` · ${SRC_MONTH(tour.updated)} 기준` : ''}` : `한국관광공사 관광빅데이터(외지인 방문 흐름)${trendAt(trend) ? ` · ${trendAt(trend)}` : ''}`,
+  };
+}
+
 const HOME_NEAR = /우리\s*집|집\s*(근처|에서|가까)|사는\s*(곳|데)\s*(근처|가까|에서)|동네\s*(근처|가까)/;
 export const STAR_Q = /은하수|별\s*(을|이)?\s*(보|관측|사진)|별자리|별빛|천문대|밤하늘|별\s*보러/;
 const WEATHER_SOON = /날씨|맑|비\s*안/;
@@ -589,7 +679,11 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
     // 다른 질문으로 넘어갔으면 되묻기를 그만둔다
   }
   // 여행 상식 질문('기내에 화장품', '카드', '환전')이면 오타 고치기를 하지 않는다: 흔한 말이 지명(기니·차드·인천)으로 바뀌지 않게
-  const mentions: Mention[] = forced ? [] : findMentions(q, d.info, { typo: !faqFor(q) }).filter((m) => !tp || !tp.words.some((w) => { const i = q.indexOf(w); return i >= 0 && hasWord(q, w) && m.start < i + w.length && m.end > i; }));
+  const tsp = trendSpan(q);
+  const mentions: Mention[] = forced ? [] : findMentions(q, d.info, { typo: !faqFor(q) })
+    .filter((m) => !tp || !tp.words.some((w) => { const i = q.indexOf(w); return i >= 0 && hasWord(q, w) && m.start < i + w.length && m.end > i; }))
+    // 요즘 주제 낱말('한적한'·'조용한') 자리에 걸린 지명 후보는 버린다
+    .filter((m) => !tsp || m.end <= tsp[0] || m.start >= tsp[1]);
   const person = readPerson(q, d.trips);
   const year = readYear(q, now);
   const season = readSeason(q);
@@ -610,7 +704,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
   // '거기·그곳'처럼 가리키면 앞 질문의 장소를 이어 쓴다.
   // 장소 없이 '어디 가면 좋아?·추천'처럼 새로 고르는 질문은 앞 장소를 잇지 않는다.
   const refers = /거기|그곳|그\s*지역|여기|그럼|그러면/.test(q);
-  const freshPick = /어디\s*(갈|가지|가면|가볼|가 볼|좋)|추천|갈\s*만한|놀러|여행지/.test(q);
+  const freshPick = /어디\s*(갈|가지|가면|가볼|가 볼|좋)|추천|갈\s*만한|놀러|여행지/.test(q) || !!trendTopicOf(q);
   const followUp = refers || (!places.length && !groupId && !ambiguous.length && !freshPick);
   if (!places.length && !groupId && !ambiguous.length && followUp && ctx.place) places = [ctx.place];
 

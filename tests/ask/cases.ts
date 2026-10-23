@@ -182,6 +182,23 @@ export const CASES: Case[] = [
   { q: '보조배터리 비행기에 실어도 돼?', intent: 'faq', has: '들고 타야' },
   // 우리 여행 패턴: '부부'가 '부여'로 읽히면 안 된다
   { q: '우리 부부의 여행 패턴이 어때 보여?', intent: 'pattern' },
+  // 요즘 자료(관광빅데이터 외지인 흐름)로 고르는 주제: 뜨는 곳·한적한 곳, 무장애 관광지 수로 많이 안 걷는 곳.
+  // 채점 자료에는 요즘 자료가 없어서 주제를 알아듣고 '아직 자료가 없어요'로 솔직하게 답하는지 본다 (자료가 있을 때의 고르기는 tests/unit/trendAsk.test.ts)
+  { q: '요즘 뜨는 곳', intent: 'recommend', has: '요즘 뜨는 곳' },
+  { q: '요즘 핫한 여행지', intent: 'recommend', has: '요즘 뜨는 곳' },
+  { q: '핫플 추천', intent: 'recommend', has: '요즘 뜨는 곳' },
+  { q: '요즘 인기 많은 곳 어디야', intent: 'recommend', has: '요즘 뜨는 곳' },
+  { q: '한적한 곳 추천', intent: 'recommend', has: '한적한 곳' },
+  { q: '사람 없는 조용한 곳', intent: 'recommend', has: '한적한 곳' },
+  { q: '붐비지 않는 곳', intent: 'recommend', has: '한적한 곳' },
+  { q: '한산한 바다', intent: 'recommend', has: '바다 쪽 한적한 곳' }, // '한산'이 지명·'산'이 테마로 읽히면 안 된다
+  { q: '휠체어로 다니기 편한 곳', intent: 'recommend', has: '편하게 다닐' },
+  { q: '부모님 모시고 가기 좋은 곳', intent: 'recommend', has: '편하게 다닐' },
+  { q: '많이 안 걷는 여행지', intent: 'recommend', has: '편하게 다닐' },
+  { q: '유모차 끌고 갈 만한 곳', intent: 'recommend', has: '편하게 다닐' },
+  { q: '강원도에서 요즘 뜨는 곳', intent: 'recommend', has: '강원에서 요즘 뜨는 곳' },
+  // 자료가 없을 때: 지어내지 않고 없다고 한다
+  { q: '요즘 뜨는 곳 알려줘', intent: 'recommend', has: '아직 자료가 없어요' },
   // 모르는 질문은 지어내지 않는다
   { q: '오늘 저녁 뭐 해', intent: 'unknown' },
   { q: 'ㅎㅎ', intent: 'unknown' },
