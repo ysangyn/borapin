@@ -1,8 +1,6 @@
 @import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 @import 'maplibre-gl/dist/maplibre-gl.css';
-/* 둥근 제목 글꼴(주아)과 손글씨(개구): 구글식 글자 조각이라 쓰는 글자만 받는다. 짧은 글(제목·D-day·한 줄 평)에만 */
-@import '@fontsource/jua/400.css';
-@import '@fontsource/gaegu/700.css';
+/* 둥근 제목 글꼴(주아)과 손글씨(개구)는 main.tsx에서 들여온다 (vite 플러그인이 woff 대체 소스를 빼게) */
 
 :root {
   /* 디자인 D: 말랑 스티커(윤곽선·색종이 그림자) + 둘의 색(핑크=보라·파랑=영상·보라색=둘) + 순간(폴라로이드·손글씨) */
@@ -1197,3 +1195,21 @@ input[type='date'].input { min-width: 0; flex: 1 1 0; width: auto; }
 .welcome-name { flex: 1; min-width: 0; border: 0; border-bottom: 2px dashed var(--line2); background: transparent; font-size: 24px; outline: none; padding: 4px 0; color: var(--ink); }
 .welcome-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
 .welcome .btn.block { height: 54px; }
+
+/* 잔손질: 계절 묶음 머리, 범례, 등장 움직임, 도장 */
+.year-head { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.year-head .jua { font-size: 16px; color: var(--ink3); }
+.year-head i { flex: 1; height: 2px; background: var(--line2); border-radius: 2px; }
+.map-legend { border: 2px solid var(--outline); box-shadow: 2px 2px 0 var(--line2); background: #fff; color: var(--ink); font-weight: 700; }
+.map-legend i { border: 1.5px solid var(--outline); }
+.map-legend .lg-flag { background: var(--pink); border-radius: 2px 6px 6px 2px; }
+.map-legend .lg-star { background: var(--butter); border-radius: 50%; }
+@keyframes sheet-in { from { transform: translate(-50%, 24px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+@keyframes toast-in { from { transform: translate(-50%, 10px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+@keyframes menu-in { from { transform: translateY(16px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet { animation: sheet-in .24s cubic-bezier(.2, .9, .3, 1.1) both; }
+.toast { animation: toast-in .2s ease-out both; }
+.plus-sheet { animation: menu-in .2s ease-out both; border: 2px solid var(--outline); box-shadow: 4px 4px 0 var(--line2); }
+@keyframes stamp-in { 0% { transform: rotate(-10deg) scale(1.6); opacity: 0; } 55% { transform: rotate(-10deg) scale(.94); opacity: 1; } 100% { transform: rotate(-10deg) scale(1); } }
+.stamp.stamp-in { animation: stamp-in .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+@media (prefers-reduced-motion: reduce) { .sheet, .toast, .plus-sheet, .stamp.stamp-in { animation: none; } }

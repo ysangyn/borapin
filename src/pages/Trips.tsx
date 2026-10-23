@@ -15,6 +15,8 @@ import { isMemberName } from '../lib/members';
 
 type Filter = 'all' | 'kr' | 'abroad';
 
+const seasonLabel = (m: number) => (m >= 3 && m <= 5 ? '봄' : m >= 6 && m <= 8 ? '여름' : m >= 9 && m <= 11 ? '가을' : '겨울');
+
 export default function Trips() {
   const { trips } = useTrips();
   const { wishes } = useWishes();
@@ -53,9 +55,10 @@ export default function Trips() {
   // 다가오는 여행은 가까운 날부터 (날짜 모르는 계획은 맨 뒤)
   const planned = list.filter((t) => t.status === 'planned').sort((a, b) => (a.when.y ? whenSortKey(a.when) : 9e9) - (b.when.y ? whenSortKey(b.when) : 9e9));
   const done = list.filter((t) => t.status === 'done');
+  // 해·계절로 묶는다: '2026년 가을 · 세 번'. 달을 모르면 해만, 해도 모르면 '날짜 모름'
   const byYear = new Map<string, Trip[]>();
   for (const t of done) {
-    const k = t.when.y ? String(t.when.y) : '날짜 모름';
+    const k = t.when.y ? `${t.when.y}년${t.when.m ? ' ' + seasonLabel(t.when.m) : ''}` : '날짜 모름';
     byYear.set(k, [...(byYear.get(k) ?? []), t]);
   }
   const counts = {
@@ -112,7 +115,7 @@ export default function Trips() {
           )}
           {[...byYear.entries()].map(([y, ts]) => (
             <div key={y}>
-              <div className="year-head">{y}년 · {times(ts.length)}</div>
+              <div className="year-head"><span className="jua">{y}</span><i /><span className="tiny muted">{times(ts.length)}</span></div>
               <div className="list">{ts.map((t) => <TripRow key={t.id} trip={t} />)}</div>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import TripRow from './TripRow';
 import RegionInfo from './RegionInfo';
@@ -98,6 +98,13 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
     }
   };
 
+  // 핀을 꽂아 횟수가 늘면 도장이 '쾅' 찍힌다
+  const [stamped, setStamped] = useState(false);
+  const prevVisits = useRef(visits);
+  useEffect(() => {
+    if (visits > prevVisits.current) { setStamped(true); const t = setTimeout(() => setStamped(false), 600); prevVisits.current = visits; return () => clearTimeout(t); }
+    prevVisits.current = visits;
+  }, [visits]);
   return (
     <div className="sheet split" role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
       <div className="sheet-scroll">
@@ -127,7 +134,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 'none' }}>
-          {visits > 0 && <span className="stamp hand" aria-hidden="true"><span style={{ fontSize: 20 }}>{visits}</span><span style={{ fontSize: 9 }}>번째 핀</span></span>}
+          {visits > 0 && <span className={'stamp hand' + (stamped ? ' stamp-in' : '')} aria-hidden="true"><span style={{ fontSize: 20 }}>{visits}</span><span style={{ fontSize: 9 }}>번째 핀</span></span>}
           <button className="icon-btn" aria-label="닫기" onClick={onClose}><Icon name="x" size={18} stroke={2.2} /></button>
         </div>
       </div>

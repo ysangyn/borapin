@@ -26,8 +26,18 @@ function versionStamp(): Plugin {
   };
 }
 
+/** @fontsource CSS에서 woff(옛 형식) 대체 소스를 뺀다: woff2만으로 충분하고, 빌드 산출물 180개·1.5MB를 줄인다 */
+const dropWoff = () => ({
+  name: 'drop-woff-fallback',
+  enforce: 'pre' as const,
+  transform(code: string, id: string) {
+    if (!id.includes('@fontsource') || !id.endsWith('.css')) return null;
+    return { code: code.replace(/,\s*url\([^)]*\.woff\)\s*format\(['"]woff['"]\)/g, ''), map: null };
+  },
+});
+
 export default defineConfig({
-  plugins: [
+  plugins: [dropWoff(), 
     react(),
     versionStamp(),
     // 앱처럼 설치·오프라인: 화면과 지도 경계는 기기에 저장, 사진은 한 번 본 것만 저장

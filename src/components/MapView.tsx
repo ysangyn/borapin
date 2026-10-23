@@ -481,6 +481,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
           <span><i style={{ background: COLORS.v2 }} />2번</span>
           <span><i style={{ background: COLORS.v3 }} />3번 이상</span>
           <span><i style={{ background: '#F6F2FF', border: '1.5px dashed #5B3FD1' }} />예정</span>
+          {!!flags?.length && <span><i className="lg-flag" />가고 싶은 곳</span>}
+          {!!spots?.length && <span><i className="lg-star" />우리 장소</span>}
         </div>
       )}
     </div>
