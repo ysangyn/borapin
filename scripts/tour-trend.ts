@@ -58,9 +58,11 @@ export function makeResolver(regions: Region[]): Resolver {
   const byPrefix = new Map<string, Region[]>();
   for (const r of regions) byPrefix.set(r.code.slice(0, 2), [...(byPrefix.get(r.code.slice(0, 2)) ?? []), r]);
   const whole = new Set([...byPrefix.entries()].filter(([p, rs]) => rs.length === 1 && rs[0].code === p).map(([p]) => p));
+  // 관광공사 자료는 광주·전남을 옛 번호 '12'로 묶는다 (12210~12330 구 = 광주광역시, 나머지 12xxx = 전남 시·군, 번호가 법정동과 달라 이름으로 맞춤)
+  const LEGACY: Record<string, (sg: string) => string> = { '12': (sg) => (/^12(21|24|27|30|33)0$/.test(sg) ? '29' : '46') };
   return (signguCode, signguNm = '') => {
     const sg = String(signguCode ?? '').trim();
-    const p2 = sg.slice(0, 2);
+    const p2 = LEGACY[sg.slice(0, 2)]?.(sg) ?? sg.slice(0, 2);
     if (exact.has(sg)) return sg;
     if (whole.has(p2)) return p2;
     const cands = byPrefix.get(p2) ?? [];

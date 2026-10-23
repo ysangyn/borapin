@@ -152,3 +152,12 @@ test('기간: 최근 28일은 마지막 날까지, 작년은 364일 전(요일 �
   assert.deepEqual(prevMonths('20261023', 3), ['202609', '202608', '202607']);
   assert.deepEqual(prevMonths('20260115', 2), ['202512', '202511']);
 });
+
+test('광주·전남은 관광공사 옛 번호 12로 오므로 구는 광주(29), 시·군은 이름으로 전남 코드에 맞춘다', async () => {
+  const regions = readJson<{ regions: { code: string; name: string; sido?: string }[] }>(path.resolve('src/data/regions.json'))!.regions;
+  const r = makeResolver(regions);
+  assert.equal(r('12330', '광산구'), '29');
+  assert.equal(r('12130', '여수시'), '46130');
+  assert.equal(r('12740', '고흥군'), '46770');
+  assert.equal(r('12190', '광양시'), '46230');
+});
