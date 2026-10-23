@@ -6,10 +6,17 @@
  * - 375px 휴대폰 화면에서 옆으로 넘치지 않기, 로그인 그림이 문구를 가리지 않기
  * - 새로 고침해도 기록이 남아 있기
  */
-import { test, expect, type Browser, type Page } from '@playwright/test';
+import { test, expect, devices, type Browser, type Page } from '@playwright/test';
 import fs from 'node:fs';
 
 const OWNER = 'ysangyn@gmail.com';
+const FIRESTORE_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? '127.0.0.1:8080';
+
+// 아이폰 사파리 흉내(webkit 프로젝트, @webkit 표시가 있는 시험만)는 앞선 chromium 시험들이 남긴 기록에 기대지 않게 빈 DB에서 시작한다
+test.beforeAll(async ({ browserName }) => {
+  if (browserName !== 'webkit') return;
+  await fetch(`http://${FIRESTORE_HOST}/emulator/v1/projects/demo-borapin/databases/(default)/documents`, { method: 'DELETE' });
+});
 
 const problems: string[] = [];
 function watch(page: Page) {
@@ -28,7 +35,9 @@ test.afterEach(() => {
 });
 
 async function phone(browser: Browser, width = 375, height = 667) {
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
+  // webkit이면 아이폰 사파리처럼 보이게 (UA): 앱의 iOS 분기(소리 안내 등)도 같이 지난다
+  const webkit = browser.browserType().name() === 'webkit';
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block', ...(webkit ? { userAgent: devices['iPhone 13'].userAgent } : {}) });
   return watch(await ctx.newPage());
 }
 async function desktop(browser: Browser) {
@@ -146,7 +155,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
-  test('375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다', async ({ browser }) => {
+  test('375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다', { tag: '@webkit' }, async ({ browser }) => {
     const page = await phone(browser);
     await googleSignIn(page);
     await page.getByRole('button', { name: '남기기', exact: true }).click();
@@ -181,7 +190,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
-  test('375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다', async ({ browser }) => {
+  test('375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다', { tag: '@webkit' }, async ({ browser }) => {
     const page = await phone(browser);
     await signIn(page);
     await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
@@ -284,7 +293,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
-  test('375px: 어느 화면도 옆으로 넘치지 않는다', async ({ browser }) => {
+  test('375px: 어느 화면도 옆으로 넘치지 않는다', { tag: '@webkit' }, async ({ browser }) => {
     const page = await phone(browser);
     await page.goto('/');
     await expect(page.getByTestId('login')).toBeVisible();
@@ -626,7 +635,7 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
-  test('로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다', async ({ browser }) => {
+  test('로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다', { tag: '@webkit' }, async ({ browser }) => {
     const page = await phone(browser);
     await page.goto('/');
     const google = page.getByTestId('login');
@@ -676,7 +685,7 @@ test.describe('사람처럼 쓰기', () => {
   });
 
   for (const width of [360, 375, 390]) {
-    test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, async ({ browser }) => {
+    test(`${width}px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다`, { tag: '@webkit' }, async ({ browser }) => {
       const page = await phone(browser, width, 740);
       await page.goto('/');
       const art = page.locator('.login-mascot');

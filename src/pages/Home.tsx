@@ -15,7 +15,6 @@ import MonthPick, { useMonthPick } from '../components/MonthPick';
 import { pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
-import { usePhotos } from '../lib/photos';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 import { spaceTitle } from '../lib/members';
@@ -38,7 +37,6 @@ export default function Home() {
   const recent = useMemo(() => (trips ? recentlyAdded(trips, 3) : []), [trips]);
   const memory = useMemo(() => (trips ? pickMemory(trips) : null), [trips]);
   const stage = useMemo(() => (trips ? tripStage(trips) : null), [trips]);
-  const { photos } = usePhotos();
   const few = stats ? stats.cellVisits.size < 8 : true;
   // 기록이 하나도 없으면(불러오기 끝) '아직 기록이 없어요'를 지도 바로 아래에 둔다
   const noRecords = !!trips && trips.length === 0;
@@ -68,7 +66,8 @@ export default function Home() {
           <img className="home-bora" src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />
         </div>
 
-        {stage && <StageCard stage={stage} photos={photos} />}
+        {/* 단계 카드는 그 여행의 사진·글 개수만 서버에서 센다 (사진·글 전체 구독 없음) */}
+        {stage && <StageCard key={stage.trip.id} stage={stage} />}
 
         <div className="card map-card" style={{ padding: 12 }}>
           <div className="row-between" style={{ alignItems: 'center', marginBottom: 8 }}>

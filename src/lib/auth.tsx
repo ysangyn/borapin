@@ -50,6 +50,20 @@ export function displayName(user: User | null | undefined): string {
   return nameOf(user.email, user.displayName?.split(' ')[0] || user.email?.split('@')[0] || '나');
 }
 
+/**
+ * 초대 목록(config/access) 스냅샷을 보고 들어갈지 정한다.
+ * - 주인 계정은 목록이 없어도 들어간다 (처음 설정을 만드는 쪽)
+ * - 서버가 '없다'고 한 것과, 오프라인 첫 실행이라 기기 캐시에 아직 없는 것(fromCache)은 다르다:
+ *   뒤쪽은 거부하지 않고 연결을 기다린다 (연결되면 같은 구독으로 진짜 목록이 온다)
+ */
+export function accessVerdict(snap: { exists: boolean; fromCache: boolean; allowed: string[] }, email: string | null | undefined): 'ready' | 'denied' | 'waiting' {
+  const e = (email ?? '').toLowerCase();
+  if (e === OWNER_EMAIL) return 'ready';
+  if (!snap.exists) return snap.fromCache ? 'waiting' : 'denied';
+  return snap.allowed.includes(e) ? 'ready' : 'denied';
+}
+export const WAITING_TEXT = '연결을 기다리는 중이에요. 인터넷이 연결되면 바로 열려요.';
+
 /** 주인 계정이 처음 들어오면 허용 목록과 공간을 만든다. */
 async function bootstrapIfOwner(user: User) {
   if (user.email !== OWNER_EMAIL) return;
@@ -87,12 +101,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       unsubAccess = onSnapshot(
         doc(db, 'config', 'access'),
         (snap) => {
+          const email = (user.email || '').toLowerCase();
+          const verdict = accessVerdict({ exists: snap.exists(), fromCache: snap.metadata.fromCache, allowed: (snap.data() as Access | undefined)?.allowed ?? [] }, email);
+          // 오프라인 첫 실행(캐시에 목록이 아직 없음): '초대되지 않은 계정'이 아니라 연결을 기다린다. 구독은 그대로 두어 연결되면 이어진다
+          if (verdict === 'waiting') return setState({ status: 'error', user, message: WAITING_TEXT });
           const a = (snap.data() as Access | undefined) ?? { allowed: [], admins: [] };
           access = { allowed: a.allowed ?? [], admins: a.admins ?? [], names: a.names ?? {}, relations: a.relations ?? {} };
           setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e), relation: access.relations?.[e] })));
-          const email = (user.email || '').toLowerCase();
           const isOwner = email === OWNER_EMAIL;
-          if (!isOwner && !access.allowed.includes(email)) return setState({ status: 'denied', user });
+          if (verdict === 'denied') return setState({ status: 'denied', user });
           setState({ status: 'ready', user, access, isAdmin: isOwner || access.admins.includes(email) });
         },
         (e) => {

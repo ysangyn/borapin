@@ -247,9 +247,11 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.goto('/memories');
   await snap(page, 'm17-memories');
   await page.goto('/ask');
+  const answersBefore = await page.getByTestId('answer').count();
   await page.getByRole('textbox').first().fill('강릉 몇 번 갔지?');
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(500);
+  // 첫 답이 붙은 뒤에 다음 질문 (고정 대기 대신)
+  await expect.poll(() => page.getByTestId('answer').count()).toBeGreaterThan(answersBefore);
   await page.getByRole('textbox').first().fill('11월에 어디 가면 좋아?');
   await page.keyboard.press('Enter');
   await snap(page, 'm18-ask');
@@ -267,7 +269,8 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   const pt = await page.evaluate(() => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([128.88, 37.74]));
   const box = await page.getByTestId('map').first().boundingBox();
   if (box) await page.mouse.click(box.x + pt.x, box.y + pt.y);
-  await page.waitForTimeout(1500);
+  // 지역 창이 뜨면 바로 (못 뜨면 전처럼 그냥 찍는다: 이 파일은 디자인 검수용 사진이 목적)
+  await page.getByTestId('region-sheet').waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
   await snap(page, 'm22-sheet', false);
   await page.context().close();
 });

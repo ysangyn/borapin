@@ -149,18 +149,19 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # chromium(안드로이드 크롬 흉내) + webkit(아이폰 사파리 흉내, @webkit 핵심 시험만 — playwright.config.ts)
+      - run: npx playwright install --with-deps chromium webkit
       - name: 보안 규칙 시험 (허용·막힘, 실제 firestore.rules)
         run: npm run test:rules 2>&1 | tee rules-output.txt
       - name: 예전 기록 옮기기 스크립트 점검 (두 번 돌려도 겹치지 않는지)
         run: npm run test:migrate 2>&1 | tee migrate-test-output.txt
-      - name: 화면 시험 (구글 창 로그인, 한글 입력, 끌어다 놓기, 375px, 새로 고침 포함)
+      - name: 화면 시험 (구글 창 로그인, 한글 입력, 끌어다 놓기, 375px, 새로 고침 포함 · 아이폰 사파리는 핵심 시험만)
         run: npm run test:e2e 2>&1 | tee test-output.txt
-      - name: 실패 화면 모으기
+      - name: 실패 화면 모으기 (폴더 이름에 브라우저가 붙는다: …-chromium / …-webkit)
         if: failure()
         run: |
           mkdir -p failures
-          find test-results \( -name 'test-failed-*.png' -o -name 'error-context.md' \) | while read -r f; do
+          find test-results \( -name 'test-failed-*.png' -o -name 'error-context.md' -o -name 'trace.zip' \) | while read -r f; do
             cp "$f" "failures/$(echo "$f" | tr '/' '_')"
           done
       - name: 결과 올리기 (ci-report 브랜치)

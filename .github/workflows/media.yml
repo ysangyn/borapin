@@ -52,7 +52,7 @@ jobs:
         run: |
           git config user.name "borapin-ci"
           git config user.email "ci@users.noreply.github.com"
-          git add public/media src/data/media.json media-build-output.txt
+          git add public/media src/data/media.json src/data/media-blur.json media-build-output.txt
           git commit -m "꾸밈 사진·영상 만들기 결과" || echo "바뀐 것 없음"
           git push origin HEAD:media-build
       - name: 만들기 결과 올리기

@@ -1,24 +1,24 @@
-import { useAllNotes } from '../lib/tripExtras';
+import { useTripNoteCount } from '../lib/tripExtras';
+import { useTripPhotoCount } from '../lib/photos';
 import { Link } from 'react-router-dom';
 import { Icon } from './ui';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
 import { stageAction, type Stage } from '../lib/stage';
-import type { Photo } from '../lib/types';
 
 /**
  * 여행 전·중·후에 따라 바뀌는 홈 맨 위 카드.
  * 떠나기 전: D-day와 준비물 진행 · 여행 중: 며칠째와 오늘 일정·사진 · 막 다녀옴: 사진·한 줄 남기기
  * 카드는 여행 개요로, 단추는 말한 그 탭(준비·사진·글)으로 간다.
+ * 필요한 건 '이 여행'의 사진·글 개수뿐이라 사진·글 전체를 구독하지 않고 서버에서 개수만 센다 (읽기 1+1).
  */
-export default function StageCard({ stage, photos }: { stage: Stage; photos: Photo[] | null }) {
+export default function StageCard({ stage }: { stage: Stage }) {
   const t = stage.trip;
   const pack = t.packing ?? [];
   const packed = pack.filter((x) => x.done).length;
-  const nPhotos = photos ? photos.filter((p) => p.tripId === t.id).length : null;
-  const notes = useAllNotes();
-  const nNotes = notes ? notes.filter((n) => n.tripId === t.id).length : 0;
+  const nPhotos = useTripPhotoCount(t.id);
+  const nNotes = useTripNoteCount(t.id) ?? 0;
   const photo = t.places.map(photoForPlace).find(Boolean) ?? null;
   const where = t.places.map(placeLabel).join(' · ');
   const art = stage.kind === 'before' ? '/art/bora-pack.webp' : stage.kind === 'during' ? '/art/bora-camera.webp' : '/art/bora-cheer.webp';

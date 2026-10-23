@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
-import { useStudy, speak } from '../lib/study/store';
-import { choices, cloze, ITEMS, speakScore, summary, todaySet, ymd, type Item } from '../lib/study/srs';
+import { useBank, useStudy, speak } from '../lib/study/store';
+import { choices, cloze, speakScore, summary, todaySet, ymd, type Item } from '../lib/study/srs';
 
 type Mode = 'learn' | 'pick' | 'blank' | 'speak' | 'saved';
 
@@ -11,15 +11,18 @@ type Mode = 'learn' | 'pick' | 'blank' | 'speak' | 'saved';
  * 맞고 틀림은 간격 반복에 들어가 내일 묶음을 정한다. 둘이 같은 날 같은 10문장을 본다.
  */
 export default function Study() {
-  const { data, grade, toggleSaved } = useStudy();
+  const { data: doc, grade, toggleSaved } = useStudy();
+  // 문장 은행은 이 화면을 열 때 받는다 (첫 묶음에 65KB를 넣지 않으려고). 둘 다 와야 그린다
+  const bank = useBank();
+  const data = bank ? doc : null;
   const toast = useToast();
   const [mode, setMode] = useState<Mode>('learn');
   const today = useMemo(() => new Date(), []);
   const todayStr = ymd(today);
   const [extra, setExtra] = useState(0);
-  const set = useMemo(() => (data ? todaySet(data.progress, today, extra) : []), [data, today, extra]);
-  const sum = useMemo(() => (data ? summary(data.progress, data.days, today) : null), [data, today]);
-  const saved = useMemo(() => (data ? ITEMS.filter((i) => data.progress[i.id]?.saved) : []), [data]);
+  const set = useMemo(() => (data && bank ? todaySet(data.progress, today, extra) : []), [data, bank, today, extra]);
+  const sum = useMemo(() => (data && bank ? summary(data.progress, data.days, today) : null), [data, bank, today]);
+  const saved = useMemo(() => (data && bank ? bank.filter((i) => data.progress[i.id]?.saved) : []), [data, bank]);
 
   return (
     <>
@@ -39,6 +42,7 @@ export default function Study() {
           ))}
         </div>
         {!data && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
+        {data && bank && bank.length === 0 && <div className="empty" data-testid="study-no-bank"><b>영어 문장을 받지 못했어요</b><span className="small">인터넷에 연결된 뒤 다시 열어 주세요.</span></div>}
         {data && mode === 'learn' && (
           <div className="study-list">
             <div className="small muted">오늘은 복습 {set.filter((i) => (data.progress[i.id]?.seen ?? 0) > 0 && data.progress[i.id].due <= todayStr).length}개 + 새 문장 {set.filter((i) => !data.progress[i.id] || data.progress[i.id].seen <= 1).length}개 · 90초면 돼요. <b>외웠어요</b>·<b>다시</b>가 내일 묶음을 정해요.</div>

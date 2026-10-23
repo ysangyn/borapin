@@ -86,6 +86,12 @@ export default defineConfig({
             options: { cacheName: 'festivals', expiration: { maxEntries: 2 } },
           },
           {
+            // 외교부·환율 자료: 번들 밖(/data)에서 받아 매일 바뀌어도 새 서비스워커가 생기지 않는다
+            urlPattern: ({ url }) => url.pathname === '/data/abroad.json',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'abroad', expiration: { maxEntries: 2 } },
+          },
+          {
             urlPattern: ({ url }) => url.hostname === 'cdn.jsdelivr.net',
             handler: 'StaleWhileRevalidate',
             options: { cacheName: 'fonts', expiration: { maxEntries: 120 } },

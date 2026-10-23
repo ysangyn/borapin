@@ -1,15 +1,21 @@
-import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useRef, useState, type ContextType, type ReactNode } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { sendReport } from '../lib/admin';
-import { useStore } from '../lib/store';
+import { StoreCtx, useStore } from '../lib/store';
 import { onLateWriteError } from '../lib/writes';
 import { IDLE_MS, isTextField, shouldApplyUpdate, type GateState, type Moment } from '../lib/updateGate';
 import { busyCount, useToast } from './ui';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RestArt } from './Scene';
 
-/** 화면을 그리다 난 오류: 흰 화면 대신 다시 시도할 수 있는 안내 */
+/**
+ * 화면을 그리다 난 오류: 흰 화면 대신 다시 시도할 수 있는 안내.
+ * 기록 구독이 실패해 아무것도 못 받았을 때(store.failed)도 같은 자리에서 '다시 시도'를 보인다 —
+ * 홈·상세 화면이 뼈대(불러오는 중)로 영원히 남지 않게. (바깥 경계는 store 밖이라 기본값 failed=false)
+ */
 export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: string }, { error: Error | null }> {
+  static contextType = StoreCtx;
+  declare context: ContextType<typeof StoreCtx>;
   state = { error: null as Error | null };
   static getDerivedStateFromError(error: Error) {
     return { error };
@@ -22,6 +28,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: s
     if (prev.resetKey !== this.props.resetKey && this.state.error) this.setState({ error: null });
   }
   render() {
+    if (!this.state.error && this.context?.failed) return <LoadFailed message={this.context.error} retry={this.context.retry} />;
     if (!this.state.error) return this.props.children;
     return (
       <div className="center-screen" role="alert">
@@ -35,6 +42,18 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: s
       </div>
     );
   }
+}
+
+/** 기록을 하나도 못 받았을 때: 다시 시도(구독 다시 켜기) */
+function LoadFailed({ message, retry }: { message: string | null; retry: () => void }) {
+  return (
+    <div className="center-screen" role="alert" data-testid="load-failed">
+      <RestArt />
+      <b style={{ fontSize: 18 }}>{message ?? '기록을 불러오지 못했어요.'}</b>
+      <span className="small muted">기록은 안전해요. 연결을 확인하고 다시 시도해 주세요.</span>
+      <button className="btn" onClick={retry}>다시 시도</button>
+    </div>
+  );
 }
 
 const isChunkError = (e: unknown) => /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|ChunkLoadError/i.test(String((e as Error)?.message ?? e));
@@ -80,7 +99,7 @@ export function useOnline() {
 /** 위쪽 알림 띠: 오프라인, 불러오기 실패 */
 export function StatusBanner() {
   const online = useOnline();
-  const { error, retry } = useStore();
+  const { error, failed, retry } = useStore();
   const toast = useToast();
   useEffect(
     () =>
@@ -95,7 +114,8 @@ export function StatusBanner() {
         오프라인이에요 · 남긴 기록은 기기에 저장됐다가 연결되면 올라가요
       </div>
     );
-  if (error)
+  // 기록을 하나도 못 받았으면 오류 화면(ErrorBoundary의 LoadFailed)이 '다시 시도'를 보이니 띠는 겹치지 않게 뺀다
+  if (error && !failed)
     return (
       <div className="status-banner warn" role="alert">
         <span>{error}</span>

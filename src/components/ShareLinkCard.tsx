@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon, useToast } from './ui';
 import { disableShare, enableShare, shareUrl, syncShare } from '../lib/share';
 import { isOffline } from '../lib/writes';
@@ -9,18 +9,23 @@ import { placeLabel } from '../lib/geo';
 import type { Photo, PlaceRec, Trip } from '../lib/types';
 
 /**
- * 공개 중인 여행이 바뀌면(사진 올리기·지우기, 제목·장소 고치기) 사본도 맞춘다.
- * 여행 상세 화면이 열려 있는 동안 어느 탭에 있든 돈다. 바뀐 게 없으면 쓰지 않는다.
+ * 공개 중인 여행의 사본 안전망: 여행 상세를 열면 손에 든 사진·장소로 한 번 맞춘다 (바뀐 게 없으면 읽기 1회로 끝).
+ * 사진 설명·장소·여행을 저장할 때는 저장 함수(lib/photos·lib/data)가 바로 사본을 맞추므로(lib/share syncShareAfterWrite),
+ * 여기서는 열 때 한 번만 — 옛 버전 앱이나 오프라인에서 남긴 변경이 있었을 때를 위한 것이다.
  */
 export function useShareSync(trip: Trip | undefined, photos: Photo[] | null, recs: PlaceRec[] | null) {
   const token = trip?.share?.token;
-  const sig = trip && photos && recs ? JSON.stringify([token, trip.title, trip.when, trip.places, photos.map((p) => p.id + (p.caption ?? '')), recs.map((r) => r.id + r.name + r.verdict)]) : '';
+  const loaded = !!(trip && photos && recs);
+  const done = useRef<string | null>(null);
   useEffect(() => {
-    if (!token || !sig || !trip || !photos || !recs) return;
-    const t = window.setTimeout(() => syncShare(trip, photos, recs).catch((e) => console.warn(e)), 1200);
+    if (!token || !loaded || done.current === token) return;
+    const t = window.setTimeout(() => {
+      done.current = token;
+      syncShare(trip!, photos!, recs!).catch((e) => console.warn(e));
+    }, 1200);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig]);
+  }, [token, loaded]);
 }
 
 /** 여행 공유 링크: 앱이 없어도 이 여행의 지도·사진·들른 곳을 보는 읽기 전용 페이지 */

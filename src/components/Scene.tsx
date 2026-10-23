@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { photoById, preferStill, videoById, type ScenePhoto } from '../lib/media';
+import { photoById, preferStill, useBlur, videoById, type ScenePhoto } from '../lib/media';
 import { artById } from '../lib/art';
 
 /**
  * 여행지 사진: 흐린 미리보기가 먼저 깔리고, 화면 폭에 맞는 크기(640/1280)를 받는다.
+ * 미리보기 묶음(media-blur.json)은 첫 묶음에 없어서 여기서 따로 받는다 — 오기 전엔 사진만, 오면 배경이 깔린다.
  */
 export function ScenicPhoto({ photo, id, className, alt, eager, label }: { photo?: ScenePhoto | null; id?: string; className?: string; alt?: string; eager?: boolean; label?: 'top' | 'bottom' }) {
   const p = photo ?? (id ? photoById(id) : null);
   const [loaded, setLoaded] = useState(false);
+  useBlur(!!p);
   if (!p) return null;
   return (
-    <div className={'scenic ' + (className ?? '')} style={{ backgroundImage: `url(${p.lqip})` }}>
+    <div className={'scenic ' + (className ?? '')} style={p.lqip ? { backgroundImage: `url(${p.lqip})` } : undefined}>
       <img
         src={p.src.l}
         srcSet={`${p.src.s} 640w, ${p.src.l} 1280w`}
@@ -46,20 +48,35 @@ function useTall(enabled: boolean) {
   return tall;
 }
 
+/** 화면이 한가해진 뒤(그리기·로그인 확인이 끝난 뒤)에 true — 영상 같은 큰 것을 그때 붙인다 */
+function useIdle() {
+  const [idle, setIdle] = useState(false);
+  useEffect(() => {
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (w.requestIdleCallback) { const id = w.requestIdleCallback(() => setIdle(true), { timeout: 2500 }); return () => w.cancelIdleCallback?.(id); }
+    const t = window.setTimeout(() => setIdle(true), 1200);
+    return () => window.clearTimeout(t);
+  }, []);
+  return idle;
+}
+
 /**
  * 반복 풍경 영상 (구름·계곡). 정지 사진이 먼저 보이고, 화면에 보일 때만 재생한다. 소리는 없다.
  * 세로 화면에서는 세로로 자른 판을 써서 흐려지지 않게 한다.
  * 데이터 절약·움직임 줄이기 기기에서는 정지 사진만.
+ * 영상 파일은 첫 화면(로그인)과 받기 경쟁하지 않게 화면이 한가해진 뒤에 붙이고, 그때도 preload="metadata"로 가볍게 시작한다.
  */
 export function SceneVideo({ id, className, children }: { id: string; className?: string; children?: React.ReactNode }) {
   const v = videoById(id);
   const el = useRef<HTMLVideoElement>(null);
   const [still, setStill] = useState(preferStill);
+  const idle = useIdle();
   const tall = useTall(!!v?.portrait);
   const f = tall && v?.portrait ? v.portrait : v;
+  const show = !still && idle;
   useEffect(() => {
     const node = el.current;
-    if (!node || still) return;
+    if (!node || !show) return;
     const io = new IntersectionObserver(([e]) => {
       // 재생이 막히면(저전력 모드 등) 영상을 빼고 정지 사진만 남긴다
       if (e.isIntersecting) node.play().catch(() => setStill(true));
@@ -67,12 +84,12 @@ export function SceneVideo({ id, className, children }: { id: string; className?
     });
     io.observe(node);
     return () => io.disconnect();
-  }, [still, f]);
+  }, [show, f]);
   if (!v || !f) return <div className={'scene ' + (className ?? '')}>{children}</div>;
   return (
-    <div className={'scene ' + (className ?? '')} style={{ backgroundImage: `url(${f.poster}), url(${f.lqip})` }}>
-      {!still && (
-        <video key={f.mp4} ref={el} muted loop playsInline autoPlay preload="auto" poster={f.poster} aria-hidden="true" tabIndex={-1} disablePictureInPicture disableRemotePlayback>
+    <div className={'scene ' + (className ?? '')} style={{ backgroundImage: f.lqip ? `url(${f.poster}), url(${f.lqip})` : `url(${f.poster})` }}>
+      {show && (
+        <video key={f.mp4} ref={el} muted loop playsInline autoPlay preload="metadata" poster={f.poster} aria-hidden="true" tabIndex={-1} disablePictureInPicture disableRemotePlayback>
           <source src={f.webm} type="video/webm" />
           <source src={f.mp4} type="video/mp4" />
         </video>

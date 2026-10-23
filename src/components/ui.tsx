@@ -7,7 +7,7 @@ import { useStore } from '../lib/store';
 import { displayName, useAuth } from '../lib/auth';
 import { buildFeed, unseenCount } from '../lib/feed';
 import { feedSeenAt, onFeedSeen } from '../lib/feedSeen';
-import { unseenHearts, useHearts } from '../lib/hearts';
+import { unseenHearts, useRecentHearts } from '../lib/hearts';
 
 const PATHS: Record<string, string> = {
   plane: 'M2 16l20-8-4 14-4-6-6-2zM14 16l6-8',
@@ -86,7 +86,8 @@ function useFeedUnseen() {
   useEffect(() => onFeedSeen(() => setSeen(feedSeenAt())), []);
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const uid = auth.status === 'ready' ? auth.user.uid : '';
-  const hearts = useHearts();
+  // 늘 켜 두는 구독이라 하트 전체가 아니라 최근 50개만 (점에 필요한 건 '본 뒤에 남이 누른 것'뿐)
+  const hearts = useRecentHearts();
   const asks = useRecentAsks(3);
   return useMemo(() => {
     if (!trips || !wishes || !places) return 0;

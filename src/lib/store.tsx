@@ -18,11 +18,14 @@ interface Store {
   places: PlaceRec[] | null;
   flags: Flags;
   error: string | null;
+  /** 구독이 실패해 기록이 하나도 안 온 상태: 화면은 '불러오는 중' 대신 '다시 시도'를 보여야 한다 */
+  failed: boolean;
+  /** 구독을 처음부터 다시 켠다 */
   retry: () => void;
 }
 
-const Ctx = createContext<Store>({ trips: null, wishes: null, places: null, flags: {}, error: null, retry: () => {} });
-export const useStore = () => useContext(Ctx);
+export const StoreCtx = createContext<Store>({ trips: null, wishes: null, places: null, flags: {}, error: null, failed: false, retry: () => {} });
+export const useStore = () => useContext(StoreCtx);
 
 /** 빠진 칸이 있어도 화면이 깨지지 않게 기본값을 채운다 */
 function normTrip(id: string, d: Record<string, unknown>): Trip {
@@ -76,6 +79,18 @@ export function errorText(e: unknown): string {
   return '기록을 불러오지 못했어요.';
 }
 
+/**
+ * 지금 기록이 어떤 상태인지.
+ * - loading: 아직 오는 중 (뼈대 화면)
+ * - failed: 구독이 실패했는데 기록이 하나라도 비어 있음 → 뼈대가 영원히 남지 않게 '다시 시도' 화면
+ * - ready: 기록이 다 있음 (뒤늦은 오류는 띠로만 알린다)
+ */
+export function storeState(s: { trips: unknown[] | null; wishes: unknown[] | null; places: unknown[] | null; error: string | null }): 'loading' | 'failed' | 'ready' {
+  const missing = s.trips === null || s.wishes === null || s.places === null;
+  if (!missing) return 'ready';
+  return s.error ? 'failed' : 'loading';
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [wishes, setWishes] = useState<Wish[] | null>(null);
@@ -100,6 +115,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => offs.forEach((off) => off());
   }, [round]);
 
-  const value = useMemo(() => ({ trips, wishes, places, flags, error, retry: () => setRound((r) => r + 1) }), [trips, wishes, places, flags, error]);
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  const value = useMemo(
+    () => ({ trips, wishes, places, flags, error, failed: storeState({ trips, wishes, places, error }) === 'failed', retry: () => setRound((r) => r + 1) }),
+    [trips, wishes, places, flags, error],
+  );
+  return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }

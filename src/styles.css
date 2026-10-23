@@ -1213,3 +1213,17 @@ input[type='date'].input { min-width: 0; flex: 1 1 0; width: auto; }
 @keyframes stamp-in { 0% { transform: rotate(-10deg) scale(1.6); opacity: 0; } 55% { transform: rotate(-10deg) scale(.94); opacity: 1; } 100% { transform: rotate(-10deg) scale(1); } }
 .stamp.stamp-in { animation: stamp-in .5s cubic-bezier(.2, 1.4, .4, 1) both; }
 @media (prefers-reduced-motion: reduce) { .sheet, .toast, .plus-sheet, .stamp.stamp-in { animation: none; } }
+
+/* ---------- 접근성 (검토 F16): 흐린 글자 대비, 포커스 테두리, 터치 영역 44px ---------- */
+/* 흐린 글자색: 흰 바탕 5.0:1, 연보라 바탕(--page) 4.6:1 — 전엔 #8A80A8(3.7:1) */
+:root { --ink4: #746A8A; }
+/* 포커스 테두리: 요소의 윤곽선(2px 진남색)과 헷갈리지 않게 보라색 3px을 3px 띄워 그린다 */
+:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
+/* 꼬리표(22px) 모양을 단추로 쓸 때(한 줄 평 '가리고 쓰기')는 36px 높이 */
+.tag-btn, button.tag { height: 36px; min-height: 36px; padding: 0 12px; font-size: 12.5px; gap: 5px; }
+/* 누르는 칩·작은 단추·아이콘 단추·하트: 보이는 크기는 그대로 두고 손가락이 닿는 영역만 44px 이상으로 넓힌다 (::before, 배치에 영향 없음) */
+button.chip, .btn.sm, .icon-btn, .seg button, button.tag, .tag-btn, .my-heart, .feed-heart, .ask-item-heart, .link-btn { position: relative; }
+button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, button.tag::before, .tag-btn::before, .my-heart::before, .feed-heart::before, .ask-item-heart::before, .link-btn::before {
+  content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: max(100%, 44px); height: max(100%, 44px); border-radius: inherit;
+}

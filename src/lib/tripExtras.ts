@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getCountFromServer, getDocs, getDocsFromCache, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where, type CollectionReference } from 'firebase/firestore';
 import { queued } from './writes';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
@@ -8,6 +8,35 @@ import type { Note, PlanItem } from './types';
 
 const plansCol = () => collection(db, 'spaces', SPACE_ID, 'plans');
 const notesCol = () => collection(db, 'spaces', SPACE_ID, 'notes');
+
+// ---------- 한 여행의 개수만 (홈 단계 카드) ----------
+/**
+ * 어느 여행의 문서 수. 서버 집계라 문서를 받지 않아 읽기 1회(1000개까지)로 끝난다.
+ * 오프라인이면 기기 캐시에서 센다(읽기 0). 캐시에도 하나도 없으면 0인지 모르는 건지 알 수 없어 null.
+ */
+export async function countByTrip(col: () => CollectionReference, tripId: string): Promise<number | null> {
+  const q = query(col(), where('tripId', '==', tripId));
+  try {
+    return (await getCountFromServer(q)).data().count;
+  } catch {
+    const cached = await getDocsFromCache(q).then((s) => s.size, () => 0);
+    return cached > 0 ? cached : null;
+  }
+}
+/** 화면용: 열 때 한 번 센다 (화면을 다시 열면 다시 센다). 아직 모르면 null */
+export function useTripCount(col: () => CollectionReference, tripId: string | undefined) {
+  const [state, setState] = useState<{ tripId?: string; n: number | null }>({ n: null });
+  useEffect(() => {
+    if (!tripId) return;
+    let on = true;
+    countByTrip(col, tripId).then((n) => on && setState({ tripId, n }), () => on && setState({ tripId, n: null }));
+    return () => { on = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripId]);
+  return state.tripId === tripId ? state.n : null;
+}
+export const countTripNotes = (tripId: string) => countByTrip(notesCol, tripId);
+export const useTripNoteCount = (tripId: string | undefined) => useTripCount(notesCol, tripId);
 
 function useByTrip<T>(col: () => ReturnType<typeof collection>, tripId: string | undefined) {
   // 다른 여행으로 옮기면 이전 여행 것이 잠깐 보이지 않게 여행 id와 함께 둔다
@@ -64,6 +93,12 @@ export function useAllPlans(enabled = true) {
   }, [enabled]);
   return items;
 }
+
+// ---------- 한 번만 읽기 (물어보기: 질문할 때 한 번, 구독 없이) ----------
+/** 모든 여행의 일정 줄을 한 번 읽는다 (오프라인이면 기기 캐시에서) */
+export const readPlansOnce = async (): Promise<PlanItem[]> => (await getDocs(plansCol())).docs.map((d) => ({ id: d.id, ...d.data() }) as PlanItem);
+/** 모든 여행의 글을 한 번 읽는다 (오프라인이면 기기 캐시에서) */
+export const readNotesOnce = async (): Promise<Note[]> => (await getDocs(notesCol())).docs.map((d) => ({ id: d.id, ...d.data() }) as Note);
 
 /** 모든 여행의 글 (공유카드 '메모 인용' 등) */
 export function useAllNotes(enabled = true) {
