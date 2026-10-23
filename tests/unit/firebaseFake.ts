@@ -260,9 +260,15 @@ export async function runTransaction<T>(_db: unknown, fn: (tx: { get: typeof get
 export function onSnapshot(target: DocRef | ColRef | Query, cb: (s: unknown) => void, _err?: (e: unknown) => void) {
   const entry = { path: target.type === 'query' ? target.col.path : target.path, constraints: target.type === 'query' ? target.constraints : [], off: false };
   listens.push(entry);
-  const snap = target.type === 'doc' ? docSnap(target, net.offline) : querySnap(target, net.offline);
-  if (target.type !== 'doc') for (const d of snap.docs as { ref: DocRef }[]) log.push({ op: net.offline ? 'cache' : 'read', path: d.ref.path });
-  else log.push({ op: net.offline ? 'cache' : 'read', path: target.path });
+  let snap: unknown;
+  if (target.type === 'doc') {
+    snap = docSnap(target, net.offline);
+    log.push({ op: net.offline ? 'cache' : 'read', path: target.path });
+  } else {
+    const s = querySnap(target, net.offline);
+    for (const d of s.docs) log.push({ op: net.offline ? 'cache' : 'read', path: d.ref.path });
+    snap = s;
+  }
   queueMicrotask(() => { if (!entry.off) cb(snap); });
   return () => { entry.off = true; };
 }
