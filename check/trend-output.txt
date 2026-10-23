@@ -1,0 +1,14 @@
+::warning::관광빅데이터: 지난 자료를 찾지 못했어요 (로컬 src/data/trend.json: 시·군 0곳, public/data/trend.json: 시·군 0곳 · 실제 주소 시·군 0곳). 받기에 실패하면 빈 자료가 됩니다
+방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"2","daywkDivNm":"화요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"191905.0","baseYmd":"20260908"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"2","daywkDivNm":"화요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"436432.5","baseYmd":"20260908"}] 
+방문자 받는 방식: 전체 한 번에(쪽으로)
+자료가 있는 마지막 날 2026-09-23 (어제보다 30일 전) → 최근 2026-08-27~2026-09-23, 작년 2025-08-28~2025-09-24
+방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"4","daywkDivNm":"목요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"185689.0","baseYmd":"20260827"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"4","daywkDivNm":"목요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"424014.5","baseYmd":"20260827"}]
+방문자: 최근 22596줄 → 시·군 137곳, 작년 22176줄 → 160곳 · 호출 53번
+짝 못 찾은 관광공사 시군구 27개: 12110(목포시) 12130(여수시) 12150(순천시) 12170(나주시) 12190(광양시) 12210(동구) 12240(서구) 12270(남구) 12300(북구) 12330(광산구) 12710(담양군) 12720(곡성군) 12730(구례군) 12740(고흥군) 12750(보성군) 12760(화순군) 12770(장흥군) 12780(강진군) 12790(해남군) 12800(영암군) 12810(무안군) 12820(함평군) 12830(영광군) 12840(장성군) 12850(완도군) 12860(진도군) 12870(신안군)
+연관 관광지 기준 달 202609
+연관 관광지 원본 예시 [{"baseYm":"202609","tAtsCd":"370a94de1961b98b7eda3dfb1f08cbe1","tAtsNm":"거잠포선착장","areaCd":"28","areaNm":"인천광역시","signguCd":"28155","signguNm":"영종구","rlteTatsCd":"43e3542bb845cdd8b7f28cb05c687673","rlteTatsNm":"잠진도선착장","rlteRegnCd":"28","rlteRegnNm":"인천광역시","rlteSignguCd":"28155","rlteSignguNm":"영종구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"기타관광","rlteCtgrySclsNm":"교통시설","rlteRank":"1"},{"baseYm":"202609","tAtsCd":"370a94de1961b98b7eda3dfb1f08cbe1","tAtsNm":"거잠포선착장","areaCd":"28","areaNm":"인천광역시","signguCd":"28155","signguNm":"영종구","rlteTatsCd":"38a26a16270ce8f2cf503ba9650b6c94","rlteTatsNm":"을왕리해수욕장","rlteRegnCd":"28","rlteRegnNm":"인천광역시","rlteSignguCd":"28155","rlteSignguNm":"영종구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"자연관광","rlteCtgrySclsNm":"자연경관(하천/해양)","rlteRank":"2"}]
+붐빔 원본 예시 [{"baseYmd":"20261023","areaCd":"28","areaNm":"인천광역시","signguCd":"28200","signguNm":"남동구","tAtsNm":"논현포대","cnctrRate":"66.39"},{"baseYmd":"20261024","areaCd":"28","areaNm":"인천광역시","signguCd":"28200","signguNm":"남동구","tAtsNm":"논현포대","cnctrRate":"45.7"}]
+관광빅데이터: 시·군 137곳 (작년 비교 137곳 · 연관 137곳 · 붐빔 137곳) · 호출 458번 · 27초
+요즘 뜨는 곳: 화성시 162%, 강릉시 13%, 평택시 12%, 이천시 10%, 공주시 9%, 안성시 8%, 논산시 8%, 여주시 8%
+한적한 곳: 울릉군 3226, 영양군 4936, 양구군 8400, 장수군 9297, 화천군 11368, 순창군 12414, 봉화군 12520, 청송군 12832
+저장 → src/data/trend.json, public/data/trend.json
