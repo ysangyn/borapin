@@ -715,7 +715,15 @@ test.describe.serial('보라핀 1단계', () => {
     // 일정 ① 적기(한글 Enter·추가 단추) ② 날짜 ③ 시간
     await page.getByRole('tab', { name: '일정' }).click();
     const plan = page.getByTestId('plan-tab');
-    const n0 = await plan.getByTestId('plan-item').count();
+    // 이미 있던 일정이 다 그려진 뒤에 센다 (구독이 늦게 와서 0개로 세는 일이 없게: 개수가 1초 동안 그대로일 때)
+    await expect(plan.getByLabel('가볼 곳 추가')).toBeVisible();
+    let n0 = -1;
+    for (let k = 0, same = 0; k < 40 && same < 4; k++) {
+      const c = await plan.getByTestId('plan-item').count();
+      same = c === n0 ? same + 1 : 0;
+      n0 = c;
+      await page.waitForTimeout(250);
+    }
     await plan.getByLabel('가볼 곳 추가').fill('시장 구경');
     await plan.getByLabel('가볼 곳 추가').press('Enter');
     await plan.getByLabel('가볼 곳 추가').fill('저녁 산책');
