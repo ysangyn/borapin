@@ -104,6 +104,15 @@ export default function Ask() {
   };
 
   // 홈에서 넘어온 질문
+  // 질문을 보낸 사이 화면이 새로 고쳐졌으면(새 버전 조각 받기 등) 답 없는 마지막 질문을 이어서 다시 묻는다
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (resumed.current || !data) return;
+    resumed.current = true;
+    const last = msgs[msgs.length - 1];
+    if (last?.who === 'me') { setMsgs((m) => m.slice(0, -1)); void send(last.text); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
   const first = sp.get('q');
   const sentFirst = useRef('');
   useEffect(() => {
@@ -166,7 +175,7 @@ export default function Ask() {
             <div key={i} className="bot-row">
             <img className="bot-face" src="/art/bora-face.webp" alt="" aria-hidden="true" width={28} height={28} decoding="async" />
             <div className="bubble bot" data-testid="answer">
-              <b>{m.a.text}</b>
+              <p className="bot-text">{m.a.text}</p>
               {m.a.lines && m.a.lines.length > 0 && <ul>{m.a.lines.map((l, j) => <li key={j}>{l}</li>)}</ul>}
               {m.a.items && m.a.items.length > 0 && (
                 <div className="ask-items" data-testid="ask-items">
@@ -208,7 +217,7 @@ export default function Ask() {
         <div ref={end} />
       </div>
       <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); send(text); }}>
-        <input className="input" aria-label="질문" placeholder={ready ? '강릉 맛집, 작년 여름에 간 곳…' : '불러오는 중…'} value={text} onChange={(e) => setText(e.target.value)} disabled={!ready || thinking} />
+        <input className="input" aria-label="질문" placeholder={ready ? '강릉 맛집, 작년 여름에 간 곳…' : '불러오는 중…'} value={text} onChange={(e) => setText(e.target.value)} disabled={!ready} enterKeyHint="send" />
         {!!SR && !text.trim() && (
           <button type="button" className={'btn soft' + (listening ? ' listening' : '')} style={{ width: 52, padding: 0 }} aria-label={listening ? '듣는 중' : '말로 묻기'} disabled={!ready || thinking} onClick={listen}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
