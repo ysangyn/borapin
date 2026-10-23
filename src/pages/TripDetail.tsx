@@ -1,3 +1,4 @@
+import { toneOf } from '../lib/members';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PlanTab from '../components/PlanTab';
@@ -104,7 +105,7 @@ export default function TripDetail() {
       />
       <div className="page" style={{ paddingTop: 4 }}>
         <div>
-          <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em' }} data-testid="trip-title">{trip.title}</div>
+          <div className="trip-title" data-testid="trip-title">{trip.title}</div>
           <div className="muted" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>{formatWhen(trip.when)}{nd ? ` · ${nd}` : ''}</span>
             {dd && <span className="tag violet" data-testid="dday">{dd}</span>}
@@ -119,8 +120,11 @@ export default function TripDetail() {
         )}
 
         {tab === 'info' && photos.length > 0 && (
-          <button className="trip-cover" onClick={() => openSlideshow(photos, 0, { placeOf: tripPlace, onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })} aria-label="표지 사진 크게 보기">
+          <button className={'trip-cover pola' + (notes?.[0] ? ' with-line' : '')} onClick={() => openSlideshow(photos, 0, { placeOf: tripPlace, onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })} aria-label="표지 사진 크게 보기">
+            <span className="tape" aria-hidden="true" />
             <PhotoImg id={photos[0].id} size="l" />
+            {notes?.[0] && <span className={'pola-line hand ' + (toneOf(notes[0].by.name) === 1 ? 'blue' : 'pink')}>“{notes[0].text.split('\n')[0].slice(0, 36)}” — {notes[0].by.name}</span>}
+            {photos.length > 1 && <span className="pola-count">1 / {photos.length}</span>}
           </button>
         )}
 

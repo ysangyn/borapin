@@ -109,7 +109,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       )}
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }} data-testid="sheet-title">{name}</div>
+          <div className="jua" style={{ fontSize: 28, lineHeight: 1.1 }} data-testid="sheet-title">{name}</div>
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           {fests.length > 0 && (
             <div className="sheet-fests" data-testid="sheet-festivals">
@@ -122,11 +122,14 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
               ))}
             </div>
           )}
-          <div className="small muted">
-            {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
+          <div className="hand" style={{ fontSize: 18, color: visits ? 'var(--violet)' : 'var(--ink3)', lineHeight: 1.1, marginTop: 2 }}>
+            {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '한 번 다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>
         </div>
-        <button className="icon-btn" aria-label="닫기" onClick={onClose}><Icon name="x" size={18} stroke={2.2} /></button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 'none' }}>
+          {visits > 0 && <span className="stamp hand" aria-hidden="true"><span style={{ fontSize: 20 }}>{visits}</span><span style={{ fontSize: 9 }}>번째 핀</span></span>}
+          <button className="icon-btn" aria-label="닫기" onClick={onClose}><Icon name="x" size={18} stroke={2.2} /></button>
+        </div>
       </div>
 
       {place.t === 'kr' && <RegionInfo code={place.code} />}

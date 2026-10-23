@@ -1141,3 +1141,17 @@ a.hub-way-row { text-decoration: none; }
 .home-bora { width: 84px; height: 84px; flex: none; border-radius: 50%; border: 2px solid var(--outline); background: var(--butter); box-shadow: 4px 4px 0 var(--line2); object-fit: cover; }
 /* 날짜 입력칸은 고유 폭이 있어 2px 윤곽을 더하면 넘친다 → 줄 안에서 줄어들게 */
 input[type='date'].input { min-width: 0; flex: 1 1 0; width: auto; }
+
+/* 순간(A): 폴라로이드 — 대표 사진·추억 카드에만 */
+.pola { position: relative; background: #fff; border: 2px solid var(--outline); border-radius: 4px; padding: 8px 8px 12px; box-shadow: var(--shadow); transform: rotate(-1.5deg); aspect-ratio: auto; overflow: visible; margin: 10px 6px 6px; }
+.pola.with-line { padding-bottom: 38px; }
+.pola img { border: 1.5px solid var(--outline); aspect-ratio: 4 / 3; border-radius: 2px; }
+.pola .tape { position: absolute; left: 50%; top: -10px; width: 68px; height: 18px; margin-left: -34px; background: var(--pink); opacity: .85; transform: rotate(-4deg); border-radius: 2px; border: 1.5px solid rgba(30,22,64,.25); }
+.pola-line { position: absolute; left: 12px; right: 12px; bottom: 8px; text-align: left; font-size: 18px; line-height: 1.2; color: var(--pink-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pola-line.blue { color: var(--blue-ink); }
+.pola-count { position: absolute; right: 14px; top: 16px; background: #fff; border: 2px solid var(--outline); border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 800; color: var(--ink); }
+.trip-title { font-family: 'Jua', 'Pretendard Variable', sans-serif; font-size: 28px; line-height: 1.15; letter-spacing: -0.01em; }
+/* 도장: 다녀온 횟수 */
+.stamp { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--violet); color: var(--violet); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; transform: rotate(-10deg); opacity: .9; }
+.sheet-actions .btn { height: 44px; }
+.sheet-photo { border: 2px solid var(--outline); border-radius: 16px; }
