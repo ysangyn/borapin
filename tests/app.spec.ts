@@ -935,8 +935,11 @@ test.describe.serial('보라핀 1단계', () => {
     const size = await sc.getByTestId('card-img').evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight]);
     expect(size).toEqual([1080, 1350]);
     await sc.getByTestId('card-img').screenshot({ path: `${SHOTS}/15b-card-map.png` });
+    // 다른 카드를 고르면 새 그림(blob 주소)이 올 때까지 옛 그림이 남는다: 주소가 바뀌고 다 그려진 뒤에 찍는다
+    const mapCardSrc = await sc.getByTestId('card-img').getAttribute('src');
     await sc.getByRole('button', { name: '메모 인용' }).click();
-    await page.waitForTimeout(800);
+    await expect(sc.getByTestId('card-img')).not.toHaveAttribute('src', mapCardSrc ?? '');
+    await expect.poll(() => sc.getByTestId('card-img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
     await sc.getByTestId('card-img').screenshot({ path: `${SHOTS}/15c-card-quote.png` });
 
     // 엑셀: 시트 4개짜리 .xlsx

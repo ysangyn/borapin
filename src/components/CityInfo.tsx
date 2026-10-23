@@ -1,4 +1,4 @@
-import { alarmFor, fxFor, visaFor } from '../lib/abroad';
+import { alarmFor, fxFor, useAbroad, visaFor } from '../lib/abroad';
 import { Link } from 'react-router-dom';
 import { josa } from 'es-hangul';
 import { Icon } from './ui';
@@ -24,7 +24,10 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
   const place: Place = { t: 'country', id: w.c, city: w.city };
   const tz = tzText(place) || tzLabel(w.tz);
   const now = localTimeText(place);
-  const alarm = alarmFor(w.c), visa = visaFor(w.c), fx = fxFor(w.cur);
+  // 외교부·환율 자료는 따로 받는다: 받는 중(undefined)엔 그렇다고 쓰고, 못 받으면(null) 세계 도시 자료의 손 메모만
+  const abroad = useAbroad();
+  const pending = abroad === undefined;
+  const alarm = alarmFor(w.c, abroad ?? null), visa = visaFor(w.c, abroad ?? null), fx = fxFor(w.cur, abroad ?? null);
   return (
     <div className="city-info" data-testid="city-info">
       {!compact && <div className="small" style={{ color: 'var(--ink2)' }}>{w.line}</div>}
@@ -36,7 +39,7 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
         <div><dt>말·콘센트</dt><dd>{w.lang} · {w.plug}</dd></div>
         <div><dt>걷기</dt><dd>{WALK_LABEL[w.walk]}{w.with.length ? ` · ${josa(w.with.join('·'), '와/과')} 좋아요` : ''}</dd></div>
         {alarm && <div data-testid="city-alarm"><dt>여행경보</dt><dd className={alarm.lvl >= 3 ? 'alarm-high' : alarm.lvl === 2 ? 'alarm-mid' : ''}>{alarm.text}<span className="tiny muted"> · 외교부 {alarm.at} 기준</span></dd></div>}
-        <div><dt>입국</dt><dd data-testid="city-visa">{visa ? <>{visa.text}<span className="tiny muted"> · 외교부 {visa.at} 기준{w.entry && !w.entry.startsWith(visa.text.slice(0, 3)) ? ` · 참고: ${w.entry}` : ''} · 떠나기 전 확인</span></> : <>{w.entry}{updated ? <span className="tiny muted"> · {updated.slice(0, 7).replace('-', '.')} 기준, 떠나기 전 확인</span> : null}</>}</dd></div>
+        <div><dt>입국</dt><dd data-testid="city-visa">{visa ? <>{visa.text}<span className="tiny muted"> · 외교부 {visa.at} 기준{w.entry && !w.entry.startsWith(visa.text.slice(0, 3)) ? ` · 참고: ${w.entry}` : ''} · 떠나기 전 확인</span></> : <>{w.entry}<span className="tiny muted">{updated ? ` · ${updated.slice(0, 7).replace('-', '.')} 기준` : ''}{pending ? ' · 외교부 자료 받는 중' : ''} · 떠나기 전 확인</span></>}</dd></div>
       </dl>
       {phraseLink(w)}
       <div className="city-picks">

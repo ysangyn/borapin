@@ -2,19 +2,40 @@
  * 영어 공부: 간격 반복(라이트너 상자) + 하루 10문장 뽑기. Firebase 없는 순수 모듈.
  * - 상자 0(새 것) → 1(1일 뒤) → 2(3일) → 3(7일) → 4(14일) → 5(30일) → 6(60일, 사실상 외움)
  * - 틀리면 상자를 두 칸 내린다(0 아래로는 안 감). 매일: 복습할 것(기한 지난 것) 먼저, 모자라면 새 것으로 채운다.
+ * - 문장 은행(english.json, 65KB)은 첫 묶음에 넣지 않고 공부 화면(또는 홈의 영어 줄)이 열릴 때 받는다: loadBank(). 받기 전엔 ITEMS가 비어 있다.
  */
-import bank from '../../data/english.json';
 
 export interface Item { id: string; en: string; ko: string; words: [string, string][]; topic: string; topicLabel: string }
 export interface Progress { box: number; due: string; seen: number; right: number; wrong: number; saved?: boolean }
 export type ProgressMap = Record<string, Progress>;
+export interface Bank { topics: { id: string; label: string; items: { id: string; en: string; ko: string; words: [string, string][] }[] }[] }
 
 const DAYS = [0, 1, 3, 7, 14, 30, 60];
 export const MAX_BOX = DAYS.length - 1;
 
-export const ITEMS: Item[] = (bank as { topics: { id: string; label: string; items: { id: string; en: string; ko: string; words: [string, string][] }[] }[] }).topics
-  .flatMap((t) => t.items.map((i) => ({ ...i, topic: t.id, topicLabel: t.label })));
-export const TOPICS = (bank as { topics: { id: string; label: string }[] }).topics.map((t) => ({ id: t.id, label: t.label }));
+/** 문장 은행 (받기 전엔 빈 배열 — 같은 배열을 채우므로 가져다 둔 참조도 그대로 쓸 수 있다) */
+export const ITEMS: Item[] = [];
+export const TOPICS: { id: string; label: string }[] = [];
+let bankReady = false;
+let bankLoading: Promise<Item[]> | null = null;
+const listeners = new Set<() => void>();
+
+/** 은행을 채운다 (받은 뒤, 또는 시험에서 바로) */
+export function setBank(bank: Bank) {
+  ITEMS.splice(0, ITEMS.length, ...bank.topics.flatMap((t) => t.items.map((i) => ({ ...i, topic: t.id, topicLabel: t.label }))));
+  TOPICS.splice(0, TOPICS.length, ...bank.topics.map((t) => ({ id: t.id, label: t.label })));
+  bankReady = true;
+  for (const f of listeners) f();
+}
+export const bankLoaded = () => bankReady;
+/** 은행을 받는다 (따로 떨어진 조각이라 한 번만 받고, 실패하면 다음에 다시) */
+export function loadBank(): Promise<Item[]> {
+  if (bankReady) return Promise.resolve(ITEMS);
+  bankLoading ??= import('../../data/english.json').then((m) => { setBank(m.default as Bank); return ITEMS; }).catch((e) => { bankLoading = null; throw e; });
+  return bankLoading;
+}
+/** 은행이 채워지면 알려 준다 (화면이 다시 그리게). 돌려주는 함수로 구독을 푼다 */
+export function onBank(f: () => void): () => void { listeners.add(f); return () => { listeners.delete(f); }; }
 export const itemById = (id: string) => ITEMS.find((i) => i.id === id);
 
 export const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

@@ -11,11 +11,10 @@ import { findMentions } from './gazetteer';
 import { memberNames } from '../members';
 import { grounded, wantsAi } from './confidence';
 import { placeLong } from '../geo';
-import { USE_EMULATOR } from '../firebase';
+import { ASK_URL, aiAvailable } from './url';
 
-export const ASK_URL: string = (import.meta.env.VITE_ASK_URL as string | undefined)?.replace(/\/$/, '') ?? '';
-/** 시험(에뮬레이터)에서는 AI를 부르지 않는다 (결과가 늘 같아야 하고, 한도를 아낀다) */
-export const aiAvailable = () => !!ASK_URL && !USE_EMULATOR && typeof navigator !== 'undefined' && navigator.onLine !== false;
+// 주소는 url.ts에 있다 (소식·장소 찾기가 엔진 없이 가져다 쓰게). 옛 import 자리를 위해 다시 내보낸다
+export { ASK_URL, aiAvailable } from './url';
 
 export interface SmartResult { answer: Answer; via: 'rules' | 'ai'; reason?: string }
 

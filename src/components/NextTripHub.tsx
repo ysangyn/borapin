@@ -14,9 +14,9 @@ import { useFestivals, upcomingFestivals, festivalPeriod, isOngoing } from '../l
 import { flightLinks } from '../lib/flights';
 import { newsAgo, useNews } from '../lib/news';
 import { answerAsk, questionFor, questionText, useTodayAsk } from '../lib/asks';
-import { useStudy } from '../lib/study/store';
+import { useBank, useStudy } from '../lib/study/store';
 import HomeRoute from './HomeRoute';
-import { alarmFor, visaFor } from '../lib/abroad';
+import { alarmFor, useAbroad, visaFor } from '../lib/abroad';
 import Stopovers from './Stopovers';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
@@ -202,9 +202,11 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
 /** 4. 오늘의 영어 — 해외 여행을 앞뒀으면 한 문장 미리 보기 + 진도 카드, 아니면 묶음 맨 아래 한 줄 링크 */
 function TodayEnglish({ card }: { card: boolean }) {
   const { data } = useStudy();
+  // 문장 은행은 첫 묶음에 없다: 여기서 따로 받고(받기 전 null) 오면 다시 그린다
+  const bank = useBank();
   const today = useMemo(() => new Date(), []);
-  const set = useMemo(() => (data ? todaySet(data.progress, today) : []), [data, today]);
-  const sum = useMemo(() => (data ? summary(data.progress, data.days, today) : null), [data, today]);
+  const set = useMemo(() => (data && bank ? todaySet(data.progress, today) : []), [data, bank, today]);
+  const sum = useMemo(() => (data && bank ? summary(data.progress, data.days, today) : null), [data, bank, today]);
   const doneToday = !!data?.days.includes(ymd(today));
   // 홈 미리 보기는 오늘의 새 문장(날마다 바뀜). 밀린 복습이 있어도 같은 문장이 며칠씩 걸려 있지 않게
   const reviews = data ? set.filter((i) => data.progress[i.id]).length : 0;
@@ -223,7 +225,7 @@ function TodayEnglish({ card }: { card: boolean }) {
         {sum && sum.streak > 0 && <span className="tag violet">{sum.streak}일째</span>}
         {doneToday && <span className="tag"><Icon name="check" size={12} stroke={2.4} />오늘 했어요</span>}
       </div>
-      {!data ? (
+      {!data || !bank ? (
         <div className="skeleton-text" aria-busy="true" style={{ width: '70%' }} />
       ) : first ? (
         <>
@@ -249,6 +251,9 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
   const news = useNews(place);
   const world = useWorld();
   const city = cityFor(world, place);
+  // 외교부 입국·여행경보는 따로 받는 자료: 오기 전(또는 못 받으면)엔 세계 도시 자료의 손 메모만
+  const abroad = useAbroad() ?? null;
+  const visa = city ? visaFor(city.c, abroad) : null, alarm = city ? alarmFor(city.c, abroad) : null;
   const good = news?.[0] ?? null;
   if (!s && !f && !flights && !good && !city && !accessLine(place)) return null;
   return (
@@ -261,7 +266,7 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
         {place.t === 'kr' && <Stopovers destCode={place.code} />}
         {place.t === 'kr' && accessLine(place) && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>}
         {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzText(place) || tzLabel(city.tz)}</span></button>}
-        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{visaFor(city.c)?.text ?? city.entry}</b>{alarmFor(city.c) ? <> · 여행경보 <b className={alarmFor(city.c)!.lvl >= 3 ? 'alarm-high' : ''}>{alarmFor(city.c)!.text}</b></> : null} · 떠나기 전 확인</span></button>}
+        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{visa?.text ?? city.entry}</b>{alarm ? <> · 여행경보 <b className={alarm.lvl >= 3 ? 'alarm-high' : ''}>{alarm.text}</b></> : null} · 떠나기 전 확인</span></button>}
         {city && phraseLangFor(city.lang) && phraseLangFor(city.lang) !== 'en' && <button className="hub-way-row" onClick={() => nav(`/phrases/${phraseLangFor(city.lang)}?city=${encodeURIComponent(city.city)}`)} data-testid="hub-phrases"><Icon name="play" size={16} /><span>{LANG_LABEL[phraseLangFor(city.lang)!]} 한마디 30문장 · 인사·식당·길</span></button>}
         {flights && <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label} · 인천에서 {city ? flyLabel(city.fly) : ''}{s ? ` · ${s.m[0]}월` : ''}</span></a>}
         {good && <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>}

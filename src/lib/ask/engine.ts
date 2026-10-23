@@ -13,7 +13,7 @@ import faqData from '../../data/faq.json';
 import { regionLong } from '../geo';
 import { withRo } from '../ko';
 import { straightKm } from '../placeApps';
-import { alarmFor, visaFor } from '../abroad';
+import { abroadNow, alarmFor, loadAbroad, visaFor } from '../abroad';
 import { monthsLabel, seasonFor, type SeasonData } from '../seasons';
 import type { TravelInfo } from '../travelinfo';
 import { cityFor, cityPlace, COST_LABEL, countryName, flyLabel, pickCities, tzLabel, WALK_LABEL, type WorldCity, type WorldData } from '../world';
@@ -687,7 +687,9 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       // 나라를 말했으면 세계 도시 자료의 그 나라 입국·콘센트 메모를 앞에 (손 메모라 '떠나기 전 확인'과 함께)
       const cty = places.find((x) => x.t === 'country');
       const city = cty && cty.t === 'country' ? d.world?.cities.find((c) => c.c === cty.id) : undefined;
-      const gov = city ? visaFor(city.c) : null, alarm = city ? alarmFor(city.c) : null;
+      // 외교부 자료는 따로 받는다(abroad.ts): 아직 없으면 그 줄은 빼고 손 메모로 답하되, 다음 질문을 위해 받기 시작한다
+      const gov = city ? visaFor(city.c, abroadNow()) : null, alarm = city ? alarmFor(city.c, abroadNow()) : null;
+      if (city && !abroadNow()) void loadAbroad();
       const extra = city ? (f.id === 'plug' ? [`${countryName(city)} 콘센트: ${city.plug}`] : [`${countryName(city)} 입국: ${gov ? `${gov.text} (외교부 ${gov.at} 기준)` : `${city.entry} (세계 도시 자료)`} · 떠나기 전 확인`, ...(alarm ? [`여행경보: ${alarm.text} (외교부 ${alarm.at} 기준)`] : [])]) : [];
       a = { intent, text: f.a, lines: [...extra, ...f.lines], buttons: f.link ? [{ label: f.link.label, url: f.link.href }] : [], source: `보라핀 여행 상식 · ${(faqData as { updated: string }).updated} 기준${f.volatile ? ' · 규정이 자주 바뀌어요, 떠나기 전 확인' : ''}` };
       break;

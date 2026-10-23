@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { auth } from './firebase';
-import { ASK_URL, aiAvailable } from './ask/smart';
+import { ASK_URL, aiAvailable } from './ask/url';
 import type { Place } from './types';
 import { GENERAL_QUERIES, isTravelNews, newsSpec, pickNews } from './newsFilter';
 export { GENERAL_QUERIES, newsSpec } from './newsFilter';

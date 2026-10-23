@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './styles.css';
@@ -6,7 +6,7 @@ import './styles.css';
 import '@fontsource/jua/400.css';
 import '@fontsource/gaegu/700.css';
 import App from './App';
-import { AuthProvider } from './lib/auth';
+import { AuthProvider, useAuth } from './lib/auth';
 import { ToastProvider } from './components/ui';
 import { installErrorReporting } from './lib/admin';
 import { ErrorBoundary, installChunkRecovery, UpdateWatcher } from './components/system';
@@ -24,16 +24,25 @@ if (IS_PREVIEW) {
   document.body.appendChild(tag);
 }
 
-// 홈 지도는 무거워서: 로그인·기록을 기다리는 동안 지도 코드와 경계를 미리 받아 둔다 (공유 링크 화면은 빼고)
-if (!location.pathname.startsWith('/s/')) {
-  void import('./components/MapView').catch(() => undefined);
-  void import('./lib/geodata').then((m) => m.loadGeo()).catch(() => undefined);
+/**
+ * 홈 지도는 무거워서(지도 코드 + 경계 약 650KB): 로그인이 끝난 뒤, 기록을 기다리는 동안 미리 받아 둔다.
+ * 로그인 화면·인증 대기·공유 링크 화면에서는 받지 않는다 (첫 화면과 받기 경쟁하지 않게, 안 쓸 수도 있으니).
+ */
+function PrefetchMap() {
+  const auth = useAuth();
+  useEffect(() => {
+    if (auth.status !== 'ready' || location.pathname.startsWith('/s/')) return;
+    void import('./components/MapView').catch(() => undefined);
+    void import('./lib/geodata').then((m) => m.loadGeo()).catch(() => undefined);
+  }, [auth.status]);
+  return null;
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
+        <PrefetchMap />
         <ToastProvider>
           {/* 맨 바깥 오류 경계: 화면 안쪽 경계가 못 잡는 오류(App 자체·새 버전 감시)도 흰 화면 대신 안내로 */}
           <ErrorBoundary>

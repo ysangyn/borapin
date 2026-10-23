@@ -3,7 +3,8 @@
  * media/picks.json에 적은 위키미디어 공용 파일만 받아서
  * - 사진: 1280·640px WebP + 아주 작은 흐린 미리보기
  * - 영상: 이어 붙여도 티 나지 않는 반복 영상(끝과 처음을 겹쳐 녹임), 가로 1280px·세로 720px MP4·WebM, 소리 없음 + 정지 사진
- * 결과는 public/media/와 src/data/media.json(출처 포함)에 쓴다.
+ * 결과는 public/media/와 src/data/media.json(목록·크기·출처)에, 흐린 미리보기(data URL)는 src/data/media-blur.json에 따로 쓴다.
+ * (media.json은 첫 묶음에 들어가므로 가볍게, 미리보기는 사진이 뜰 때 따로 받는다 — src/lib/media.ts. 두 파일의 키가 맞는지 tests/unit/media.test.ts가 지킨다)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -88,6 +89,8 @@ const lqip = async (buf: Buffer) => `data:image/webp;base64,${(await sharp(buf).
 const kb = (f: string) => `${Math.round(fs.statSync(f).size / 1024)}KB`;
 
 const out: { photos: unknown[]; videos: unknown[] } = { photos: [], videos: [] };
+/** 흐린 미리보기만 따로: 사진은 id → data URL, 영상은 id → { lqip, portrait } */
+const blur: { photos: Record<string, string>; videos: Record<string, { lqip: string; portrait?: string }> } = { photos: {}, videos: {} };
 
 for (const p of picks.photos) {
   try {
@@ -98,16 +101,17 @@ for (const p of picks.photos) {
     // 3:2로 맞춰 잘라 같은 틀에서 보기 좋게
     const s = await sharp(src).rotate().resize(640, 427, { fit: 'cover', position: pos }).webp({ quality: 70 }).toBuffer();
     fs.writeFileSync(path.join(OUT, `${p.id}-s.webp`), s);
+    blur.photos[p.id] = await lqip(s);
     if (p.small) {
       // 작은 것만: 큰 화면에서도 같은 파일을 쓴다 (목록·카드용이라 충분)
-      out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-s.webp` }, w: 640, h: 427, lqip: await lqip(s), credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
+      out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-s.webp` }, w: 640, h: 427, credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
       console.log(`사진 ${p.id}: ${kb(path.join(OUT, `${p.id}-s.webp`))} (작게만) · ${i.credit.license}`);
       continue;
     }
     const l = await sharp(src).rotate().resize(1280, 853, { fit: 'cover', position: pos }).webp({ quality: 74 }).toBuffer();
     fs.writeFileSync(path.join(OUT, `${p.id}-l.webp`), l);
     fs.writeFileSync(path.join(PREVIEW, `photo-${p.id}.jpg`), await sharp(l).resize(640).jpeg({ quality: 75 }).toBuffer());
-    out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-l.webp` }, w: 1280, h: 853, lqip: await lqip(s), credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
+    out.photos.push({ id: p.id, name: p.name, place: p.place, src: { s: `/media/${p.id}-s.webp`, l: `/media/${p.id}-l.webp` }, w: 1280, h: 853, credit: { ...i.credit, artist: p.artist ?? i.credit.artist } });
     console.log(`사진 ${p.id}: ${kb(path.join(OUT, `${p.id}-l.webp`))} / ${kb(path.join(OUT, `${p.id}-s.webp`))} · ${i.credit.license}`);
   } catch (e) {
     console.error(`사진 ${p.id} 실패`, e);
@@ -149,11 +153,12 @@ for (const v of picks.videos) {
         ff(['-ss', String(t), '-i', mp4, '-frames:v', '1', path.join(PREVIEW, `video-${v.id}${suffix}-${k}.jpg`)]);
       }
       console.log(`영상 ${v.id}${suffix}: mp4 ${kb(mp4)} · webm ${kb(webm)} · 정지 ${kb(poster)}`);
-      return { mp4: `/media/${v.id}${suffix}.mp4`, webm: `/media/${v.id}${suffix}.webm`, poster: `/media/${v.id}${suffix}.webp`, lqip: await lqip(first) };
+      return { files: { mp4: `/media/${v.id}${suffix}.mp4`, webm: `/media/${v.id}${suffix}.webm`, poster: `/media/${v.id}${suffix}.webp` }, lqip: await lqip(first) };
     };
     const wide = await make('');
     const tall = await make('-p', `crop=406:720:${Math.round((1280 - 406) * (v.px ?? 0.5))}:0`);
-    out.videos.push({ id: v.id, name: v.name, ...wide, portrait: tall, credit: i.credit });
+    out.videos.push({ id: v.id, name: v.name, ...wide.files, portrait: tall.files, credit: i.credit });
+    blur.videos[v.id] = { lqip: wide.lqip, portrait: tall.lqip };
     console.log(`영상 ${v.id}: ${i.credit.license}`);
     fs.rmSync(raw);
   } catch (e) {
@@ -162,4 +167,5 @@ for (const v of picks.videos) {
 }
 
 fs.writeFileSync('src/data/media.json', JSON.stringify(out, null, 1));
-console.log(`사진 ${out.photos.length}장, 영상 ${out.videos.length}개`);
+fs.writeFileSync('src/data/media-blur.json', JSON.stringify(blur, null, 1));
+console.log(`사진 ${out.photos.length}장, 영상 ${out.videos.length}개 → src/data/media.json + media-blur.json(흐린 미리보기 ${Object.keys(blur.photos).length + Object.keys(blur.videos).length}개)`);
