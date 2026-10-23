@@ -18,7 +18,7 @@ export default function Join({ code, user }: { code: string; user: User }) {
     if (r === 'joined') {
       clearPendingInvite();
       await recheck();
-      location.replace('/');
+      location.replace('/welcome');
     }
   };
   const bad = invite === null || (invite && invite.expiresAt < Date.now()) || state === 'expired' || state === 'missing' || state === 'used';

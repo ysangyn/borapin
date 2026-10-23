@@ -24,6 +24,18 @@ service cloud.firestore {
       return isOwner() || (isMember() && email() in accessDoc().data.admins);
     }
 
+    // 멤버가 앱에서 쓸 자기 이름만 바꾼다: names.<내 메일> 한 칸만, 1~10자
+    function renamingSelf() {
+      let me = request.auth.token.email.lower();
+      return isMember()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['names', 'updatedAt'])
+        && request.resource.data.names is map
+        && request.resource.data.names.diff(resource.data.get('names', {})).affectedKeys().hasOnly([me])
+        && request.resource.data.names[me] is string
+        && request.resource.data.names[me].size() >= 1 && request.resource.data.names[me].size() <= 10
+        && validAccess(request.resource.data);
+    }
+
     function validAccess(d) {
       return d.keys().hasOnly(['allowed', 'admins', 'names', 'relations', 'updatedAt', 'via'])
         && (!('names' in d) || (d.names is map && d.names.size() <= 50))
@@ -120,7 +132,8 @@ service cloud.firestore {
         // 주인 계정은 허용·관리자 목록에서 빠지지 않게
         && 'ysangyn@gmail.com' in request.resource.data.allowed
         && 'ysangyn@gmail.com' in request.resource.data.admins)
-        || joiningByInvite();
+        || joiningByInvite()
+        || renamingSelf();
       allow delete: if false;
     }
 

@@ -13,6 +13,7 @@ import { preloadCheer } from './lib/celebrate';
 
 // 홈 말고는 그 화면에 갈 때 불러온다 (첫 화면이 빨리 뜨게)
 const Trips = lazy(() => import('./pages/Trips'));
+const Welcome = lazy(() => import('./pages/Welcome'));
 const TripDetail = lazy(() => import('./pages/TripDetail'));
 const Record = lazy(() => import('./pages/Record'));
 const MapPage = lazy(() => import('./pages/MapPage'));
@@ -88,7 +89,7 @@ export default function App() {
       </div>
     );
   // 떠 있는 보라: 목록 화면(홈·여행·피드·추억·가고 싶은 곳·우리 장소)에만. 상세·지도·입력 화면에서는 단추를 가리므로 뺀다
-  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin');
+  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/welcome') && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin');
   const hideNav = hideNavFor(loc.pathname);
   return (
     <DataProvider>
@@ -100,6 +101,7 @@ export default function App() {
           <Suspense fallback={<Spinner />}>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/trips" element={<Trips />} />
               <Route path="/trips/:id" element={<TripDetail />} />
               <Route path="/trips/:id/edit" element={<Record />} />
@@ -142,7 +144,7 @@ function AskFab() {
 
 /** 입력 화면(기록·고치기·가고 싶은 곳·장소)에서는 아래 메뉴와 떠 있는 보라를 숨긴다 */
 function hideNavFor(path: string) {
-  return path.startsWith('/record') || path.endsWith('/edit') || /^\/(wishes|places)\/./.test(path) || path.startsWith('/study');
+  return path.startsWith('/record') || path.startsWith('/welcome') || path.endsWith('/edit') || /^\/(wishes|places)\/./.test(path) || path.startsWith('/study');
 }
 
 /** 이미 함께 쓰는 사람이 초대 링크를 열었을 때 */

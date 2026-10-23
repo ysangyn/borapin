@@ -143,9 +143,17 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(p2.getByTestId('join')).toContainText('막내');
     await shot(p2, '02c-join');
     await p2.getByTestId('join-go').click();
+    // 처음 들어오면 환영 3장면: 어서 와요 → 내 이름(바꾸면 공간 문서의 names에 내 칸만) → 우리 집 → 지도
+    await expect(p2.getByTestId('welcome')).toBeVisible({ timeout: 20_000 });
+    await expect(p2.getByTestId('welcome')).toContainText('어서 와요');
+    await p2.getByTestId('welcome-next').click();
+    await p2.getByLabel('내 이름').fill('막내둥이');
+    await p2.getByTestId('welcome-name-next').click();
+    await expect(p2.getByRole('status')).toContainText('막내둥이로 불려요');
+    await p2.getByTestId('welcome-done').click();
     await expect(p2.getByTestId('headline')).toBeVisible({ timeout: 20_000 });
     await p2.goto('/space');
-    await expect(p2.getByText('막내', { exact: true })).toBeVisible();
+    await expect(p2.getByText('막내둥이', { exact: true })).toBeVisible();
     await ctx.close();
     // 관리자 화면에서 그 링크는 사라졌고(한 번 쓰면 끝), 막내가 함께 쓰는 사람에 있다
     await page.reload();

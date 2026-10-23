@@ -165,6 +165,13 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertSucceeds(getDoc(doc(db, 'config/flags')));
     await assertFails(setDoc(doc(db, 'config/flags'), { uploadsPaused: true }));
   });
+  test('멤버는 앱에서 쓸 자기 이름만 바꾼다 (남의 이름·허용 목록은 못 바꿈, 10자 넘으면 안 됨)', async () => {
+    const db = as.bora();
+    await assertSucceeds(updateDoc(doc(db, 'config/access'), { [`names.${BORA}`]: '보라공주' }));
+    await assertFails(updateDoc(doc(db, 'config/access'), { [`names.${OWNER}`]: '남편' }));
+    await assertFails(updateDoc(doc(db, 'config/access'), { [`names.${BORA}`]: '열자가넘는이름이에요정말' }));
+    await assertFails(updateDoc(doc(db, 'config/access'), { [`names.${BORA}`]: '보라', allowed: [OWNER, BORA, STRANGER] }));
+  });
   test('글은 자기 이름으로만 쓰고, 자기 글만 지운다', async () => {
     const db = as.bora();
     await assertSucceeds(setDoc(doc(db, 'spaces/main/notes/n-bora'), { tripId: 't1', text: '보라 글', by: { uid: 'bora', name: '보라' }, v: 1 }));

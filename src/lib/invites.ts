@@ -85,3 +85,11 @@ export function pendingInvite(): string | null {
 export function clearPendingInvite() {
   try { localStorage.removeItem(KEY); } catch { /* */ }
 }
+
+/** 앱에서 쓸 내 이름 바꾸기: config/access의 names.<내 메일> 한 칸만 (규칙 renamingSelf) */
+export async function renameSelf(user: User, name: string) {
+  const email = (user.email || '').toLowerCase();
+  const clean = name.trim().slice(0, 10);
+  if (!email || !clean) throw new Error('이름이 비었어요');
+  await updateDoc(doc(db, 'config', 'access'), new FieldPath('names', email), clean, 'updatedAt', serverTimestamp());
+}

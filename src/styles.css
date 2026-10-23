@@ -1183,3 +1183,17 @@ input[type='date'].input { min-width: 0; flex: 1 1 0; width: auto; }
 .ask-actions .chip.soft { background: #fff; border-color: var(--outline); color: var(--ink); }
 .bubble.bot > .bot-text { font-size: 15px; }
 .bubble.bot .tiny.muted:last-child { font-size: 10.5px; }
+/* 환영 3장면 */
+.welcome { align-items: stretch; gap: 16px; }
+.welcome-dots { display: flex; gap: 6px; justify-content: center; }
+.welcome-dots span { width: 12px; height: 6px; border-radius: 999px; background: var(--line2); border: 1px solid var(--outline); }
+.welcome-dots span.on { width: 28px; background: var(--outline); }
+.welcome-title { font-size: 30px; line-height: 1.2; margin: 6px 0 0; text-align: center; }
+.welcome-sub { margin: 0; text-align: center; color: var(--ink3); font-weight: 700; line-height: 1.5; }
+.welcome-sub b { color: var(--violet); }
+.welcome-art { position: relative; height: 240px; margin: 4px auto 0; width: 300px; }
+.welcome-art .welcome-map { position: absolute; left: 30px; top: 0; width: 220px; height: 230px; }
+.welcome-art img { position: absolute; right: -8px; bottom: -10px; width: 120px; height: auto; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff) drop-shadow(3px 4px 0 rgba(30,22,64,.3)); }
+.welcome-name { flex: 1; min-width: 0; border: 0; border-bottom: 2px dashed var(--line2); background: transparent; font-size: 24px; outline: none; padding: 4px 0; color: var(--ink); }
+.welcome-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+.welcome .btn.block { height: 54px; }
