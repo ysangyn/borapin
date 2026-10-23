@@ -287,8 +287,9 @@ export default function PlaceEdit() {
 
         <div className="field">
           <span className="label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>한 줄 평
-            <button type="button" className={'tag' + (blind ? ' violet' : '')} onClick={() => setBlindOn(!blind)} aria-pressed={blind} data-testid="blind-toggle" title="켜 두면 내가 쓰기 전엔 상대 한 줄 평이 가려져요">
-              <Icon name={blind ? 'lock' : 'users'} size={12} stroke={2.4} />{blind ? '가리고 쓰는 중' : '가리고 쓰기'}
+            {/* 꼬리표 모양이지만 누르는 단추라 36px 높이(.tag-btn) — 손가락으로 누르기 쉽게 */}
+            <button type="button" className={'tag tag-btn' + (blind ? ' violet' : '')} onClick={() => setBlindOn(!blind)} aria-pressed={blind} data-testid="blind-toggle" title="켜 두면 내가 쓰기 전엔 상대 한 줄 평이 가려져요">
+              <Icon name={blind ? 'lock' : 'users'} size={14} stroke={2.4} />{blind ? '가리고 쓰는 중' : '가리고 쓰기'}
             </button>
           </span>
           {writers.map((w) => hideReview(reviews, w, me, blind) ? (

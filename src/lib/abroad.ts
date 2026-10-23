@@ -38,7 +38,7 @@ export function setAbroad(d: Abroad | null) { D = d; for (const f of listeners) 
 export function useAbroad(): Abroad | null | undefined {
   const [d, setD] = useState<Abroad | null | undefined>(() => D ?? undefined);
   useEffect(() => {
-    if (d) return;
+    if (d !== undefined) return; // 받았거나(자료) 못 받았거나(null) — 이번 화면에서는 한 번만 시도
     let on = true;
     const tick = () => { if (on && D) setD(D); };
     listeners.add(tick);

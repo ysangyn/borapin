@@ -27,6 +27,9 @@ import { josa } from 'es-hangul';
 import { times } from '../ko';
 import { isMemberName } from '../members';
 
+// 외교부 자료는 번들 밖(/data/abroad.json): 물어보기 화면이 열리면(엔진이 실려 오면) 미리 받아 두어 첫 답부터 붙게. 시험(브라우저 밖)에선 받지 않는다
+if (typeof window !== 'undefined') void loadAbroad();
+
 /** 이름 뒤 조사: '강릉시는', '부산을' */
 const jo = (w: string | null | undefined, pair: Parameters<typeof josa>[1]) => (w ? josa(w, pair) : '');
 

@@ -58,17 +58,17 @@ export const blurLoaded = () => !!blur;
 /** 시험용: 받지 않고 바로 넣는다 */
 export function setBlur(d: BlurData) { blur = d; for (const f of listeners) f(); }
 
-/** 미리보기가 오면 다시 그리게 하는 훅. 처음 불릴 때 받기 시작한다. 돌려주는 값은 '받았는지' */
-export function useBlur(): boolean {
+/** 미리보기가 오면 다시 그리게 하는 훅. 처음 불릴 때(enabled) 받기 시작한다. 돌려주는 값은 '받았는지' */
+export function useBlur(enabled = true): boolean {
   const [ok, setOk] = useState(() => !!blur);
   useEffect(() => {
-    if (ok) return;
+    if (ok || !enabled) return;
     let on = true;
     const tick = () => { if (on) setOk(true); };
     listeners.add(tick);
     void loadBlur();
     return () => { on = false; listeners.delete(tick); };
-  }, [ok]);
+  }, [ok, enabled]);
   return ok;
 }
 

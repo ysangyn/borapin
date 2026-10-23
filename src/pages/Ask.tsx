@@ -10,15 +10,26 @@ import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { useSeasons } from '../lib/seasons';
 import { useWorld } from '../lib/world';
 import { useFestivals } from '../lib/festivals';
-import { useAllNotes, useAllPlans } from '../lib/tripExtras';
-import { usePhotos } from '../lib/photos';
+import { readNotesOnce, readPlansOnce } from '../lib/tripExtras';
+import { readPhotosOnce } from '../lib/photos';
 import { EMPTY_TRAVEL_INFO, useTravelInfoState } from '../lib/travelinfo';
 import { quickWish } from '../lib/wishActions';
-import { ask, STARTERS, type Answer, type AskCtx, type Btn } from '../lib/ask/engine';
+import { ask, STARTERS, type Answer, type AskCtx, type AskData, type Btn } from '../lib/ask/engine';
 import { askSmart } from '../lib/ask/smart';
-import type { Place } from '../lib/types';
+import type { Note, Photo, Place, PlanItem } from '../lib/types';
 
 type Msg = { who: 'me'; text: string } | { who: 'bot'; a: Answer; q: string };
+
+/**
+ * 사진·글·일정은 '우리 기록' 질문에만 쓰이고 양이 많다. 화면을 열자마자 구독하지 않고
+ * 첫 질문을 보낼 때 한 번만 읽어 둔다(getDocs). 하나라도 못 읽으면 그 자료만 비운 채 답한다.
+ */
+type Records = { notes: Note[]; photos: Photo[]; plans: PlanItem[] };
+const NO_RECORDS: Records = { notes: [], photos: [], plans: [] };
+async function readRecordsOnce(): Promise<Records> {
+  const [notes, photos, plans] = await Promise.all([readNotesOnce().catch(() => []), readPhotosOnce().catch(() => []), readPlansOnce().catch(() => [])]);
+  return { notes, photos, plans };
+}
 /** 단추 순서: 담기 → 화면으로 → 고르기 → 이어 묻기 */
 const rank = (b: Btn) => (b.wish ? 0 : b.to ? 1 : b.choose ? 2 : 3);
 
@@ -43,9 +54,13 @@ export default function Ask() {
   const { info, failed: infoFailed, loading: infoLoading, retry: retryInfo } = useTravelInfoState();
   const seasons = useSeasons();
   const festivals = useFestivals();
-  const notes = useAllNotes();
-  const plans = useAllPlans();
-  const { photos } = usePhotos();
+  // 사진·글·일정: 첫 질문 때 한 번만 읽는다 (구독 없음). 읽는 중엔 같은 약속을 돌려쓴다
+  const [records, setRecords] = useState<Records | null>(null);
+  const recordsP = useRef<Promise<Records> | null>(null);
+  const loadRecords = () => {
+    if (!recordsP.current) recordsP.current = readRecordsOnce().catch(() => NO_RECORDS).then((r) => { setRecords(r); return r; });
+    return recordsP.current;
+  };
   // 대화는 이 탭 안에서 이어진다: 새로 고침·다른 화면에 다녀와도 그대로 (sessionStorage, 실패하면 그냥 메모리)
   const [msgs, setMsgs] = useState<Msg[]>(() => loadChat()?.msgs ?? []);
   const [ctx, setCtx] = useState<AskCtx>(() => loadChat()?.ctx ?? {});
@@ -57,7 +72,8 @@ export default function Ask() {
   const ready = !!(trips && wishes && recs && (info || infoFailed));
   const world = useWorld();
   const home = useHome();
-  const data = useMemo(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info ?? EMPTY_TRAVEL_INFO, seasons, festivals, notes: notes ?? [], photos: photos ?? [], plans: plans ?? [], world, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, notes, photos, plans, world, home]);
+  // 기록(여행·가고 싶은 곳·우리 장소)과 자료는 앱이 이미 들고 있는 것. 사진·글·일정은 질문할 때 붙인다
+  const base = useMemo<Omit<AskData, 'notes' | 'photos' | 'plans'> | null>(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info ?? EMPTY_TRAVEL_INFO, seasons, festivals, world, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, world, home]);
   // 되묻기에서 알려 준 동네를 우리 집으로 저장 (둘이 같이 쓴다)
   const keepHome = (p?: Place) => {
     if (!p || p.t !== 'kr') return;
@@ -81,10 +97,12 @@ export default function Ask() {
     rec.start();
   };
   const send = async (q: string, forced?: Place) => {
-    if (!q.trim() || !data || thinking) return;
+    if (!q.trim() || !base || thinking) return;
     const c = forced ? { ...ctx, place: forced } : ctx;
     if (forced) {
-      const a = ask(q, c, data, forced);
+      // 되묻기에서 고른 지역: 첫 질문 때 읽어 둔 기록을 그대로 쓴다 (아직 없으면 지금 읽는다)
+      const rec = records ?? (await loadRecords());
+      const a = ask(q, c, { ...base, ...rec }, forced);
       setCtx(a.ctx);
       setMsgs((m) => [...m, { who: 'bot', a, q }]);
       return;
@@ -93,8 +111,10 @@ export default function Ask() {
     setText('');
     setThinking(true);
     try {
+      // 사진·글·일정은 여기서 처음(그리고 한 번만) 읽는다
+      const rec = await loadRecords();
       const history = msgs.flatMap((m, i) => (m.who === 'bot' && msgs[i - 1]?.who === 'me' ? [{ q: (msgs[i - 1] as { text: string }).text, a: m.a.text }] : []));
-      const r = await askSmart(q, c, data, auth.status === 'ready' ? auth.user : null, history);
+      const r = await askSmart(q, c, { ...base, ...rec }, auth.status === 'ready' ? auth.user : null, history);
       setCtx(r.answer.ctx);
       keepHome(r.answer.setHome);
       setMsgs((m) => [...m, { who: 'bot', a: r.answer, q }]);
@@ -107,22 +127,22 @@ export default function Ask() {
   // 질문을 보낸 사이 화면이 새로 고쳐졌으면(새 버전 조각 받기 등) 답 없는 마지막 질문을 이어서 다시 묻는다
   const resumed = useRef(false);
   useEffect(() => {
-    if (resumed.current || !data) return;
+    if (resumed.current || !base) return;
     resumed.current = true;
     const last = msgs[msgs.length - 1];
     if (last?.who === 'me') { setMsgs((m) => m.slice(0, -1)); void send(last.text); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [base]);
   const first = sp.get('q');
   const sentFirst = useRef('');
   useEffect(() => {
-    if (first && data && sentFirst.current !== first) {
+    if (first && base && sentFirst.current !== first) {
       sentFirst.current = first;
       send(first);
       setSp({}, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [first, data]);
+  }, [first, base]);
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [msgs.length, thinking]);

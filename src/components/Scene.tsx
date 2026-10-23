@@ -9,7 +9,7 @@ import { artById } from '../lib/art';
 export function ScenicPhoto({ photo, id, className, alt, eager, label }: { photo?: ScenePhoto | null; id?: string; className?: string; alt?: string; eager?: boolean; label?: 'top' | 'bottom' }) {
   const p = photo ?? (id ? photoById(id) : null);
   const [loaded, setLoaded] = useState(false);
-  useBlur();
+  useBlur(!!p);
   if (!p) return null;
   return (
     <div className={'scenic ' + (className ?? '')} style={p.lqip ? { backgroundImage: `url(${p.lqip})` } : undefined}>

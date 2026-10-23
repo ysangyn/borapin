@@ -1,17 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collection, count, doc, getAggregateFromServer, onSnapshot, query, serverTimestamp, sum, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { collection, count, doc, getAggregateFromServer, getDocFromCache, getDocs, onSnapshot, query, serverTimestamp, sum, updateDoc, where, writeBatch } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
 import { dataDoc, forgetPhotoUrl, MAX_DATA_BYTES, primePhotoUrl, toBytes } from './photoData';
 import { queued } from './writes';
 import { displayName } from './auth';
 import { locate } from './geodata';
+import { countByTrip, useTripCount } from './tripExtras';
+import { syncShareAfterWrite } from './share';
 import type { Photo, Place, Trip, When } from './types';
 import { samePlace } from './wishes';
 
 const photosCol = () => collection(db, 'spaces', SPACE_ID, 'photos');
 
 const byTaken = (a: Photo, b: Photo) => (a.taken ?? '').localeCompare(b.taken ?? '');
+
+/** 한 여행의 사진 수만 (홈 단계 카드): 사진을 받지 않고 서버에서 센다 — 읽기 1회 */
+export const countTripPhotos = (tripId: string) => countByTrip(photosCol, tripId);
+export const useTripPhotoCount = (tripId: string | undefined) => useTripCount(photosCol, tripId);
+
+/** 모든 사진을 한 번 읽는다 (물어보기: 첫 질문 때. 오프라인이면 기기 캐시에서). 촬영 순 */
+export const readPhotosOnce = async (): Promise<Photo[]> => (await getDocs(photosCol())).docs.map((d) => ({ id: d.id, ...d.data() }) as Photo).sort(byTaken);
 
 /** 한 여행의 사진만 (여행 상세) */
 export function useTripPhotos(tripId: string | undefined) {
@@ -166,6 +175,8 @@ export async function uploadPhoto(file: File, tripId: string | null, user: User,
   onProgress?.(0.6);
   await batch.commit();
   onProgress?.(1);
+  // 공개 링크가 켜진 여행이면 사본에도 새 사진이 들어가게 (실패해도 조용히)
+  syncShareAfterWrite(tripId);
   return { id, ...data };
 }
 
@@ -176,10 +187,16 @@ export async function deletePhoto(p: Photo) {
   batch.delete(doc(photosCol(), p.id));
   await batch.commit();
   forgetPhotoUrl(p.id);
+  syncShareAfterWrite(p.tripId);
 }
 
+/** 사진 설명 저장 (슬라이드쇼 등 어디서든). 그 여행이 공개 중이면 사본의 설명도 따라간다 */
 export async function captionPhoto(id: string, caption: string) {
-  await queued(updateDoc(doc(photosCol(), id), { caption: caption.trim().slice(0, 500) }));
+  const ref = doc(photosCol(), id);
+  await queued(updateDoc(ref, { caption: caption.trim().slice(0, 500) }));
+  // 어느 여행 사진인지는 캐시에서 (보고 있던 사진이라 이미 있다, 읽기 0)
+  const tripId = await getDocFromCache(ref).then((s) => (s.data()?.tripId as string | null | undefined) ?? null, () => null);
+  syncShareAfterWrite(tripId);
 }
 
 // ---------- 사진으로 여행 채우기 ----------
