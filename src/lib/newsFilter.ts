@@ -2,7 +2,7 @@
  * 여행 소식 고르기 (순수 모듈): 걸러내기 + 점수 매겨 줄 세우기.
  * - 빼기: 사건·사고·재난·정치·경제 일반·인사·부고 기사
  * - 더하기: 축제·개장·명소·특가·취항·입국 같은 '여행 준비에 쓰이는' 말, 지역 이름이 제목에 있으면, 최근일수록
- * - 30일 넘은 기사, 제목이 거의 같은 기사(여러 매체 같은 보도)는 하나만
+ * - 열흘 넘은 기사, 제목이 거의 같은 기사(여러 매체 같은 보도)는 하나만
  */
 import { COUNTRY_BY_ID, REGION_BY_CODE } from './geo';
 import type { Place } from './types';
@@ -27,6 +27,9 @@ const GOOD: [RegExp, number][] = [
 const MAJOR = /^(연합뉴스|연합뉴스TV|KBS|MBC|SBS|JTBC|YTN|MBN|TV조선|채널A|조선일보|중앙일보|동아일보|한겨레|경향신문|한국일보|서울신문|국민일보|세계일보|문화일보|매일경제|한국경제|서울경제|머니투데이|헤럴드경제|아시아경제|이데일리|파이낸셜뉴스|뉴시스|뉴스1|노컷뉴스|조선비즈|중앙SUNDAY|KBS 뉴스|MBC 뉴스|SBS 뉴스|JTBC 뉴스)/;
 export const isMajor = (n: { source: string }) => MAJOR.test((n.source || '').trim());
 
+/** 열흘 넘은 기사는 보여 주지 않는다 (여행 준비에는 지난 소식이 오히려 헷갈린다) */
+export const MAX_AGE_DAYS = 10;
+
 export function newsScore(n: NewsLike, place = '', now = Date.now()): number {
   if (!isTravelNews(n)) return -99;
   let s = 0;
@@ -34,8 +37,8 @@ export function newsScore(n: NewsLike, place = '', now = Date.now()): number {
   if (place && n.title.includes(place)) s += 3;
   if (s === 0) return -99; // 여행 말도, 지역 이름도 없으면 최근이어도 버린다
   const age = n.at ? (now - new Date(n.at).getTime()) / 86400000 : 15;
-  if (age > 30) return -99;
-  s += age <= 3 ? 2 : age <= 10 ? 1 : 0;
+  if (age > MAX_AGE_DAYS) return -99;
+  s += age <= 2 ? 3 : age <= 5 ? 2 : age <= 7 ? 1 : 0;
   if (isMajor(n)) s += 2;
   return s;
 }
@@ -79,36 +82,36 @@ export function newsSpec(p: Place): { label: string; match: string; queries: str
     const short = name.length >= 3 ? name.replace(/[시군구]$/, '') : name;
     const area = r?.groupName ?? '';
     const q = SAME_NAME.has(short) && area && !(p.code === '29') ? `${area} ${short}` : short;
-    return { label: name, match: short, queries: [`${q} 여행 when:30d`, `${q} 축제 when:30d`, `${q} 가볼만한 곳 when:30d`] };
+    return { label: name, match: short, queries: [`${q} 여행 when:10d`, `${q} 축제 when:10d`, `${q} 가볼만한 곳 when:10d`] };
   }
   const name = p.city || COUNTRY_BY_ID.get(p.id)?.name || p.id;
-  return { label: name, match: name, queries: [`${name} 여행 when:30d`, `${name} 항공권 when:30d`, `${name} 입국 when:60d`] };
+  return { label: name, match: name, queries: [`${name} 여행 when:10d`, `${name} 항공권 when:10d`, `${name} 입국 when:14d`] };
 }
 
 /** 여행 전반: 준비에 영향을 주는 것만 주제별로 따로 찾아 합친다 (한 검색어에 몰아 넣으면 거의 안 걸린다) */
 const SEASON_QUERIES: Record<number, string[]> = {
-  1: ['눈꽃 여행 when:14d', '겨울 축제 when:14d'], 2: ['겨울 축제 when:14d', '봄 여행 예약 when:14d'],
-  3: ['벚꽃 개화 when:14d', '봄꽃 축제 when:14d'], 4: ['벚꽃 개화 when:14d', '봄꽃 축제 when:14d'],
-  5: ['봄 축제 when:14d', '여름휴가 예약 when:14d'], 6: ['해수욕장 개장 when:14d', '여름휴가 항공권 when:14d'],
-  7: ['해수욕장 when:7d 여행', '여름휴가 when:7d 여행'], 8: ['해수욕장 when:7d 여행', '가을 여행 when:14d'],
-  9: ['추석 연휴 여행 when:14d', '가을 축제 when:14d'], 10: ['단풍 절정 when:14d', '가을 축제 when:14d'],
-  11: ['단풍 절정 when:14d', '겨울 여행 when:14d'], 12: ['해돋이 명소 when:14d', '연말 여행 when:14d'],
+  1: ['눈꽃 여행 when:7d', '겨울 축제 when:7d'], 2: ['겨울 축제 when:7d', '봄 여행 예약 when:7d'],
+  3: ['벚꽃 개화 when:7d', '봄꽃 축제 when:7d'], 4: ['벚꽃 개화 when:7d', '봄꽃 축제 when:7d'],
+  5: ['봄 축제 when:7d', '여름휴가 예약 when:7d'], 6: ['해수욕장 개장 when:7d', '여름휴가 항공권 when:7d'],
+  7: ['해수욕장 when:7d 여행', '여름휴가 when:7d 여행'], 8: ['해수욕장 when:7d 여행', '가을 여행 when:7d'],
+  9: ['추석 연휴 여행 when:7d', '가을 축제 when:7d'], 10: ['단풍 절정 when:7d', '가을 축제 when:7d'],
+  11: ['단풍 절정 when:7d', '겨울 여행 when:7d'], 12: ['해돋이 명소 when:7d', '연말 여행 when:7d'],
 };
 export const BASE_QUERIES = [
-  '유류할증료 when:14d',
-  '항공권 특가 when:14d',
-  '신규 취항 노선 when:14d',
-  '무비자 입국 when:30d',
-  '여행경보 when:14d',
-  '전자여행허가 OR 여권 여행 when:14d',
+  '유류할증료 when:7d',
+  '항공권 특가 when:7d',
+  '신규 취항 노선 when:7d',
+  '무비자 입국 when:10d',
+  '여행경보 when:7d',
+  '전자여행허가 OR 여권 여행 when:7d',
   '환율 여행 엔화 OR 달러 when:7d',
-  'KTX OR SRT 예매 when:14d',
-  '숙박 할인 쿠폰 when:14d',
-  '공항 혼잡 OR 주차 출국 when:14d',
+  'KTX OR SRT 예매 when:7d',
+  '숙박 할인 쿠폰 when:7d',
+  '공항 혼잡 OR 주차 출국 when:7d',
   '축제 개막 when:7d',
-  '인기 여행지 when:14d',
-  '관광객 몰려 OR 발길 이어져 when:14d',
-  '여행객 늘어 OR 뜨는 여행지 when:14d',
+  '인기 여행지 when:7d',
+  '관광객 몰려 OR 발길 이어져 when:7d',
+  '여행객 늘어 OR 뜨는 여행지 when:7d',
 ];
 export const generalQueries = (month = new Date().getMonth() + 1) => [...BASE_QUERIES, ...(SEASON_QUERIES[month] ?? [])];
 export const GENERAL_QUERIES = generalQueries();

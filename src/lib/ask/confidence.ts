@@ -17,9 +17,25 @@ export function rulesConfident(q: string, a: Answer): boolean {
   return true;
 }
 
+/**
+ * AI(보라)에게 넘길지: 뒷단이 있으면 기본은 AI가 대화로 답하고, 규칙형은 사실 찾기·단추·대체 답을 맡는다.
+ * 규칙형이 끝까지 맡는 것: 되묻기 이어 가기, '지도'·'가고 싶은 곳 보기' 같은 이동 명령, 해외 도시 추천(세계 자료는 규칙형에만 있음),
+ * 지역 이름 하나만 친 짧은 입력(예: '강릉') — 이건 개요 카드가 더 빠르고 정확하다.
+ */
+export function wantsAi(q: string, a: Answer, history: { q: string }[] = []): boolean {
+  if (a.pending || a.setHome) return false;
+  if (a.intent === 'map' || a.intent === 'wishList' || a.intent === 'choose' || a.intent === 'wishAdd') return false;
+  if (a.intent === 'recommend' && (a.items?.some((i) => i.wish?.t === 'country') || /자료가 없어요$/.test(a.text))) return false;
+  const t = q.trim().replace(/[?？!.~ ]+$/g, '');
+  if (history.length > 0) return true; // 이어지는 말은 앞 대화를 아는 AI가
+  if (t.replace(/\s+/g, '').length <= 5 && a.intent !== 'unknown') return false;
+  return true;
+}
+
 /** 답에 나온 숫자·지명이 사실 안에 있는지 (지어낸 흔적이 있으면 규칙형으로) */
 export function grounded(text: string, facts: string): boolean {
-  const nums = text.match(/\d{2,}/g) ?? [];
+  // 달·날짜(1~31)와 질문·앞 대화에 나온 숫자는 지어낸 것이 아니다 (facts에 질문·맥락도 함께 넘긴다)
+  const nums = (text.match(/\d{2,}/g) ?? []).filter((n) => Number(n) > 31);
   if (nums.some((n) => !facts.includes(n))) return false;
   return true;
 }

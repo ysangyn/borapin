@@ -9,7 +9,7 @@ import { lastPlace, runTools, type ToolCall } from './tools';
 import { ensurePlan } from './plan';
 import { findMentions } from './gazetteer';
 import { memberNames } from '../members';
-import { grounded, rulesConfident } from './confidence';
+import { grounded, wantsAi } from './confidence';
 import { placeLong } from '../geo';
 import { USE_EMULATOR } from '../firebase';
 
@@ -34,7 +34,7 @@ async function post(path: string, token: string, body: unknown, timeoutMs = 2000
 
 export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: User | null, history: { q: string; a: string }[] = []): Promise<SmartResult> {
   const rule = ask(question, ctx, d);
-  if (rulesConfident(question, rule) || !aiAvailable() || !user) return { answer: rule, via: 'rules' };
+  if (!wantsAi(question, rule, history) || !aiAvailable() || !user) return { answer: rule, via: 'rules' };
   try {
     const token = await user.getIdToken();
     const now = d.now ?? new Date();
@@ -42,7 +42,7 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
       `오늘 ${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`,
       `함께 쓰는 사람: ${memberNames().join(', ') || '둘'}`,
       ctx.place ? `직전에 이야기한 지역: ${placeLong(ctx.place)}` : '',
-      ...history.slice(-2).map((h) => `앞 대화: Q ${h.q} / A ${h.a.slice(0, 80)}`),
+      ...history.slice(-4).map((h) => `앞 대화: Q ${h.q} / A ${h.a.slice(0, 200)}`),
     ].filter(Boolean).join('\n');
     const plan = await post('/plan', token, { question, context });
     const mention = findMentions(question, d.info)[0]?.entry.label ?? null;
@@ -52,7 +52,7 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
     const ans = await post('/answer', token, { question, context, facts: factText });
     const text = String(ans.text ?? '');
     const lines = (Array.isArray(ans.lines) ? ans.lines : []).map(String);
-    if (!text || !grounded([text, ...lines].join(' '), factText)) return { answer: rule, via: 'rules', reason: 'ungrounded' };
+    if (!text || !grounded([text, ...lines].join(' '), [factText, question, context].join('\n'))) return { answer: rule, via: 'rules', reason: 'ungrounded' };
     const ids = (Array.isArray(ans.buttons) ? ans.buttons : []).map(String);
     const buttons: Btn[] = ids.map((id) => facts.actions.find((x) => x.id === id)?.btn).filter((b): b is Btn => !!b);
     if (!buttons.length) buttons.push(...facts.actions.slice(0, 3).map((x) => x.btn));

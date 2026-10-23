@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScenicPhoto } from '../components/Scene';
 import { photoById } from '../lib/media';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Icon, TopBar, useToast } from '../components/ui';
+import { Icon, TopBar, useBusy, useToast } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { useSeasons } from '../lib/seasons';
@@ -22,6 +22,14 @@ type Msg = { who: 'me'; text: string } | { who: 'bot'; a: Answer; q: string };
 /** 단추 순서: 담기 → 화면으로 → 고르기 → 이어 묻기 */
 const rank = (b: Btn) => (b.wish ? 0 : b.to ? 1 : b.choose ? 2 : 3);
 
+const CHAT_KEY = 'borapin:ask-chat';
+function loadChat(): { msgs: Msg[]; ctx: AskCtx } | null {
+  try { const raw = sessionStorage.getItem(CHAT_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+function saveChat(msgs: Msg[], ctx: AskCtx) {
+  try { if (msgs.length) sessionStorage.setItem(CHAT_KEY, JSON.stringify({ msgs: msgs.slice(-30), ctx })); else sessionStorage.removeItem(CHAT_KEY); } catch { /* 저장소 없어도 그만 */ }
+}
+
 /** 찾아보기: 규칙형 답변기 (비용·횟수 제한 없음, 기기 안에서 처리) */
 export default function Ask() {
   const [sp, setSp] = useSearchParams();
@@ -38,8 +46,12 @@ export default function Ask() {
   const notes = useAllNotes();
   const plans = useAllPlans();
   const { photos } = usePhotos();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [ctx, setCtx] = useState<AskCtx>({});
+  // 대화는 이 탭 안에서 이어진다: 새로 고침·다른 화면에 다녀와도 그대로 (sessionStorage, 실패하면 그냥 메모리)
+  const [msgs, setMsgs] = useState<Msg[]>(() => loadChat()?.msgs ?? []);
+  const [ctx, setCtx] = useState<AskCtx>(() => loadChat()?.ctx ?? {});
+  useEffect(() => { saveChat(msgs, ctx); }, [msgs, ctx]);
+  // 대화 중에는 새 버전으로 바꾸지 않는다 (화면이 갑자기 새로 고쳐지지 않게)
+  useBusy(msgs.length > 0);
   const [text, setText] = useState('');
   const end = useRef<HTMLDivElement>(null);
   const ready = !!(trips && wishes && recs && (info || infoFailed));
@@ -93,8 +105,10 @@ export default function Ask() {
 
   // 홈에서 넘어온 질문
   const first = sp.get('q');
+  const sentFirst = useRef('');
   useEffect(() => {
-    if (first && data && msgs.length === 0) {
+    if (first && data && sentFirst.current !== first) {
+      sentFirst.current = first;
       send(first);
       setSp({}, { replace: true });
     }
@@ -121,7 +135,7 @@ export default function Ask() {
 
   return (
     <>
-      <TopBar back title="보라에게 물어봐" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); }}>처음으로</button> : undefined} />
+      <TopBar back title="보라에게 물어봐" right={msgs.length > 0 ? <button className="btn sm line" onClick={() => { setMsgs([]); setCtx({}); saveChat([], {}); }}>처음으로</button> : undefined} />
       <div className="page ask-page" style={{ paddingTop: 4 }} data-testid="ask">
         {infoFailed && !info && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} role="status" data-testid="info-failed">

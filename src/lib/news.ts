@@ -11,13 +11,13 @@ export interface NewsItem { title: string; link: string; source: string; at: str
 const mem = new Map<string, { at: number; items: NewsItem[] }>();
 const TTL = 6 * 3600_000;
 const EMPTY_TTL = 20 * 60_000; // 빈 결과는 잠깐만 기억 (일시 장애가 6시간 '소식 없음'이 되지 않게)
-const KEY = 'borapin:news2:';
+const KEY = 'borapin:news3:'; // 검색 기간을 줄이며 옛 캐시는 버린다
 
 export { isTravelNews } from './newsFilter';
 
 type Entry = { at: number; items: NewsItem[] };
 const fresh = (e: Entry) => Date.now() - e.at < (e.items.length ? TTL : EMPTY_TTL);
-const STALE_MAX = 3 * 86400_000; // 새것을 받는 동안 먼저 보여 줄 옛 소식은 사흘까지
+const STALE_MAX = 86400_000; // 새것을 받는 동안 먼저 보여 줄 옛 소식은 하루까지
 
 /** 기기에 있는 소식 (오래됐어도) */
 function cached(q: string): Entry | null {
