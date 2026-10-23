@@ -213,7 +213,7 @@ export default function TripDetail() {
         <ShareLinkCard trip={trip} photos={photos} recs={tripRecs ?? []} />
 
         {!confirm ? (
-          <button className="btn danger block" onClick={() => setConfirm(true)}><Icon name="trash" size={17} />이 여행 지우기</button>
+          <button className="link-btn" style={{ alignSelf: 'center', color: 'var(--ink4)', textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 700, fontSize: 12 }} onClick={() => setConfirm(true)}>이 여행 지우기</button>
         ) : (
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <b>정말 지울까요? {photos.length ? `사진 ${photos.length}장과 일정·글도 함께 지워져요. ` : '일정·글도 함께 지워져요. '}되돌릴 수 없어요.</b>

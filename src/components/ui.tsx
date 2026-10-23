@@ -10,6 +10,10 @@ import { feedSeenAt, onFeedSeen } from '../lib/feedSeen';
 import { unseenHearts, useHearts } from '../lib/hearts';
 
 const PATHS: Record<string, string> = {
+  plane: 'M2 16l20-8-4 14-4-6-6-2zM14 16l6-8',
+  camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  wave: 'M3 14c3-4 6-4 8 0s5 4 8 0M3 19c3-4 6-4 8 0s5 4 8 0M17 5a2 2 0 1 0 0 .1',
+  star: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.3l6.1-.7z',
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
   bag: 'M3 8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18',
   map: 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',

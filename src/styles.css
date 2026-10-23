@@ -1155,3 +1155,31 @@ input[type='date'].input { min-width: 0; flex: 1 1 0; width: auto; }
 .stamp { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--violet); color: var(--violet); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; transform: rotate(-10deg); opacity: .9; }
 .sheet-actions .btn { height: 44px; }
 .sheet-photo { border: 2px solid var(--outline); border-radius: 16px; }
+/* 우리의 한 줄들 */
+.line-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 18px; color: inherit; }
+.line-card .avatar { width: 26px; height: 26px; font-size: 11px; flex: none; }
+.line-text { display: block; font-size: 19px; line-height: 1.2; color: var(--pink-ink); }
+.line-text.blue { color: var(--blue-ink); }
+/* 캐리어 스티커(배지) */
+.badges { grid-template-columns: repeat(3, 1fr); gap: 10px 8px; }
+.badge { background: #fff; border: 2px dashed var(--line2); border-radius: 16px; padding: 10px 8px 8px; align-items: center; text-align: center; opacity: .75; box-shadow: none; }
+.badge .badge-ic { width: 44px; height: 44px; border-radius: 14px; border: 2px solid var(--outline); background: #fff; display: flex; align-items: center; justify-content: center; color: var(--ink3); margin-bottom: 4px; }
+.badge.on { opacity: 1; border: 2px solid var(--outline); box-shadow: 3px 3px 0 var(--line2); transform: rotate(-2deg); }
+.badge.on:nth-child(2n) { transform: rotate(2deg); }
+.badge.on:nth-child(3n) { transform: rotate(-1deg); }
+.badge.on .badge-ic { background: var(--butter); color: var(--ink); box-shadow: 2px 2px 0 var(--line2); }
+.badge.on:nth-child(2n) .badge-ic { background: var(--mint); }
+.badge.on:nth-child(3n) .badge-ic { background: var(--pink-mist); }
+.badge b { font-size: 12.5px; color: var(--ink); font-family: 'Jua', sans-serif; font-weight: 400; }
+.badge.on b { color: var(--ink); }
+.badge span { font-size: 10px; }
+.badge i { background: var(--violet); border-radius: 0 2px 2px 0; }
+/* 물어보기 추천 카드·칩 */
+.ask-items { gap: 8px; }
+.ask-item:first-child { border-top: 2px solid var(--outline); }
+.ask-item-main b { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 17px; }
+.ask-item-heart { border: 2px solid var(--outline); color: var(--pink); box-shadow: 2px 2px 0 var(--line2); }
+.ask-actions .chip { border-radius: 999px; }
+.ask-actions .chip.soft { background: #fff; border-color: var(--outline); color: var(--ink); }
+.bubble.bot > .bot-text { font-size: 15px; }
+.bubble.bot .tiny.muted:last-child { font-size: 10.5px; }

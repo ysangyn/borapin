@@ -9,6 +9,9 @@ import MapReplay from '../components/MapReplay';
 import DateGame from '../components/DateGame';
 import ShareCards from '../components/ShareCards';
 import { badges } from '../lib/achievements';
+
+/** 스티커마다 아이콘 (ui.tsx Icon 이름) */
+const BADGE_ICON: Record<string, string> = { first: 'pin', pins10: 'pin', pins30: 'pin', cells50: 'map', cells100: 'map', cells160: 'flag', groups: 'map', islands: 'wave', abroad: 'plane', countries10: 'globe', continents: 'globe', seasons: 'sun', family: 'heart', photos100: 'camera', again5: 'heart' };
 import { monthGrid, yearReview } from '../lib/yearReview';
 import { placeLong } from '../lib/geo';
 import type { Photo } from '../lib/types';
@@ -17,6 +20,7 @@ import PhotoImg from '../components/PhotoImg';
 import { photoForPlace } from '../lib/media';
 import { formatWhen } from '../lib/dates';
 import { times } from '../lib/ko';
+import { toneOf } from '../lib/members';
 import { Icon } from '../components/ui';
 
 export default function Memories() {
@@ -50,6 +54,13 @@ export default function Memories() {
   // 받은 뱃지 먼저, 그다음 거의 다 된 것부터
   const badgeOrder = [...list].sort((a, b) => { const ao = a.have >= a.need, bo = b.have >= b.need; return Number(bo) - Number(ao) || (ao ? 0 : b.have / b.need - a.have / a.need); });
   const badgeShown = allBadges ? badgeOrder : badgeOrder.slice(0, 6);
+  const [allLines, setAllLines] = useState(false);
+  const ourLines = useMemo(() => {
+    const tripById = new Map((trips ?? []).map((t) => [t.id, t]));
+    return (recs ?? [])
+      .flatMap((r) => Object.entries(r.reviews ?? {}).filter(([, v]) => v && v.trim()).map(([who, text]) => ({ key: `${r.id}:${who}`, placeId: r.id, who, text: text.trim().slice(0, 60), place: r.name, tripTitle: r.tripId ? tripById.get(r.tripId)?.title ?? '' : '', at: r.updatedAt?.toMillis?.() ?? r.createdAt?.toMillis?.() ?? 0 })))
+      .sort((a, b) => b.at - a.at);
+  }, [recs, trips]);
   // 사진에 위치가 없으면 그 여행의 장소로
   const placeOfPhoto = (p: Photo) => {
     const t = trips?.find((x) => x.id === p.tripId);
@@ -171,16 +182,38 @@ export default function Memories() {
           )}
         </section>
 
+        {ourLines.length > 0 && (
+          <section data-testid="our-lines">
+            <div className="row-between" style={{ marginBottom: 6 }}>
+              <h2 className="h2">우리의 한 줄들</h2>
+              <span className="small muted">{ourLines.length}줄</span>
+            </div>
+            <div className="list" style={{ gap: 8 }}>
+              {ourLines.slice(0, allLines ? 30 : 4).map((l) => (
+                <Link key={l.key} to={`/places/${l.placeId}`} className="card line-card">
+                  <span className={'avatar t' + Math.max(0, toneOf(l.who))} aria-hidden="true">{[...l.who][0]}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span className={'hand line-text ' + (toneOf(l.who) === 1 ? 'blue' : 'pink')}>“{l.text}”</span>
+                    <span className="tiny muted" style={{ display: 'block', marginTop: 2 }}>{l.place}{l.tripTitle ? ` · ${l.tripTitle}` : ''}</span>
+                  </span>
+                </Link>
+              ))}
+              {ourLines.length > 4 && <button className="link-btn" onClick={() => setAllLines(!allLines)}>{allLines ? '접기' : `${ourLines.length}줄 모두 보기`}</button>}
+            </div>
+          </section>
+        )}
+
         <section data-testid="badges">
           <div className="row-between" style={{ marginBottom: 6 }}>
-            <h2 className="h2">도전 배지 · {earned.length}/{list.length}</h2>
+            <h2 className="h2">캐리어 스티커 · {earned.length}/{list.length}</h2>
             {list.length > 6 && <button className="link-btn" onClick={() => setAllBadges(!allBadges)}>{allBadges ? '접기' : '모두 보기'}</button>}
           </div>
           <div className="badges">
             {badgeShown.map((b) => {
               const ok = b.have >= b.need;
               return (
-                <div key={b.id} className={'badge' + (ok ? ' on' : '')} title={b.desc}>
+                <div key={b.id} className={'badge' + (ok ? ' on' : '')} title={b.desc} data-badge={b.id}>
+                  <span className="badge-ic" aria-hidden="true"><Icon name={BADGE_ICON[b.id] ?? 'star'} size={22} stroke={2.2} /></span>
                   <b>{b.name}</b>
                   <span>{ok ? b.desc : `${Math.min(b.have, b.need)}/${b.need}`}</span>
                   {!ok && <i style={{ width: `${Math.min(100, (b.have / b.need) * 100)}%` }} />}
