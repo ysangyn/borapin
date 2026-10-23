@@ -31,6 +31,7 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['names', 'updatedAt'])
         && request.resource.data.names is map
         && request.resource.data.names.diff(resource.data.get('names', {})).affectedKeys().hasOnly([me])
+        && me in request.resource.data.names
         && request.resource.data.names[me] is string
         && request.resource.data.names[me].size() >= 1 && request.resource.data.names[me].size() <= 10
         && validAccess(request.resource.data);

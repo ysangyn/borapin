@@ -167,10 +167,11 @@ describe('함께 쓰는 사람 (보라)', () => {
   });
   test('멤버는 앱에서 쓸 자기 이름만 바꾼다 (남의 이름·허용 목록은 못 바꿈, 10자 넘으면 안 됨)', async () => {
     const db = as.bora();
-    await assertSucceeds(updateDoc(doc(db, 'config/access'), { [`names.${BORA}`]: '보라공주' }));
-    await assertFails(updateDoc(doc(db, 'config/access'), { [`names.${OWNER}`]: '남편' }));
-    await assertFails(updateDoc(doc(db, 'config/access'), { [`names.${BORA}`]: '열자가넘는이름이에요정말' }));
-    await assertFails(updateDoc(doc(db, 'config/access'), { [`names.${BORA}`]: '보라', allowed: [OWNER, BORA, STRANGER] }));
+    // 메일에 점이 있으니 문자열 경로 대신 FieldPath로 (앱도 같은 방식)
+    await assertSucceeds(updateDoc(doc(db, 'config/access'), new FieldPath('names', BORA), '보라공주'));
+    await assertFails(updateDoc(doc(db, 'config/access'), new FieldPath('names', OWNER), '남편'));
+    await assertFails(updateDoc(doc(db, 'config/access'), new FieldPath('names', BORA), '열자가넘는이름이에요정말'));
+    await assertFails(updateDoc(doc(db, 'config/access'), new FieldPath('names', BORA), '보라', 'allowed', [OWNER, BORA, STRANGER]));
   });
   test('글은 자기 이름으로만 쓰고, 자기 글만 지운다', async () => {
     const db = as.bora();
