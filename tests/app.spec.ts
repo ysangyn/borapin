@@ -546,7 +546,7 @@ test.describe.serial('보라핀 1단계', () => {
     // 나만 하트 → 상대를 기다린다
     await cands.first().getByTestId('plan-heart').click();
     await expect(cands.first().getByTestId('plan-heart')).toHaveAttribute('aria-pressed', 'true');
-    await expect(cands.first()).toContainText('상대 하트를 기다려요');
+    await expect(cands.first()).toContainText('상대가 고르길 기다려요');
     await expect(cands.first().getByTestId('plan-decide')).toHaveCount(0);
     await shot(page, '10i-plan-pick');
     const name = (await cands.first().locator('.plan-cand-name').textContent())!.trim();

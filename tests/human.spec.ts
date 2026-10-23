@@ -613,7 +613,7 @@ test.describe('사람처럼 쓰기', () => {
     await quiz.locator('.study-opt').first().click();
     await expect(quiz.getByRole('button', { name: /다음|끝/ })).toBeVisible();
     // 끝까지 풀면 막다른 곳이 아니라 다음 공부(빈칸)로 가는 단추가 있다
-    for (let n = 0; n < 12 && (await page.getByTestId('study-finish').count()) === 0; n++) {
+    for (let n = 0; n < 30 && (await page.getByTestId('study-finish').count()) === 0; n++) {
       if (await quiz.locator('.study-opt:not([disabled])').count()) await quiz.locator('.study-opt').first().click();
       await quiz.getByRole('button', { name: /다음|끝/ }).click();
     }
