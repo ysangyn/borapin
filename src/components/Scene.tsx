@@ -6,13 +6,14 @@ import { artById } from '../lib/art';
  * 여행지 사진: 흐린 미리보기가 먼저 깔리고, 화면 폭에 맞는 크기(640/1280)를 받는다.
  * 미리보기 묶음(media-blur.json)은 첫 묶음에 없어서 여기서 따로 받는다 — 오기 전엔 사진만, 오면 배경이 깔린다.
  */
-export function ScenicPhoto({ photo, id, className, alt, eager, label }: { photo?: ScenePhoto | null; id?: string; className?: string; alt?: string; eager?: boolean; label?: 'top' | 'bottom' }) {
+export function ScenicPhoto({ photo, id, className, alt, eager, label, onTap }: { photo?: ScenePhoto | null; id?: string; className?: string; alt?: string; eager?: boolean; label?: 'top' | 'bottom'; onTap?: (p: ScenePhoto) => void }) {
   const p = photo ?? (id ? photoById(id) : null);
   const [loaded, setLoaded] = useState(false);
   useBlur(!!p);
   if (!p) return null;
   return (
-    <div className={'scenic ' + (className ?? '')} style={p.lqip ? { backgroundImage: `url(${p.lqip})` } : undefined}>
+    <div className={'scenic ' + (className ?? '') + (onTap ? ' tappable' : '')} style={p.lqip ? { backgroundImage: `url(${p.lqip})` } : undefined}
+      {...(onTap ? { role: 'button', tabIndex: 0, 'aria-label': `${p.name} 어디인지 보기`, onClick: () => onTap(p), onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter') onTap(p); } } : {})}>
       <img
         src={p.src.l}
         srcSet={`${p.src.s} 640w, ${p.src.l} 1280w`}

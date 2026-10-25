@@ -1256,3 +1256,10 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .tap-item:active { color: var(--violet); }
 .tour-card { border: none; background: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .map-choice { animation: none; } }
+/* 대표 사진은 누르면 어디인지 (지도·자세히 보기) */
+.scenic.tappable { cursor: pointer; }
+.scenic.tappable:active img { transform: scale(.99); }
+/* 지역 창 머리: 축제 이름이 길어도 닫기 단추가 밀려나지 않게 */
+.sheet .row-between > div:first-child { min-width: 0; flex: 1; }
+.sheet-fests .fest-name { white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.sheet-fests .fest { align-items: flex-start; flex-wrap: wrap; }

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { josa } from 'es-hangul';
 import { ScenicPhoto } from './Scene';
+import { useMapChoice } from './MapChoice';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
 import type { Stats } from '../lib/stats';
@@ -62,9 +63,11 @@ export default function MonthPick({ stats, wishes }: { stats: Stats | null; wish
       toast('담지 못했어요. 다시 해 주세요');
     }
   };
+  const [openMap, mapChoice] = useMapChoice();
   return (
     <section className="month-pick" data-testid="month-pick">
-      <ScenicPhoto photo={pick} className="month-pick-photo" alt={pick.name} label="top" />
+      <ScenicPhoto photo={pick} className="month-pick-photo" alt={pick.name} label="top" onTap={(p) => openMap({ name: p.name, search: true })} />
+      {mapChoice}
       <div className="month-pick-copy">
         <span className="month-pick-eyebrow">{good ? `${month}월에 가기 좋은 곳` : '오늘의 여행지'}</span>
         <b className="month-pick-name">{placeLong(place)}</b>

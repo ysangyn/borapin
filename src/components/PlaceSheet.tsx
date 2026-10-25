@@ -113,7 +113,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="grip" />
       {photoForPlace(place) && (
         <div style={{ position: 'relative' }}>
-          <ScenicPhoto photo={photoForPlace(place)} className="sheet-photo" label="bottom" />
+          <ScenicPhoto photo={photoForPlace(place)} className="sheet-photo" label="bottom" onTap={(p) => openMap({ name: p.name, search: true })} />
         </div>
       )}
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
