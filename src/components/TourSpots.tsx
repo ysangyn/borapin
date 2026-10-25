@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { crowdOf, kakaoSearchUrl, loadTour, relatedOf, useTrend, type TourCell } from '../lib/trend';
+import { crowdOf, loadTour, relatedOf, useTrend, type TourCell } from '../lib/trend';
+import { REGION_BY_CODE } from '../lib/geo';
+import { useMapChoice } from './MapChoice';
 
 /**
  * 관광공사 관광지(사진·자리)와 무장애 관광지 수. 자료는 지역 창을 열 때만 받는다.
@@ -9,6 +11,8 @@ export default function TourSpots({ code }: { code: string }) {
   const [cell, setCell] = useState<TourCell | null>(null);
   const [bad, setBad] = useState<Set<string>>(new Set());
   const trend = useTrend();
+  const [openMap, mapChoice] = useMapChoice();
+  const area = REGION_BY_CODE.get(code)?.name ?? '';
   useEffect(() => {
     let on = true;
     setCell(null);
@@ -28,13 +32,13 @@ export default function TourSpots({ code }: { code: string }) {
             {shown.map(([n, lat, lng, img]) => {
               const crowd = crowdOf(code, trend, n);
               return (
-                <a key={n} className="tour-card" href={`https://map.kakao.com/link/map/${encodeURIComponent(n)},${lat},${lng}`} target="_blank" rel="noreferrer">
+                <button type="button" key={n} className="tour-card" onClick={() => openMap({ name: n, area, lat, lng })}>
                   <span className="tour-pic">
                     <img src={img} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBad((b) => new Set(b).add(n))} />
                     {crowd && crowd !== '보통' && <span className={`tag crowd-tag ${crowd === '붐벼요' ? 'busy' : 'calm'}`} data-testid="tour-crowd">{crowd}</span>}
                   </span>
                   <span>{n}</span>
-                </a>
+                </button>
               );
             })}
           </div>
@@ -45,11 +49,12 @@ export default function TourSpots({ code }: { code: string }) {
           <div className="info-line"><span className="k">같이</span><span className="tiny muted">같이 가면 좋은 곳 · 요즘 함께 많이 찾아요 · 누르면 지도</span></div>
           <div className="trend-chips">
             {related.map((x) => (
-              <a key={x.n} className="chip trend-chip" href={kakaoSearchUrl(`${x.m} ${x.n}`)} target="_blank" rel="noreferrer">{x.n}</a>
+              <button type="button" key={x.n} className="chip trend-chip" onClick={() => openMap({ name: x.n, area: x.m })}>{x.n}</button>
             ))}
           </div>
         </div>
       )}
+      {mapChoice}
       {cell && cell.easy > 0 && <div className="info-line" data-testid="tour-easy"><span className="k">편하게</span><span>휠체어·유모차로 다니기 편한 관광지 {cell.easy}곳 (무장애 정보)</span></div>}
     </div>
   );

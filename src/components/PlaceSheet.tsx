@@ -4,6 +4,7 @@ import TripRow from './TripRow';
 import RegionInfo from './RegionInfo';
 import { Icon, useToast } from './ui';
 import { useAuth } from '../lib/auth';
+import { useMapChoice } from './MapChoice';
 import { memberNames } from '../lib/members';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
 import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/geo';
@@ -100,6 +101,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
 
   // 핀을 꽂아 횟수가 늘면 도장이 '쾅' 찍힌다
   const [stamped, setStamped] = useState(false);
+  const [openMap, mapChoice] = useMapChoice();
   const prevVisits = useRef(visits);
   useEffect(() => {
     if (visits > prevVisits.current) { setStamped(true); const t = setTimeout(() => setStamped(false), 600); prevVisits.current = visits; return () => clearTimeout(t); }
@@ -123,7 +125,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
               {fests.map((f) => (
                 <span key={f.id || f.t + f.s} className="fest">
                   <span className={'tag ' + (isOngoing(f) ? 'coral' : 'violet')}>{isOngoing(f) ? '지금 축제' : '축제'}</span>
-                  <span className="fest-name">{f.t}</span>
+                  <button type="button" className="fest-name tap-item" onClick={() => openMap({ name: f.t, search: true })}>{f.t}</button>
                   <span className="muted">{festivalPeriod(f)}</span>
                 </span>
               ))}
@@ -139,6 +141,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
         </div>
       </div>
 
+      {mapChoice}
       {place.t === 'kr' && <RegionInfo code={place.code} />}
       {place.t === 'kr' && <NewsStrip place={place} />}
       {place.t === 'country' && <CountryCities place={place} wishes={wishes} />}

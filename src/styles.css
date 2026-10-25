@@ -1246,3 +1246,13 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .trend-chips .chip::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: max(100%, 44px); height: max(100%, 44px); border-radius: inherit; }
 .trend-chips .chip:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--line2); }
 @media (prefers-reduced-motion: reduce) { .trend-chips .chip { transition: none; } }
+/* 누르면 지도 앱 고르기 (네이버지도·카카오맵) */
+.map-choice-backdrop { position: fixed; inset: 0; z-index: 80; background: rgba(30, 22, 64, .32); display: flex; align-items: flex-end; justify-content: center; padding: 16px 16px calc(16px + var(--safe-b)); }
+.map-choice { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 10px; animation: menu-in .2s ease-out both; }
+.map-choice-row { display: flex; gap: 8px; }
+.map-choice-row .btn { flex: 1; gap: 6px; }
+.tap-items { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.tap-item { border: none; background: none; padding: 2px 0; font: inherit; color: inherit; text-decoration: underline dotted var(--lavender); text-underline-offset: 4px; cursor: pointer; text-align: left; }
+.tap-item:active { color: var(--violet); }
+.tour-card { border: none; background: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .map-choice { animation: none; } }
