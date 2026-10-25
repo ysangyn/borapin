@@ -1,14 +1,3 @@
 관광빅데이터: 로컬 파일에 내용이 없어 실제 주소의 지난 자료를 받아 둡니다 — https://borapin.web.app/data/trend.json (시·군 160곳)
 지난 자료를 두었어요 → src/data/trend.json, public/data/trend.json
-방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"4","daywkDivNm":"목요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"191513.0","baseYmd":"20260910"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"4","daywkDivNm":"목요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"460089.0","baseYmd":"20260910"}] 
-방문자 받는 방식: 전체 한 번에(쪽으로)
-자료가 있는 마지막 날 2026-09-25 (어제보다 30일 전) → 최근 2026-08-29~2026-09-25, 작년 2025-08-30~2025-09-26
-방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"6","daywkDivNm":"토요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"116497.5","baseYmd":"20260829"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"6","daywkDivNm":"토요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"479843.0","baseYmd":"20260829"}]
-방문자: 최근 22596줄 → 시·군 160곳, 작년 22176줄 → 160곳 · 호출 53번
-연관 관광지 기준 달 202609
-연관 관광지 원본 예시 [{"baseYm":"202609","tAtsCd":"b8a31e1484a78a85497d845ba183e08d","tAtsNm":"2.28민주운동기념회관","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","rlteTatsCd":"aa9e43eb5b00d6527ea961863fb3cacf","rlteTatsNm":"울진참가자미회/수성점","rlteRegnCd":"27","rlteRegnNm":"대구광역시","rlteSignguCd":"27260","rlteSignguNm":"수성구","rlteCtgryLclsNm":"음식","rlteCtgryMclsNm":"음식","rlteCtgrySclsNm":"전문음식","rlteRank":"1"},{"baseYm":"202609","tAtsCd":"b8a31e1484a78a85497d845ba183e08d","tAtsNm":"2.28민주운동기념회관","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","rlteTatsCd":"dca31ec05a023c837e713eebe846fa38","rlteTatsNm":"2.28기념중앙공원","rlteRegnCd":"27","rlteRegnNm":"대구광역시","rlteSignguCd":"27110","rlteSignguNm":"중구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"문화관광","rlteCtgrySclsNm":"도시공원","rlteRank":"2"}]
-붐빔 원본 예시 [{"baseYmd":"20261025","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","tAtsNm":"264작은문학관","cnctrRate":"65.24"},{"baseYmd":"20261026","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","tAtsNm":"264작은문학관","cnctrRate":"61.64"}]
-관광빅데이터: 시·군 160곳 (작년 비교 160곳 · 연관 137곳 · 붐빔 137곳) · 호출 556번 · 22초
-요즘 뜨는 곳: 화성시 167%, 영천시 28%, 강릉시 26%, 밀양시 25%, 논산시 23%, 공주시 19%, 당진시 18%, 평택시 18%
-한적한 곳: 울릉군 3381, 영양군 6290, 양구군 9002, 장수군 11003, 화천군 12237, 계룡시 14808, 순창군 14861, 봉화군 15048
-저장 → src/data/trend.json, public/data/trend.json
+오늘(2026-10-26) 자료가 이미 있어 다시 받지 않아요 (하루 호출 한도 아끼기 · FORCE=1이면 다시 받음)
