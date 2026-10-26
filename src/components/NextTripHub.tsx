@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, type ReactNode, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { josa } from 'es-hangul';
 import { Icon, useBusy, useToast } from './ui';
@@ -18,6 +18,8 @@ import { useBank, useStudy } from '../lib/study/store';
 import HomeRoute from './HomeRoute';
 import { alarmFor, useAbroad, visaFor } from '../lib/abroad';
 import Stopovers from './Stopovers';
+import { useHome } from '../lib/home';
+import { straightKm } from '../lib/placeApps';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
 import { upcomingTrips } from '../lib/stats';
@@ -255,25 +257,42 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
   const abroad = useAbroad() ?? null;
   const visa = city ? visaFor(city.c, abroad) : null, alarm = city ? alarmFor(city.c, abroad) : null;
   const good = news?.[0] ?? null;
+  const home = useHome();
   if (!s && !f && !flights && !good && !city && !accessLine(place)) return null;
+  const go = () => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`);
+  const r = place.t === 'kr' ? REGION_BY_CODE.get(place.code) : undefined;
+  const lang = city ? phraseLangFor(city.lang) : null;
+  // 중요한 순서로 늘어놓고 앞의 셋만 보인다. 나머지는 '자세히'에 접는다 (홈이 길어지지 않게)
+  const rows: [string, ReactNode][] = [];
+  if (s) rows.push(['season', <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="sun" size={16} /><span>가기 좋은 때 <b>{monthsLabel(s.m)}</b>{s.why ? ` · ${s.why}` : ''}</span></button>]);
+  if (city) rows.push(['visa', <button className="hub-way-row" onClick={go}><Icon name="shield" size={16} /><span>입국 <b>{visa?.text ?? city.entry}</b>{alarm ? <> · 여행경보 <b className={alarm.lvl >= 3 ? 'alarm-high' : ''}>{alarm.text}</b></> : null} · 떠나기 전 확인</span></button>]);
+  if (f) rows.push(['fest', <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="flag" size={16} /><span>{isOngoing(f) ? '지금 열리는 축제' : '다가오는 축제'} <b>{f.t}</b> · {festivalPeriod(f)}</span></button>]);
+  if (r) rows.push(['home', <div className="hub-way-row" style={{ cursor: 'default' }}><Icon name="home" size={16} /><HomeRoute to={{ name: placeLabel(place), lat: r.lat, lng: r.lng }} note="시·군 가운데까지" /></div>]);
+  if (place.t === 'kr' && accessLine(place)) rows.push(['access', <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>]);
+  // 들러 가기는 집이 있고 60km 넘게 멀 때만 생긴다 (빈 '자세히'가 남지 않게)
+  if (r && home && straightKm(home, r) >= 60) rows.push(['stop', <Stopovers destCode={r.code} />]);
+  if (city) rows.push(['city', <button className="hub-way-row" onClick={go} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzText(place) || tzLabel(city.tz)}</span></button>]);
+  if (city && lang && lang !== 'en') rows.push(['phrases', <button className="hub-way-row" onClick={() => nav(`/phrases/${lang}?city=${encodeURIComponent(city.city)}`)} data-testid="hub-phrases"><Icon name="play" size={16} /><span>{LANG_LABEL[lang]} 한마디 30문장 · 인사·식당·길</span></button>]);
+  if (flights) rows.push(['flights', <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label} · 인천에서 {city ? flyLabel(city.fly) : ''}{s ? ` · ${s.m[0]}월` : ''}</span></a>]);
+  if (good) rows.push(['news', <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>]);
+  const shown = rows.slice(0, 3), rest = rows.slice(3);
   return (
     <div className="hub-block card white" data-testid="hub-way">
       <div className="hub-label">{placeLong(place)} 가는 길</div>
       <div className="hub-way-rows">
-        {s && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="sun" size={16} /><span>가기 좋은 때 <b>{monthsLabel(s.m)}</b>{s.why ? ` · ${s.why}` : ''}</span></button>}
-        {f && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="flag" size={16} /><span>{isOngoing(f) ? '지금 열리는 축제' : '다가오는 축제'} <b>{f.t}</b> · {festivalPeriod(f)}</span></button>}
-        {place.t === 'kr' && REGION_BY_CODE.get(place.code) && <div className="hub-way-row" style={{ cursor: 'default' }}><Icon name="home" size={16} /><HomeRoute to={{ name: placeLabel(place), lat: REGION_BY_CODE.get(place.code)!.lat, lng: REGION_BY_CODE.get(place.code)!.lng }} note="시·군 가운데까지" /></div>}
-        {place.t === 'kr' && <Stopovers destCode={place.code} />}
-        {place.t === 'kr' && accessLine(place) && <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>}
-        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzText(place) || tzLabel(city.tz)}</span></button>}
-        {city && <button className="hub-way-row" onClick={() => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`)}><Icon name="shield" size={16} /><span>입국 <b>{visa?.text ?? city.entry}</b>{alarm ? <> · 여행경보 <b className={alarm.lvl >= 3 ? 'alarm-high' : ''}>{alarm.text}</b></> : null} · 떠나기 전 확인</span></button>}
-        {city && phraseLangFor(city.lang) && phraseLangFor(city.lang) !== 'en' && <button className="hub-way-row" onClick={() => nav(`/phrases/${phraseLangFor(city.lang)}?city=${encodeURIComponent(city.city)}`)} data-testid="hub-phrases"><Icon name="play" size={16} /><span>{LANG_LABEL[phraseLangFor(city.lang)!]} 한마디 30문장 · 인사·식당·길</span></button>}
-        {flights && <a className="hub-way-row" href={flights.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {flights.label} · 인천에서 {city ? flyLabel(city.fly) : ''}{s ? ` · ${s.m[0]}월` : ''}</span></a>}
-        {good && <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>}
+        {shown.map(([k, el]) => <Fragment key={k}>{el}</Fragment>)}
+        {rest.length > 0 && (
+          <details className="hub-way-more" data-testid="hub-way-more">
+            <summary>자세히 · {rest.map(([k]) => WAY_LABEL[k]).filter(Boolean).slice(0, 3).join('·')}</summary>
+            <div className="hub-way-rows">{rest.map(([k, el]) => <Fragment key={k}>{el}</Fragment>)}</div>
+          </details>
+        )}
       </div>
     </div>
   );
 }
+
+const WAY_LABEL: Record<string, string> = { fest: '축제', home: '우리 집에서', access: '교통', stop: '들러 가기', city: '돈·말·콘센트', phrases: '한마디', flights: '항공권', news: '소식', visa: '입국' };
 
 /** 고르는 중인 여행 계획: 상대가 후보를 골라 두었거나, 내가 하트를 기다리는 중 */
 function DraftNudge() {
