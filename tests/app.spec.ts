@@ -1065,6 +1065,8 @@ test.describe.serial('보라핀 1단계', () => {
 
   test('지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게)', async ({ page }) => {
     await signIn(page, OWNER);
+    // 기록이 많이 쌓인 뒤라 홈은 지도가 아래로 밀려 있다: 큰 지도에서 누른다
+    await page.goto('/map');
     await expectMapDrawn(page);
     await tapLngLat(page, 129.06, 35.2);
     const sheet = page.getByTestId('region-sheet');
