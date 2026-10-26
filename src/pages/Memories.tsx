@@ -217,6 +217,7 @@ export default function Memories() {
                   <b>{b.name}</b>
                   <span>{ok ? b.desc : `${Math.min(b.have, b.need)}/${b.need}`}</span>
                   {!ok && <i style={{ width: `${Math.min(100, (b.have / b.need) * 100)}%` }} />}
+                  {!ok && b.need > 1 && b.need - b.have === 1 && <em className="sticker-tag" data-testid="badge-one-left">하나 남았어요</em>}
                 </div>
               );
             })}

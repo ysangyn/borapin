@@ -1282,3 +1282,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .next-cell b { font-weight: 800; }
 .next-cell:active { transform: translate(1px, 1px); }
 .next-cell-seed { flex: none; width: 12px; height: 12px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #8BC97A; border: 2px solid var(--outline); }
+
+/* 캐리어 스티커: 완성 직전 꼬리표 */
+.badge { position: relative; }
+.sticker-tag { position: absolute; top: 3px; right: 3px; font-style: normal; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: var(--pink); color: #fff; border: 2px solid var(--outline); transform: rotate(4deg); white-space: nowrap; }
