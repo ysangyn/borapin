@@ -66,7 +66,7 @@ export default function MonthPick({ stats, wishes }: { stats: Stats | null; wish
   const [openMap, mapChoice] = useMapChoice();
   return (
     <section className="month-pick" data-testid="month-pick">
-      <ScenicPhoto photo={pick} className="month-pick-photo" alt={pick.name} label="top" onTap={(p) => openMap({ name: p.name, search: true })} />
+      <ScenicPhoto photo={pick} className="month-pick-photo" alt={pick.name} label="top" onTap={(p) => openMap({ name: p.name, search: true, wish: { place, kind: 'spot' } })} />
       {mapChoice}
       <div className="month-pick-copy">
         <span className="month-pick-eyebrow">{good ? `${month}월에 가기 좋은 곳` : '오늘의 여행지'}</span>

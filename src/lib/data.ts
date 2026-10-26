@@ -202,6 +202,11 @@ export async function createWish(input: WishInput, user: User): Promise<string> 
   return ref.id;
 }
 
+/** 가고 싶은 곳의 볼거리·먹거리 메모에 이름 하나 보태기 (동시에 눌러도 겹치지 않게 arrayUnion) */
+export async function addWishItem(id: string, field: 'spots' | 'foods', name: string) {
+  await queued(updateDoc(doc(wishesCol(), id), { [field]: arrayUnion(name), updatedAt: serverTimestamp() }));
+}
+
 export async function updateWish(id: string, fields: Partial<WishInput>) {
   await queued(updateDoc(doc(wishesCol(), id), { ...clean(fields), updatedAt: serverTimestamp() }));
 }

@@ -1,7 +1,17 @@
 import { useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from './ui';
+import { useAuth } from '../lib/auth';
+import { useWishes } from '../lib/data';
+import { hasWishItem, wishItem, type WishItemKind } from '../lib/wishActions';
+import type { Place } from '../lib/types';
 
 /** 누른 곳을 어느 지도 앱으로 열지 고르는 작은 창: 네이버지도 / 카카오맵 (축제는 네이버 검색도) */
-export interface MapTarget { name: string; area?: string; lat?: number | null; lng?: number | null; search?: boolean }
+export interface MapTarget {
+  name: string; area?: string; lat?: number | null; lng?: number | null; search?: boolean;
+  /** 있으면 창에 '가고 싶어요' 단추: 그 지역 가고 싶은 곳의 볼거리(spot)·먹거리(food) 칸에 담는다 */
+  wish?: { place: Place; kind: WishItemKind };
+}
 
 const enc = encodeURIComponent;
 export function mapChoiceLinks(t: MapTarget) {
@@ -14,6 +24,31 @@ export function mapChoiceLinks(t: MapTarget) {
   };
 }
 
+/** '가고 싶어요' 담기: [담겼는지, 담기]. 창과 관광지 카드 하트가 함께 쓴다 */
+export function useWishItem() {
+  const auth = useAuth();
+  const { wishes } = useWishes();
+  const toast = useToast();
+  const nav = useNavigate();
+  const [saving, setSaving] = useState<string | null>(null);
+  const has = (place: Place, name: string, kind: WishItemKind) => !!wishes && hasWishItem(wishes, place, name, kind);
+  const add = async (place: Place, name: string, kind: WishItemKind) => {
+    if (auth.status !== 'ready' || saving) return false;
+    setSaving(name);
+    try {
+      const { id, already } = await wishItem(place, name, kind, auth.user, wishes ?? []);
+      toast(already ? '이미 담겨 있어요' : '가고 싶은 곳에 담았어요', { label: '보기', onClick: () => nav(`/wishes/${id}`) });
+      return true;
+    } catch {
+      toast('담지 못했어요. 다시 해 주세요');
+      return false;
+    } finally {
+      setSaving(null);
+    }
+  };
+  return { has, add, saving };
+}
+
 /** 지도 앱 설정 (이 기기에만): 기본 네이버, 카카오, 또는 누를 때마다 고르기 */
 export type MapPref = 'naver' | 'kakao' | 'ask';
 const PREF_KEY = 'borapin:map-app';
@@ -23,12 +58,16 @@ export const setMapPref = (v: MapPref) => { try { localStorage.setItem(PREF_KEY,
 /** [열기 함수, 창] — 설정이 네이버·카카오면 바로 그 앱으로, '고르기'면 창이 뜬다. 축제·볼거리처럼 자세히 볼 것도 창으로 */
 export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
   const [t, setT0] = useState<MapTarget | null>(null);
+  const wi = useWishItem();
   const setT = (x: MapTarget | null) => {
     const p = mapPref();
     if (x && p !== 'ask' && !x.search) { window.open(p === 'kakao' ? mapChoiceLinks(x).kakao : mapChoiceLinks(x).naver, '_blank', 'noopener'); return; }
     setT0(x);
   };
   const close = () => setT(null);
+  const wished = !!(t?.wish && wi.has(t.wish.place, t.name, t.wish.kind));
+  const saving = !!wi.saving;
+  const addWish = async () => { if (t?.wish && (await wi.add(t.wish.place, t.name, t.wish.kind))) setT0(null); };
   const el = t ? (
     <div className="map-choice-backdrop" onClick={close} data-testid="map-choice">
       <div className="map-choice card" role="dialog" aria-label={`${t.name} 열기`} onClick={(e) => e.stopPropagation()}>
@@ -38,6 +77,11 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
           <a className={'btn ' + (mapPref() === 'kakao' ? 'line' : '')} href={mapChoiceLinks(t).naver} target="_blank" rel="noreferrer" onClick={close}><span className="app-badge n" aria-hidden="true">N</span>네이버지도</a>
           <a className={'btn ' + (mapPref() === 'kakao' ? '' : 'line')} href={mapChoiceLinks(t).kakao} target="_blank" rel="noreferrer" onClick={close}><span className="app-badge k" aria-hidden="true">K</span>카카오맵</a>
         </div>
+        {t.wish && (
+          <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} onClick={addWish} disabled={wished || saving} aria-pressed={wished} data-testid="map-choice-wish">
+            {wished ? '♥ 담겨 있어요' : saving ? '담는 중…' : '♡ 가고 싶어요'}
+          </button>
+        )}
         {t.search && <a className="btn soft block" href={mapChoiceLinks(t).web} target="_blank" rel="noreferrer" onClick={close}>네이버에서 자세히 보기</a>}
         <button className="link-btn" style={{ alignSelf: 'center' }} onClick={close}>그대로 두기</button>
       </div>

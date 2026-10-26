@@ -1,7 +1,8 @@
 import type { User } from 'firebase/auth';
-import { createWish } from './data';
+import { addWishItem, createWish } from './data';
 import { displayName } from './auth';
-import { samePlace } from './wishes';
+import { samePlace, fieldOfWishItem, planWishItem, type WishItemKind } from './wishes';
+export { hasWishItem, type WishItemKind } from './wishes';
 import { isMemberName } from './members';
 import type { Place, Wish } from './types';
 
@@ -40,3 +41,17 @@ export async function quickWish(place: Place, user: User, existing: Wish[] = [])
     window.setTimeout(() => inFlight.delete(k), 3000);
   }
 }
+
+/** 지도 고르기 창의 '가고 싶어요': 볼거리·먹거리를 그 지역 가고 싶은 곳에 담는다 (일일이 검색하지 않아도 되게) */
+export async function wishItem(place: Place, name: string, kind: WishItemKind, user: User, existing: Wish[] = []): Promise<{ id: string; already: boolean }> {
+  const plan = planWishItem(existing, place, name, kind);
+  if (plan.action === 'already') return { id: plan.id, already: true };
+  if (plan.action === 'append') { await addWishItem(plan.id, fieldOfWishItem(kind), name); return { id: plan.id, already: false }; }
+  const me = displayName(user);
+  const id = await createWish(
+    { place, wantedBy: isMemberName(me) ? [me] : [], priority: null, spots: kind === 'spot' ? [name] : [], todos: [], foods: kind === 'food' ? [name] : [], links: [], note: '', source: 'app' },
+    user,
+  );
+  return { id, already: false };
+}
+

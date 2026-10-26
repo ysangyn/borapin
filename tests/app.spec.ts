@@ -1062,4 +1062,28 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('trip-row').filter({ hasText: '엄마랑 강릉' })).toHaveCount(0);
     await expect(page.getByTestId('trip-row')).toHaveCount(before - 1);
   });
+
+  test('지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await expectMapDrawn(page);
+    await tapLngLat(page, 129.06, 35.2);
+    const sheet = page.getByTestId('region-sheet');
+    await expect(sheet.getByTestId('sheet-title')).toHaveText('부산');
+    const item = sheet.getByTestId('region-info').locator('.tap-item').first();
+    const name = (await item.innerText()).trim();
+    await item.click();
+    const dlg = page.getByTestId('map-choice');
+    await expect(dlg).toContainText(name);
+    await dlg.getByTestId('map-choice-wish').click();
+    await expect(page.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
+    await expect(dlg).toHaveCount(0);
+    // 다시 누르면 '담겨 있어요'
+    await item.click();
+    await expect(dlg.getByTestId('map-choice-wish')).toHaveText(/담겨 있어요/);
+    await expect(dlg.getByTestId('map-choice-wish')).toBeDisabled();
+    await shot(page, '30-map-choice-wish');
+    await dlg.getByRole('button', { name: '그대로 두기' }).click();
+    await page.goto('/wishes');
+    await expect(page.getByTestId('wish-card').filter({ hasText: '부산' })).toContainText(name);
+  });
 });

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { crowdOf, loadTour, relatedOf, useTrend, type TourCell } from '../lib/trend';
 import { REGION_BY_CODE } from '../lib/geo';
-import { useMapChoice } from './MapChoice';
+import { useMapChoice, useWishItem } from './MapChoice';
 
 /**
  * 관광공사 관광지(사진·자리)와 무장애 관광지 수. 자료는 지역 창을 열 때만 받는다.
@@ -12,6 +12,8 @@ export default function TourSpots({ code }: { code: string }) {
   const [bad, setBad] = useState<Set<string>>(new Set());
   const trend = useTrend();
   const [openMap, mapChoice] = useMapChoice();
+  const wi = useWishItem();
+  const here = { t: 'kr' as const, code };
   const area = REGION_BY_CODE.get(code)?.name ?? '';
   useEffect(() => {
     let on = true;
@@ -32,13 +34,18 @@ export default function TourSpots({ code }: { code: string }) {
             {shown.map(([n, lat, lng, img]) => {
               const crowd = crowdOf(code, trend, n);
               return (
-                <button type="button" key={n} className="tour-card" onClick={() => openMap({ name: n, area, lat, lng })}>
+                <span key={n} className="tour-cell">
+                <button type="button" className="tour-card" onClick={() => openMap({ name: n, area, lat, lng, wish: { place: here, kind: 'spot' } })}>
                   <span className="tour-pic">
                     <img src={img} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBad((b) => new Set(b).add(n))} />
                     {crowd && crowd !== '보통' && <span className={`tag crowd-tag ${crowd === '붐벼요' ? 'busy' : 'calm'}`} data-testid="tour-crowd">{crowd}</span>}
                   </span>
                   <span>{n}</span>
                 </button>
+                {(() => { const on = wi.has(here, n, 'spot'); return (
+                  <button type="button" className={'tour-heart' + (on ? ' on' : '')} aria-pressed={on} aria-label={on ? `${n} 담겨 있어요` : `${n} 가고 싶어요`} disabled={on || wi.saving === n} onClick={() => wi.add(here, n, 'spot')} data-testid="tour-heart">{on ? '♥' : '♡'}</button>
+                ); })()}
+                </span>
               );
             })}
           </div>

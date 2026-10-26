@@ -67,3 +67,18 @@ export function rollingOrder(list: Wish[], goodNow: (w: Wish) => boolean): Wish[
 }
 
 export const lines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
+
+export type WishItemKind = 'spot' | 'food';
+export type WishItemPlan = { action: 'already' | 'append'; id: string } | { action: 'create' };
+export const fieldOfWishItem = (k: WishItemKind) => (k === 'food' ? 'foods' : 'spots') as 'foods' | 'spots';
+
+/** 볼거리·먹거리 하나를 담을 때 할 일: 그 지역 가고 싶은 곳이 있으면 메모 칸에 보태고, 없으면 새로 만든다 */
+export function planWishItem(existing: Wish[], place: Place, name: string, kind: WishItemKind): WishItemPlan {
+  const w = existing.find((x) => samePlace(x.place, place) && !x.tripId);
+  if (!w) return { action: 'create' };
+  const list = w[fieldOfWishItem(kind)] ?? [];
+  return { action: list.includes(name) ? 'already' : 'append', id: w.id };
+}
+
+/** 이미 담겨 있는지 (창의 하트 모양) */
+export const hasWishItem = (existing: Wish[], place: Place, name: string, kind: WishItemKind) => planWishItem(existing, place, name, kind).action === 'already';

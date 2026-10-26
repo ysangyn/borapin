@@ -113,7 +113,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="grip" />
       {photoForPlace(place) && (
         <div style={{ position: 'relative' }}>
-          <ScenicPhoto photo={photoForPlace(place)} className="sheet-photo" label="bottom" onTap={(p) => openMap({ name: p.name, search: true })} />
+          <ScenicPhoto photo={photoForPlace(place)} className="sheet-photo" label="bottom" onTap={(p) => openMap({ name: p.name, search: true, wish: { place, kind: 'spot' } })} />
         </div>
       )}
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
@@ -125,7 +125,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
               {fests.map((f) => (
                 <span key={f.id || f.t + f.s} className="fest">
                   <span className={'tag ' + (isOngoing(f) ? 'coral' : 'violet')}>{isOngoing(f) ? '지금 축제' : '축제'}</span>
-                  <button type="button" className="fest-name tap-item" onClick={() => openMap({ name: f.t, search: true })}>{f.t}</button>
+                  <button type="button" className="fest-name tap-item" onClick={() => openMap({ name: f.t, search: true, wish: { place, kind: 'spot' } })}>{f.t}</button>
                   <span className="muted">{festivalPeriod(f)}</span>
                 </span>
               ))}
