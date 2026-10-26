@@ -1,5 +1,7 @@
 import { badges } from './achievements';
 import { computeStats } from './stats';
+import { GROUPS, REGIONS } from './geo';
+import { withIeyo } from './ko';
 import type { Trip } from './types';
 
 /**
@@ -114,6 +116,9 @@ export function whatsNew(before: Trip[], after: Trip[]): string | null {
   const got = badges(after, b, [], []).filter((x) => x.have >= x.need && !had.has(x.id));
   if (got.length) return `'${got[0].name}' 배지를 받았어요`;
   if (newCountries) return `처음 가본 나라! ${b.countryVisits.size}번째 나라예요`;
+  // 여러 시·군이 있는 도(道)의 첫 칸이면 그 이름으로: '경북 첫 칸이에요!'
+  const newGroup = [...b.groupsVisited].find((g) => !a.groupsVisited.has(g) && REGIONS.filter((r) => r.group === g).length > 1);
+  if (newGroup) return `${withIeyo(`${GROUPS.find((g) => g.id === newGroup)?.name ?? ''} 첫 칸`)}!`;
   if (newCells) return `처음 가본 곳! ${b.cellVisits.size}번째 시·군이에요`;
   return null;
 }

@@ -42,3 +42,13 @@ test('장소가 빈 기록은 건너뛰고 장소가 있는 기록을 고른다 
     assert.equal(picked?.label, '오늘은 교토를 다시 볼까요?');
   }
 });
+
+test('추억 카드의 한 줄 평: 그 여행 것 중 가장 짧은 것, 없으면 null', async () => {
+  const { memoryLine } = await import('../../src/lib/memories');
+  const rec = (over: object) => ({ id: 'r', name: '초당순두부', kind: 'food', region: { t: 'kr', code: '51150' }, reviews: {}, verdict: null, v: 1, ...over }) as never;
+  const t = trip({});
+  assert.equal(memoryLine(t, []), null);
+  assert.equal(memoryLine(t, [rec({ tripId: 'other', reviews: { 보라: '좋아' } })]), null);
+  const line = memoryLine(t, [rec({ tripId: 'x', reviews: { 보라: '아침으로 최고였어', 영상: ' 또 갈래 ' } }), rec({ tripId: 'x', name: '경포대', reviews: { 보라: '' } })]);
+  assert.deepEqual(line, { who: '영상', text: '또 갈래', place: '초당순두부' });
+});

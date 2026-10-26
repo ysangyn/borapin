@@ -1,4 +1,4 @@
-import type { Trip, Season } from './types';
+import type { PlaceRec, Trip, Season } from './types';
 import { josa } from 'es-hangul';
 import { SEASON_LABEL } from './dates';
 import { placeLabel } from './geo';
@@ -53,4 +53,18 @@ export function pickMemory(trips: Trip[], now = new Date(), seed = now.getDate()
   const t = done[seed % done.length];
   const where = t.places[0] ? placeLabel(t.places[0]) : '';
   return { trip: t, label: where ? `오늘은 ${josa(where, '을/를')} 다시 볼까요?` : '다시 꺼내 보는 여행' };
+}
+
+/** 추억 카드에 붙일 그 여행의 한 줄 평 하나: 가장 짧은 것(카드에 들어가게), 없으면 null */
+export function memoryLine(trip: Trip, recs: PlaceRec[]): { who: string; text: string; place: string } | null {
+  let best: { who: string; text: string; place: string } | null = null;
+  for (const r of recs) {
+    if (r.tripId !== trip.id) continue;
+    for (const [who, raw] of Object.entries(r.reviews ?? {})) {
+      const text = (raw ?? '').trim();
+      if (!text) continue;
+      if (!best || text.length < best.text.length) best = { who, text, place: r.name };
+    }
+  }
+  return best;
 }

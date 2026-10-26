@@ -12,12 +12,16 @@ import { usePlaceSpots } from '../lib/placeSpots';
 import WishRolling from '../components/WishRolling';
 import NextTripHub from '../components/NextTripHub';
 import MonthPick, { useMonthPick } from '../components/MonthPick';
-import { pickMemory, type Memory } from '../lib/memories';
+import { nextCell, aboutMin } from '../lib/nextCell';
+import { withIeyo } from '../lib/ko';
+import type { Stats } from '../lib/stats';
+import { useHome } from '../lib/home';
+import { memoryLine, pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
-import { spaceTitle } from '../lib/members';
+import { spaceTitle, toneOf } from '../lib/members';
 import { times } from '../lib/ko';
 
 export default function Home() {
@@ -98,6 +102,7 @@ export default function Home() {
               )}
             </div>
           )}
+          {stats && <NextCellLine stats={stats} onOpen={(code) => { setMode('kr'); setSel({ t: 'kr', code }); }} />}
         </div>
 
         <form className="ask-home" onSubmit={(e) => { e.preventDefault(); if (q.trim()) nav(`/ask?q=${encodeURIComponent(q.trim())}`); }} data-testid="home-ask">
@@ -164,8 +169,23 @@ function EmptyRecords() {
   );
 }
 
+/** 다음 한 칸: 집에서 가장 가까운 빈 칸 하나 (집을 모르면 안 보임). 누르면 그 칸의 지역 창 */
+function NextCellLine({ stats, onOpen }: { stats: Stats; onOpen: (code: string) => void }) {
+  const home = useHome();
+  const n = useMemo(() => nextCell(home, stats.cellVisits, stats.cellPlanned), [home, stats]);
+  if (!n) return null;
+  return (
+    <button type="button" className="next-cell" onClick={() => onOpen(n.code)} data-testid="next-cell">
+      <span className="next-cell-seed" aria-hidden="true" />
+      <span>집에서 가장 가까운 빈 칸은 <b>{withIeyo(n.name)}</b> <span className="muted">· 차로 {aboutMin(n.min)}</span></span>
+    </button>
+  );
+}
+
 /** 몇 년 전 오늘 같은 추억 한 장 */
 function MemoryCard({ memory }: { memory: Memory }) {
+  const { places } = usePlaces();
+  const line = places ? memoryLine(memory.trip, places) : null;
   return (
     <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
       <span className="trip-tile">{memory.trip.places[0] ? placeLabel(memory.trip.places[0]).slice(0, 4) : '여행'}</span>
@@ -173,6 +193,7 @@ function MemoryCard({ memory }: { memory: Memory }) {
         <span className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</span>
         <span style={{ fontWeight: 700 }}>{memory.trip.title}</span>
         <span className="tiny muted">{formatWhen(memory.trip.when)}</span>
+        {line && <span className="hand mem-line" data-testid="memory-line"><span className={'who-dot t' + Math.max(0, toneOf(line.who))} aria-hidden="true" />“{line.text}” <span className="tiny muted">— {line.who}, {line.place}</span></span>}
       </span>
       <Icon name="chev" size={18} />
     </Link>

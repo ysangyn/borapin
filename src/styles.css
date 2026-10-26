@@ -1270,3 +1270,15 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .tour-heart.on { background: #FFE3EA; }
 .tour-heart:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--line2); }
 .tour-heart:disabled { cursor: default; }
+
+/* 추억 카드의 한 줄 평: 손글씨, 쓴 사람 색 점 */
+.mem-line { font-size: 16px; line-height: 1.3; color: var(--ink); display: block; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.who-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 2px; background: var(--violet); }
+.who-dot.t0 { background: var(--pink); }
+.who-dot.t1 { background: var(--blue); }
+
+/* 다음 한 칸: 지도 숫자 아래 한 줄. 씨앗 하나 */
+.next-cell { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 8px; padding: 9px 12px; border: 2px dashed var(--line2); border-radius: 14px; background: #fff; font: inherit; font-size: 14px; color: var(--ink); text-align: left; cursor: pointer; }
+.next-cell b { font-weight: 800; }
+.next-cell:active { transform: translate(1px, 1px); }
+.next-cell-seed { flex: none; width: 12px; height: 12px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #8BC97A; border: 2px solid var(--outline); }

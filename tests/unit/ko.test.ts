@@ -51,3 +51,10 @@ test("'로/으로'만 떼어 쓰기 (이름을 굵게 쓰고 조사만 이어 �
   assert.equal(withRo('영상').slice('영상'.length), '으로');
   assert.equal(withRo('제주 여행').slice('제주 여행'.length), '으로');
 });
+
+test('이에요/예요', async () => {
+  const { withIeyo } = await import('../../src/lib/ko');
+  assert.equal(withIeyo('양평'), '양평이에요');
+  assert.equal(withIeyo('대구'), '대구예요');
+  assert.equal(withIeyo('강원 강릉시'), '강원 강릉시예요');
+});

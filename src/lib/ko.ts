@@ -38,3 +38,9 @@ export const withIGa = (word: string) => withJosa(word, '이/가');
 
 /** 낱말 뒤에 붙는 조사만 ('보라' → '가'): 이름을 굵게 쓰고 조사만 이어 붙일 때 */
 export const josaOnly = (word: string, pair: Parameters<typeof withJosa>[1]) => withJosa(word, pair).slice(word.trim().length);
+
+/** '양평이에요' · '부산이에요' · '대구예요' (받침 따라) */
+export const withIeyo = (word: string) => {
+  const w = word.trim();
+  return withJosa(w, '이/가').endsWith('이') ? `${w}이에요` : `${w}예요`;
+};

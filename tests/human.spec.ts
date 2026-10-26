@@ -428,6 +428,13 @@ test.describe('사람처럼 쓰기', () => {
     // 새로 고쳐도 남아 있다 (둘이 같은 집)
     await page.reload();
     await expect(page.getByTestId('home-edit')).toContainText('고양시');
+    // 홈: 집에서 가장 가까운 빈 칸 한 줄 → 누르면 그 칸의 지역 창
+    await page.goto('/');
+    const next = page.getByTestId('next-cell');
+    await expect(next).toContainText('집에서 가장 가까운 빈 칸은');
+    await expect(next).toContainText(/차로 약 \d/);
+    await next.click();
+    await expect(page.getByTestId('region-sheet')).toBeVisible();
     await page.context().close();
   });
 
