@@ -1087,5 +1087,11 @@ test.describe.serial('보라핀 1단계', () => {
     await dlg.getByRole('button', { name: '그대로 두기' }).click();
     await page.goto('/wishes');
     await expect(page.getByTestId('wish-card').filter({ hasText: '부산' })).toContainText(name);
+    // 우리 공간: 투어·티켓 찾을 곳 (기본은 누를 때마다 고르기, 한 곳으로 정할 수 있음)
+    await page.goto('/space');
+    const tp = page.getByTestId('tour-pref');
+    await expect(tp.getByRole('button', { name: '누를 때마다 고르기' })).toHaveAttribute('aria-pressed', 'true');
+    await tp.getByRole('button', { name: '클룩' }).click();
+    await expect(tp.getByRole('button', { name: '클룩' })).toHaveAttribute('aria-pressed', 'true');
   });
 });

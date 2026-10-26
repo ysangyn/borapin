@@ -82,3 +82,7 @@ export function planWishItem(existing: Wish[], place: Place, name: string, kind:
 
 /** 이미 담겨 있는지 (창의 하트 모양) */
 export const hasWishItem = (existing: Wish[], place: Place, name: string, kind: WishItemKind) => planWishItem(existing, place, name, kind).action === 'already';
+
+/** 예정 여행 중 이곳이 들어간 것 (있으면 '담기'가 그 여행 일정으로 간다) */
+export const plannedTripFor = (trips: Trip[] | null | undefined, place: Place) =>
+  trips?.find((t) => t.status === 'planned' && t.places.some((p) => samePlace(p, place))) ?? null;

@@ -7,20 +7,21 @@ import { monthsLabel } from '../lib/seasons';
 import { cityFor, COST_LABEL, flyLabel, tzLabel, useWorld, WALK_LABEL, type WorldCity } from '../lib/world';
 import type { Place } from '../lib/types';
 import { localTimeText, tzText } from '../lib/tz';
+import TourPick from './TourPick';
 
 /**
  * 해외 도시 기본 정보 (world.json): 통화·말·콘센트·시차·비행시간·입국 메모 + 먹거리·볼거리.
  * 현지어 한마디 단추는 여기 하나만 둔다(준비 탭도 이걸 쓴다).
  * 준비에 바로 쓰이게, 먹거리·볼거리는 눌러서 가고 싶은 곳 메모에 넣을 수 있다.
  */
-export default function CityInfo({ place, onAdd, compact }: { place: Place; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean }) {
+export default function CityInfo({ place, onAdd, compact, tours }: { place: Place; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; tours?: boolean }) {
   const world = useWorld();
   const w = cityFor(world, place);
   if (!w) return null;
-  return <CityFacts w={w} onAdd={onAdd} compact={compact} updated={world?.updated} />;
+  return <CityFacts w={w} onAdd={onAdd} compact={compact} updated={world?.updated} tours={tours} />;
 }
 
-export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; updated?: string }) {
+export function CityFacts({ w, onAdd, compact, updated, tours }: { w: WorldCity; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; updated?: string; tours?: boolean }) {
   const place: Place = { t: 'country', id: w.c, city: w.city };
   const tz = tzText(place) || tzLabel(w.tz);
   const now = localTimeText(place);
@@ -42,6 +43,7 @@ export function CityFacts({ w, onAdd, compact, updated }: { w: WorldCity; onAdd?
         <div><dt>입국</dt><dd data-testid="city-visa">{visa ? <>{visa.text}<span className="tiny muted"> · 외교부 {visa.at} 기준{w.entry && !w.entry.startsWith(visa.text.slice(0, 3)) ? ` · 참고: ${w.entry}` : ''} · 떠나기 전 확인</span></> : <>{w.entry}<span className="tiny muted">{updated ? ` · ${updated.slice(0, 7).replace('-', '.')} 기준` : ''}{pending ? ' · 외교부 자료 받는 중' : ''} · 떠나기 전 확인</span></>}</dd></div>
       </dl>
       {phraseLink(w)}
+      {tours && <TourPick city={w.city} />}
       <div className="city-picks">
         <span className="tiny muted" style={{ fontWeight: 800 }}>먹거리</span>
         <div className="chips">{w.eat.map((t) => <Pick key={t} text={t} onAdd={onAdd ? () => onAdd('foods', t) : undefined} />)}</div>

@@ -30,3 +30,21 @@ test('해외 도시는 같은 도시끼리만', () => {
   assert.equal(planWishItem(ws, { t: 'country', id: 'JPN', city: '오사카' }, '도톤보리', 'spot').action, 'create');
   assert.equal(planWishItem(ws, { t: 'country', id: 'JPN', city: '도쿄' }, '메이지 신궁', 'spot').action, 'append');
 });
+
+test('예정 여행에 이곳이 들어 있으면 그 여행으로 담는다 (다녀온 여행은 아님)', async () => {
+  const { plannedTripFor } = await import('../../src/lib/wishes');
+  const t = (id: string, status: 'planned' | 'done', code: string) => ({ id, title: id, kind: 'trip', status, when: { p: 'none' }, places: [{ t: 'kr', code }], companions: [], memo: '', tags: [], source: 'app', v: 1 }) as never;
+  assert.equal(plannedTripFor([t('a', 'done', '51150')], gn), null);
+  assert.equal(plannedTripFor([t('a', 'done', '51150'), t('b', 'planned', '51150')], gn)?.id, 'b');
+  assert.equal(plannedTripFor([t('c', 'planned', '26')], gn), null);
+});
+
+test('투어·티켓 검색 주소: 도시 이름을 안전하게 넣고, 기본은 누를 때마다 고르기', async () => {
+  const { TOUR_SITES, tourPref } = await import('../../src/components/TourPick');
+  for (const s of Object.values(TOUR_SITES)) {
+    const u = new URL(s.url('호찌민 & 다낭'));
+    assert.equal(u.protocol, 'https:');
+    assert.ok(decodeURIComponent(u.search).includes('호찌민 & 다낭'));
+  }
+  assert.equal(tourPref(), 'ask');
+});

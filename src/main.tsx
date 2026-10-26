@@ -54,3 +54,14 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 );
+
+// 하트를 누르면 톡 튀기 (모든 하트 단추 공통, 목록이 처음 그려질 땐 가만히): 누른 순간에만 'pop'을 붙였다 뗀다
+const HEARTS = '.my-heart, .feed-heart, .tour-heart, .heart-chip';
+document.addEventListener('click', (e) => {
+  const el = (e.target as Element | null)?.closest?.(HEARTS) as HTMLElement | null;
+  if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  el.classList.remove('pop');
+  void el.offsetWidth; // 다시 누르면 처음부터
+  el.classList.add('pop');
+  el.addEventListener('animationend', () => el.classList.remove('pop'), { once: true });
+});

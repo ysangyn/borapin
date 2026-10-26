@@ -18,6 +18,7 @@ import type { Relation } from '../lib/types';
 import { createInvite, deleteInvite, inviteUrl, useOpenInvites } from '../lib/invites';
 import { shareAnyhow } from '../lib/kakao';
 import HomeSetting from '../components/HomeSetting';
+import { TourPrefSetting } from '../components/TourPick';
 import { MapPrefSetting } from '../components/MapChoice';
 
 export default function Space() {
@@ -226,6 +227,7 @@ export default function Space() {
         <HomeSetting />
 
         <MapPrefSetting />
+        <TourPrefSetting />
 
         <section>
           <div className="label" style={{ padding: '0 4px 6px' }}>백업</div>

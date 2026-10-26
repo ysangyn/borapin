@@ -32,14 +32,18 @@
 | - | 옛 사진으로 지난 여행 복원 | 미룸(사용자: 더 고민) | |
 | - | 우리 동네 지도(동 단위) | 보류 | |
 
-## 남은 디자인(14) 잔일
-- 여행 목록 계절별 묶음, 홈 지도 범례(깃발=가고 싶은 곳·별=우리 장소), 시트·토스트 등장 움직임, 핀 꽂을 때 도장 효과, 하트 튀기, 밤 모드(토큰 정리 뒤), 폰트 CSS에서 woff 제외(F10)
+## 남은 일 (2026-10-26 정리 — 설계서 docs/SPEC-2026-11.md)
+- 작은 일: 안전공지·경보 변화 한 줄(5번 화면) · 타임캡슐(C6) · 세계 125도시 달별 옷차림 `wear`(A9) · 카카오 SDK SRI(사용자가 해시 복사) · 아이폰(WebKit) 지도 시험 실패 원인(배포는 안 막음)
+- 큰 일(주말): 13번 지금 여기 + 여기 뭐야(B) → 심는 지도 뼈대·꽃밭 무늬(C1·C3·C4) → 한 권 국내판(A1·A2·A4~A8) → 꽃 도감(C2) → 해외 함께 찾기 /find(A3) · 동선 정리(A12) · 담은 장소 채우기(A9) → 9번 버스·KTX → 밤 모드
+- 미룸: 옛 사진으로 지난 여행 복원 · 연간 한 권 · 우리 동네 지도
+- 10-26 배포: '가고 싶어요'(지도 고르기 창·관광지 하트), 예정 여행이 있으면 '일정에 담기', 다음 한 칸, 추억 한 줄 평, 도 첫 칸 축하, 스티커 하나 남았어요, 투어·티켓 찾기(준비 탭 도시 카드 단추 하나 + 우리 공간 설정), 하트 톡 튀기
+- 디자인 잔일(계절별 묶음·범례·등장 움직임·도장·woff 제외)과 F10~F17은 10-23·24에 배포 완료(커밋 bcd7cb2·db289d2). 남은 디자인: 밤 모드뿐
 
 ## 고침 기록 (2026-10-22 밤)
 - F1 약관 링크 흰 화면(App.tsx 훅 순서) · F8 최상위 ErrorBoundary, 지도 WebGL 실패 격리, 추억 카드 빈 places · F7 물어보기 자료 실패 시 입력칸 열림+다시 받기 · F9 입력칸 16px
 - F2 동시 편집: 편집 화면이 '연 때 스냅샷'을 before로(src/lib/tripActions.ts editsOf, data.ts patchEdits), 한 줄 평은 reviews.이름 점 경로·남의 칸 삭제 금지 · F3 여행 삭제: 규칙 notes delete에 `!existsAfter(trip)`, 여행 문서를 첫 묶음 맨 앞에 · 되돌리기 createdAt 보존
 - F4 Worker: email_verified + config/access 읽기로 멤버 판정(uid 캐시 1h/거부 5m), /news 분당 20회, RSS https만(worker/src/guard.ts) · F6 자료 폴백: 로컬 → https://borapin.web.app/data/{abroad,tour,festivals}.json(scripts/data-health.ts), 스크립트가 src/data와 public/data 둘 다 씀(public 사본은 .gitignore) · F5 새 버전 교체는 작업 중이면 미루고 경로 변경·복귀 때(src/lib/updateGate.ts, useBusy를 글·질문 답·사진 올리기에도)
-- 아직: F10 첫 로딩 다이어트, F11 읽기 횟수, F12 구독 실패 화면, F13 공유 사본, F14 WebKit 시험, F15 CSP·SRI, F16 44px·대비, F17 매일 새 SW(abroad.json이 번들에)
+- F10~F17은 10-23·24 배포 완료(db289d2). 남은 것: 카카오 SDK SRI, CSP를 보고 전용에서 막기로, WebKit 지도 worker
 
 ## 항목별 결정 메모
 ### 8. 관광공사

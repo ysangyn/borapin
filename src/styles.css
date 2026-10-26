@@ -1286,3 +1286,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 /* 캐리어 스티커: 완성 직전 꼬리표 */
 .badge { position: relative; }
 .sticker-tag { position: absolute; top: 3px; right: 3px; font-style: normal; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: var(--pink); color: #fff; border: 2px solid var(--outline); transform: rotate(4deg); white-space: nowrap; }
+
+/* 하트 톡 튀기 (src/main.tsx가 누른 순간 .pop을 붙인다) */
+@keyframes heart-pop { 0% { transform: scale(1); } 35% { transform: scale(1.32) rotate(-8deg); } 65% { transform: scale(.92) rotate(4deg); } 100% { transform: scale(1); } }
+.pop { animation: heart-pop .32s cubic-bezier(.3, 1.6, .5, 1); }

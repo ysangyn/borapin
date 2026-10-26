@@ -2,7 +2,9 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui';
 import { useAuth } from '../lib/auth';
-import { useWishes } from '../lib/data';
+import { useTrips, useWishes } from '../lib/data';
+import { addPlan, usePlan } from '../lib/tripExtras';
+import { plannedTripFor } from '../lib/wishes';
 import { hasWishItem, wishItem, type WishItemKind } from '../lib/wishActions';
 import type { Place } from '../lib/types';
 
@@ -65,9 +67,30 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
     setT0(x);
   };
   const close = () => setT(null);
-  const wished = !!(t?.wish && wi.has(t.wish.place, t.name, t.wish.kind));
-  const saving = !!wi.saving;
-  const addWish = async () => { if (t?.wish && (await wi.add(t.wish.place, t.name, t.wish.kind))) setT0(null); };
+  const { trips } = useTrips();
+  const trip = t?.wish ? plannedTripFor(trips, t.wish.place) : null;
+  const plan = usePlan(trip?.id);
+  const toast = useToast();
+  const nav = useNavigate();
+  const [planning, setPlanning] = useState(false);
+  const inPlan = !!(trip && plan?.some((x) => x.name === t?.name));
+  const wished = trip ? inPlan : !!(t?.wish && wi.has(t.wish.place, t.name, t.wish.kind));
+  const saving = !!wi.saving || planning;
+  const addWish = async () => {
+    if (!t?.wish) return;
+    if (trip) {
+      if (planning || inPlan) return;
+      setPlanning(true);
+      try {
+        await addPlan(trip.id, t.name, (plan?.length ?? 0) + 1);
+        toast(`${trip.title} 일정에 담았어요`, { label: '보기', onClick: () => nav(`/trips/${trip.id}?tab=plan`) });
+        setT0(null);
+      } catch { toast('담지 못했어요. 다시 해 주세요'); }
+      finally { setPlanning(false); }
+      return;
+    }
+    if (await wi.add(t.wish.place, t.name, t.wish.kind)) setT0(null);
+  };
   const el = t ? (
     <div className="map-choice-backdrop" onClick={close} data-testid="map-choice">
       <div className="map-choice card" role="dialog" aria-label={`${t.name} 열기`} onClick={(e) => e.stopPropagation()}>
@@ -79,7 +102,7 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
         </div>
         {t.wish && (
           <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} onClick={addWish} disabled={wished || saving} aria-pressed={wished} data-testid="map-choice-wish">
-            {wished ? '♥ 담겨 있어요' : saving ? '담는 중…' : '♡ 가고 싶어요'}
+            {wished ? (trip ? '♥ 일정에 있어요' : '♥ 담겨 있어요') : saving ? '담는 중…' : trip ? `♡ ${trip.title} 일정에 담기` : '♡ 가고 싶어요'}
           </button>
         )}
         {t.search && <a className="btn soft block" href={mapChoiceLinks(t).web} target="_blank" rel="noreferrer" onClick={close}>네이버에서 자세히 보기</a>}
