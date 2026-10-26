@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시화 그림체 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --page:#F5F2FF; --ink:#1E1640; --muted:#6B6390; --line2:#CFC6F2; --violet:#5B3FD1; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--page); color:var(--ink); font-family:'Noto Sans KR',sans-serif; padding:24px 16px 48px; }
+  main { max-width:760px; margin:0 auto; }
+  h1 { font-family:'Jua',sans-serif; font-weight:400; font-size:30px; margin:0 0 6px; }
+  .lead { margin:0 0 24px; color:var(--muted); font-size:15px; line-height:1.6; }
+  section { background:#fff; border:2px solid var(--ink); border-radius:20px; box-shadow:4px 4px 0 var(--line2); padding:18px 16px 14px; margin-bottom:22px; }
+  .head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+  .head b { font-family:'Jua',sans-serif; font-weight:400; font-size:24px; }
+  .head span { font-family:'Gaegu',cursive; font-size:19px; color:var(--muted); }
+  .why { font-size:14px; color:var(--muted); margin:0 0 12px; line-height:1.55; }
+  .row { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  figure { margin:0; text-align:center; }
+  figure svg { width:100%; max-width:112px; height:auto; display:block; margin:0 auto; }
+  figcaption { font-family:'Gaegu',cursive; font-size:18px; font-weight:700; margin-top:2px; }
+  .inmap { display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:12px; border-top:2px dashed var(--line2); font-size:13px; color:var(--muted); }
+  .inmap svg { width:40px; height:40px; flex:none; }
+  .inmap .gray { opacity:.9; }
+  @media (max-width:420px){ .row{ grid-template-columns:repeat(3,1fr); row-gap:10px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>시화 도감, 어떤 그림체로 할까요?</h1>
+  <p class="lead">꽃이 피면 그 고장의 꽃이 지도와 '모은 꽃' 면에 붙어요. 같은 다섯 송이를 세 가지 손으로 그려 봤어요. 아래 줄은 지도 위에 작게 붙었을 때와 아직 안 핀 꽃(회색 선)이에요.</p>
+
+  <section id="A">
+    <div class="head"><b>가. 말랑 스티커</b><span>핀이랑 같은 손</span></div>
+    <p class="why">두꺼운 남색 테두리, 납작한 파스텔 색, 흰 스티커 여백과 보라 그림자. 지금 앱의 카드·핀이와 가장 잘 붙어요.</p>
+    <div class="row" data-style="sticker"></div>
+    <div class="inmap" data-mini="sticker"></div>
+  </section>
+
+  <section id="B">
+    <div class="head"><b>나. 고장 도장</b><span>여행 수첩에 쾅</span></div>
+    <p class="why">보라 잉크 한 색, 동그란 도장 틀. 지도 시트의 '다녀왔어요' 도장과 한 식구라 모으는 맛이 '스탬프 투어' 쪽이에요.</p>
+    <div class="row" data-style="stamp"></div>
+    <div class="inmap" data-mini="stamp"></div>
+  </section>
+
+  <section id="C">
+    <div class="head"><b>다. 꽃 친구</b><span>얼굴이 있는 꽃</span></div>
+    <p class="why">스티커 손에 작은 얼굴과 볼터치. 가장 귀염뽀짝하고, 핀이의 친구들처럼 보여요. 160송이가 모이면 '친구 도감'이 돼요.</p>
+    <div class="row" data-style="friend"></div>
+    <div class="inmap" data-mini="friend"></div>
+  </section>
+</main>
+
+<script>
+const INK = '#1E1640';
+const rot = (shape, n, start = 0) => Array.from({ length: n }, (_, i) => `<g transform="rotate(${start + (360 / n) * i} 50 50)">${shape}</g>`).join('');
+
+// 꽃마다: 모양(f = 채움색 함수 인자), 가운데, 이름
+const FLOWERS = {
+  벚꽃: (c) => rot(`<path d="M50 50 C37 42 34 24 42 16 L50 23 L58 16 C66 24 63 42 50 50Z" fill="${c('#FFC9D6')}" ${c.s}/>`, 5)
+    + `<circle cx="50" cy="50" r="${c.face ? 12 : 6}" fill="${c('#FF8FAB')}" ${c.s}/>`,
+  동백: (c) => `<ellipse cx="30" cy="78" rx="15" ry="7" transform="rotate(-30 30 78)" fill="${c('#5DAA6A')}" ${c.s}/><ellipse cx="72" cy="80" rx="15" ry="7" transform="rotate(25 72 80)" fill="${c('#5DAA6A')}" ${c.s}/>`
+    + rot(`<ellipse cx="50" cy="31" rx="14" ry="17" fill="${c('#F2566E')}" ${c.s}/>`, 5)
+    + `<circle cx="50" cy="50" r="${c.face ? 13 : 10}" fill="${c('#FFD45C')}" ${c.s}/>`,
+  개나리: (c) => `<path d="M16 88 Q44 70 84 20" fill="none" stroke="${c.line ?? '#8A6A3E'}" stroke-width="${c.sw + 1}" stroke-linecap="round"/>`
+    + `<g transform="translate(26 76) scale(.42) translate(-50 -50)">${rot(`<ellipse cx="50" cy="30" rx="8" ry="17" fill="${c('#FFD233')}" ${c.s}/>`, 4, 45)}</g><circle cx="78" cy="26" r="5" fill="${c('#FFE27A')}" ${c.s}/>`
+    + rot(`<ellipse cx="50" cy="30" rx="8" ry="17" fill="${c('#FFD233')}" ${c.s}/>`, 4, 45)
+    + `<circle cx="50" cy="50" r="${c.face ? 12 : 6}" fill="${c('#FFB800')}" ${c.s}/>`,
+  메밀꽃: (c) => {
+    const stem = `<path d="M50 92 L50 58 M50 70 L34 54 M50 70 L66 54" fill="none" stroke="${c.line ?? '#7DBF6E'}" stroke-width="${c.sw + 1}" stroke-linecap="round"/>`;
+    const floret = (x, y, r, big = false) => [0, 1, 2, 3, 4].map((i) => { const a = (i * 72 - 90) * Math.PI / 180; return `<circle cx="${(x + Math.cos(a) * r).toFixed(1)}" cy="${(y + Math.sin(a) * r).toFixed(1)}" r="${r * 0.72}" fill="${c('#FFFFFF')}" ${c.s}/>`; }).join('') + `<circle cx="${x}" cy="${y}" r="${big && c.face ? r * 1.05 : r * 0.55}" fill="${c(big && c.face ? '#FFE3EA' : '#FF9CB5')}" ${c.s}/>`;
+    return stem + floret(32, 44, 6) + floret(68, 44, 6) + floret(50, 40, c.face ? 10 : 8, true);
+  },
+  진달래: (c) => `<g stroke="${c.line ?? INK}" stroke-width="${Math.max(1.6, c.sw - 0.8)}" stroke-linecap="round" fill="none"><path d="M54 48 Q70 30 76 20"/><path d="M56 50 Q78 40 86 32"/><path d="M52 46 Q60 28 62 14"/></g>`
+    + `<g fill="${c('#FFE27A')}" ${c.s}><circle cx="76" cy="20" r="3"/><circle cx="86" cy="32" r="3"/><circle cx="62" cy="14" r="3"/></g>`
+    + rot(`<path d="M50 50 C35 44 31 24 41 17 C46 14 54 14 59 17 C69 24 65 44 50 50Z" fill="${c('#E46ABF')}" ${c.s}/>`, 5, 180)
+    + `<circle cx="50" cy="50" r="${c.face ? 12 : 6}" fill="${c('#C23E9E')}" ${c.s}/>`,
+};
+
+const face = (cy = 50, r = 12) => `<g><circle cx="${50 - r * 0.38}" cy="${cy - 1}" r="1.9" fill="${INK}"/><circle cx="${50 + r * 0.38}" cy="${cy - 1}" r="1.9" fill="${INK}"/><circle cx="${50 - r * 0.62}" cy="${cy + 3.2}" r="2.2" fill="#FF8FAB" opacity=".8"/><circle cx="${50 + r * 0.62}" cy="${cy + 3.2}" r="2.2" fill="#FF8FAB" opacity=".8"/><path d="M${50 - 3.4} ${cy + 3} q3.4 3.6 6.8 0" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/></g>`;
+const FACE_AT = { 벚꽃: [50, 12], 동백: [50, 13], 개나리: [50, 12], 메밀꽃: [41, 10], 진달래: [50, 12] };
+
+function draw(name, style, opt = {}) {
+  const gray = opt.gray;
+  if (style === 'stamp') {
+    const c = (col) => (gray ? '#FFFFFF' : '#F3EEFF');
+    c.s = `stroke="${gray ? '#B9B2D6' : '#5B3FD1'}" stroke-width="2.6" stroke-linejoin="round"`; c.sw = 2.6; c.line = gray ? '#B9B2D6' : '#5B3FD1';
+    const ink = gray ? '#B9B2D6' : '#5B3FD1';
+    const body = FLOWERS[name](c);
+    return `<svg viewBox="-12 -12 124 124" aria-label="${name}"><defs><filter id="rough-${name}${gray ? 'g' : ''}"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${name.length * 7}"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter></defs>
+      <g filter="url(#rough-${name}${gray ? 'g' : ''})"><circle cx="50" cy="50" r="58" fill="${gray ? 'none' : '#F3EEFF'}" stroke="${ink}" stroke-width="3"/><circle cx="50" cy="50" r="52" fill="none" stroke="${ink}" stroke-width="1.4" stroke-dasharray="3 3"/>
+      <g transform="translate(50 40) scale(.6) translate(-50 -50)">${body}</g>
+      <path d="M14 78 H86" stroke="${ink}" stroke-width="1.4"/><text x="50" y="96" text-anchor="middle" font-family="Jua" font-size="15" fill="${ink}">${name}</text></g></svg>`;
+  }
+  // 스티커·친구: 같은 손
+  const c = (col) => gray ? '#FFFFFF' : col;
+  c.s = `stroke="${gray ? '#B9B2D6' : INK}" stroke-width="3" stroke-linejoin="round"`; c.sw = 3; c.face = style === 'friend';
+  if (gray) c.line = '#B9B2D6';
+  const body = FLOWERS[name](c);
+  // 흰 스티커 여백 = 같은 모양을 굵은 흰 선으로 한 번 더, 그 아래 보라 그림자
+  const halo = (stroke, dx) => { const h = (col) => stroke; h.s = `stroke="${stroke}" stroke-width="14" stroke-linejoin="round"`; h.sw = 14; h.face = c.face; h.line = stroke; return `<g transform="translate(${dx} ${dx})">${FLOWERS[name](h)}</g>`; };
+  const f = FACE_AT[name];
+  return `<svg viewBox="-6 -6 112 112" aria-label="${name}">${gray ? '' : halo('#CFC6F2', 3) + halo('#FFFFFF', 0)}${body}${c.face && !gray ? face(f[0], f[1]) : ''}</svg>`;
+}
+
+for (const row of document.querySelectorAll('.row')) {
+  row.innerHTML = Object.keys(FLOWERS).map((n) => `<figure>${draw(n, row.dataset.style)}<figcaption>${n}</figcaption></figure>`).join('');
+}
+for (const m of document.querySelectorAll('.inmap')) {
+  const s = m.dataset.mini;
+  m.innerHTML = `${draw('벚꽃', s)}${draw('동백', s)}<span>지도 위 작은 크기</span><span style="flex:1"></span>${draw('개나리', s, { gray: true })}<span>아직 안 핀 꽃</span>`;
+}
+</script>
+</body>
+</html>
