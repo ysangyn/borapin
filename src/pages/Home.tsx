@@ -6,6 +6,7 @@ import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
 import PlaceSheet from '../components/PlaceSheet';
 import type { Note, Place, Trip, Wish } from '../lib/types';
+import { garden } from '../lib/garden';
 import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTAL_GROUPS, upcomingTrips, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
@@ -33,6 +34,7 @@ export default function Home() {
   const { places: recs } = usePlaces();
   const flags = useWishFlags(wishes, trips);
   const spots = usePlaceSpots(recs ?? null);
+  const plants = useMemo(() => (trips && recs ? garden(trips, recs) : null), [trips, recs]);
   const [mode, setMode] = useState<MapMode>('kr');
   const [sel, setSel] = useState<Place | null>(null);
   const [q, setQ] = useState('');
@@ -84,7 +86,7 @@ export default function Home() {
             </div>
             <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
           </div>
-          <MapView mode={mode} stats={stats} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} nearZoom={nearZoom} />
+          <MapView mode={mode} stats={stats} garden={plants} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} nearZoom={nearZoom} />
           <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6, lineHeight: 1.5 }} data-testid="map-hint">지역을 누르면 핀 꽂기 단추가 나와요<br />전체 보기 단추를 누르면 전국이 보여요</div>
           {stats && (
             <div className="stats" data-testid="stats">

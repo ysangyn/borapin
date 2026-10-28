@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import TripRow from './TripRow';
 import RegionInfo from './RegionInfo';
 import { Icon, useToast } from './ui';
-import { useAuth } from '../lib/auth';
+import { displayName, useAuth } from '../lib/auth';
 import { useMapChoice } from './MapChoice';
 import { memberNames } from '../lib/members';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
@@ -13,6 +13,7 @@ import PlaceRecRow from './PlaceRecRow';
 import { recsAt } from '../lib/placeRecs';
 import { samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
+import { garden, growHint, plantLine } from '../lib/garden';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
@@ -52,6 +53,9 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const wish = wishes.find((w) => samePlaceW(w.place, place));
   const season = seasonFor(seasons, place, wish?.months);
   const auth = useAuth();
+  // 심는 지도: 이 칸의 식물 (다녀온 칸만)
+  const plant = useMemo(() => (place.t === 'kr' ? garden(trips, recs).get(place.code) : undefined), [place, trips, recs]);
+  const hint = growHint(plant, auth.status === 'ready' ? displayName(auth.user) : '');
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const here = useMemo(() => tripsAtPlace(trips, samePlace(place)), [trips, place]);
@@ -134,6 +138,12 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
           <div className="hand" style={{ fontSize: 18, color: visits ? 'var(--violet)' : 'var(--ink3)', lineHeight: 1.1, marginTop: 2 }}>
             {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '한 번 다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>
+          {plant && (
+            <div className="plant-line" data-testid="plant-line">
+              <img src={plant.stage === 'flower' ? '/art/garden/flower.svg' : plant.stage === 'sprout' ? '/art/garden/sprout.svg' : '/art/garden/seed.svg'} alt="" width={22} height={22} />
+              <span>{plantLine(plant)}{hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}</span>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 'none' }}>
           {visits > 0 && <span className={'stamp hand' + (stamped ? ' stamp-in' : '')} aria-hidden="true"><span style={{ fontSize: 20 }}>{visits}</span><span style={{ fontSize: 9 }}>번째 핀</span></span>}

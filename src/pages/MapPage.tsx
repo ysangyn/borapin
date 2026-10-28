@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import PlaceSheet from '../components/PlaceSheet';
+import { garden } from '../lib/garden';
 import { computeStats, TOTAL_CELLS, TOTAL_GROUPS, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
@@ -19,12 +20,13 @@ export default function MapPage() {
   const [sel, setSel] = useState<Place | null>(initial);
   const flags = useWishFlags(wishes, trips);
   const spots = usePlaceSpots(recs ?? null);
+  const plants = useMemo(() => (trips && recs ? garden(trips, recs) : null), [trips, recs]);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   return (
     <div className="map-full" style={{ bottom: 'calc(var(--nav-h) + var(--safe-b))' }}>
       <MapView
-        mode={mode} stats={stats} height="100%" legend selected={sel} onSelect={(p) => setSel(p)} flags={flags} spots={spots} flyTo={initial}
+        mode={mode} stats={stats} garden={plants} height="100%" legend selected={sel} onSelect={(p) => setSel(p)} flags={flags} spots={spots} flyTo={initial}
         controlsTop={112} legendBottom={sel ? 300 : 14} className="full"
       />
       <div className="map-top">

@@ -1315,3 +1315,14 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .here-item img, .here-noimg { flex: none; width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--mist2, #EEE9FB); }
 .here-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .here-copy b { font-size: 15px; }
+
+/* 심는 지도: 시트의 식물 한 줄, 지도 위 피어나기, 범례 */
+.plant-line { display: flex; gap: 6px; align-items: flex-start; margin-top: 4px; font-family: 'Gaegu', cursive; font-size: 16px; line-height: 1.25; color: #3F7F3A; }
+.plant-line img { flex: none; }
+.plant-line .tiny { font-family: inherit; font-size: 14px; }
+.bloom-marker { width: 46px; height: 46px; pointer-events: none; animation: bloom-pop 1.6s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes bloom-pop { 0% { transform: scale(0) rotate(-70deg); opacity: 0; } 25% { transform: scale(1.18) rotate(8deg); opacity: 1; } 35% { transform: scale(1) rotate(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .bloom-marker { animation: none; opacity: 0; } }
+.map-legend .lg-meadow { background: #C9E8BC; }
+.map-legend .lg-bloom { background: radial-gradient(circle at 50% 50%, #F5C542 0 2px, #fff 2.5px 4px, #AEDB9E 4.5px); }
+.bloom-box { pointer-events: none; }

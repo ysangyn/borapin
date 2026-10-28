@@ -9,6 +9,9 @@ import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
 import { labelsFor } from './mapLabels';
+import { addGardenPatterns } from './gardenPatterns';
+import { patternOf, type Plant } from '../lib/garden';
+import { toneOf } from '../lib/members';
 
 // v6는 워커 파일을 자기 옆에서 찾는데, 번들되면 그 자리에 파일이 없다 → 주소를 직접 알려 준다.
 maplibregl.setWorkerUrl(workerUrl);
@@ -94,9 +97,11 @@ export interface MapViewProps {
   legendBottom?: number;
   /** false면 손가락·마우스로 움직이지 않는 그림 지도 (여행 상세·공유 미리보기) */
   interactive?: boolean;
+  /** 심는 지도: 다녀온 칸을 보라 대신 풀밭·새싹·들꽃 무늬로 (홈·큰 지도) */
+  garden?: Map<string, Plant> | null;
 }
 
-export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, spots, flyTo, near, nearZoom, className, controlsTop = 12, legendBottom = 12, interactive = true }: MapViewProps) {
+export default function MapView({ mode, stats, height = 300, cooperative, controls = true, legend, selected, onSelect, focus, flags, spots, flyTo, near, nearZoom, className, controlsTop = 12, legendBottom = 12, interactive = true, garden }: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -118,6 +123,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
   const labelEls = useRef(new Map<string, HTMLSpanElement>());
   const shown = useRef(new Set<string>());
   const raf = useRef(0);
+  const krData = useRef<GeoJSON.FeatureCollection | null>(null);
 
   // 지역 이름 배치: 화면 안, 겹치지 않게, 다녀온 곳 > 큰 곳 순
   const layoutLabels = () => {
@@ -234,6 +240,11 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       map.addLayer({ id: 'world-fill', type: 'fill', source: 'world', paint: { 'fill-color': fillExpr() } });
       map.addLayer({ id: 'world-line', type: 'line', source: 'world', paint: { 'line-color': '#FFFFFF', 'line-width': 0.6 } });
       map.addLayer({ id: 'kr-fill', type: 'fill', source: 'kr', paint: { 'fill-color': fillExpr() } });
+      // 심는 지도: 칸 자료에 무늬 이름(pat)·새싹 테두리 색(ring)을 넣어 그린다 (무늬는 feature-state로 못 바꿔서)
+      krData.current = g.kr as GeoJSON.FeatureCollection;
+      try { addGardenPatterns(map); } catch (e) { console.warn(e); }
+      map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'pat'], paint: { 'fill-pattern': ['get', 'pat'] } });
+      map.addLayer({ id: 'kr-ring', type: 'line', source: 'kr', filter: ['has', 'ring'], paint: { 'line-color': ['get', 'ring'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.2, 8, 2.6] } });
       map.addLayer({ id: 'kr-line', type: 'line', source: 'kr', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.3, 8, 1] } });
       map.addLayer({ id: 'kr-group', type: 'line', source: 'krmesh', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 8, 2.4] } });
       map.addLayer({
@@ -367,6 +378,47 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     (map as unknown as { __sel?: Record<string, string> }).__sel = sel;
   }, [selected, ready]);
 
+  // 심는 지도 무늬
+  useEffect(() => {
+    const map = mapRef.current, base = krData.current;
+    if (!map || !ready || !base) return;
+    const focusSet = focus ? new Set(focus.map((p) => (p.t === 'kr' ? p.code : p.id))) : null;
+    const RING = ['#F07A95', '#4D7FE0'];
+    const fc: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features: base.features.map((f) => {
+        const code = String(f.properties?.cell ?? '');
+        const p = garden?.get(code);
+        if (!p || (focusSet && !focusSet.has(code))) return f;
+        const t = p.stage === 'sprout' && p.by.length === 1 ? toneOf(p.by[0]) : -1;
+        return { ...f, properties: { ...f.properties, pat: patternOf(p), ...(t >= 0 ? { ring: RING[t % 2] } : {}) } };
+      }),
+    };
+    (map.getSource('kr') as maplibregl.GeoJSONSource | undefined)?.setData(fc);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [garden, ready, focusKey]);
+
+  // 새싹·꽃이 있는 칸을 누르면 그 자리에 한 송이 피어난다 (0.6초, 움직임 줄이기면 그냥 보였다 사라짐)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !selected || selected.t !== 'kr') return;
+    const p = garden?.get(selected.code), r = REGION_BY_CODE.get(selected.code);
+    if (!p || p.stage === 'seed' || !r) return;
+    // 지도는 표시 위치를 transform으로 잡으므로 움직임은 안쪽 그림에만
+    const box = document.createElement('div');
+    box.className = 'bloom-box';
+    box.dataset.testid = 'bloom';
+    const img = document.createElement('img');
+    img.src = p.stage === 'flower' ? '/art/garden/flower.svg' : '/art/garden/sprout.svg';
+    img.alt = '';
+    img.className = 'bloom-marker';
+    box.appendChild(img);
+    const m = new maplibregl.Marker({ element: box }).setLngLat([r.lng, r.lat]).addTo(map);
+    const t = window.setTimeout(() => m.remove(), 1600);
+    return () => { window.clearTimeout(t); m.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, ready]);
+
   // 가고 싶은 곳 깃발 (국내 지도엔 국내, 세계 지도엔 나라)
   const flagMarkers = useRef<maplibregl.Marker[]>([]);
   useEffect(() => {
@@ -477,9 +529,18 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       )}
       {legend && (
         <div className="map-legend" style={{ bottom: legendBottom }}>
-          <span><i style={{ background: COLORS.v1 }} />다녀옴</span>
-          <span><i style={{ background: COLORS.v2 }} />2번</span>
-          <span><i style={{ background: COLORS.v3 }} />3번 이상</span>
+          {garden ? (
+            <>
+              <span><i className="lg-meadow" />다녀온 곳</span>
+              <span><i className="lg-bloom" />마음을 남길수록 피어요</span>
+            </>
+          ) : (
+            <>
+              <span><i style={{ background: COLORS.v1 }} />다녀옴</span>
+              <span><i style={{ background: COLORS.v2 }} />2번</span>
+              <span><i style={{ background: COLORS.v3 }} />3번 이상</span>
+            </>
+          )}
           <span><i style={{ background: '#F6F2FF', border: '1.5px dashed #5B3FD1' }} />예정</span>
           {!!flags?.length && <span><i className="lg-flag" />가고 싶은 곳</span>}
           {!!spots?.length && <span><i className="lg-star" />우리 장소</span>}
