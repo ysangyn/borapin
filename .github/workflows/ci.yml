@@ -168,6 +168,13 @@ jobs:
         run: npm run test:migrate 2>&1 | tee migrate-test-output.txt
       - name: 화면 시험 (구글 창 로그인, 한글 입력, 끌어다 놓기, 375px, 새로 고침 포함 · 아이폰 사파리는 핵심 시험만)
         run: npm run test:e2e 2>&1 | tee test-output.txt
+      - name: 크롬 실패 화면 먼저 모으기 (아이폰 시험이 test-results를 지우므로)
+        if: failure()
+        run: |
+          mkdir -p failures
+          find test-results \( -name 'test-failed-*.png' -o -name 'error-context.md' -o -name 'trace.zip' \) | while read -r f; do
+            cp "$f" "failures/$(echo "$f" | tr '/' '_')"
+          done
       - name: 아이폰 사파리(WebKit) 핵심 시험 (아직 참고용 — 떨어져도 배포는 막지 않음)
         if: always()
         continue-on-error: true
