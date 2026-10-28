@@ -1333,3 +1333,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .spot-facts { margin: 0; }
 .trip-scene { display: flex; flex-direction: column; gap: 4px; }
 .home-route { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+/* 여행 계획하기 후보: 기본 정보 접기 */
+.plan-info > summary { list-style: none; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--violet); padding: 4px 0; }
+.plan-info > summary::-webkit-details-marker { display: none; }
+.plan-info > summary::after { content: ' ▾'; }
+.plan-info[open] > summary::after { content: ' ▴'; }

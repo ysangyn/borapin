@@ -1,3 +1,6 @@
+import { straightKm } from '../lib/placeApps';
+import { useHome } from '../lib/home';
+import PlaceHint from '../components/PlaceHint';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
@@ -7,7 +10,7 @@ import { useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
 import { useFestivals } from '../lib/festivals';
 import { useWorld } from '../lib/world';
-import { parsePlaceParam, placeLabel, placeLong } from '../lib/geo';
+import { parsePlaceParam, placeLabel, placeLong, REGION_BY_CODE } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
 import { memberNames } from '../lib/members';
 import { addPlans } from '../lib/tripExtras';
@@ -220,6 +223,7 @@ export function PlanPick() {
                 </div>
                 <div className="plan-cand-body">
                   <ul className="plan-reasons">{c.reasons.slice(0, 3).map((r) => <li key={r}>{r}</li>)}</ul>
+                  <CandInfo place={c.place} />
                   <div className="plan-cand-foot">
                     <button type="button" className={'my-heart' + (mine.includes(k) ? ' on' : '')} aria-pressed={mine.includes(k)} aria-label={mine.includes(k) ? `${placeLabel(c.place)} 고른 것 빼기` : `${placeLabel(c.place)} 고르기`} onClick={() => toggle(k)} data-testid="plan-heart">
                       <CheckMark on={mine.includes(k)} />
@@ -242,5 +246,18 @@ export function PlanPick() {
         <div className="tiny muted" style={{ textAlign: 'center' }}>둘 다 같은 곳을 고르면 '여기로 정해요'가 떠요. 정하면 갈 예정 여행이 생기고, 날짜별 오전·점심·오후·저녁 뼈대와 준비 탭이 채워져요.</div>
       </div>
     </>
+  );
+}
+
+/** 후보 기본 정보: 사진만 보고 고르지 않게 (볼거리·먹거리·축제·가기 좋은 때·가는 길 / 해외는 도시 정보 + 우리 집에서 거리) */
+function CandInfo({ place }: { place: Place }) {
+  const home = useHome();
+  const r = place.t === 'kr' ? REGION_BY_CODE.get(place.code) : undefined;
+  const km = home && r ? Math.round(straightKm(home, r)) : null;
+  return (
+    <details className="plan-info" data-testid="plan-info">
+      <summary>기본 정보{km != null && km >= 1 ? ` · 우리 집에서 직선 ${km}km` : ''}</summary>
+      <PlaceHint place={place} />
+    </details>
   );
 }
