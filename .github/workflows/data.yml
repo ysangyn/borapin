@@ -52,3 +52,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/push-report.sh wear src/data/wear.json wear-output.txt
+
+  flowers:
+    needs: wear
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 꽃 도감 재료 (위키백과 시화·나라꽃)
+        run: npx tsx scripts/flowers-collect.ts 2>&1 | tee flowers-output.txt
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh flowers data/flowers-raw.json flowers-output.txt
