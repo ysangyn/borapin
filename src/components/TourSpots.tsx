@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { crowdOf, loadTour, relatedOf, useTrend, type TourCell } from '../lib/trend';
 import { REGION_BY_CODE } from '../lib/geo';
 import { useMapChoice, useWishItem } from './MapChoice';
+import SpotDetail, { type SpotTarget } from './SpotDetail';
 
 /**
  * 관광공사 관광지(사진·자리)와 무장애 관광지 수. 자료는 지역 창을 열 때만 받는다.
@@ -13,6 +14,7 @@ export default function TourSpots({ code }: { code: string }) {
   const trend = useTrend();
   const [openMap, mapChoice] = useMapChoice();
   const wi = useWishItem();
+  const [detail, setDetail] = useState<SpotTarget | null>(null);
   const here = { t: 'kr' as const, code };
   const area = REGION_BY_CODE.get(code)?.name ?? '';
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function TourSpots({ code }: { code: string }) {
               const crowd = crowdOf(code, trend, n);
               return (
                 <span key={n} className="tour-cell">
-                <button type="button" className="tour-card" onClick={() => openMap({ name: n, area, lat, lng, wish: { place: here, kind: 'spot' } })}>
+                <button type="button" className="tour-card" onClick={() => setDetail({ name: n, area, lat, lng, img, crowd, place: here })} data-testid="tour-card">
                   <span className="tour-pic">
                     <img src={img} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBad((b) => new Set(b).add(n))} />
                     {crowd && crowd !== '보통' && <span className={`tag crowd-tag ${crowd === '붐벼요' ? 'busy' : 'calm'}`} data-testid="tour-crowd">{crowd}</span>}
@@ -62,6 +64,7 @@ export default function TourSpots({ code }: { code: string }) {
         </div>
       )}
       {mapChoice}
+      {detail && <SpotDetail spot={detail} onClose={() => setDetail(null)} />}
       {cell && cell.easy > 0 && <div className="info-line" data-testid="tour-easy"><span className="k">편하게</span><span>휠체어·유모차로 다니기 편한 관광지 {cell.easy}곳 (무장애 정보)</span></div>}
     </div>
   );

@@ -29,3 +29,16 @@ export function here(): Promise<{ lat: number; lng: number } | { error: string }
     );
   });
 }
+
+/** 관광지 하나 자세히 (뒷단 /spot, 관광공사): 소개·이용 시간·쉬는 날·주소·전화. 못 받으면 null */
+export interface SpotInfo { short?: string; full?: string; time?: string; rest?: string; parking?: string; addr?: string; tel?: string; img?: string }
+export async function fetchSpot(user: User | null, name: string, lat?: number | null, lng?: number | null): Promise<SpotInfo | null> {
+  if (!aiAvailable() || !user) return null;
+  try {
+    const token = await user.getIdToken();
+    const pos = lat != null && lng != null ? `&lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}` : '';
+    const r = await fetch(`${ASK_URL}/spot?name=${encodeURIComponent(name)}${pos}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(12000) });
+    if (!r.ok) return null;
+    return (await r.json()) as SpotInfo;
+  } catch { return null; }
+}

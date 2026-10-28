@@ -1326,3 +1326,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .map-legend .lg-meadow { background: #C9E8BC; }
 .map-legend .lg-bloom { background: radial-gradient(circle at 50% 50%, #F5C542 0 2px, #fff 2.5px 4px, #AEDB9E 4.5px); }
 .bloom-box { pointer-events: none; }
+
+/* 관광지 자세히 */
+.spot-detail { max-height: 88dvh; overflow: auto; }
+.spot-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; border: 2px solid var(--outline); background: var(--mist2, #EEE9FB); }
+.spot-facts { margin: 0; }
+.trip-scene { display: flex; flex-direction: column; gap: 4px; }

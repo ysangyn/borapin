@@ -2,6 +2,8 @@ import { toneOf } from '../lib/members';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PlanTab from '../components/PlanTab';
+import { ScenicPhoto } from '../components/Scene';
+import { photoForPlace } from '../lib/media';
 import NotesTab from '../components/NotesTab';
 import PrepTab from '../components/PrepTab';
 import ShareLinkCard, { useShareSync } from '../components/ShareLinkCard';
@@ -86,6 +88,7 @@ export default function TripDetail() {
   const sugWhen = suggestWhen(trip, photos);
   const sugPlaces = suggestPlaces(trip, photos);
   const nd = nightsDays(trip.when);
+  const coverScene = trip.places.map(photoForPlace).find(Boolean) ?? null;
   const abroad = trip.places.every((p) => p.t === 'country');
   const label: Record<TripTab, string> = {
     info: '개요',
@@ -126,6 +129,14 @@ export default function TripDetail() {
             {notes?.[0] && <span className={'pola-line hand ' + (toneOf(notes[0].by.name) === 1 ? 'blue' : 'pink')}>“{notes[0].text.split('\n')[0].slice(0, 36)}” — {notes[0].by.name}</span>}
             {photos.length > 1 && <span className="pola-count">1 / {photos.length}</span>}
           </button>
+        )}
+
+        {/* 우리 사진이 아직 없으면 그 곳의 대표 사진이라도 (누르면 사진 탭으로 — 우리 사진을 올리면 바뀜) */}
+        {tab === 'info' && photos.length === 0 && coverScene && (
+          <div className="trip-scene" data-testid="trip-scene">
+            <ScenicPhoto photo={coverScene} className="sheet-photo" label="bottom" onTap={() => setTab('photos')} />
+            <span className="tiny muted">{placeLabel(trip.places[0])} 대표 사진 · 우리 사진을 올리면 표지가 바뀌어요</span>
+          </div>
         )}
 
         <div className="seg tabs" role="tablist" aria-label="여행 보기" data-testid="trip-tabs">

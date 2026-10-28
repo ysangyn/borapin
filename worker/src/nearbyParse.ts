@@ -37,3 +37,32 @@ export function firstLine(overview: string | undefined): string | undefined {
   return s.length > 70 ? `${s.slice(0, 68).trim()}…` : s || undefined;
 }
 
+
+/** 관광지 이름 검색 결과 중 주어진 자리에서 가장 가까운 것 (3km 안, 자리가 없으면 첫 것) */
+export function pickSpot(j: unknown, lat?: number, lng?: number): { id: string; type: string; addr?: string; img?: string } | null {
+  const items = (j as { response?: { body?: { items?: { item?: Raw[] | Raw } | string } } })?.response?.body?.items;
+  const list = items && typeof items === 'object' ? (Array.isArray(items.item) ? items.item : items.item ? [items.item] : []) : [];
+  const km = (x: Raw) => (lat == null || lng == null ? 0 : Math.hypot((Number(x.mapy) - lat) * 111, (Number(x.mapx) - lng) * 88));
+  const best = list.filter((x) => x.contentid).map((x) => ({ x, d: km(x) })).sort((a, b) => a.d - b.d)[0];
+  if (!best || best.d > 3) return null;
+  return { id: String(best.x.contentid), type: String(best.x.contenttypeid ?? ''), addr: best.x.addr1 || undefined, img: best.x.firstimage?.replace(/^http:/, 'https:') || undefined };
+}
+
+const clean = (s: unknown) => (typeof s === 'string' ? s.replace(/<br\s*\/?>/gi, ' · ').replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').replace(/(\s·\s)+$/, '').trim() : '');
+
+/** 개요 → 소개 몇 문장(짧은 것과 전체) */
+export function aboutOf(overview: unknown): { short?: string; full?: string } {
+  const t = clean(overview);
+  if (!t) return {};
+  const sents = t.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g)?.map((x) => x.trim()) ?? [t];
+  let short = '';
+  for (const s of sents) { if ((short + s).length > 150 && short) break; short = short ? `${short} ${s}` : s; }
+  return { short, full: t.length > short.length + 10 ? t.slice(0, 1200) : undefined };
+}
+
+/** 소개 정보(detailIntro2)에서 이용 시간·쉬는 날·주차 (관광지 12 / 문화시설 14 / 음식점 39 …) */
+export function introOf(j: unknown): { time?: string; rest?: string; parking?: string } {
+  const it = ((j as { response?: { body?: { items?: { item?: Record<string, unknown>[] } } } })?.response?.body?.items?.item ?? [])[0] ?? {};
+  const pick = (...ks: string[]) => ks.map((k) => clean(it[k])).find(Boolean) || undefined;
+  return { time: pick('usetime', 'usetimeculture', 'opentimefood', 'usetimeleports', 'opentime'), rest: pick('restdate', 'restdateculture', 'restdatefood', 'restdateleports', 'restdateshopping'), parking: pick('parking', 'parkingculture', 'parkingfood', 'parkingleports', 'parkingshopping') };
+}

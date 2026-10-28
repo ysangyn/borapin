@@ -13,7 +13,7 @@
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
-import { nearby } from './nearby';
+import { nearby, spot } from './nearby';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
 import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, RateCounter, TtlCache, type TokenPayload } from './guard';
 
@@ -280,7 +280,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isPlace = req.method === 'GET' && url.pathname === '/place';
     const isGeo = req.method === 'GET' && url.pathname === '/geo';
     const isNearby = req.method === 'GET' && url.pathname === '/nearby';
-    if (!isNews && !isPlace && !isGeo && !isNearby && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isSpot = req.method === 'GET' && url.pathname === '/spot';
+    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -326,6 +327,19 @@ async function handle(req: Request, env: Env): Promise<Response> {
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad position' }, 400);
       try {
         const r = await nearby(env.DATA_GO_KR_KEY, lat, lng);
+        return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 502); }
+    }
+    // 관광지 하나 자세히 (관광공사, 7일 캐시)
+    if (isSpot) {
+      if (!env.DATA_GO_KR_KEY) return json({ error: 'no key' }, 503);
+      const rl3 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl3.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const name = (url.searchParams.get('name') ?? '').trim().slice(0, 60);
+      if (!name) return json({ error: 'empty' }, 400);
+      const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
+      try {
+        const r = await spot(env.DATA_GO_KR_KEY, name, Number.isFinite(lat) ? lat : undefined, Number.isFinite(lng) ? lng : undefined);
         return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
       } catch { return json({ error: 'upstream' }, 502); }
     }

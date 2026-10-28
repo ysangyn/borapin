@@ -1,5 +1,5 @@
 /** 지금 여기 근처 관광지: 관광공사 부르기·캐시 (풀이 함수는 nearbyParse.ts — 앱 시험이 그쪽만 읽는다) */
-import { firstLine, parseNearby, type NearbyItem } from './nearbyParse';
+import { aboutOf, firstLine, introOf, parseNearby, pickSpot, type NearbyItem } from './nearbyParse';
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2';
 async function call(key: string, op: string, p: Record<string, string>) {
@@ -36,6 +36,29 @@ export async function nearby(key: string, lat: number, lng: number): Promise<Res
     await cache.put(ok, new Response(it.line ?? '', { headers: { 'cache-control': 'public, max-age=604800' } }));
   }));
   const res = new Response(JSON.stringify({ items }), { headers: { ...head, 'cache-control': 'public, max-age=86400' } });
+  await cache.put(ck, res.clone());
+  return res;
+}
+
+/** 관광지 하나 자세히 (사진을 누르면 뜨는 창): 이름+자리로 찾아 소개·이용 시간·쉬는 날·주소·전화. 7일 캐시 */
+export async function spot(key: string, name: string, lat?: number, lng?: number): Promise<Response> {
+  const head = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=604800' };
+  const cache = caches.default;
+  const ck = new Request(`https://cache.borapin/spot?${encodeURIComponent(name)}&${lat?.toFixed(3) ?? ''},${lng?.toFixed(3) ?? ''}`);
+  const hit = await cache.match(ck);
+  if (hit) return hit;
+  const found = pickSpot(await call(key, 'searchKeyword2', { keyword: name, numOfRows: '10', pageNo: '1', arrange: 'O' }), lat, lng);
+  let out: Record<string, unknown> = {};
+  if (found) {
+    const [common, intro] = await Promise.all([
+      call(key, 'detailCommon2', { contentId: found.id }).catch(() => null),
+      call(key, 'detailIntro2', { contentId: found.id, contentTypeId: found.type }).catch(() => null),
+    ]);
+    const c = ((common as { response?: { body?: { items?: { item?: Record<string, unknown>[] } } } } | null)?.response?.body?.items?.item ?? [])[0] ?? {};
+    const tel = typeof c.tel === 'string' && /^[0-9-]{7,}$/.test(c.tel.trim()) ? c.tel.trim() : undefined;
+    out = { ...aboutOf(c.overview), ...introOf(intro), addr: found.addr, tel, img: found.img, type: found.type };
+  }
+  const res = new Response(JSON.stringify(out), { headers: head });
   await cache.put(ck, res.clone());
   return res;
 }
