@@ -105,6 +105,8 @@ service cloud.firestore {
       return d.keys().hasAll(['tripId', 'text', 'by', 'v'])
         && d.text is string && d.text.size() >= 1 && d.text.size() <= 5000
         && d.by.uid == request.auth.uid
+        // 타임캡슐: 열리는 날 'YYYY-MM-DD' (선택)
+        && (!('openAt' in d) || (d.openAt is string && d.openAt.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
         && d.v == 1;
     }
 

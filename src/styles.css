@@ -1301,3 +1301,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 /* 안전 소식 한 줄 (홈) */
 .safety-line { display: flex; gap: 10px; align-items: flex-start; color: var(--ink); font-size: 14px; line-height: 1.45; background: #FFF8E8; }
 .safety-line > svg { flex: none; margin-top: 2px; color: #B7791F; }
+
+/* 타임캡슐: 봉투 */
+.capsule-card { display: flex; gap: 12px; align-items: center; color: var(--ink); background: #FFF1F5; }
+.capsule-env { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--outline); background: #fff; font-size: 22px; transform: rotate(-6deg); box-shadow: 2px 2px 0 var(--line2); }
+.capsule-sealed { padding: 12px; border: 2px dashed var(--line2); border-radius: 12px; background: #FFF8FB; color: var(--ink2); }

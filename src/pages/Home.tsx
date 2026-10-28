@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatars, Icon, Logo, useToast } from '../components/ui';
 import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
 import PlaceSheet from '../components/PlaceSheet';
-import type { Place, Trip, Wish } from '../lib/types';
+import type { Note, Place, Trip, Wish } from '../lib/types';
 import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTAL_GROUPS, upcomingTrips, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
@@ -14,6 +14,8 @@ import NextTripHub from '../components/NextTripHub';
 import MonthPick, { useMonthPick } from '../components/MonthPick';
 import { nextCell, aboutMin } from '../lib/nextCell';
 import { safetyNews, useAbroad } from '../lib/abroad';
+import { arrived, markOpened, openedHere, openLabel, ymd } from '../lib/capsule';
+import { readArrivedCapsules } from '../lib/tripExtras';
 import { withIeyo } from '../lib/ko';
 import type { Stats } from '../lib/stats';
 import { useHome } from '../lib/home';
@@ -121,6 +123,7 @@ export default function Home() {
           </div>
         )}
 
+        {trips && <CapsuleCard trips={trips} />}
         {trips && wishes && <SafetyLine trips={trips} wishes={wishes} />}
 
         {/* 예정 여행은 아래 '다음 여행 준비' 묶음이 맡는다 (같은 여행을 두 번 보여 주지 않게) */}
@@ -169,6 +172,24 @@ function EmptyRecords() {
         <Link to="/record" className="btn sm">기록 남기기</Link>
       </span>
     </div>
+  );
+}
+
+/** 타임캡슐 봉투: 열리는 날이 된 '1년 뒤 우리에게' 글이 홈에 도착 (이 폰에서 열면 사라짐) */
+function CapsuleCard({ trips }: { trips: Trip[] }) {
+  const [note, setNote] = useState<Note | null>(null);
+  useEffect(() => {
+    let on = true;
+    readArrivedCapsules(ymd(new Date())).then((ns) => { if (on) setNote((arrived(ns, openedHere()) as Note | null) ?? null); }, () => {});
+    return () => { on = false; };
+  }, []);
+  if (!note) return null;
+  const trip = trips.find((t) => t.id === note.tripId);
+  return (
+    <Link to={`/trips/${note.tripId}?tab=notes`} className="card capsule-card" data-testid="capsule" onClick={() => markOpened(note.id)}>
+      <span className="capsule-env" aria-hidden="true">✉</span>
+      <span><b className="jua" style={{ fontSize: 17 }}>{note.by.name}의 편지가 도착했어요</b><span className="tiny muted" style={{ display: 'block' }}>{trip ? `${trip.title} · ` : ''}{openLabel(note.openAt!)}에 열리기로 했던 글 · 열어 보기</span></span>
+    </Link>
   );
 }
 

@@ -158,6 +158,8 @@ export interface Note {
   tripId: string;
   text: string;
   by: { uid: string; name: string };
+  /** 타임캡슐: 이 날(YYYY-MM-DD)이 되기 전엔 봉투로만 보인다 */
+  openAt?: string;
   createdAt?: Timestamp | null;
   v: 1;
 }

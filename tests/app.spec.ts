@@ -787,6 +787,13 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(notes.getByTestId('note')).toContainText('바다 보며 커피 마신 날');
     await expect(notes.getByTestId('note')).toContainText('영상');
     await expect(page.getByRole('tab', { name: '글 1' })).toBeVisible();
+    // 타임캡슐 '1년 뒤 우리에게': 봉하면 봉투로만 보이고 글은 안 보인다
+    await notes.getByTestId('capsule-toggle').click();
+    await notes.getByLabel('글 쓰기').fill('1년 뒤에도 같이 커피 마시자');
+    await notes.getByTestId('note-save').click();
+    await expect(page.getByRole('status')).toContainText('봉했어요');
+    await expect(notes.getByTestId('capsule-sealed')).toContainText('에 열려요');
+    await expect(notes).not.toContainText('1년 뒤에도 같이 커피 마시자');
 
     // 준비물: 예정된 제주 여행
     await page.goto('/trips');

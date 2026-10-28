@@ -3,6 +3,7 @@ import { collection, deleteDoc, doc, getCountFromServer, getDocs, getDocsFromCac
 import { queued } from './writes';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
+import { isSealed } from './capsule';
 import { displayName } from './auth';
 import type { Note, PlanItem } from './types';
 
@@ -78,8 +79,11 @@ export function useNotes(tripId: string | undefined) {
   const items = useByTrip<Note>(notesCol, tripId);
   return useMemo(() => (items ? [...items].sort((a, b) => (b.createdAt?.toMillis?.() ?? Date.now()) - (a.createdAt?.toMillis?.() ?? Date.now())) : null), [items]);
 }
-export const addNote = (tripId: string, text: string, user: User) =>
-  queued(setDoc(doc(notesCol()), { tripId, text: text.trim(), by: { uid: user.uid, name: displayName(user) }, createdAt: serverTimestamp(), v: 1 }));
+export const addNote = (tripId: string, text: string, user: User, openAt?: string) =>
+  queued(setDoc(doc(notesCol()), { tripId, text: text.trim(), by: { uid: user.uid, name: displayName(user) }, ...(openAt ? { openAt } : {}), createdAt: serverTimestamp(), v: 1 }));
+/** 열리는 날이 된 타임캡슐 글만 한 번 읽는다 (홈 봉투: 열리는 날이 없는 글은 오지 않는다) */
+export const readArrivedCapsules = async (today: string): Promise<Note[]> =>
+  (await getDocs(query(notesCol(), where('openAt', '<=', today)))).docs.map((d) => ({ id: d.id, ...d.data() }) as Note);
 export const deleteNote = (id: string) => queued(deleteDoc(doc(notesCol(), id)));
 
 export { PACK_TEMPLATES, packFromTemplate } from './packing';
@@ -98,14 +102,15 @@ export function useAllPlans(enabled = true) {
 /** 모든 여행의 일정 줄을 한 번 읽는다 (오프라인이면 기기 캐시에서) */
 export const readPlansOnce = async (): Promise<PlanItem[]> => (await getDocs(plansCol())).docs.map((d) => ({ id: d.id, ...d.data() }) as PlanItem);
 /** 모든 여행의 글을 한 번 읽는다 (오프라인이면 기기 캐시에서) */
-export const readNotesOnce = async (): Promise<Note[]> => (await getDocs(notesCol())).docs.map((d) => ({ id: d.id, ...d.data() }) as Note);
+export const readNotesOnce = async (): Promise<Note[]> => (await getDocs(notesCol())).docs.map((d) => ({ id: d.id, ...d.data() }) as Note).filter((n) => !isSealed(n));
 
 /** 모든 여행의 글 (공유카드 '메모 인용' 등) */
 export function useAllNotes(enabled = true) {
   const [items, setItems] = useState<Note[] | null>(null);
   useEffect(() => {
     if (!enabled) return;
-    return onSnapshot(notesCol(), (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Note)), () => setItems([]));
+    // 봉한 타임캡슐은 피드·공유 카드·물어보기에 나오지 않는다 (그 여행의 글 탭에선 봉투로만)
+    return onSnapshot(notesCol(), (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Note).filter((n) => !isSealed(n))), () => setItems([]));
   }, [enabled]);
   return items;
 }
