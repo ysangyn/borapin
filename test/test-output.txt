@@ -13,67 +13,102 @@
 
 Running 55 tests using 1 worker
 
-  ✓   1 [chromium] › tests/app.spec.ts:65:3 › 보라핀 1단계 › 로그인 화면 (1.8s)
-  ✓   2 [chromium] › tests/app.spec.ts:71:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.0s)
-  ✓   3 [chromium] › tests/app.spec.ts:78:3 › 보라핀 1단계 › 기록이 없으면 빈 상태 카드가 지도 바로 아래(물어보기 다음)에, 묶음은 그 뒤에 (1.8s)
-  ✓   4 [chromium] › tests/app.spec.ts:112:3 › 보라핀 1단계 › 피드는 둘의 소식만: 일반 소식 묶음이 없고, 비어 있으면 다음 단추가 있다 (1.1s)
-  ✓   5 [chromium] › tests/app.spec.ts:123:3 › 보라핀 1단계 › 초대 링크: 관리자가 만들고 → 링크로 온 사람이 로그인하면 바로 들어온다 (한 번만) (4.5s)
-  ✓   6 [chromium] › tests/app.spec.ts:168:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (2.8s)
-  ✓   7 [chromium] › tests/app.spec.ts:195:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (2.9s)
-  ✓   8 [chromium] › tests/app.spec.ts:212:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (1.9s)
-  ✓   9 [chromium] › tests/app.spec.ts:226:3 › 보라핀 1단계 › 여행 목록과 필터 (1.1s)
-  ✓  10 [chromium] › tests/app.spec.ts:236:3 › 보라핀 1단계 › 홈 통계와 지도 (6.2s)
-  ✓  11 [chromium] › tests/app.spec.ts:255:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (16.3s)
-  ✓  12 [chromium] › tests/app.spec.ts:325:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (15.5s)
-  ✓  13 [chromium] › tests/app.spec.ts:482:3 › 보라핀 1단계 › 홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다 (6.0s)
-  ✓  14 [chromium] › tests/app.spec.ts:550:3 › 보라핀 1단계 › 여행 계획하기: + → 조건만 고르면 후보 3곳 → 둘이 하트 → 여기로 정해요 → 갈 예정 여행과 하루 뼈대 (4.8s)
-  ✓  15 [chromium] › tests/app.spec.ts:598:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (7.1s)
-  ✓  16 [chromium] › tests/app.spec.ts:660:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (7.5s)
-  ✓  17 [chromium] › tests/app.spec.ts:714:3 › 보라핀 1단계 › 여행 상세: 탭 넷, 일정 3단계, 들른 곳, 둘의 기록, 예정 여행 준비물 (7.7s)
-  ✓  18 [chromium] › tests/app.spec.ts:821:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (3.8s)
-  ✓  19 [chromium] › tests/app.spec.ts:848:3 › 보라핀 1단계 › 피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점 (8.5s)
-  ✓  20 [chromium] › tests/app.spec.ts:910:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 (7.1s)
-  ✓  21 [chromium] › tests/app.spec.ts:974:3 › 보라핀 1단계 › 우리 공간엔 개발자 글 대신 출처와 버전 링크, 버전·지도 출처는 /credits에 (2.3s)
-  ✓  22 [chromium] › tests/app.spec.ts:989:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고 (3.3s)
-[36m[1mi [22m[39m To verify the email address mail.bora@example.com, follow this link: http://127.0.0.1:9099/emulator/action?mode=verifyEmail&lang=en&oobCode=DNgIuVeITUWgua8pPzTOT2DYR1OcNqEeaZ-5OnEATb1ZW6l3eIAtLg&apiKey=fake-api-key&continueUrl=http%3A%2F%2F127.0.0.1%3A5174%2F
-  ✓  23 [chromium] › tests/app.spec.ts:1019:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다 (3.4s)
-  ✓  24 [chromium] › tests/app.spec.ts:1066:3 › 보라핀 1단계 › 기록 고치기와 지우기 (5.2s)
-  ✓  25 [chromium] › tests/app.spec.ts:1085:3 › 보라핀 1단계 › 지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게) (5.4s)
-  ✓  26 [chromium] › tests/human.spec.ts:122:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.4s)
-  ✓  27 [chromium] › tests/human.spec.ts:131:3 › 사람처럼 쓰기 › 로그인 화면에서 이용약관 링크를 눌러 열고 로고로 돌아와도 화면이 살아 있다 (4.5s)
-  ✓  28 [chromium] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (4.9s)
-  ✓  29 [chromium] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (5.1s)
-  ✓  30 [chromium] › tests/human.spec.ts:218:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.9s)
-  ✓  31 [chromium] › tests/human.spec.ts:248:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (5.2s)
-  ✓  32 [chromium] › tests/human.spec.ts:296:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (12.7s)
-  ✓  33 [chromium] › tests/human.spec.ts:319:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.7s)
-  ✓  34 [chromium] › tests/human.spec.ts:350:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.8s)
-  ✓  35 [chromium] › tests/human.spec.ts:383:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (7.4s)
-  ✓  36 [chromium] › tests/human.spec.ts:417:3 › 사람처럼 쓰기 › 우리 집을 정하면 다음 여행지까지 지도 앱 길찾기가 출발·도착이 채워져 열린다 (4.4s)
-  ✓  37 [chromium] › tests/human.spec.ts:441:3 › 사람처럼 쓰기 › 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히 (2.4s)
-  ✓  38 [chromium] › tests/human.spec.ts:481:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (2.0s)
-  ✓  39 [chromium] › tests/human.spec.ts:500:3 › 사람처럼 쓰기 › 폰에서 홈 지도는 한 손가락으로 끌면 움직인다 (두 손가락 안내 없이) (4.1s)
-  ✓  40 [chromium] › tests/human.spec.ts:519:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (5.2s)
-  ✓  41 [chromium] › tests/human.spec.ts:541:3 › 사람처럼 쓰기 › 홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드 (3.5s)
-  ✓  42 [chromium] › tests/human.spec.ts:576:3 › 사람처럼 쓰기 › 기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다 (2.8s)
-  ✓  43 [chromium] › tests/human.spec.ts:595:3 › 사람처럼 쓰기 › 피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다 (2.1s)
-  ✓  44 [chromium] › tests/human.spec.ts:611:3 › 사람처럼 쓰기 › 오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다 (3.2s)
-  ✓  45 [chromium] › tests/human.spec.ts:645:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (759ms)
-  ✓  46 [chromium] › tests/human.spec.ts:660:3 › 사람처럼 쓰기 › 카카오톡 안 브라우저로 열면 바깥 브라우저 안내와 주소 복사 단추가 먼저 보인다 (887ms)
-  ✓  47 [chromium] › tests/human.spec.ts:672:3 › 사람처럼 쓰기 › 가고 싶은 곳에서 여행 만들기: /plan?wish= 로 가서 목적지가 미리 채워지고, 뽑기는 ?find=dice 로 바로 열린다 (3.0s)
-  ✓  48 [chromium] › tests/human.spec.ts:695:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (708ms)
-  ✓  49 [chromium] › tests/human.spec.ts:695:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (745ms)
-  ✓  50 [chromium] › tests/human.spec.ts:695:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (732ms)
-  ✘  51 [chromium] › tests/human.spec.ts:720:3 › 사람처럼 쓰기 › 여행 중: 단계 카드의 '지금 여기' → 위치 → (뒷단 없으면) 이 근처로 남기기 (1.0m)
-  ✓  52 [chromium] › tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.4s)
-  ✓  53 [chromium] › tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (38.2s)
-  ✓  54 [chromium] › tests/tour.spec.ts:278:1 › 가득 찬 화면 · PC (41.8s)
-  ✓  55 [chromium] › tests/tour.spec.ts:303:1 › 화면 오류 없음 (2ms)
+  ✓   1 [chromium] › tests/app.spec.ts:65:3 › 보라핀 1단계 › 로그인 화면 (1.5s)
+  ✓   2 [chromium] › tests/app.spec.ts:71:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.8s)
+  ✓   3 [chromium] › tests/app.spec.ts:78:3 › 보라핀 1단계 › 기록이 없으면 빈 상태 카드가 지도 바로 아래(물어보기 다음)에, 묶음은 그 뒤에 (2.4s)
+  ✓   4 [chromium] › tests/app.spec.ts:112:3 › 보라핀 1단계 › 피드는 둘의 소식만: 일반 소식 묶음이 없고, 비어 있으면 다음 단추가 있다 (1.3s)
+  ✓   5 [chromium] › tests/app.spec.ts:123:3 › 보라핀 1단계 › 초대 링크: 관리자가 만들고 → 링크로 온 사람이 로그인하면 바로 들어온다 (한 번만) (5.6s)
+  ✓   6 [chromium] › tests/app.spec.ts:168:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다 (3.4s)
+  ✓   7 [chromium] › tests/app.spec.ts:195:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만) (3.7s)
+  ✓   8 [chromium] › tests/app.spec.ts:212:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만) (2.3s)
+  ✓   9 [chromium] › tests/app.spec.ts:226:3 › 보라핀 1단계 › 여행 목록과 필터 (1.3s)
+  ✓  10 [chromium] › tests/app.spec.ts:236:3 › 보라핀 1단계 › 홈 통계와 지도 (7.2s)
+  ✓  11 [chromium] › tests/app.spec.ts:255:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름 (20.4s)
+  ✓  12 [chromium] › tests/app.spec.ts:325:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기 (18.8s)
+  ✓  13 [chromium] › tests/app.spec.ts:482:3 › 보라핀 1단계 › 홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다 (6.1s)
+  ✓  14 [chromium] › tests/app.spec.ts:550:3 › 보라핀 1단계 › 여행 계획하기: + → 조건만 고르면 후보 3곳 → 둘이 하트 → 여기로 정해요 → 갈 예정 여행과 하루 뼈대 (5.9s)
+  ✓  15 [chromium] › tests/app.spec.ts:598:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임 (7.6s)
+  ✓  16 [chromium] › tests/app.spec.ts:660:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩 (8.3s)
+  ✓  17 [chromium] › tests/app.spec.ts:714:3 › 보라핀 1단계 › 여행 상세: 탭 넷, 일정 3단계, 들른 곳, 둘의 기록, 예정 여행 준비물 (7.8s)
+  ✓  18 [chromium] › tests/app.spec.ts:821:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기 (4.2s)
+  ✓  19 [chromium] › tests/app.spec.ts:848:3 › 보라핀 1단계 › 피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점 (10.5s)
+  ✓  20 [chromium] › tests/app.spec.ts:910:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기 (8.3s)
+  ✓  21 [chromium] › tests/app.spec.ts:974:3 › 보라핀 1단계 › 우리 공간엔 개발자 글 대신 출처와 버전 링크, 버전·지도 출처는 /credits에 (2.1s)
+  ✓  22 [chromium] › tests/app.spec.ts:989:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고 (3.7s)
+[36m[1mi [22m[39m To verify the email address mail.bora@example.com, follow this link: http://127.0.0.1:9099/emulator/action?mode=verifyEmail&lang=en&oobCode=FvrBsdtm-S5rPvEPB-Tc2WULhD8FDIEX8xUi54OzLcvTGkT7czJ5si&apiKey=fake-api-key&continueUrl=http%3A%2F%2F127.0.0.1%3A5174%2F
+  ✓  23 [chromium] › tests/app.spec.ts:1019:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다 (3.8s)
+  ✓  24 [chromium] › tests/app.spec.ts:1066:3 › 보라핀 1단계 › 기록 고치기와 지우기 (5.7s)
+  ✓  25 [chromium] › tests/app.spec.ts:1085:3 › 보라핀 1단계 › 지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게) (5.6s)
+  ✓  26 [chromium] › tests/human.spec.ts:122:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.9s)
+  ✓  27 [chromium] › tests/human.spec.ts:131:3 › 사람처럼 쓰기 › 로그인 화면에서 이용약관 링크를 눌러 열고 로고로 돌아와도 화면이 살아 있다 (5.0s)
+  ✓  28 [chromium] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (5.5s)
+  ✓  29 [chromium] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (6.3s)
+  ✓  30 [chromium] › tests/human.spec.ts:218:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (2.2s)
+  ✓  31 [chromium] › tests/human.spec.ts:248:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (6.6s)
+  ✓  32 [chromium] › tests/human.spec.ts:296:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (14.9s)
+  ✓  33 [chromium] › tests/human.spec.ts:319:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (2.5s)
+  ✓  34 [chromium] › tests/human.spec.ts:350:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (2.0s)
+  ✓  35 [chromium] › tests/human.spec.ts:383:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (7.6s)
+  ✓  36 [chromium] › tests/human.spec.ts:417:3 › 사람처럼 쓰기 › 우리 집을 정하면 다음 여행지까지 지도 앱 길찾기가 출발·도착이 채워져 열린다 (4.8s)
+  ✓  37 [chromium] › tests/human.spec.ts:441:3 › 사람처럼 쓰기 › 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히 (2.7s)
+  ✓  38 [chromium] › tests/human.spec.ts:481:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (1.6s)
+  ✓  39 [chromium] › tests/human.spec.ts:500:3 › 사람처럼 쓰기 › 폰에서 홈 지도는 한 손가락으로 끌면 움직인다 (두 손가락 안내 없이) (5.0s)
+  ✓  40 [chromium] › tests/human.spec.ts:519:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (5.4s)
+  ✓  41 [chromium] › tests/human.spec.ts:541:3 › 사람처럼 쓰기 › 홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드 (3.9s)
+  ✓  42 [chromium] › tests/human.spec.ts:576:3 › 사람처럼 쓰기 › 기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다 (3.0s)
+  ✓  43 [chromium] › tests/human.spec.ts:595:3 › 사람처럼 쓰기 › 피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다 (3.0s)
+  ✓  44 [chromium] › tests/human.spec.ts:611:3 › 사람처럼 쓰기 › 오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다 (3.8s)
+  ✓  45 [chromium] › tests/human.spec.ts:645:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (881ms)
+  ✓  46 [chromium] › tests/human.spec.ts:660:3 › 사람처럼 쓰기 › 카카오톡 안 브라우저로 열면 바깥 브라우저 안내와 주소 복사 단추가 먼저 보인다 (954ms)
+  ✓  47 [chromium] › tests/human.spec.ts:672:3 › 사람처럼 쓰기 › 가고 싶은 곳에서 여행 만들기: /plan?wish= 로 가서 목적지가 미리 채워지고, 뽑기는 ?find=dice 로 바로 열린다 (3.7s)
+  ✓  48 [chromium] › tests/human.spec.ts:695:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (815ms)
+  ✓  49 [chromium] › tests/human.spec.ts:695:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (835ms)
+  ✓  50 [chromium] › tests/human.spec.ts:695:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (820ms)
+  ✘  51 [chromium] › tests/human.spec.ts:720:3 › 사람처럼 쓰기 › 여행 중: 단계 카드의 '지금 여기' → 위치 → (뒷단 없으면) 이 근처로 남기기 (19.6s)
+  ✓  52 [chromium] › tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.9s)
+  ✓  53 [chromium] › tests/tour.spec.ts:206:1 › 가득 찬 화면 · 휴대폰 (40.5s)
+  ✓  54 [chromium] › tests/tour.spec.ts:278:1 › 가득 찬 화면 · PC (41.0s)
+  ✓  55 [chromium] › tests/tour.spec.ts:303:1 › 화면 오류 없음 (3ms)
 
 
   1) [chromium] › tests/human.spec.ts:720:3 › 사람처럼 쓰기 › 여행 중: 단계 카드의 '지금 여기' → 위치 → (뒷단 없으면) 이 근처로 남기기 
 
-    Test timeout of 60000ms exceeded.
+    TimeoutError: locator.click: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for getByTestId('here-sheet').getByTestId('here-fallback')
+        - locator resolved to <button class="btn block" data-testid="here-fallback">이 근처로 남기기</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <button class="plus" type="button" aria-label="남기기" aria-expanded="false">…</button> from <nav class="nav" aria-label="주 메뉴">…</nav> subtree intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <button class="plus" type="button" aria-label="남기기" aria-expanded="false">…</button> from <nav class="nav" aria-label="주 메뉴">…</nav> subtree intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        28 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <button class="plus" type="button" aria-label="남기기" aria-expanded="false">…</button> from <nav class="nav" aria-label="주 메뉴">…</nav> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      736 |       // 에뮬레이터에선 뒷단(관광공사)을 부르지 않으므로 '이 근처로 남기기'만
+      737 |       await expect(sheet).toContainText('지금은 근처 장소를 찾을 수 없어요');
+    > 738 |       await sheet.getByTestId('here-fallback').click({ timeout: 15_000 });
+          |                                                ^
+      739 |       await expect(page.getByRole('status')).toContainText('이 근처 남겼어요');
+      740 |       await expect(sheet).toHaveCount(0);
+      741 |     } finally {
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:738:48
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/human-사람처럼-쓰기-여행-중-단계-카드의-지금-여기-→-위치-→-뒷단-없으면-이-근처로-남기기-chromium/test-failed-1.png
@@ -91,7 +126,7 @@ Running 55 tests using 1 worker
 
   1 failed
     [chromium] › tests/human.spec.ts:720:3 › 사람처럼 쓰기 › 여행 중: 단계 카드의 '지금 여기' → 위치 → (뒷단 없으면) 이 근처로 남기기 
-  54 passed (6.4m)
+  54 passed (6.3m)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
