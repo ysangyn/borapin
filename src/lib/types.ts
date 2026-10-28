@@ -43,6 +43,12 @@ export interface Trip {
   guesses?: Record<string, { y?: number; s?: Season }>;
   /** 날짜 채우기 놀이에서 정한 여행 (다시 묻지 않음) */
   dateGameDone?: boolean;
+  /** 계획 이어가기: 숙소 (동선의 출발점, 가이드북 '한눈에') */
+  stay?: { name: string; lat?: number | null; lng?: number | null; url?: string } | null;
+  /** 계획 이어가기: 사람마다 '이번 여행에서 제일 기대되는 것' 한 줄 (가이드북·다녀온 뒤 '그때 기대') */
+  hopes?: Record<string, string>;
+  /** 계획 이어가기에서 끝낸 걸음 (건너뛴 것도 지난 것으로) */
+  planDone?: string[];
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
@@ -145,6 +151,13 @@ export interface PlanItem {
   time: string | null;
   info: string;
   recId?: string | null;
+  /** 같이 찾아 담기: 하트 누른 사람들 (둘 다면 ★) */
+  by?: string[];
+  /** 자리·종류·사진 (동선 정리·가이드북) */
+  lat?: number | null;
+  lng?: number | null;
+  kind?: 'see' | 'eat' | 'buy' | 'do' | 'fest' | 'stay';
+  img?: string;
   done: boolean;
   /** 다녀온 여행에서: 다음에 또 가고 싶은 곳 */
   again?: boolean;

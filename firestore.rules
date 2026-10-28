@@ -56,6 +56,9 @@ service cloud.firestore {
         && (!('memo' in d) || (d.memo is string && d.memo.size() <= 10000))
         && (!('tags' in d) || (d.tags is list && d.tags.size() <= 30))
         && (!('packing' in d) || (d.packing is list && d.packing.size() <= 200))
+        && (!('stay' in d) || d.stay == null || (d.stay is map && d.stay.name is string && d.stay.name.size() <= 80))
+        && (!('hopes' in d) || (d.hopes is map && d.hopes.size() <= 10))
+        && optList(d, 'planDone', 10)
         && d.v == 1;
     }
 
@@ -99,6 +102,8 @@ service cloud.firestore {
       return d.keys().hasAll(['tripId', 'name', 'v'])
         && d.tripId is string && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
         && (!('info' in d) || (d.info is string && d.info.size() <= 200))
+        && optList(d, 'by', 10)
+        && (!('img' in d) || (d.img is string && d.img.size() <= 500))
         && d.v == 1;
     }
     function validNote(d) {
