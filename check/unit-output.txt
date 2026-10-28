@@ -6,770 +6,770 @@ TAP version 13
 # Subtest: 외교부·환율 자료는 번들에 없다: 받기 전엔 null이고 모든 조회가 null (화면·답은 그 줄을 뺀다)
 ok 1 - 외교부·환율 자료는 번들에 없다: 받기 전엔 null이고 모든 조회가 null (화면·답은 그 줄을 뺀다)
   ---
-  duration_ms: 1.063946
+  duration_ms: 1.360447
   type: 'test'
   ...
 # Subtest: 규칙형 FAQ: 자료가 없으면 손 메모(세계 도시 자료)로, 있으면 외교부 줄이 붙는다
 ok 2 - 규칙형 FAQ: 자료가 없으면 손 메모(세계 도시 자료)로, 있으면 외교부 줄이 붙는다
   ---
-  duration_ms: 39.779924
+  duration_ms: 78.189993
   type: 'test'
   ...
 # Subtest: 조회 글: 여행경보 단계·일부 지역, 무비자/비자 필요, 환율(1엔·1달러)
 ok 3 - 조회 글: 여행경보 단계·일부 지역, 무비자/비자 필요, 환율(1엔·1달러)
   ---
-  duration_ms: 16.662922
+  duration_ms: 23.026827
   type: 'test'
   ...
 # Subtest: 규칙형이 알아들은 짧은 질문은 규칙형으로 끝낸다
 ok 4 - 규칙형이 알아들은 짧은 질문은 규칙형으로 끝낸다
   ---
-  duration_ms: 1.268162
+  duration_ms: 1.504099
   type: 'test'
   ...
 # Subtest: 모르겠다·조건이 여럿·장소만 던진 긴 질문은 AI에게
 ok 5 - 모르겠다·조건이 여럿·장소만 던진 긴 질문은 AI에게
   ---
-  duration_ms: 0.184597
+  duration_ms: 0.207283
   type: 'test'
   ...
 # Subtest: 답에 사실에 없는 숫자가 있으면 지어낸 것으로 본다
 ok 6 - 답에 사실에 없는 숫자가 있으면 지어낸 것으로 본다
   ---
-  duration_ms: 0.184807
+  duration_ms: 0.333621
   type: 'test'
   ...
 # Subtest: 뒷단이 있으면 대화는 AI가: 이어지는 말·보통 질문은 AI, 되묻기·이동·지역 이름만은 규칙형
 ok 7 - 뒷단이 있으면 대화는 AI가: 이어지는 말·보통 질문은 AI, 되묻기·이동·지역 이름만은 규칙형
   ---
-  duration_ms: 0.503335
+  duration_ms: 0.72325
   type: 'test'
   ...
 # Subtest: 달·날짜(31 이하)와 질문에 나온 숫자는 지어낸 것으로 보지 않는다
 ok 8 - 달·날짜(31 이하)와 질문에 나온 숫자는 지어낸 것으로 보지 않는다
   ---
-  duration_ms: 0.115683
+  duration_ms: 0.222351
   type: 'test'
   ...
 # Subtest: 우리 기록 질문인데 AI가 도구를 빼먹으면 our_* 도구를 보탠다
 ok 9 - 우리 기록 질문인데 AI가 도구를 빼먹으면 our_* 도구를 보탠다
   ---
-  duration_ms: 1.819829
+  duration_ms: 2.557613
   type: 'test'
   ...
 # Subtest: 이미 들어 있으면 겹쳐 넣지 않고, 지명은 모델이 적은 것을 쓴다
 ok 10 - 이미 들어 있으면 겹쳐 넣지 않고, 지명은 모델이 적은 것을 쓴다
   ---
-  duration_ms: 3.562924
+  duration_ms: 0.733259
   type: 'test'
   ...
 # Subtest: 일반 여행정보 질문은 건드리지 않는다
 ok 11 - 일반 여행정보 질문은 건드리지 않는다
   ---
-  duration_ms: 0.332068
+  duration_ms: 0.421638
   type: 'test'
   ...
 # Subtest: 추천 도구에 질문의 테마·달·안 가본 곳을 채운다
 ok 12 - 추천 도구에 질문의 테마·달·안 가본 곳을 채운다
   ---
-  duration_ms: 0.992789
+  duration_ms: 2.80429
   type: 'test'
   ...
 # Subtest: 모델이 깨뜨린 인자를 손본다: 물음표 열쇠, 질문에 없는 지명·검색어
 ok 13 - 모델이 깨뜨린 인자를 손본다: 물음표 열쇠, 질문에 없는 지명·검색어
   ---
-  duration_ms: 0.524496
+  duration_ms: 0.695007
   type: 'test'
   ...
 # Subtest: 도구: 지명을 맞추고 여행정보·우리 기록·축제를 사실로 만든다 (단추는 id로)
 ok 14 - 도구: 지명을 맞추고 여행정보·우리 기록·축제를 사실로 만든다 (단추는 id로)
   ---
-  duration_ms: 87.235191
+  duration_ms: 80.897293
   type: 'test'
   ...
 # Subtest: 도구: 모르는 지명은 앞 대화 지역을 쓰고, 추천은 조건대로
 ok 15 - 도구: 모르는 지명은 앞 대화 지역을 쓰고, 추천은 조건대로
   ---
-  duration_ms: 2.114892
+  duration_ms: 2.452544
   type: 'test'
   ...
 # Subtest: 도구: 사진·일정도 사실로 만든다
 ok 16 - 도구: 사진·일정도 사실로 만든다
   ---
-  duration_ms: 5.435693
+  duration_ms: 5.874685
   type: 'test'
   ...
 # Subtest: 사전에 있는 주제 × 말투: 주제 곳에서만 고르고 제목에 주제가 나온다
 ok 17 - 사전에 있는 주제 × 말투: 주제 곳에서만 고르고 제목에 주제가 나온다
   ---
-  duration_ms: 6955.859545
+  duration_ms: 9811.038317
   type: 'test'
   ...
 # Subtest: 사전에 없는 활동 × 말투: 엉뚱한 추천을 자신 있게 내놓지 않는다
 ok 18 - 사전에 없는 활동 × 말투: 엉뚱한 추천을 자신 있게 내놓지 않는다
   ---
-  duration_ms: 1851.831901
+  duration_ms: 1839.018432
   type: 'test'
   ...
 # Subtest: cases.ts의 link 기대값: 단추 하나가 그 주소로 간다
 ok 19 - cases.ts의 link 기대값: 단추 하나가 그 주소로 간다
   ---
-  duration_ms: 103.274843
+  duration_ms: 105.055649
   type: 'test'
   ...
 # Subtest: 어떤 질문의 단추도 옛 계획 길(/record?status=planned)로 가지 않는다
 ok 20 - 어떤 질문의 단추도 옛 계획 길(/record?status=planned)로 가지 않는다
   ---
-  duration_ms: 1581.022837
+  duration_ms: 1904.71077
   type: 'test'
   ...
 # Subtest: '여행 만들기' 단추는 언제나 /plan, 짧은 이름 하나만 쓴다
 ok 21 - '여행 만들기' 단추는 언제나 /plan, 짧은 이름 하나만 쓴다
   ---
-  duration_ms: 1520.705505
+  duration_ms: 1625.504363
   type: 'test'
   ...
 # Subtest: 예정 여행이 없으면 다음 여행 질문은 여행 계획하기(/plan)로 이끈다
 ok 22 - 예정 여행이 없으면 다음 여행 질문은 여행 계획하기(/plan)로 이끈다
   ---
-  duration_ms: 4.075113
+  duration_ms: 12.429774
   type: 'test'
   ...
 # Subtest: 기록이 적으면 패턴 질문은 '기록 남기기'(/record)로
 ok 23 - 기록이 적으면 패턴 질문은 '기록 남기기'(/record)로
   ---
-  duration_ms: 0.338428
+  duration_ms: 0.448458
   type: 'test'
   ...
 # Subtest: 횟수는 우리말: '3번'이 아니라 '세 번'
 ok 24 - 횟수는 우리말: '3번'이 아니라 '세 번'
   ---
-  duration_ms: 0.416405
+  duration_ms: 0.586739
   type: 'test'
   ...
 # Subtest: 질문 은행: 번호가 겹치지 않고 모두 {place} 자리가 있다
 ok 25 - 질문 은행: 번호가 겹치지 않고 모두 {place} 자리가 있다
   ---
-  duration_ms: 1.049133
+  duration_ms: 1.500352
   type: 'test'
   ...
 # Subtest: 같은 날은 같은 질문, 60일 동안은 겹치지 않는다
 ok 26 - 같은 날은 같은 질문, 60일 동안은 겹치지 않는다
   ---
-  duration_ms: 0.722023
+  duration_ms: 0.871441
   type: 'test'
   ...
 # Subtest: 이튿날 질문은 어제와 다르다 (1년 내내)
 ok 27 - 이튿날 질문은 어제와 다르다 (1년 내내)
   ---
-  duration_ms: 2.756539
+  duration_ms: 1.494791
   type: 'test'
   ...
 # Subtest: 질문 글에 지역 이름이 들어간다
 ok 28 - 질문 글에 지역 이름이 들어간다
   ---
-  duration_ms: 0.321102
+  duration_ms: 0.481642
   type: 'test'
   ...
 # Subtest: 추천 질문에 모르는 핵심 낱말이 있으면 규칙형이 자신 있다고 하지 않는다 (엉뚱한 3곳 대신 AI로)
 ok 29 - 추천 질문에 모르는 핵심 낱말이 있으면 규칙형이 자신 있다고 하지 않는다 (엉뚱한 3곳 대신 AI로)
   ---
-  duration_ms: 195.612442
+  duration_ms: 279.371786
   type: 'test'
   ...
 # Subtest: 알아듣는 추천은 그대로 규칙형이 답한다
 ok 30 - 알아듣는 추천은 그대로 규칙형이 답한다
   ---
-  duration_ms: 145.183085
+  duration_ms: 116.588341
   type: 'test'
   ...
 # Subtest: 되묻기: 우리 집을 모르면 묻고, 시·군으로 답하면 그 근처로 처음 질문을 다시 푼다
 ok 31 - 되묻기: 우리 집을 모르면 묻고, 시·군으로 답하면 그 근처로 처음 질문을 다시 푼다
   ---
-  duration_ms: 84.776248
+  duration_ms: 71.094546
   type: 'test'
   ...
 # Subtest: 가리고 쓰기: 내 한 줄 평이 비어 있을 때만 상대 것을 가린다
 ok 32 - 가리고 쓰기: 내 한 줄 평이 비어 있을 때만 상대 것을 가린다
   ---
-  duration_ms: 0.836455
+  duration_ms: 1.060759
   type: 'test'
   ...
 # Subtest: 1년 뒤 같은 날, 윤년 2월 29일은 2월 28일
 ok 33 - 1년 뒤 같은 날, 윤년 2월 29일은 2월 28일
   ---
-  duration_ms: 1.115403
+  duration_ms: 1.519027
   type: 'test'
   ...
 # Subtest: 열리는 날 전엔 봉투, 그날부터 열림
 ok 34 - 열리는 날 전엔 봉투, 그날부터 열림
   ---
-  duration_ms: 0.279009
+  duration_ms: 0.297262
   type: 'test'
   ...
 # Subtest: 홈 봉투: 날이 지났고 안 연 것 중 가장 오래 기다린 것
 ok 35 - 홈 봉투: 날이 지났고 안 연 것 중 가장 오래 기다린 것
   ---
-  duration_ms: 8.662592
+  duration_ms: 13.155844
   type: 'test'
   ...
 # Subtest: 여러 시·군이 있는 도의 첫 칸이면 도 이름으로 축하
 ok 36 - 여러 시·군이 있는 도의 첫 칸이면 도 이름으로 축하
   ---
-  duration_ms: 1.763815
+  duration_ms: 2.346023
   type: 'test'
   ...
 # Subtest: 같은 도의 두 번째 칸이면 몇 번째 시·군
 ok 37 - 같은 도의 두 번째 칸이면 몇 번째 시·군
   ---
-  duration_ms: 0.436765
+  duration_ms: 0.503614
   type: 'test'
   ...
-# 지난 자료를 두었어요 → /tmp/borapin-seed-8Wd2Zt/festivals.json, /tmp/borapin-seed-8Wd2Zt/public-copy.json
+# 지난 자료를 두었어요 → /tmp/borapin-seed-NjuMlZ/festivals.json, /tmp/borapin-seed-NjuMlZ/public-copy.json
 # Subtest: 해외 자료: 저장소의 자리표시({note})는 내용 없음, 여행경보 나라 30곳 넘어야 내용 있음
 ok 38 - 해외 자료: 저장소의 자리표시({note})는 내용 없음, 여행경보 나라 30곳 넘어야 내용 있음
   ---
-  duration_ms: 0.947131
+  duration_ms: 1.670403
   type: 'test'
   ...
 # Subtest: 축제: cells가 0~1곳이면 자리표시, 2곳 넘으면 내용 있음
 ok 39 - 축제: cells가 0~1곳이면 자리표시, 2곳 넘으면 내용 있음
   ---
-  duration_ms: 0.19293
+  duration_ms: 0.317902
   type: 'test'
   ...
 # Subtest: 관광공사: 시·군 100곳 넘어야 내용 있음
 ok 40 - 관광공사: 시·군 100곳 넘어야 내용 있음
   ---
-  duration_ms: 0.261252
+  duration_ms: 0.473407
   type: 'test'
   ...
 # Subtest: 지난 자료 고르기: 내용 있는 로컬 파일이 먼저, 로컬이 자리표시면 실제 주소 것, 둘 다 없으면 null
 ok 41 - 지난 자료 고르기: 내용 있는 로컬 파일이 먼저, 로컬이 자리표시면 실제 주소 것, 둘 다 없으면 null
   ---
-  duration_ms: 0.529133
+  duration_ms: 0.97716
   type: 'test'
   ...
 # Subtest: 저장소에 든 파일: 세 파일 모두 JSON으로 읽히고, tour.json은 실제 자료다 (abroad·festivals는 자리표시일 수 있다)
 ok 42 - 저장소에 든 파일: 세 파일 모두 JSON으로 읽히고, tour.json은 실제 자료다 (abroad·festivals는 자리표시일 수 있다)
   ---
-  duration_ms: 1.863134
+  duration_ms: 3.581613
   type: 'test'
   ...
 # Subtest: 자리에 두기: 자리표시·없는 파일에만 지난 자료를 쓰고, 내용 있는 파일은 건드리지 않는다
 ok 43 - 자리에 두기: 자리표시·없는 파일에만 지난 자료를 쓰고, 내용 있는 파일은 건드리지 않는다
   ---
-  duration_ms: 3.096825
+  duration_ms: 4.453624
   type: 'test'
   ...
 # Subtest: 대략 적은 예정 여행은 그 기간이 끝날 때까지 다가오는 여행이다
 ok 44 - 대략 적은 예정 여행은 그 기간이 끝날 때까지 다가오는 여행이다
   ---
-  duration_ms: 1.02693
+  duration_ms: 1.381636
   type: 'test'
   ...
 # Subtest: 내가 안 바꾼 칸은 보내지 않는다 (상대가 그사이 고친 칸이 내 옛 값으로 덮이지 않게)
 ok 45 - 내가 안 바꾼 칸은 보내지 않는다 (상대가 그사이 고친 칸이 내 옛 값으로 덮이지 않게)
   ---
-  duration_ms: 1.297226
+  duration_ms: 2.426727
   type: 'test'
   ...
 # Subtest: 상대 한 줄 평은 지워지지 않는다: 바뀐 이름 칸만 점 경로로, 지우는 건 내 칸뿐
 ok 46 - 상대 한 줄 평은 지워지지 않는다: 바뀐 이름 칸만 점 경로로, 지우는 건 내 칸뿐
   ---
-  duration_ms: 0.354191
+  duration_ms: 0.652373
   type: 'test'
   ...
 # Subtest: 되돌리기: createdAt(Timestamp)은 그대로 두고 undefined 칸만 뺀다
 ok 47 - 되돌리기: createdAt(Timestamp)은 그대로 두고 undefined 칸만 뺀다
   ---
-  duration_ms: 0.247872
+  duration_ms: 0.478304
   type: 'test'
   ...
 # Subtest: 여행 상식: 예시 질문마다 그 답이 나온다
 ok 48 - 여행 상식: 예시 질문마다 그 답이 나온다
   ---
-  duration_ms: 38.09676
+  duration_ms: 79.258167
   type: 'test'
   ...
 # Subtest: 바뀌기 쉬운 규정은 공식 링크나 확인 안내가 있고, 지명 질문을 빼앗지 않는다
 ok 49 - 바뀌기 쉬운 규정은 공식 링크나 확인 안내가 있고, 지명 질문을 빼앗지 않는다
   ---
-  duration_ms: 2.518638
+  duration_ms: 4.784002
   type: 'test'
   ...
 # Subtest: 같은 사람이 같은 여행에 같은 날 올린 사진은 한 묶음, 최신 것이 먼저
 ok 50 - 같은 사람이 같은 여행에 같은 날 올린 사진은 한 묶음, 최신 것이 먼저
   ---
-  duration_ms: 1.703835
+  duration_ms: 3.31725
   type: 'test'
   ...
 # Subtest: 시각이 없는 기록은 피드에 안 나온다
 ok 51 - 시각이 없는 기록은 피드에 안 나온다
   ---
-  duration_ms: 0.132429
+  duration_ms: 0.250664
   type: 'test'
   ...
 # Subtest: 얼마 전: 방금·분·시간·어제·일·날짜
 ok 52 - 얼마 전: 방금·분·시간·어제·일·날짜
   ---
-  duration_ms: 0.919789
+  duration_ms: 0.489305
   type: 'test'
   ...
 # Subtest: 안 본 소식 수: 마지막으로 본 뒤에 남이 남긴 것만
 ok 53 - 안 본 소식 수: 마지막으로 본 뒤에 남이 남긴 것만
   ---
-  duration_ms: 0.302594
+  duration_ms: 1.352205
   type: 'test'
   ...
 # Subtest: 잇따라 담은 가고 싶은 곳은 한 묶음, 날짜 머리글
 ok 54 - 잇따라 담은 가고 싶은 곳은 한 묶음, 날짜 머리글
   ---
-  duration_ms: 0.483044
+  duration_ms: 0.918807
   type: 'test'
   ...
 # Subtest: 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
 ok 55 - 기간 표기: 같은 달은 끝 날짜만, 달이 바뀌면 달까지, 하루짜리는 하루
   ---
-  duration_ms: 0.865428
+  duration_ms: 1.388554
   type: 'test'
   ...
 # Subtest: 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
 ok 56 - 다가오는 축제: 끝난 건 빼고, 가까운 순서로, 정해진 날 수 안에서만
   ---
-  duration_ms: 7.418026
+  duration_ms: 13.151307
   type: 'test'
   ...
 # Subtest: 진행 중인 축제도 다가오는 축제에 들어간다
 ok 57 - 진행 중인 축제도 다가오는 축제에 들어간다
   ---
-  duration_ms: 0.134712
+  duration_ms: 0.214064
   type: 'test'
   ...
 # Subtest: 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
 ok 58 - 축제가 있는 달 (해마다 비슷하다고 보고 지난 1년 자료로)
   ---
-  duration_ms: 0.154803
+  duration_ms: 0.289326
   type: 'test'
   ...
 # Subtest: 핀만 꽂으면 씨앗, 예정 여행은 심지 않는다
 ok 59 - 핀만 꽂으면 씨앗, 예정 여행은 심지 않는다
   ---
-  duration_ms: 0.839989
+  duration_ms: 1.110279
   type: 'test'
   ...
 # Subtest: 한 사람의 한 줄 평이면 그 사람의 새싹, 둘 다면 꽃
 ok 60 - 한 사람의 한 줄 평이면 그 사람의 새싹, 둘 다면 꽃
   ---
-  duration_ms: 0.683576
+  duration_ms: 0.899971
   type: 'test'
   ...
 # Subtest: 혼자 쓰는 공간도 꽃이 핀다: 한 줄 평 + 메모
 ok 61 - 혼자 쓰는 공간도 꽃이 핀다: 한 줄 평 + 메모
   ---
-  duration_ms: 0.116815
+  duration_ms: 0.162297
   type: 'test'
   ...
 # Subtest: 빈 한 줄 평은 마음이 아니다, 장소만 남겨도 새싹
 ok 62 - 빈 한 줄 평은 마음이 아니다, 장소만 남겨도 새싹
   ---
-  duration_ms: 0.229594
+  duration_ms: 0.295468
   type: 'test'
   ...
 # Subtest: 두 번 이상 가면 촘촘한 무늬, 나이테는 해마다
 ok 63 - 두 번 이상 가면 촘촘한 무늬, 나이테는 해마다
   ---
-  duration_ms: 0.165819
+  duration_ms: 0.223432
   type: 'test'
   ...
 # Subtest: 청도를 치면 국내 청도군이 먼저, 중국 칭다오도 뜬다
 ok 64 - 청도를 치면 국내 청도군이 먼저, 중국 칭다오도 뜬다
   ---
-  duration_ms: 31.02305
+  duration_ms: 43.089534
   type: 'test'
   ...
 # Subtest: 도시 본 이름(오사카·다낭)과 영문(osaka)으로도 찾는다
 ok 65 - 도시 본 이름(오사카·다낭)과 영문(osaka)으로도 찾는다
   ---
-  duration_ms: 44.66964
+  duration_ms: 48.645214
   type: 'test'
   ...
 # Subtest: 횟수는 열 번까지 우리말로
 ok 66 - 횟수는 열 번까지 우리말로
   ---
-  duration_ms: 1.422484
+  duration_ms: 2.231469
   type: 'test'
   ...
 # Subtest: '로/으로'는 영어 메일 주소도 읽는 소리대로
 ok 67 - '로/으로'는 영어 메일 주소도 읽는 소리대로
   ---
-  duration_ms: 1.423124
+  duration_ms: 0.66625
   type: 'test'
   ...
 # Subtest: 계절만 아는 날짜는 "2022년 여름"
 ok 68 - 계절만 아는 날짜는 "2022년 여름"
   ---
-  duration_ms: 0.241382
+  duration_ms: 0.293535
   type: 'test'
   ...
 # Subtest: '이/가' 같은 조사도 받침대로, 영어 이름은 읽는 소리대로 (Planner '○○이(가)' 대신)
 ok 69 - '이/가' 같은 조사도 받침대로, 영어 이름은 읽는 소리대로 (Planner '○○이(가)' 대신)
   ---
-  duration_ms: 0.683795
+  duration_ms: 0.811314
   type: 'test'
   ...
 # Subtest: '로/으로'만 떼어 쓰기 (이름을 굵게 쓰고 조사만 이어 붙일 때)
 ok 70 - '로/으로'만 떼어 쓰기 (이름을 굵게 쓰고 조사만 이어 붙일 때)
   ---
-  duration_ms: 0.20683
+  duration_ms: 0.276913
   type: 'test'
   ...
 # Subtest: 이에요/예요
 ok 71 - 이에요/예요
   ---
-  duration_ms: 0.341281
+  duration_ms: 0.489585
   type: 'test'
   ...
 # Subtest: 셋 다 아직 없고 오류도 없으면 불러오는 중
 ok 72 - 셋 다 아직 없고 오류도 없으면 불러오는 중
   ---
-  duration_ms: 0.636585
+  duration_ms: 1.177706
   type: 'test'
   ...
 # Subtest: 구독이 실패해 기록이 하나도 안 왔으면 실패 (화면은 영원히 불러오는 중 대신 다시 시도)
 ok 73 - 구독이 실패해 기록이 하나도 안 왔으면 실패 (화면은 영원히 불러오는 중 대신 다시 시도)
   ---
-  duration_ms: 0.131677
+  duration_ms: 0.179239
   type: 'test'
   ...
 # Subtest: 기록이 이미 와 있는데 나중에 오류가 나면 화면은 그대로 두고 띠만 (ready)
 ok 74 - 기록이 이미 와 있는데 나중에 오류가 나면 화면은 그대로 두고 띠만 (ready)
   ---
-  duration_ms: 0.096335
+  duration_ms: 0.171374
   type: 'test'
   ...
 # Subtest: 초대 목록이 있고 내 메일이 들어 있으면 들어간다, 없으면 막는다
 ok 75 - 초대 목록이 있고 내 메일이 들어 있으면 들어간다, 없으면 막는다
   ---
-  duration_ms: 0.124777
+  duration_ms: 0.234473
   type: 'test'
   ...
 # Subtest: 문서가 없다고 서버가 말하면 막지만, 캐시에서 온 "없음"(오프라인 첫 실행)은 연결을 기다린다
 ok 76 - 문서가 없다고 서버가 말하면 막지만, 캐시에서 온 "없음"(오프라인 첫 실행)은 연결을 기다린다
   ---
-  duration_ms: 0.144737
+  duration_ms: 0.331787
   type: 'test'
   ...
 # Subtest: 주인 계정은 목록이 아직 없어도 들어간다 (처음 설정을 만들어야 하니)
 ok 77 - 주인 계정은 목록이 아직 없어도 들어간다 (처음 설정을 만들어야 하니)
   ---
-  duration_ms: 0.091988
+  duration_ms: 0.191271
   type: 'test'
   ...
 # Subtest: media.json엔 흐린 미리보기가 없다 (목록·크기·출처만, 첫 묶음을 가볍게)
 ok 78 - media.json엔 흐린 미리보기가 없다 (목록·크기·출처만, 첫 묶음을 가볍게)
   ---
-  duration_ms: 1.096735
+  duration_ms: 1.608811
   type: 'test'
   ...
 # Subtest: media-blur.json의 키가 media.json과 정확히 맞는다 (빠진 것도 남은 것도 없음)
 ok 79 - media-blur.json의 키가 media.json과 정확히 맞는다 (빠진 것도 남은 것도 없음)
   ---
-  duration_ms: 1.507111
+  duration_ms: 1.96225
   type: 'test'
   ...
 # Subtest: lqip은 미리보기를 받기 전엔 빈 글자, 받은 뒤엔 같은 객체에서 바로 읽힌다
 ok 80 - lqip은 미리보기를 받기 전엔 빈 글자, 받은 뒤엔 같은 객체에서 바로 읽힌다
   ---
-  duration_ms: 2.066439
+  duration_ms: 2.529764
   type: 'test'
   ...
 # Subtest: 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
 ok 81 - 혼자면 내 이름만, 둘이면 A & B (누가 들어와도 같은 가나다 순서)
   ---
-  duration_ms: 9.971446
+  duration_ms: 18.686101
   type: 'test'
   ...
 # Subtest: 셋 이상이면 두 사람 이름과 나머지 수
 ok 82 - 셋 이상이면 두 사람 이름과 나머지 수
   ---
-  duration_ms: 0.212168
+  duration_ms: 0.252037
   type: 'test'
   ...
 # Subtest: 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
 ok 83 - 모두 원해요는 멤버가 둘 이상이고 모두 골랐을 때만
   ---
-  duration_ms: 0.267621
+  duration_ms: 0.32218
   type: 'test'
   ...
 # Subtest: 같은 이름이 두 번 들어오면 한 번만
 ok 84 - 같은 이름이 두 번 들어오면 한 번만
   ---
-  duration_ms: 0.143625
+  duration_ms: 0.19068
   type: 'test'
   ...
 # Subtest: 같은 날 기록이 있으면 "n년 전 오늘"
 ok 85 - 같은 날 기록이 있으면 "n년 전 오늘"
   ---
-  duration_ms: 0.796284
+  duration_ms: 1.134205
   type: 'test'
   ...
 # Subtest: 장소가 빈 옛 기록은 추억으로 고르지 않는다 (홈 카드가 첫 장소 이름을 쓰므로)
 ok 86 - 장소가 빈 옛 기록은 추억으로 고르지 않는다 (홈 카드가 첫 장소 이름을 쓰므로)
   ---
-  duration_ms: 0.218798
+  duration_ms: 0.343028
   type: 'test'
   ...
 # Subtest: 장소가 빈 기록은 건너뛰고 장소가 있는 기록을 고른다 (어느 단계에서든)
 ok 87 - 장소가 빈 기록은 건너뛰고 장소가 있는 기록을 고른다 (어느 단계에서든)
   ---
-  duration_ms: 0.382063
+  duration_ms: 3.015351
   type: 'test'
   ...
 # Subtest: 추억 카드의 한 줄 평: 그 여행 것 중 가장 짧은 것, 없으면 null
 ok 88 - 추억 카드의 한 줄 평: 그 여행 것 중 가장 짧은 것, 없으면 null
   ---
-  duration_ms: 0.897837
+  duration_ms: 1.947713
   type: 'test'
   ...
 # Subtest: 여행 소식 거르기: 축제·명소는 남기고 사건·재난·정치·경제는 뺀다
 ok 89 - 여행 소식 거르기: 축제·명소는 남기고 사건·재난·정치·경제는 뺀다
   ---
-  duration_ms: 1.283094
+  duration_ms: 1.526566
   type: 'test'
   ...
 # Subtest: 점수: 여행 준비에 쓰이는 말·지역 이름·최근일수록 높고, 30일 넘으면 뺀다
 ok 90 - 점수: 여행 준비에 쓰이는 말·지역 이름·최근일수록 높고, 30일 넘으면 뺀다
   ---
-  duration_ms: 1.137796
+  duration_ms: 1.178909
   type: 'test'
   ...
 # Subtest: 합치기: 같은 보도는 하나만, 점수순, 낮은 점수는 버린다
 ok 91 - 합치기: 같은 보도는 하나만, 점수순, 낮은 점수는 버린다
   ---
-  duration_ms: 1.055393
+  duration_ms: 1.11067
   type: 'test'
   ...
 # Subtest: 검색어: 군·시를 떼고 찾고, 이름이 겹치는 곳은 도 이름을 붙인다
 ok 92 - 검색어: 군·시를 떼고 찾고, 이름이 겹치는 곳은 도 이름을 붙인다
   ---
-  duration_ms: 1.471888
+  duration_ms: 1.548899
   type: 'test'
   ...
 # Subtest: 소식 탭: 새 소식 있는 곳부터 최근 순, 빈 곳은 뒤로
 ok 93 - 소식 탭: 새 소식 있는 곳부터 최근 순, 빈 곳은 뒤로
   ---
-  duration_ms: 8.776023
+  duration_ms: 7.937348
   type: 'test'
   ...
 # Subtest: 대형 언론사 먼저: 같은 보도면 대형지 것을 남기고, 이틀까지는 앞에 둔다
 ok 94 - 대형 언론사 먼저: 같은 보도면 대형지 것을 남기고, 이틀까지는 앞에 둔다
   ---
-  duration_ms: 0.44618
+  duration_ms: 0.312842
   type: 'test'
   ...
 # Subtest: 집이 없으면 아무것도 보이지 않는다
 ok 95 - 집이 없으면 아무것도 보이지 않는다
   ---
-  duration_ms: 1.035713
+  duration_ms: 1.327339
   type: 'test'
   ...
 # Subtest: 집 칸은 빼고 가장 가까운 안 가 본 칸
 ok 96 - 집 칸은 빼고 가장 가까운 안 가 본 칸
   ---
-  duration_ms: 0.451357
+  duration_ms: 0.596127
   type: 'test'
   ...
 # Subtest: 다녀온 칸과 계획된 칸은 건너뛴다
 ok 97 - 다녀온 칸과 계획된 칸은 건너뛴다
   ---
-  duration_ms: 0.385829
+  duration_ms: 0.556642
   type: 'test'
   ...
 # Subtest: 다 채우면 null
 ok 98 - 다 채우면 null
   ---
-  duration_ms: 0.163636
+  duration_ms: 0.227381
   type: 'test'
   ...
 # Subtest: 시간 글
 ok 99 - 시간 글
   ---
-  duration_ms: 0.155183
+  duration_ms: 1.065465
   type: 'test'
   ...
 # Subtest: 현지어 표현: 말마다 30문장, 묶음 이름이 맞고, 칸이 비지 않는다
 ok 100 - 현지어 표현: 말마다 30문장, 묶음 이름이 맞고, 칸이 비지 않는다
   ---
-  duration_ms: 1.458938
+  duration_ms: 1.850219
   type: 'test'
   ...
 # Subtest: 도시 자료의 말에서 표현 묶음을 고른다 (영어권은 en, 없는 말은 null)
 ok 101 - 도시 자료의 말에서 표현 묶음을 고른다 (영어권은 en, 없는 말은 null)
   ---
-  duration_ms: 1.897776
+  duration_ms: 6.078904
   type: 'test'
   ...
 # Subtest: 지도 링크: 네이버·카카오만 따라가고 그 밖은 열지 않는다
 ok 102 - 지도 링크: 네이버·카카오만 따라가고 그 밖은 열지 않는다
   ---
-  duration_ms: 1.327461
+  duration_ms: 1.525785
   type: 'test'
   ...
 # Subtest: 장소 번호와 좌표 뽑기
 ok 103 - 장소 번호와 좌표 뽑기
   ---
-  duration_ms: 1.382845
+  duration_ms: 1.627357
   type: 'test'
   ...
 # Subtest: 네이버 장소 페이지에서 이름·사진·주소·종류·좌표
 ok 104 - 네이버 장소 페이지에서 이름·사진·주소·종류·좌표
   ---
-  duration_ms: 1.253691
+  duration_ms: 1.697239
   type: 'test'
   ...
 # Subtest: 카카오 장소 페이지(og)
 ok 105 - 카카오 장소 페이지(og)
   ---
-  duration_ms: 0.696325
+  duration_ms: 0.938986
   type: 'test'
   ...
 # Subtest: 업종 → 종류, 지도 앱 주소
 ok 106 - 업종 → 종류, 지도 앱 주소
   ---
-  duration_ms: 1.745138
+  duration_ms: 2.122443
   type: 'test'
   ...
 # Subtest: 우리 집: 기본은 500m쯤 흐리게, 길찾기 주소는 출발·도착이 채워진다
 ok 107 - 우리 집: 기본은 500m쯤 흐리게, 길찾기 주소는 출발·도착이 채워진다
   ---
-  duration_ms: 0.565058
+  duration_ms: 0.696446
   type: 'test'
   ...
 # Subtest: 차 경유: 고양 → 문경, 덜 돌아가는 안 가본 곳을 고르고 집 근처·너무 가까운 길은 뺀다
 ok 108 - 차 경유: 고양 → 문경, 덜 돌아가는 안 가본 곳을 고르고 집 근처·너무 가까운 길은 뺀다
   ---
-  duration_ms: 27.176101
+  duration_ms: 43.742032
   type: 'test'
   ...
 # Subtest: 날짜: 이번 주말은 오늘(토), 다음 주말은 24일, 다음 달은 11월 첫 토요일, 1박이면 다음 날까지
 ok 109 - 날짜: 이번 주말은 오늘(토), 다음 주말은 24일, 다음 달은 11월 첫 토요일, 1박이면 다음 날까지
   ---
-  duration_ms: 1.277706
+  duration_ms: 5.219979
   type: 'test'
   ...
 # Subtest: 후보: 둘 다 원하는 곳이 1순위, 한 명만은 그다음, 3곳, 축제가 겹치면 이유에 나온다
 ok 110 - 후보: 둘 다 원하는 곳이 1순위, 한 명만은 그다음, 3곳, 축제가 겹치면 이유에 나온다
   ---
-  duration_ms: 3.582673
+  duration_ms: 7.339618
   type: 'test'
   ...
 # Subtest: 당일치기는 수도권 근처만, 제주는 1박부터, 다시 고르면 겹치지 않는다
 ok 111 - 당일치기는 수도권 근처만, 제주는 1박부터, 다시 고르면 겹치지 않는다
   ---
-  duration_ms: 2.678347
+  duration_ms: 7.311885
   type: 'test'
   ...
 # Subtest: 해외: 2박이면 가까운 도시(비행 4.5시간 안)만
 ok 112 - 해외: 2박이면 가까운 도시(비행 4.5시간 안)만
   ---
-  duration_ms: 0.512258
+  duration_ms: 0.961768
   type: 'test'
   ...
 # Subtest: 뼈대: 1박 2일이면 날짜 둘, 첫날 출발·오전·점심·오후·저녁, 마지막 날 집으로, 또 갈래요 맛집이 먼저
 ok 113 - 뼈대: 1박 2일이면 날짜 둘, 첫날 출발·오전·점심·오후·저녁, 마지막 날 집으로, 또 갈래요 맛집이 먼저
   ---
-  duration_ms: 0.782603
+  duration_ms: 1.460722
   type: 'test'
   ...
 # Subtest: 여행 하나의 사진 수는 서버 집계 1번으로 센다 — 사진 문서를 한 장도 받지 않는다
 ok 114 - 여행 하나의 사진 수는 서버 집계 1번으로 센다 — 사진 문서를 한 장도 받지 않는다
   ---
-  duration_ms: 7.303254
+  duration_ms: 15.927605
   type: 'test'
   ...
 # Subtest: 글 수도 집계 1번. 오프라인이면 기기 캐시에서 세고(읽기 0), 캐시도 못 쓰면 null
 ok 115 - 글 수도 집계 1번. 오프라인이면 기기 캐시에서 세고(읽기 0), 캐시도 못 쓰면 null
   ---
-  duration_ms: 0.805749
+  duration_ms: 1.499615
   type: 'test'
   ...
 # Subtest: 새 소식 점용 하트 구독은 최근 50개만 (at 내림차순 + limit)
 ok 116 - 새 소식 점용 하트 구독은 최근 50개만 (at 내림차순 + limit)
   ---
-  duration_ms: 0.781011
+  duration_ms: 1.52847
   type: 'test'
   ...
 # Subtest: 남이 누른 하트 중 마지막으로 본 뒤의 것만 센다 (최근 50개 안에서)
 ok 117 - 남이 누른 하트 중 마지막으로 본 뒤의 것만 센다 (최근 50개 안에서)
   ---
-  duration_ms: 0.440471
+  duration_ms: 0.939667
   type: 'test'
   ...
 # Subtest: 물어보기 자료(사진·글·일정)는 구독이 아니라 한 번 읽기로, 사진은 촬영 순
 ok 118 - 물어보기 자료(사진·글·일정)는 구독이 아니라 한 번 읽기로, 사진은 촬영 순
   ---
-  duration_ms: 1.135553
+  duration_ms: 2.425416
   type: 'test'
   ...
 # Subtest: 구글 뉴스 RSS: 제목 끝 언론사를 떼고 날짜를 맞춘다
 ok 119 - 구글 뉴스 RSS: 제목 끝 언론사를 떼고 날짜를 맞춘다
   ---
-  duration_ms: 1.701852
+  duration_ms: 1.844127
   type: 'test'
   ...
 # Subtest: 빙 뉴스 RSS: 진짜 기사 주소와 언론사
 ok 120 - 빙 뉴스 RSS: 진짜 기사 주소와 언론사
   ---
-  duration_ms: 0.696815
+  duration_ms: 0.749998
   type: 'test'
   ...
 # Subtest: 구글 뉴스도 http(s) 주소가 아닌 링크는 버린다 (앱이 그대로 <a href>에 넣으므로)
 ok 121 - 구글 뉴스도 http(s) 주소가 아닌 링크는 버린다 (앱이 그대로 <a href>에 넣으므로)
   ---
-  duration_ms: 1.019149
+  duration_ms: 1.293546
   type: 'test'
   ...
 # Subtest: 숫자로 쓴 글자(&\#183; 등)도 풀어 쓴다
 ok 122 - 숫자로 쓴 글자(&\#183; 등)도 풀어 쓴다
   ---
-  duration_ms: 0.330646
+  duration_ms: 0.374098
   type: 'test'
   ...
 # Subtest: 자료가 없으면 아무것도 없다
 ok 123 - 자료가 없으면 아무것도 없다
   ---
-  duration_ms: 0.925277
+  duration_ms: 1.091503
   type: 'test'
   ...
 # Subtest: 공지는 14일 안, 경보 조정은 30일 안의 가장 새것
 ok 124 - 공지는 14일 안, 경보 조정은 30일 안의 가장 새것
   ---
-  duration_ms: 0.882264
+  duration_ms: 0.854896
   type: 'test'
   ...
 # Subtest: 앞의 나라(예정 여행)가 먼저, 오래된 것만 있으면 다음 나라
 ok 125 - 앞의 나라(예정 여행)가 먼저, 오래된 것만 있으면 다음 나라
   ---
-  duration_ms: 0.214882
+  duration_ms: 0.206951
   type: 'test'
   ...
 # Subtest: 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
 ok 126 - 이어진 달은 물결(~), 떨어진 묶음은 쉼표로
   ---
-  duration_ms: 0.913229
+  duration_ms: 1.318904
   type: 'test'
   ...
 # Subtest: 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
 ok 127 - 겨울처럼 12월에서 1월로 넘어가는 달은 한 묶음으로
   ---
-  duration_ms: 0.255123
+  duration_ms: 0.379769
   type: 'test'
   ...
 # Subtest: 열두 달 모두면 언제든
 ok 128 - 열두 달 모두면 언제든
   ---
-  duration_ms: 0.124868
+  duration_ms: 0.180211
   type: 'test'
   ...
 # 공유 사본 갱신 실패 Error: write failed: shares/tok1
@@ -786,535 +786,535 @@ ok 128 - 열두 달 모두면 언제든
 # Subtest: 가짜 Firestore가 src/lib와 같은 인스턴스를 본다 (바꿔 끼우기 확인)
 ok 129 - 가짜 Firestore가 src/lib와 같은 인스턴스를 본다 (바꿔 끼우기 확인)
   ---
-  duration_ms: 10.598627
+  duration_ms: 15.123185
   type: 'test'
   ...
 # Subtest: 사본에는 제목·날짜·장소·사진(앞 60장, 설명 있는 것만 caption)·들른 곳만 들어가고 메모·동행은 없다
 ok 130 - 사본에는 제목·날짜·장소·사진(앞 60장, 설명 있는 것만 caption)·들른 곳만 들어가고 메모·동행은 없다
   ---
-  duration_ms: 1.433861
+  duration_ms: 1.288727
   type: 'test'
   ...
 # Subtest: 사진·장소를 다른 순서로 넘겨도 사본은 같다 — 화면과 저장 뒤 갱신이 서로 덮어쓰지 않게
 ok 131 - 사진·장소를 다른 순서로 넘겨도 사본은 같다 — 화면과 저장 뒤 갱신이 서로 덮어쓰지 않게
   ---
-  duration_ms: 0.700771
+  duration_ms: 0.652614
   type: 'test'
   ...
 # Subtest: 바뀐 게 없으면 사본을 쓰지 않는다 (읽기 1·쓰기 0)
 ok 132 - 바뀐 게 없으면 사본을 쓰지 않는다 (읽기 1·쓰기 0)
   ---
-  duration_ms: 0.836665
+  duration_ms: 0.762121
   type: 'test'
   ...
 # Subtest: 사진 설명을 저장하면(슬라이드쇼 등 어느 화면이든) 공개 중인 여행의 사본이 따라온다
 ok 133 - 사진 설명을 저장하면(슬라이드쇼 등 어느 화면이든) 공개 중인 여행의 사본이 따라온다
   ---
-  duration_ms: 2.598728
+  duration_ms: 2.637427
   type: 'test'
   ...
 # Subtest: 공개하지 않은 여행의 사진 설명은 사본도, 사진 전체 읽기도 건드리지 않는다
 ok 134 - 공개하지 않은 여행의 사진 설명은 사본도, 사진 전체 읽기도 건드리지 않는다
   ---
-  duration_ms: 0.49379
+  duration_ms: 0.477733
   type: 'test'
   ...
 # Subtest: 들른 곳(우리 장소)을 고치거나 새로 남기면 사본의 들른 곳이 따라온다
 ok 135 - 들른 곳(우리 장소)을 고치거나 새로 남기면 사본의 들른 곳이 따라온다
   ---
-  duration_ms: 1.985178
+  duration_ms: 1.963182
   type: 'test'
   ...
 # Subtest: 여행 고치기(제목)와 일부 고치기(장소)도 사본에 반영된다
 ok 136 - 여행 고치기(제목)와 일부 고치기(장소)도 사본에 반영된다
   ---
-  duration_ms: 1.566659
+  duration_ms: 1.487502
   type: 'test'
   ...
 # Subtest: 사본 갱신이 실패해도 원래 저장은 성공한 채로 조용히 넘어간다
 ok 137 - 사본 갱신이 실패해도 원래 저장은 성공한 채로 조용히 넘어간다
   ---
-  duration_ms: 10.74793
+  duration_ms: 8.364172
   type: 'test'
   ...
 # Subtest: 읽어 주기가 안 될 때 이유: 카톡 안 브라우저·아이폰 무음·그 밖
 ok 138 - 읽어 주기가 안 될 때 이유: 카톡 안 브라우저·아이폰 무음·그 밖
   ---
-  duration_ms: 1.170846
+  duration_ms: 1.706266
   type: 'test'
   ...
 # Subtest: 문장 은행은 첫 묶음에 없다: 받기 전엔 비어 있고, loadBank()로 채워진다 (같은 배열을 채운다)
 ok 139 - 문장 은행은 첫 묶음에 없다: 받기 전엔 비어 있고, loadBank()로 채워진다 (같은 배열을 채운다)
   ---
-  duration_ms: 29.251218
+  duration_ms: 56.84934
   type: 'test'
   ...
 # Subtest: 문장 은행: 300문장 이상, 주제 30개, 빠진 칸 없음
 ok 140 - 문장 은행: 300문장 이상, 주제 30개, 빠진 칸 없음
   ---
-  duration_ms: 0.532779
+  duration_ms: 0.667382
   type: 'test'
   ...
 # Subtest: 오늘 묶음: 처음엔 새 문장 3개(주제 안 겹침), 같은 날엔 같은 묶음, 더 보기로 3개씩 추가
 ok 141 - 오늘 묶음: 처음엔 새 문장 3개(주제 안 겹침), 같은 날엔 같은 묶음, 더 보기로 3개씩 추가
   ---
-  duration_ms: 3.317921
+  duration_ms: 3.486733
   type: 'test'
   ...
 # Subtest: 간격 반복: 맞으면 1→3→7일 뒤, 틀리면 두 상자 내려감, 복습이 새 것보다 먼저
 ok 142 - 간격 반복: 맞으면 1→3→7일 뒤, 틀리면 두 상자 내려감, 복습이 새 것보다 먼저
   ---
-  duration_ms: 3.009748
+  duration_ms: 1.256656
   type: 'test'
   ...
 # Subtest: 4지선다는 정답 포함 4개, 빈칸은 핵심 단어 자리
 ok 143 - 4지선다는 정답 포함 4개, 빈칸은 핵심 단어 자리
   ---
-  duration_ms: 1.474047
+  duration_ms: 0.759065
   type: 'test'
   ...
 # Subtest: 말하기 채점과 요약(연속 학습일)
 ok 144 - 말하기 채점과 요약(연속 학습일)
   ---
-  duration_ms: 0.776104
+  duration_ms: 0.858303
   type: 'test'
   ...
 # Subtest: 떠나기 전(14일 안): D-4
 ok 145 - 떠나기 전(14일 안): D-4
   ---
-  duration_ms: 1.631728
+  duration_ms: 1.324805
   type: 'test'
   ...
 # Subtest: 여행 중: 2일째
 ok 146 - 여행 중: 2일째
   ---
-  duration_ms: 0.216495
+  duration_ms: 0.159772
   type: 'test'
   ...
 # Subtest: 막 다녀옴(7일 안, 다녀온 것으로 바꾼 여행)
 ok 147 - 막 다녀옴(7일 안, 다녀온 것으로 바꾼 여행)
   ---
-  duration_ms: 0.267822
+  duration_ms: 0.208845
   type: 'test'
   ...
 # Subtest: 먼 예정·오래된 기록·날짜 모르는 기록은 없음
 ok 148 - 먼 예정·오래된 기록·날짜 모르는 기록은 없음
   ---
-  duration_ms: 0.216815
+  duration_ms: 0.169521
   type: 'test'
   ...
 # Subtest: 여행 중이 곧 떠남보다 먼저
 ok 149 - 여행 중이 곧 떠남보다 먼저
   ---
-  duration_ms: 0.194992
+  duration_ms: 0.156416
   type: 'test'
   ...
 # Subtest: 떠나기 전 단추는 준비 탭, 여행 중은 사진 탭으로
 ok 150 - 떠나기 전 단추는 준비 탭, 여행 중은 사진 탭으로
   ---
-  duration_ms: 1.044647
+  duration_ms: 0.817747
   type: 'test'
   ...
 # Subtest: 막 다녀온 뒤 단추는 빠진 것 쪽으로: 글이 없으면 글 탭, 사진이 없으면 사진 탭, 둘 다 있으면 개요
 ok 151 - 막 다녀온 뒤 단추는 빠진 것 쪽으로: 글이 없으면 글 탭, 사진이 없으면 사진 탭, 둘 다 있으면 개요
   ---
-  duration_ms: 0.278167
+  duration_ms: 0.257997
   type: 'test'
   ...
 # Subtest: 예정 여행은 개요·일정·준비·사진, 다녀온 여행은 개요·들른 곳·사진·글
 ok 152 - 예정 여행은 개요·일정·준비·사진, 다녀온 여행은 개요·들른 곳·사진·글
   ---
-  duration_ms: 0.152949
+  duration_ms: 0.141026
   type: 'test'
   ...
 # Subtest: 다음 예정 여행이 해외면 그 여행, 국내면 없음
 ok 153 - 다음 예정 여행이 해외면 그 여행, 국내면 없음
   ---
-  duration_ms: 0.564187
+  duration_ms: 0.44944
   type: 'test'
   ...
 # Subtest: 가까운 역·공항: 강릉은 강릉역·양양공항, 제주는 제주공항만, 해외는 공항 코드
 ok 154 - 가까운 역·공항: 강릉은 강릉역·양양공항, 제주는 제주공항만, 해외는 공항 코드
   ---
-  duration_ms: 1.417837
+  duration_ms: 2.152971
   type: 'test'
   ...
 # Subtest: 시·군 코드 맞추기: 5자리 그대로, 광역시·제주는 구를 앞 2자리로, 행정구는 시로, 이름으로도
 ok 155 - 시·군 코드 맞추기: 5자리 그대로, 광역시·제주는 구를 앞 2자리로, 행정구는 시로, 이름으로도
   ---
-  duration_ms: 1.494081
+  duration_ms: 2.934719
   type: 'test'
   ...
 # Subtest: (a) 외지인(touDivCd 2) 하루 평균·작년 대비·순위: 현지인·외국인 줄은 빼고, 날짜 수로 나눈다
 ok 156 - (a) 외지인(touDivCd 2) 하루 평균·작년 대비·순위: 현지인·외국인 줄은 빼고, 날짜 수로 나눈다
   ---
-  duration_ms: 0.968813
+  duration_ms: 1.8404
   type: 'test'
   ...
 # Subtest: (b) 광역시는 구들을 날짜별로 더한 뒤 평균, sub는 외지인 많은 구 순
 ok 157 - (b) 광역시는 구들을 날짜별로 더한 뒤 평균, sub는 외지인 많은 구 순
   ---
-  duration_ms: 0.269304
+  duration_ms: 0.482762
   type: 'test'
   ...
 # Subtest: (c) 요즘 뜨는 곳은 growth 높은 순 중 out이 중앙값 이상인 곳만 15개, 한적한 곳은 out 낮은 순 20개(광역시 제외)
 ok 158 - (c) 요즘 뜨는 곳은 growth 높은 순 중 out이 중앙값 이상인 곳만 15개, 한적한 곳은 out 낮은 순 20개(광역시 제외)
   ---
-  duration_ms: 0.593951
+  duration_ms: 1.434703
   type: 'test'
   ...
 # Subtest: (d) 연관 관광지: 이름이 많이 나온 순 최대 6개, 같으면 연관 순위 좋은 순, 자기 자신은 빼고, m은 연관 지역 시·군
 ok 159 - (d) 연관 관광지: 이름이 많이 나온 순 최대 6개, 같으면 연관 순위 좋은 순, 자기 자신은 빼고, m은 연관 지역 시·군
   ---
-  duration_ms: 6.294131
+  duration_ms: 13.94599
   type: 'test'
   ...
 # Subtest: (e) 붐빔: 관광지마다 자료에 있는 마지막 7일 평균, 높은 순 8개
 ok 160 - (e) 붐빔: 관광지마다 자료에 있는 마지막 7일 평균, 높은 순 8개
   ---
-  duration_ms: 0.588002
+  duration_ms: 1.113355
   type: 'test'
   ...
 # Subtest: (f) trendHealth: regions 100곳 이상이어야 내용 있음, 저장소의 자리표시는 내용 없음
 ok 161 - (f) trendHealth: regions 100곳 이상이어야 내용 있음, 저장소의 자리표시는 내용 없음
   ---
-  duration_ms: 0.446369
+  duration_ms: 0.879573
   type: 'test'
   ...
 # Subtest: 기간: 최근 28일은 마지막 날까지, 작년은 364일 전(요일 맞춤) · 기준 달은 지난달부터
 ok 162 - 기간: 최근 28일은 마지막 날까지, 작년은 364일 전(요일 맞춤) · 기준 달은 지난달부터
   ---
-  duration_ms: 0.208122
+  duration_ms: 0.441194
   type: 'test'
   ...
 # Subtest: 광주·전남은 관광공사 옛 번호 12로 오므로 구는 광주(29), 시·군은 이름으로 전남 코드에 맞춘다
 ok 163 - 광주·전남은 관광공사 옛 번호 12로 오므로 구는 광주(29), 시·군은 이름으로 전남 코드에 맞춘다
   ---
-  duration_ms: 1.695433
+  duration_ms: 2.746032
   type: 'test'
   ...
 # Subtest: 주제 알아듣기: 뜨는 곳·한적한 곳·많이 안 걷는 곳 표현, 해 뜨는 곳은 아니다
 ok 164 - 주제 알아듣기: 뜨는 곳·한적한 곳·많이 안 걷는 곳 표현, 해 뜨는 곳은 아니다
   ---
-  duration_ms: 2.08004
+  duration_ms: 2.726638
   type: 'test'
   ...
 # Subtest: 요즘 뜨는 곳: hot 순서로 3곳, 가 본 강릉은 뒤로, 안 가본 곳 먼저
 ok 165 - 요즘 뜨는 곳: hot 순서로 3곳, 가 본 강릉은 뒤로, 안 가본 곳 먼저
   ---
-  duration_ms: 121.79639
+  duration_ms: 178.516507
   type: 'test'
   ...
 # Subtest: 요즘 뜨는 곳: 집이 있으면 가까운 곳 가산 (집이 순천이면 여수가 1등, 광역 조건이면 그 안에서만)
 ok 166 - 요즘 뜨는 곳: 집이 있으면 가까운 곳 가산 (집이 순천이면 여수가 1등, 광역 조건이면 그 안에서만)
   ---
-  duration_ms: 16.643654
+  duration_ms: 25.546443
   type: 'test'
   ...
 # Subtest: '우리 집 근처'로 좁히면: 집을 모르면 되묻고, 알면 거리를 크게 본다
 ok 167 - '우리 집 근처'로 좁히면: 집을 모르면 되묻고, 알면 거리를 크게 본다
   ---
-  duration_ms: 23.331534
+  duration_ms: 40.096374
   type: 'test'
   ...
 # Subtest: 한적한 곳: quiet 순서로, 되묻지 않고 답한다 (조용·한산이 지명으로 읽히지 않는다)
 ok 168 - 한적한 곳: quiet 순서로, 되묻지 않고 답한다 (조용·한산이 지명으로 읽히지 않는다)
   ---
-  duration_ms: 54.875361
+  duration_ms: 61.190018
   type: 'test'
   ...
 # Subtest: 많이 안 걷는 곳: 무장애 관광지 수 많은 순, 가 본 서울은 뒤로
 ok 169 - 많이 안 걷는 곳: 무장애 관광지 수 많은 순, 가 본 서울은 뒤로
   ---
-  duration_ms: 81.058929
+  duration_ms: 126.430023
   type: 'test'
   ...
 # Subtest: 이어 묻기: 앞 지역이 있어도 요즘 주제는 새로 고르고, 거기라고 하면 그 지역 답
 ok 170 - 이어 묻기: 앞 지역이 있어도 요즘 주제는 새로 고르고, 거기라고 하면 그 지역 답
   ---
-  duration_ms: 22.346707
+  duration_ms: 32.590251
   type: 'test'
   ...
 # Subtest: 자료가 없으면 지어내지 않고 없다고 한다 (규칙형이 끝까지 맡는다)
 ok 171 - 자료가 없으면 지어내지 않고 없다고 한다 (규칙형이 끝까지 맡는다)
   ---
-  duration_ms: 56.711877
+  duration_ms: 88.586612
   type: 'test'
   ...
 # Subtest: 지역 답(개요·볼거리)에 요즘 줄: 뜨는 곳·붐빔·같이 가면 좋은 곳·편하게, 자료 없으면 그 줄이 없다
 ok 172 - 지역 답(개요·볼거리)에 요즘 줄: 뜨는 곳·붐빔·같이 가면 좋은 곳·편하게, 자료 없으면 그 줄이 없다
   ---
-  duration_ms: 1.820982
+  duration_ms: 1.971578
   type: 'test'
   ...
 # Subtest: AI 도구: place_info에 요즘 한 줄, recommend는 주제면 요즘 자료로만, 아니면 후보에 꼬리표
 ok 173 - AI 도구: place_info에 요즘 한 줄, recommend는 주제면 요즘 자료로만, 아니면 후보에 꼬리표
   ---
-  duration_ms: 12.344535
+  duration_ms: 16.108989
   type: 'test'
   ...
 # Subtest: 자료 모양 다듬기: 자리표시·빠진 칸·엉뚱한 값에도 깨지지 않는다
 ok 174 - 자료 모양 다듬기: 자리표시·빠진 칸·엉뚱한 값에도 깨지지 않는다
   ---
-  duration_ms: 1.712318
+  duration_ms: 2.391191
   type: 'test'
   ...
 # Subtest: 꼬리표: 뜨는 곳(왜: 외지인 늘어난 비율)·한적해요, 없으면 빈 목록
 ok 175 - 꼬리표: 뜨는 곳(왜: 외지인 늘어난 비율)·한적해요, 없으면 빈 목록
   ---
-  duration_ms: 0.564567
+  duration_ms: 0.638487
   type: 'test'
   ...
 # Subtest: 붐빔: 20 미만 한적, 50 미만 보통, 그 밖은 붐벼요 · 관광지 이름으로 찾기(띄어쓰기 무시)
 ok 176 - 붐빔: 20 미만 한적, 50 미만 보통, 그 밖은 붐벼요 · 관광지 이름으로 찾기(띄어쓰기 무시)
   ---
-  duration_ms: 0.337266
+  duration_ms: 0.458206
   type: 'test'
   ...
 # Subtest: 같이 가면 좋은 곳: 중복 없이, 없으면 빈 목록 · 카카오맵 검색 링크
 ok 177 - 같이 가면 좋은 곳: 중복 없이, 없으면 빈 목록 · 카카오맵 검색 링크
   ---
-  duration_ms: 0.245718
+  duration_ms: 0.26412
   type: 'test'
   ...
 # Subtest: 기준 날: '10월 20일 기준', 날짜가 없으면 빈 글
 ok 178 - 기준 날: '10월 20일 기준', 날짜가 없으면 빈 글
   ---
-  duration_ms: 0.233531
+  duration_ms: 0.307151
   type: 'test'
   ...
 # Subtest: 한 지역 요약(물어보기·AI 사실용): 있는 칸만 글이 된다
 ok 179 - 한 지역 요약(물어보기·AI 사실용): 있는 칸만 글이 된다
   ---
-  duration_ms: 0.27958
+  duration_ms: 0.392542
   type: 'test'
   ...
 # Subtest: 고르기: 뜨는 곳은 hot 순서, 안 가본 곳 먼저, 집이 있으면 가까운 곳 가산·집은 뺌
 ok 180 - 고르기: 뜨는 곳은 hot 순서, 안 가본 곳 먼저, 집이 있으면 가까운 곳 가산·집은 뺌
   ---
-  duration_ms: 0.715844
+  duration_ms: 1.041689
   type: 'test'
   ...
 # Subtest: 고르기: 한적한 곳은 quiet 순서, 테마·광역 조건(allow)으로 거른다
 ok 181 - 고르기: 한적한 곳은 quiet 순서, 테마·광역 조건(allow)으로 거른다
   ---
-  duration_ms: 0.194552
+  duration_ms: 0.328732
   type: 'test'
   ...
 # Subtest: 고르기: 많이 안 걷는 곳은 무장애 관광지 수 많은 순 (0곳은 뺌), 자료가 없으면 null
 ok 182 - 고르기: 많이 안 걷는 곳은 무장애 관광지 수 많은 순 (0곳은 뺌), 자료가 없으면 null
   ---
-  duration_ms: 0.477276
+  duration_ms: 0.626665
   type: 'test'
   ...
 # Subtest: 시차: 일본 0, 태국 -2, 네팔 -3.25, 파리는 겨울 -8 여름 -7, 뉴욕은 겨울 -14 여름 -13
 ok 183 - 시차: 일본 0, 태국 -2, 네팔 -3.25, 파리는 겨울 -8 여름 -7, 뉴욕은 겨울 -14 여름 -13
   ---
-  duration_ms: 23.292286
+  duration_ms: 30.85437
   type: 'test'
   ...
 # Subtest: 모든 나라에 시간대가 있고 기기가 아는 이름이다
 ok 184 - 모든 나라에 시간대가 있고 기기가 아는 이름이다
   ---
-  duration_ms: 54.483539
+  duration_ms: 79.618204
   type: 'test'
   ...
 # Subtest: 아무것도 안 하고 있으면(작업 없음·커서 없음·손 뗀 지 좀 됨) 새 버전이 오자마자 받는다 — 옛 버전이 남지 않게
 ok 185 - 아무것도 안 하고 있으면(작업 없음·커서 없음·손 뗀 지 좀 됨) 새 버전이 오자마자 받는다 — 옛 버전이 남지 않게
   ---
-  duration_ms: 1.151077
+  duration_ms: 1.330977
   type: 'test'
   ...
 # Subtest: 글·답을 쓰는 중이거나 사진을 올리는 중(작업 중)이면 새 버전이 와도 바로 새로 고치지 않는다
 ok 186 - 글·답을 쓰는 중이거나 사진을 올리는 중(작업 중)이면 새 버전이 와도 바로 새로 고치지 않는다
   ---
-  duration_ms: 0.142183
+  duration_ms: 0.183186
   type: 'test'
   ...
 # Subtest: 입력칸에 커서가 있으면 미룬다 (작업으로 세지 않은 칸이라도)
 ok 187 - 입력칸에 커서가 있으면 미룬다 (작업으로 세지 않은 칸이라도)
   ---
-  duration_ms: 0.129675
+  duration_ms: 0.176825
   type: 'test'
   ...
 # Subtest: 막 도착했을 때 손을 대고 있으면(누르는 중) 바로 바꾸지 않고 다음 기회를 기다린다
 ok 188 - 막 도착했을 때 손을 대고 있으면(누르는 중) 바로 바꾸지 않고 다음 기회를 기다린다
   ---
-  duration_ms: 0.128422
+  duration_ms: 0.21161
   type: 'test'
   ...
 # Subtest: 다음 화면으로 넘어갈 때·숨겼다가 돌아올 때: 작업 중이 아니면 받고, 작업 중이면 또 기다린다
 ok 189 - 다음 화면으로 넘어갈 때·숨겼다가 돌아올 때: 작업 중이 아니면 받고, 작업 중이면 또 기다린다
   ---
-  duration_ms: 0.215483
+  duration_ms: 0.384697
   type: 'test'
   ...
 # Subtest: 띠의 '지금 바꾸기'는 사용자가 고른 것이니 언제든 받는다
 ok 190 - 띠의 '지금 바꾸기'는 사용자가 고른 것이니 언제든 받는다
   ---
-  duration_ms: 0.109254
+  duration_ms: 0.160744
   type: 'test'
   ...
 # Subtest: 커서가 글 쓰는 칸에 있는지: 글상자·글 입력칸·고를 수 있는 칸·편집 영역은 맞고, 단추·체크·본문은 아니다
 ok 191 - 커서가 글 쓰는 칸에 있는지: 글상자·글 입력칸·고를 수 있는 칸·편집 영역은 맞고, 단추·체크·본문은 아니다
   ---
-  duration_ms: 0.270326
+  duration_ms: 0.390328
   type: 'test'
   ...
 # Subtest: 기온에 따라 옷차림
 ok 192 - 기온에 따라 옷차림
   ---
-  duration_ms: 2.385528
+  duration_ms: 1.019357
   type: 'test'
   ...
 # Subtest: 비가 잦으면 우산, 숫자는 반올림
 ok 193 - 비가 잦으면 우산, 숫자는 반올림
   ---
-  duration_ms: 0.46699
+  duration_ms: 0.229504
   type: 'test'
   ...
 # Subtest: 자료가 없거나 달이 이상하면 null
 ok 194 - 자료가 없거나 달이 이상하면 null
   ---
-  duration_ms: 0.543415
+  duration_ms: 0.136799
   type: 'test'
   ...
 # Subtest: 자료 파일이 있으면 세계 도시 대부분을 덮는다
 ok 195 - 자료 파일이 있으면 세계 도시 대부분을 덮는다
   ---
-  duration_ms: 3.090636
+  duration_ms: 2.199549
   type: 'test'
   ...
 # Subtest: 그 지역 가고 싶은 곳이 없으면 새로 만든다
 ok 196 - 그 지역 가고 싶은 곳이 없으면 새로 만든다
   ---
-  duration_ms: 1.459309
+  duration_ms: 1.439441
   type: 'test'
   ...
 # Subtest: 있으면 볼거리는 spots, 먹거리는 foods에 보탠다
 ok 197 - 있으면 볼거리는 spots, 먹거리는 foods에 보탠다
   ---
-  duration_ms: 0.292689
+  duration_ms: 0.281141
   type: 'test'
   ...
 # Subtest: 이미 여행으로 만든 가고 싶은 곳에는 보태지 않는다
 ok 198 - 이미 여행으로 만든 가고 싶은 곳에는 보태지 않는다
   ---
-  duration_ms: 0.152489
+  duration_ms: 0.146267
   type: 'test'
   ...
 # Subtest: 해외 도시는 같은 도시끼리만
 ok 199 - 해외 도시는 같은 도시끼리만
   ---
-  duration_ms: 0.15979
+  duration_ms: 0.155263
   type: 'test'
   ...
 # Subtest: 예정 여행에 이곳이 들어 있으면 그 여행으로 담는다 (다녀온 여행은 아님)
 ok 200 - 예정 여행에 이곳이 들어 있으면 그 여행으로 담는다 (다녀온 여행은 아님)
   ---
-  duration_ms: 0.625829
+  duration_ms: 0.573704
   type: 'test'
   ...
 # Subtest: 투어·티켓 검색 주소: 도시 이름을 안전하게 넣고, 기본은 누를 때마다 고르기
 ok 201 - 투어·티켓 검색 주소: 도시 이름을 안전하게 넣고, 기본은 누를 때마다 고르기
   ---
-  duration_ms: 75.986976
+  duration_ms: 45.387468
   type: 'test'
   ...
 # Subtest: 구글 로그인 토큰(메일 인증됨)은 통과하고 uid·프로젝트를 돌려준다
 ok 202 - 구글 로그인 토큰(메일 인증됨)은 통과하고 uid·프로젝트를 돌려준다
   ---
-  duration_ms: 1.597446
+  duration_ms: 1.534923
   type: 'test'
   ...
 # Subtest: 메일 인증이 안 된 토큰(이메일로 막 가입한 계정)은 거부한다
 ok 203 - 메일 인증이 안 된 토큰(이메일로 막 가입한 계정)은 거부한다
   ---
-  duration_ms: 0.150146
+  duration_ms: 0.141287
   type: 'test'
   ...
 # Subtest: 메일이 없는 토큰(익명 로그인)도 거부한다
 ok 204 - 메일이 없는 토큰(익명 로그인)도 거부한다
   ---
-  duration_ms: 0.138558
+  duration_ms: 0.123824
   type: 'test'
   ...
 # Subtest: 만료·미래 발급·다른 프로젝트·uid 없음은 거부한다
 ok 205 - 만료·미래 발급·다른 프로젝트·uid 없음은 거부한다
   ---
-  duration_ms: 0.254361
+  duration_ms: 0.21682
   type: 'test'
   ...
 # Subtest: 멤버 확인: 멤버 전용 문서를 토큰의 프로젝트로 읽고, 200만 멤버 · 401/403 아님 · 나머지는 모름
 ok 206 - 멤버 확인: 멤버 전용 문서를 토큰의 프로젝트로 읽고, 200만 멤버 · 401/403 아님 · 나머지는 모름
   ---
-  duration_ms: 0.370947
+  duration_ms: 0.328731
   type: 'test'
   ...
 # Subtest: 캐시: 시간이 지나면 잊고, 개수가 차면 지난 것·오래된 것부터 버린다
 ok 207 - 캐시: 시간이 지나면 잊고, 개수가 차면 지난 것·오래된 것부터 버린다
   ---
-  duration_ms: 0.59323
+  duration_ms: 0.341436
   type: 'test'
   ...
 # Subtest: 분당 횟수: 20번째까지 되고 21번째부터 막히며, 1분이 지나면 다시 된다 · 사람마다 따로
 ok 208 - 분당 횟수: 20번째까지 되고 21번째부터 막히며, 1분이 지나면 다시 된다 · 사람마다 따로
   ---
-  duration_ms: 0.344386
+  duration_ms: 0.342247
   type: 'test'
   ...
 # Subtest: 분당 횟수표가 너무 커지면 지난 창부터 비운다
 ok 209 - 분당 횟수표가 너무 커지면 지난 창부터 비운다
   ---
-  duration_ms: 0.195363
+  duration_ms: 0.192454
   type: 'test'
   ...
 # Subtest: 관광공사 응답 → 가까운 순, 여행코스 빼고, 걸어서 몇 분
 ok 210 - 관광공사 응답 → 가까운 순, 여행코스 빼고, 걸어서 몇 분
   ---
-  duration_ms: 1.721001
+  duration_ms: 2.576432
   type: 'test'
   ...
 # Subtest: 항목이 하나거나 없을 때
 ok 211 - 항목이 하나거나 없을 때
   ---
-  duration_ms: 0.169254
+  duration_ms: 0.231808
   type: 'test'
   ...
 # Subtest: 개요 → 한 줄: 태그 걷고 첫 문장, 길면 줄임
 ok 212 - 개요 → 한 줄: 태그 걷고 첫 문장, 길면 줄임
   ---
-  duration_ms: 0.379199
+  duration_ms: 0.551974
   type: 'test'
   ...
 # Subtest: 세계 도시 자료: 120곳 이상, 도시 목록과 맞고, 칸이 비지 않는다
 ok 213 - 세계 도시 자료: 120곳 이상, 도시 목록과 맞고, 칸이 비지 않는다
   ---
-  duration_ms: 1.384186
+  duration_ms: 1.349942
   type: 'test'
   ...
 # Subtest: 속성을 조합해 고른다: 7월 + 시원 + 가깝게 → 삿포로·하코다테 같은 곳, 우기는 빠진다
 ok 214 - 속성을 조합해 고른다: 7월 + 시원 + 가깝게 → 삿포로·하코다테 같은 곳, 우기는 빠진다
   ---
-  duration_ms: 1.514782
+  duration_ms: 1.156557
   type: 'test'
   ...
 # Subtest: 달 점수: 좋은 달 2점, 여름 시원 +1, 우기 -2
 ok 215 - 달 점수: 좋은 달 2점, 여름 시원 +1, 우기 -2
   ---
-  duration_ms: 0.189163
+  duration_ms: 0.160153
   type: 'test'
   ...
 # Subtest: 장소에서 도시 자료 찾기, 같은 곳 비교는 도시까지 본다
 ok 216 - 장소에서 도시 자료 찾기, 같은 곳 비교는 도시까지 본다
   ---
-  duration_ms: 0.230225
+  duration_ms: 0.217601
   type: 'test'
   ...
 # Subtest: 비행시간 글
 ok 217 - 비행시간 글
   ---
-  duration_ms: 0.594292
+  duration_ms: 0.589214
   type: 'test'
   ...
 1..217
@@ -1325,4 +1325,4 @@ ok 217 - 비행시간 글
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 9711.205051
+# duration_ms 12711.912183
