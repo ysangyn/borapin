@@ -31,3 +31,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/push-report.sh data src/data/seasons.json data/climate.json seasons-output.txt
+
+  wear:
+    # ci-report에 차례로 올리게 (동시에 올리면 한쪽이 덮인다)
+    needs: seasons
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 세계 도시 달별 기후 (옷차림 재료, NASA POWER)
+        run: npx tsx scripts/wear.ts 2>&1 | tee wear-output.txt
+      - name: 결과 올리기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh wear src/data/wear.json wear-output.txt

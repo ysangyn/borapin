@@ -52,7 +52,7 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
         return (
           <section key={placeParam(p)} className="card white prep-card" data-testid="prep-city">
             <div className="hub-label">{placeLong(p)} 기본 정보</div>
-            {c ? <CityInfo place={p} compact tours /> : <div className="small muted">이 곳의 도시 정보는 아직 없어요. 나라만 고른 여행이면 도시를 넣어 보세요.</div>}
+            {c ? <CityInfo place={p} compact tours month={trip.when.m ?? null} /> : <div className="small muted">이 곳의 도시 정보는 아직 없어요. 나라만 고른 여행이면 도시를 넣어 보세요.</div>}
           </section>
         );
       })}

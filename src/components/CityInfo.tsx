@@ -8,20 +8,34 @@ import { cityFor, COST_LABEL, flyLabel, tzLabel, useWorld, WALK_LABEL, type Worl
 import type { Place } from '../lib/types';
 import { localTimeText, tzText } from '../lib/tz';
 import TourPick from './TourPick';
+import { useEffect, useState } from 'react';
+import { wearLine, type CityClimate } from '../lib/wear';
+
+/** 도시 달별 기후는 도시 카드를 열 때만 받는다 (첫 묶음에 넣지 않게) */
+let WEAR: Record<string, CityClimate> | null = null;
+function useWear(key: string) {
+  const [c, setC] = useState<CityClimate | null>(() => WEAR?.[key] ?? null);
+  useEffect(() => {
+    let on = true;
+    import('../data/wear.json').then((m) => { WEAR = (m.default as { cities: Record<string, CityClimate> }).cities; if (on) setC(WEAR[key] ?? null); }, () => {});
+    return () => { on = false; };
+  }, [key]);
+  return c;
+}
 
 /**
  * 해외 도시 기본 정보 (world.json): 통화·말·콘센트·시차·비행시간·입국 메모 + 먹거리·볼거리.
  * 현지어 한마디 단추는 여기 하나만 둔다(준비 탭도 이걸 쓴다).
  * 준비에 바로 쓰이게, 먹거리·볼거리는 눌러서 가고 싶은 곳 메모에 넣을 수 있다.
  */
-export default function CityInfo({ place, onAdd, compact, tours }: { place: Place; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; tours?: boolean }) {
+export default function CityInfo({ place, onAdd, compact, tours, month }: { place: Place; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; tours?: boolean; month?: number | null }) {
   const world = useWorld();
   const w = cityFor(world, place);
   if (!w) return null;
-  return <CityFacts w={w} onAdd={onAdd} compact={compact} updated={world?.updated} tours={tours} />;
+  return <CityFacts w={w} onAdd={onAdd} compact={compact} updated={world?.updated} tours={tours} month={month} />;
 }
 
-export function CityFacts({ w, onAdd, compact, updated, tours }: { w: WorldCity; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; updated?: string; tours?: boolean }) {
+export function CityFacts({ w, onAdd, compact, updated, tours, month }: { w: WorldCity; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; updated?: string; tours?: boolean; month?: number | null }) {
   const place: Place = { t: 'country', id: w.c, city: w.city };
   const tz = tzText(place) || tzLabel(w.tz);
   const now = localTimeText(place);
@@ -30,11 +44,15 @@ export function CityFacts({ w, onAdd, compact, updated, tours }: { w: WorldCity;
   const pending = abroad === undefined;
   const alarm = alarmFor(w.c, abroad ?? null), visa = visaFor(w.c, abroad ?? null), fx = fxFor(w.cur, abroad ?? null);
   const safety = safetyNews([w.c], abroad ?? null);
+  const climate = useWear(`${w.c}:${w.city}`);
+  const m = month ?? new Date().getMonth() + 1;
+  const wear = wearLine(climate, m);
   return (
     <div className="city-info" data-testid="city-info">
       {!compact && <div className="small" style={{ color: 'var(--ink2)' }}>{w.line}</div>}
       <dl className="city-facts">
         <div><dt>가기 좋은 때</dt><dd>{monthsLabel(w.best)} · {w.why}</dd></div>
+        {wear && <div data-testid="city-wear"><dt>{m}월 옷차림</dt><dd>{wear}<span className="tiny muted"> · 평년 기후 · 떠나기 전 날씨 확인</span></dd></div>}
         <div><dt>비행</dt><dd>인천에서 {flyLabel(w.fly)}</dd></div>
         <div><dt>시차</dt><dd data-testid="city-tz">{tz}{now ? ` · 지금 그곳은 ${now}` : ''}</dd></div>
         <div><dt>돈</dt><dd>{w.cur} · {COST_LABEL[w.cost]}{fx ? <span className="tiny muted"> · {fx.text} ({fx.at})</span> : null}</dd></div>
