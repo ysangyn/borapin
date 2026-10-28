@@ -93,7 +93,7 @@ export default function Home() {
               {few ? (
                 <>
                   <div className="stat"><b>{stats.cellVisits.size}</b><span>다녀온 시·군</span></div>
-                  <div className="stat"><b>{stats.countryVisits.size}</b><span>해외 나라</span></div>
+                  <div className="stat"><b>{stats.countryVisits.size}</b><span>개국</span></div>
                   <div className="stat"><b>{stats.tripsDone}</b><span>여행·나들이</span></div>
                   <div className="stat"><b>{planned.length}</b><span>예정</span></div>
                 </>
@@ -101,8 +101,8 @@ export default function Home() {
                 <>
                   <div className="stat"><b>{stats.cellVisits.size}<small> /{TOTAL_CELLS}</small></b><span>시·군</span></div>
                   <div className="stat"><b>{stats.groupsVisited.size}<small> /{TOTAL_GROUPS}</small></b><span>광역</span></div>
-                  <div className="stat"><b>{stats.countryVisits.size}</b><span>해외 나라</span></div>
-                  <div className="stat"><b>{stats.cities.size}</b><span>해외 도시</span></div>
+                  <div className="stat"><b>{stats.countryVisits.size}</b><span>개국</span></div>
+                  {planned.length > 0 && <div className="stat"><b>{planned.length}</b><span>예정</span></div>}
                 </>
               )}
             </div>
