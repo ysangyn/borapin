@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState } from 'react';
 
 /**
@@ -28,7 +29,7 @@ export default function TourPick({ city }: { city: string }) {
   return (
     <>
       <button type="button" className="btn sm soft" style={{ alignSelf: 'flex-start' }} onClick={go} data-testid="tour-pick">투어·티켓 찾기</button>
-      {open && (
+      {open && createPortal(
         <div className="map-choice-backdrop" onClick={() => setOpen(false)} data-testid="tour-choice">
           <div className="map-choice card" role="dialog" aria-label={`${city} 투어·티켓 찾기`} onClick={(e) => e.stopPropagation()}>
             <b className="jua" style={{ fontSize: 19 }}>{city} 투어·티켓</b>
@@ -38,7 +39,8 @@ export default function TourPick({ city }: { city: string }) {
             ))}
             <button className="link-btn" style={{ alignSelf: 'center' }} onClick={() => setOpen(false)}>그대로 두기</button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

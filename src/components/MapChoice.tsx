@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui';
@@ -91,7 +92,7 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
     }
     if (await wi.add(t.wish.place, t.name, t.wish.kind)) setT0(null);
   };
-  const el = t ? (
+  const el = t ? createPortal(
     <div className="map-choice-backdrop" onClick={close} data-testid="map-choice">
       <div className="map-choice card" role="dialog" aria-label={`${t.name} 열기`} onClick={(e) => e.stopPropagation()}>
         <b className="jua" style={{ fontSize: 19 }}>{t.name}</b>
@@ -108,7 +109,8 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
         {t.search && <a className="btn soft block" href={mapChoiceLinks(t).web} target="_blank" rel="noreferrer" onClick={close}>네이버에서 자세히 보기</a>}
         <button className="link-btn" style={{ alignSelf: 'center' }} onClick={close}>그대로 두기</button>
       </div>
-    </div>
+    </div>,
+    document.body,
   ) : null;
   return [setT, el];
 }

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
@@ -53,7 +54,7 @@ export default function HereNow({ trip }: { trip: Trip }) {
   return (
     <>
       <button type="button" className="btn sm glass" onClick={start} data-testid="here-now">지금 여기</button>
-      {st.s !== 'idle' && (
+      {st.s !== 'idle' && createPortal(
         <div className="map-choice-backdrop" onClick={close} data-testid="here-sheet">
           <div className="map-choice card here-sheet" role="dialog" aria-label="지금 여기 남기기" onClick={(e) => e.stopPropagation()}>
             <b className="jua" style={{ fontSize: 20 }}>지금 여기</b>
@@ -86,7 +87,8 @@ export default function HereNow({ trip }: { trip: Trip }) {
             )}
             <button className="link-btn" style={{ alignSelf: 'center' }} onClick={close}>그대로 두기</button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
