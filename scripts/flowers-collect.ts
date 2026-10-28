@@ -28,19 +28,33 @@ function candidates(r: { code: string; name: string; sido: string }): string[] {
   return [`${base} (${sido})`, ...alt.map((a) => `${base} (${a})`), base];
 }
 
-async function wikitext(lang: string, title: string, section0 = true): Promise<{ title: string; text: string } | null> {
-  const u = `https://${lang}.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main${section0 ? '&rvsection=0' : ''}&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`;
-  for (let i = 1; i <= 3; i++) {
-    try {
-      const r = await fetch(u, { headers: UA });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const j = (await r.json()) as { query?: { pages?: { title: string; missing?: boolean; revisions?: { slots: { main: { content: string } } }[] }[] } };
-      const p = j.query?.pages?.[0];
-      if (!p || p.missing || !p.revisions) return null;
-      return { title: p.title, text: p.revisions[0].slots.main.content };
-    } catch (e) { if (i === 3) throw e; await sleep(1000 * i); }
+/** 여러 문서를 한 번에 (최대 20개). 429면 Retry-After만큼(없으면 점점 길게) 쉬었다 다시 */
+async function pages(lang: string, titles: string[]): Promise<Map<string, { title: string; text: string }>> {
+  const u = `https://${lang}.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&redirects=1&format=json&formatversion=2&maxlag=5&titles=${encodeURIComponent(titles.join('|'))}`;
+  for (let i = 1; ; i++) {
+    const r = await fetch(u, { headers: UA }).catch(() => null);
+    if (r?.ok) {
+      const j = (await r.json()) as { query?: { normalized?: { from: string; to: string }[]; redirects?: { from: string; to: string }[]; pages?: { title: string; missing?: boolean; revisions?: { slots: { main: { content: string } } }[] }[] } };
+      const q = j.query ?? {};
+      const out = new Map<string, { title: string; text: string }>();
+      const byTitle = new Map((q.pages ?? []).filter((p) => !p.missing && p.revisions).map((p) => [p.title, { title: p.title, text: p.revisions![0].slots.main.content }]));
+      for (const t of titles) {
+        let x = t;
+        x = q.normalized?.find((n) => n.from === x)?.to ?? x;
+        x = q.redirects?.find((n) => n.from === x)?.to ?? x;
+        const hit = byTitle.get(x);
+        if (hit) out.set(t, hit);
+      }
+      return out;
+    }
+    if (i >= 8) throw new Error(`HTTP ${r?.status ?? 'fetch failed'}`);
+    const wait = Number(r?.headers.get('retry-after')) || 5 * i;
+    console.log(`  쉬어 가기 ${wait}초 (HTTP ${r?.status ?? '-'})`);
+    await sleep(wait * 1000);
   }
-  return null;
+}
+async function wikitext(lang: string, title: string): Promise<{ title: string; text: string } | null> {
+  return (await pages(lang, [title])).get(title) ?? null;
 }
 
 const clean = (s: string) => s.replace(/<ref[^>]*\/>|<ref[^>]*>[\s\S]*?<\/ref>/g, '').replace(/\{\{[^}]*\}\}/g, '').replace(/\[\[(?:[^|\]]*\|)?([^\]]*)\]\]/g, '$1').replace(/<[^>]+>/g, ' ').replace(/'''?/g, '').replace(/\s+/g, ' ').trim();
@@ -61,21 +75,28 @@ function flowerField(text: string): string | null {
 
 async function main() {
   const kr: Record<string, { name: string; article?: string; flower?: string | null; tried: string[] }> = {};
-  for (const r of (regionsData as { regions: { code: string; name: string; sido: string }[] }).regions) {
-    const tried = candidates(r);
-    let hit: { title: string; text: string } | null = null;
-    for (const t of tried) {
-      hit = await wikitext('ko', t).catch(() => null);
-      if (hit && !/동음이의|\{\{동음이의/.test(hit.text.slice(0, 400))) break;
-      hit = null;
-      await sleep(150);
+  const regs = (regionsData as { regions: { code: string; name: string; sido: string }[] }).regions;
+  const todo = new Map(regs.map((r) => [r.code, { r, cands: candidates(r) }]));
+  for (const r of regs) kr[r.code] = { name: r.name, flower: null, tried: candidates(r) };
+  // 후보 이름을 한 차례씩: 첫 후보를 모두 20개씩 묶어 묻고, 없거나 동음이의 문서면 다음 후보로
+  for (let round = 0; round < 3 && todo.size; round++) {
+    const ask = [...todo.values()].filter((x) => x.cands[round]).map((x) => ({ code: x.r.code, title: x.cands[round] }));
+    for (let i = 0; i < ask.length; i += 20) {
+      const batch = ask.slice(i, i + 20);
+      const got = await pages('ko', batch.map((b) => b.title));
+      for (const b of batch) {
+        const hit = got.get(b.title);
+        if (!hit || /\{\{동음이의|동음이의어 문서/.test(hit.text.slice(0, 600))) continue;
+        kr[b.code].article = hit.title;
+        kr[b.code].flower = flowerField(hit.text.slice(0, 20000));
+        todo.delete(b.code);
+      }
+      await sleep(1500);
     }
-    kr[r.code] = { name: r.name, article: hit?.title, flower: hit ? flowerField(hit.text) : null, tried };
-    console.log(`${r.code} ${r.name} → ${hit?.title ?? '문서 없음'} · ${kr[r.code].flower ?? '꽃 칸 없음'}`);
-    await sleep(150);
   }
+  for (const [code, v] of Object.entries(kr)) console.log(`${code} ${v.name} → ${v.article ?? '문서 없음'} · ${v.flower ?? '꽃 칸 없음'}`);
   // 나라꽃: 영어 위키백과 목록의 표 줄 (나라 · 꽃) 그대로 모은다
-  const list = await wikitext('en', 'List of national flowers', false);
+  const list = await wikitext('en', 'List of national flowers').catch(() => null);
   const world: Record<string, string> = {};
   if (list) {
     const rows = list.text.split(/\n\|-/);
