@@ -14,7 +14,9 @@ const RAW = process.argv[2] ?? path.join(ROOT, 'data/flowers-raw.json');
 const OUT = path.join(ROOT, 'src/data/flowers.json');
 
 /** 사람이 고친 것 (코드 → 꽃 이름) */
-export const FIX: Record<string, string> = {};
+export const FIX: Record<string, string> = {
+  '51780': '철쭉', // 철원군: 위키백과 영문(Cheorwon County, Symbols: County flower Royal Azalea) — 한국어 문서엔 칸이 없음
+};
 
 const ALIAS = new Map<string, string>();
 for (const k of KINDS) for (const n of k.ko) ALIAS.set(n, k.id);
