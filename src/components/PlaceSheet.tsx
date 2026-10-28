@@ -140,7 +140,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
           </div>
           {plant && (
             <div className="plant-line" data-testid="plant-line">
-              <img src={plant.stage === 'flower' ? '/art/garden/flower.svg' : plant.stage === 'sprout' ? '/art/garden/sprout.svg' : '/art/garden/seed.svg'} alt="" width={22} height={22} />
+              <img src={'/art/garden/flower.svg'} alt="" width={22} height={22} />
               <span>{plantLine(plant)}{hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}</span>
             </div>
           )}

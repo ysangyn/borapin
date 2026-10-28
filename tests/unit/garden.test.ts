@@ -17,8 +17,8 @@ test('한 사람의 한 줄 평이면 그 사람의 새싹, 둘 다면 꽃', () 
   const one = garden(t, [rec('51150', { 보라: '최고' })]).get('51150')!;
   assert.equal(one.stage, 'sprout');
   assert.deepEqual(one.by, ['보라']);
-  assert.equal(plantLine(one), '보라의 새싹이 났어요 · 2024');
-  assert.equal(growHint(one, '영상'), '나도 한 줄 남기면 꽃이 피어요');
+  assert.equal(plantLine(one), '보라의 마음으로 꽃이 늘었어요 · 2024');
+  assert.equal(growHint(one, '영상'), '나도 한 줄 남기면 꽃이 가득 피어요');
   const two = garden(t, [rec('51150', { 보라: '최고', 영상: '또 가자' })]).get('51150')!;
   assert.equal(two.stage, 'flower');
   assert.equal(growHint(two, '영상'), null);
@@ -38,5 +38,5 @@ test('두 번 이상 가면 촘촘한 무늬, 나이테는 해마다', () => {
   const g = garden([trip('a', '51150', { when: { p: 'year', y: 2019 } }), trip('b', '51150', { when: { p: 'year', y: 2024 } })], []).get('51150')!;
   assert.equal(patternOf(g), 'g-seed-2');
   assert.deepEqual(g.years, [2019, 2024]);
-  assert.equal(plantLine(g), '씨앗을 심었어요 · 2019 · 2024');
+  assert.equal(plantLine(g), '꽃이 피기 시작했어요 · 2019 · 2024');
 });

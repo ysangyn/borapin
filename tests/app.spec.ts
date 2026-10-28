@@ -278,8 +278,8 @@ test.describe.serial('보라핀 1단계', () => {
     // 다시 꽂아 둔다
     await sheet.getByTestId('quick-pin').click();
     await expect(sheet.getByTestId('trip-row')).toHaveCount(1);
-    // 심는 지도: 핀만 꽂은 칸은 씨앗 (지도 칸 자료에 무늬 이름이 들어가고, 시트에 한 줄)
-    await expect(sheet.getByTestId('plant-line')).toContainText('씨앗을 심었어요');
+    // 심는 지도: 핀만 꽂아도 꽃이 피기 시작 (꽃 몇 송이 무늬) (지도 칸 자료에 무늬 이름이 들어가고, 시트에 한 줄)
+    await expect(sheet.getByTestId('plant-line')).toContainText('꽃이 피기 시작했어요');
     await expect.poll(() => page.evaluate(() => {
       const m = (window as unknown as { __map: { querySourceFeatures: (s: string) => { properties: Record<string, unknown> }[] } }).__map;
       return m.querySourceFeatures('kr').find((f) => f.properties.cell === '26')?.properties.pat ?? null;

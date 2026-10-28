@@ -398,18 +398,18 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [garden, ready, focusKey]);
 
-  // 새싹·꽃이 있는 칸을 누르면 그 자리에 한 송이 피어난다 (0.6초, 움직임 줄이기면 그냥 보였다 사라짐)
+  // 다녀온 칸을 누르면 그 자리에 한 송이 피어난다 (0.6초, 움직임 줄이기면 그냥 보였다 사라짐)
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || !selected || selected.t !== 'kr') return;
     const p = garden?.get(selected.code), r = REGION_BY_CODE.get(selected.code);
-    if (!p || p.stage === 'seed' || !r) return;
+    if (!p || !r) return;
     // 지도는 표시 위치를 transform으로 잡으므로 움직임은 안쪽 그림에만
     const box = document.createElement('div');
     box.className = 'bloom-box';
     box.dataset.testid = 'bloom';
     const img = document.createElement('img');
-    img.src = p.stage === 'flower' ? '/art/garden/flower.svg' : '/art/garden/sprout.svg';
+    img.src = '/art/garden/flower.svg';
     img.alt = '';
     img.className = 'bloom-marker';
     box.appendChild(img);
@@ -532,7 +532,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
           {garden ? (
             <>
               <span><i className="lg-meadow" />다녀온 곳</span>
-              <span><i className="lg-bloom" />마음을 남길수록 피어요</span>
+              <span><i className="lg-bloom" />마음을 남길수록 꽃이 늘어요</span>
             </>
           ) : (
             <>
