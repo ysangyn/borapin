@@ -15,6 +15,7 @@ import { samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import { garden, growHint, plantLine } from '../lib/garden';
 import { useSwipeDown } from '../lib/swipe';
+import { flowerOf, flowerSrc } from '../lib/flowers';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
@@ -56,6 +57,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const auth = useAuth();
   // 심는 지도: 이 칸의 식물 (다녀온 칸만)
   const plant = useMemo(() => (place.t === 'kr' ? garden(trips, recs).get(place.code) : undefined), [place, trips, recs]);
+  const flower = flowerOf(place);
   const hint = growHint(plant, auth.status === 'ready' ? displayName(auth.user) : '');
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -142,10 +144,14 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
           <div className="hand" style={{ fontSize: 18, color: visits ? 'var(--violet)' : 'var(--ink3)', lineHeight: 1.1, marginTop: 2 }}>
             {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '한 번 다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
           </div>
-          {plant && (
+          {(plant || flower) && (
             <div className="plant-line" data-testid="plant-line">
-              <img src={'/art/garden/flower.svg'} alt="" width={22} height={22} />
-              <span>{plantLine(plant)}{hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}</span>
+              <img src={flowerSrc(flower?.icon ?? 'wild', plant ? '' : '-gray')} alt="" width={26} height={26} />
+              <span>
+                {flower && <span data-testid="region-flower">{placeLabel(place)}의 꽃 · {flower.name}{plant ? '' : ' · 다녀오면 피어요'}</span>}
+                {plant && <span style={{ display: 'block' }}>{plantLine(plant)}</span>}
+                {hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}
+              </span>
             </div>
           )}
         </div>

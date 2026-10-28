@@ -7,6 +7,7 @@ import { usePhotos } from '../lib/photos';
 import { openSlideshow } from '../components/slideshow';
 import MapReplay from '../components/MapReplay';
 import DateGame from '../components/DateGame';
+import FlowerBook from '../components/FlowerBook';
 import ShareCards from '../components/ShareCards';
 import { badges } from '../lib/achievements';
 
@@ -202,6 +203,8 @@ export default function Memories() {
             </div>
           </section>
         )}
+
+        {stats && <FlowerBook stats={stats} />}
 
         <section data-testid="badges">
           <div className="row-between" style={{ marginBottom: 6 }}>

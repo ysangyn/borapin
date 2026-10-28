@@ -1,4 +1,5 @@
 import type { Map as MLMap } from 'maplibre-gl';
+import { KINDS } from '../lib/flowers';
 
 /**
  * 심는 지도 무늬 (설계서 C3): 다녀온 칸을 보라 대신 꽃밭으로. 이미지 파일 없이 캔버스로 그려 지도에 넣는다.
@@ -23,7 +24,7 @@ function flower(g: CanvasRenderingContext2D, x: number, y: number, r: number, [p
   g.fillStyle = mid; g.beginPath(); g.arc(x, y, r * 0.55, 0, Math.PI * 2); g.fill();
 }
 
-function draw(stage: keyof typeof COUNT, dense: boolean): ImageData {
+function draw(stage: keyof typeof COUNT, dense: boolean, icon: string): ImageData {
   const S = T * R;
   const c = document.createElement('canvas');
   c.width = c.height = S;
@@ -37,15 +38,21 @@ function draw(stage: keyof typeof COUNT, dense: boolean): ImageData {
   SPOTS.slice(0, n).forEach(([x, y], i) => {
     const r = (stage === 'flower' ? 2.4 : 2.1) * R * (i % 3 === 0 ? 1.15 : i % 3 === 1 ? 0.9 : 1);
     // 마음이 적을수록 흰·노랑 들꽃, 많을수록 여러 색
-    const col = stage === 'seed' ? COLORS[i % 2] : COLORS[(i * 5 + 1) % COLORS.length];
-    flower(g, x * S, y * S, r, col);
+    // 고장 꽃이 있으면 그 꽃 색이 주인공, 사이사이 흰 들꽃 / 없으면(들꽃) 여러 색
+    const k = KINDS[icon];
+    const col: [string, string] = k && icon !== 'wild' ? (i % 3 === 2 ? COLORS[0] : [k.petal === '#FFFFFF' ? '#FFFFFF' : k.petal, k.mid]) : stage === 'seed' ? COLORS[i % 2] : COLORS[(i * 5 + 1) % COLORS.length];
+    // 판 가장자리에 걸친 꽃이 네모로 잘리지 않게 이웃 판 자리에도 그린다 (이어 붙이면 한 송이)
+    for (const dx of [-S, 0, S]) for (const dy of [-S, 0, S]) flower(g, x * S + dx, y * S + dy, r, col);
   });
   return g.getImageData(0, 0, S, S);
 }
 
-export function addGardenPatterns(map: MLMap) {
-  for (const stage of ['seed', 'sprout', 'flower'] as const) for (const d of [1, 2]) {
-    const id = `g-${stage}-${d}`;
-    if (!map.hasImage(id)) map.addImage(id, draw(stage, d === 2), { pixelRatio: R });
-  }
+/** 무늬 이름: 단계·촘촘함·꽃 종류 */
+export const patternId = (stage: keyof typeof COUNT, dense: boolean, icon: string) => `g-${stage}-${dense ? 2 : 1}-${KINDS[icon] ? icon : 'wild'}`;
+
+/** 쓰는 무늬만 그때그때 그려 넣는다 (꽃 30여 종 × 단계 3 × 촘촘 2를 다 만들지 않게) */
+export function ensurePattern(map: MLMap, id: string) {
+  if (map.hasImage(id)) return;
+  const [, stage, d, ...icon] = id.split('-');
+  map.addImage(id, draw(stage as keyof typeof COUNT, d === '2', icon.join('-')), { pixelRatio: R });
 }

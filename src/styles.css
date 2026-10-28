@@ -1339,3 +1339,11 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .plan-info > summary::-webkit-details-marker { display: none; }
 .plan-info > summary::after { content: ' ▾'; }
 .plan-info[open] > summary::after { content: ' ▴'; }
+
+/* 모은 꽃 */
+.flower-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.flower-cell { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px; border-radius: 14px; background: #fff; border: 2px solid var(--outline); box-shadow: 2px 2px 0 var(--line2); text-align: center; min-width: 0; }
+.flower-cell b { font-family: 'Gaegu', cursive; font-size: 15px; line-height: 1.1; }
+.flower-cell span { font-size: 11px; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.flower-cell.gray { border-style: dashed; border-color: var(--line2); box-shadow: none; background: transparent; }
+.flower-cell.gray b { color: var(--ink4, #B9B2D6); }

@@ -45,8 +45,6 @@ export function garden(trips: Trip[], recs: PlaceRec[]): Map<string, Plant> {
   return out;
 }
 
-/** 지도 무늬 이름: 단계 + 촘촘함(두 번 이상 가면 촘촘) */
-export const patternOf = (p: Plant) => `g-${p.stage}-${p.visits > 1 ? 2 : 1}`;
 
 /** 지역 창 한 줄: '꽃이 피었어요 · 2019 · 2024' */
 export function plantLine(p: Plant | undefined): string | null {

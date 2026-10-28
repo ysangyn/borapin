@@ -9,8 +9,9 @@ import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
 import { labelsFor } from './mapLabels';
-import { addGardenPatterns } from './gardenPatterns';
-import { patternOf, type Plant } from '../lib/garden';
+import { ensurePattern, patternId } from './gardenPatterns';
+import { flowerOf, flowerSrc } from '../lib/flowers';
+import type { Plant } from '../lib/garden';
 import { toneOf } from '../lib/members';
 
 // v6는 워커 파일을 자기 옆에서 찾는데, 번들되면 그 자리에 파일이 없다 → 주소를 직접 알려 준다.
@@ -242,7 +243,6 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       map.addLayer({ id: 'kr-fill', type: 'fill', source: 'kr', paint: { 'fill-color': fillExpr() } });
       // 심는 지도: 칸 자료에 무늬 이름(pat)·새싹 테두리 색(ring)을 넣어 그린다 (무늬는 feature-state로 못 바꿔서)
       krData.current = g.kr as GeoJSON.FeatureCollection;
-      try { addGardenPatterns(map); } catch (e) { console.warn(e); }
       map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'pat'], paint: { 'fill-pattern': ['get', 'pat'] } });
       map.addLayer({ id: 'kr-ring', type: 'line', source: 'kr', filter: ['has', 'ring'], paint: { 'line-color': ['get', 'ring'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.2, 8, 2.6] } });
       map.addLayer({ id: 'kr-line', type: 'line', source: 'kr', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.3, 8, 1] } });
@@ -391,7 +391,9 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         const p = garden?.get(code);
         if (!p || (focusSet && !focusSet.has(code))) return f;
         const t = p.stage === 'sprout' && p.by.length === 1 ? toneOf(p.by[0]) : -1;
-        return { ...f, properties: { ...f.properties, pat: patternOf(p), ...(t >= 0 ? { ring: RING[t % 2] } : {}) } };
+        const pat = patternId(p.stage, p.visits > 1, flowerOf({ t: 'kr', code })?.icon ?? 'wild');
+        try { ensurePattern(map, pat); } catch (e) { console.warn(e); return f; }
+        return { ...f, properties: { ...f.properties, pat, ...(t >= 0 ? { ring: RING[t % 2] } : {}) } };
       }),
     };
     (map.getSource('kr') as maplibregl.GeoJSONSource | undefined)?.setData(fc);
@@ -409,7 +411,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     box.className = 'bloom-box';
     box.dataset.testid = 'bloom';
     const img = document.createElement('img');
-    img.src = '/art/garden/flower.svg';
+    img.src = flowerSrc(flowerOf(selected)?.icon ?? 'wild');
     img.alt = '';
     img.className = 'bloom-marker';
     box.appendChild(img);

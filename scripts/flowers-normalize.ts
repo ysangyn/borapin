@@ -40,8 +40,9 @@ function main() {
     if (!name) { miss.push(`${code} ${r.name}`); continue; }
     kr[code] = { name, icon: iconOf(name) };
   }
+  // 나라꽃: 목록 표를 제대로 못 읽었으면(20나라 미만) 비워 둔다 — 반쪽짜리 '세계' 칸을 보이지 않게
   const world: Record<string, { name: string; icon: string }> = {};
-  for (const [id, v] of Object.entries(raw.world)) {
+  if (Object.keys(raw.world).length >= 20) for (const [id, v] of Object.entries(raw.world)) {
     const en = v.split('|')[0].trim();
     if (en) world[id] = { name: en, icon: 'wild' };
   }

@@ -283,7 +283,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect.poll(() => page.evaluate(() => {
       const m = (window as unknown as { __map: { querySourceFeatures: (s: string) => { properties: Record<string, unknown> }[] } }).__map;
       return m.querySourceFeatures('kr').find((f) => f.properties.cell === '26')?.properties.pat ?? null;
-    })).toBe('g-seed-1');
+    })).toMatch(/^g-seed-1-/);
     await expect(page.getByTestId('headline')).toContainText('세 번의 여행,핀 3개 꽂았어요');
     await shot(page, '09-sheet');
     await sheet.getByRole('button', { name: '닫기' }).click();

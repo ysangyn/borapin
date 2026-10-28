@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { garden, growHint, patternOf, plantLine } from '../../src/lib/garden';
+import { garden, growHint, plantLine } from '../../src/lib/garden';
 import type { PlaceRec, Trip } from '../../src/lib/types';
 
 const trip = (id: string, code: string, over: Partial<Trip> = {}): Trip => ({ id, title: id, kind: 'trip', status: 'done', when: { p: 'year', y: 2024 }, places: [{ t: 'kr', code }], companions: [], memo: '', tags: [], source: 'app', v: 1, ...over });
@@ -36,7 +36,7 @@ test('빈 한 줄 평은 마음이 아니다, 장소만 남겨도 새싹', () =>
 
 test('두 번 이상 가면 촘촘한 무늬, 나이테는 해마다', () => {
   const g = garden([trip('a', '51150', { when: { p: 'year', y: 2019 } }), trip('b', '51150', { when: { p: 'year', y: 2024 } })], []).get('51150')!;
-  assert.equal(patternOf(g), 'g-seed-2');
+  assert.equal(g.visits, 2);
   assert.deepEqual(g.years, [2019, 2024]);
   assert.equal(plantLine(g), '꽃이 피기 시작했어요 · 2019 · 2024');
 });
