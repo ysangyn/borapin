@@ -7,14 +7,14 @@ import type { Place } from './types';
  * 자료가 없는 곳은 들꽃.
  */
 export interface FlowerKind { name: string; petal: string; mid: string }
-export interface Flower { name: string; icon: string }
+export interface Flower { name: string; icon: string; /** 공식 시화가 아닐 때 (예: 지정 폐지) */ note?: string }
 const F = flowers as { kr: Record<string, Flower>; world: Record<string, Flower> };
 export const KINDS = kinds as Record<string, FlowerKind>;
 export const WILD: Flower = { name: '들꽃', icon: 'wild' };
 
 export function flowerOf(place: Place): Flower | null {
   const f = place.t === 'kr' ? F.kr[place.code] : F.world[place.id];
-  return f ? { name: f.name, icon: KINDS[f.icon] ? f.icon : 'wild' } : null;
+  return f ? { name: f.name, icon: KINDS[f.icon] ? f.icon : 'wild', ...(f.note ? { note: f.note } : {}) } : null;
 }
 export const flowerSrc = (icon: string, style: '' | '-ink' | '-gray' = '') => `/art/flowers/${KINDS[icon] ? icon : 'wild'}${style}.svg`;
 export const krFlowerCount = () => Object.keys(F.kr).length;

@@ -148,7 +148,8 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
             <div className="plant-line" data-testid="plant-line">
               <img src={flowerSrc(flower?.icon ?? 'wild', plant ? '' : '-gray')} alt="" width={26} height={26} />
               <span>
-                {flower && <span data-testid="region-flower">{placeLabel(place)}의 꽃 · {flower.name}{plant ? '' : ' · 다녀오면 피어요'}</span>}
+                {flower && <span data-testid="region-flower">{placeLabel(place)}의 {flower.note ? '대표 꽃' : '꽃'} · {flower.name}{plant ? '' : ' · 다녀오면 피어요'}</span>}
+                {flower?.note && <span className="tiny muted" style={{ display: 'block' }}>{flower.note}</span>}
                 {plant && <span style={{ display: 'block' }}>{plantLine(plant)}</span>}
                 {hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}
               </span>

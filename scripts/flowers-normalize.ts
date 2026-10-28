@@ -16,6 +16,11 @@ const OUT = path.join(ROOT, 'src/data/flowers.json');
 /** 사람이 고친 것 (코드 → 꽃 이름) */
 export const FIX: Record<string, string> = {
   '51780': '철쭉', // 철원군: 위키백과 영문(Cheorwon County, Symbols: County flower Royal Azalea) — 한국어 문서엔 칸이 없음
+  '41390': '연꽃', // 시흥시: 시화 지정을 2003년에 폐지(서울신문) — 관곡지·연꽃테마파크의 대표 꽃으로 (공식 아님, NOTE에 적음)
+};
+/** 공식 시화가 아닌 곳의 한 줄 (화면에 '대표 꽃'으로 보인다) */
+export const NOTE: Record<string, string> = {
+  '41390': '공식 시화는 2003년에 폐지 · 관곡지 연꽃이 대표해요',
 };
 
 const ALIAS = new Map<string, string>();
@@ -35,12 +40,12 @@ export function iconOf(name: string): string {
 
 function main() {
   const raw = JSON.parse(fs.readFileSync(RAW, 'utf8')) as { kr: Record<string, { name: string; flower?: string | null }>; world: Record<string, string> };
-  const kr: Record<string, { name: string; icon: string }> = {};
+  const kr: Record<string, { name: string; icon: string; note?: string }> = {};
   const miss: string[] = [];
   for (const [code, r] of Object.entries(raw.kr)) {
     const name = FIX[code] ?? firstFlower(r.flower);
     if (!name) { miss.push(`${code} ${r.name}`); continue; }
-    kr[code] = { name, icon: iconOf(name) };
+    kr[code] = { name, icon: iconOf(name), ...(NOTE[code] ? { note: NOTE[code] } : {}) };
   }
   // 나라꽃: 목록 표를 제대로 못 읽었으면(20나라 미만) 비워 둔다 — 반쪽짜리 '세계' 칸을 보이지 않게
   const world: Record<string, { name: string; icon: string }> = {};
