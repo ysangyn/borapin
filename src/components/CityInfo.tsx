@@ -1,4 +1,4 @@
-import { alarmFor, fxFor, useAbroad, visaFor } from '../lib/abroad';
+import { alarmFor, fxFor, safetyNews, useAbroad, visaFor } from '../lib/abroad';
 import { Link } from 'react-router-dom';
 import { josa } from 'es-hangul';
 import { Icon } from './ui';
@@ -29,6 +29,7 @@ export function CityFacts({ w, onAdd, compact, updated, tours }: { w: WorldCity;
   const abroad = useAbroad();
   const pending = abroad === undefined;
   const alarm = alarmFor(w.c, abroad ?? null), visa = visaFor(w.c, abroad ?? null), fx = fxFor(w.cur, abroad ?? null);
+  const safety = safetyNews([w.c], abroad ?? null);
   return (
     <div className="city-info" data-testid="city-info">
       {!compact && <div className="small" style={{ color: 'var(--ink2)' }}>{w.line}</div>}
@@ -40,6 +41,7 @@ export function CityFacts({ w, onAdd, compact, updated, tours }: { w: WorldCity;
         <div><dt>말·콘센트</dt><dd>{w.lang} · {w.plug}</dd></div>
         <div><dt>걷기</dt><dd>{WALK_LABEL[w.walk]}{w.with.length ? ` · ${josa(w.with.join('·'), '와/과')} 좋아요` : ''}</dd></div>
         {alarm && <div data-testid="city-alarm"><dt>여행경보</dt><dd className={alarm.lvl >= 3 ? 'alarm-high' : alarm.lvl === 2 ? 'alarm-mid' : ''}>{alarm.text}<span className="tiny muted"> · 외교부 {alarm.at} 기준</span></dd></div>}
+        {safety && <div data-testid="city-safety"><dt>안전 소식</dt><dd>{safety.t}<span className="tiny muted"> · 외교부 {safety.when}</span></dd></div>}
         <div><dt>입국</dt><dd data-testid="city-visa">{visa ? <>{visa.text}<span className="tiny muted"> · 외교부 {visa.at} 기준{w.entry && !w.entry.startsWith(visa.text.slice(0, 3)) ? ` · 참고: ${w.entry}` : ''} · 떠나기 전 확인</span></> : <>{w.entry}<span className="tiny muted">{updated ? ` · ${updated.slice(0, 7).replace('-', '.')} 기준` : ''}{pending ? ' · 외교부 자료 받는 중' : ''} · 떠나기 전 확인</span></>}</dd></div>
       </dl>
       {phraseLink(w)}

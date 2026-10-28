@@ -179,7 +179,7 @@ export default function WishEdit() {
         {place && place.t === 'country' && (
           <div className="field">
             <span className="label">도시 정보 <span className="muted small">(눌러서 메모에 넣기)</span></span>
-            <CityInfo place={place} onAdd={(kind, text) => {
+            <CityInfo place={place} tours onAdd={(kind, text) => {
               const cur = kind === 'foods' ? foods : spots;
               if (lines(cur).includes(text)) return toast('이미 메모에 있어요');
               (kind === 'foods' ? setFoods : setSpots)(cur.trim() ? `${cur.replace(/\s+$/, '')}\n${text}` : text);

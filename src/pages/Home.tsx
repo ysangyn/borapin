@@ -5,7 +5,7 @@ import type { MapMode } from '../components/MapView';
 import MapView from '../components/LazyMap';
 import TripRow from '../components/TripRow';
 import PlaceSheet from '../components/PlaceSheet';
-import type { Place } from '../lib/types';
+import type { Place, Trip, Wish } from '../lib/types';
 import { computeStats, overdueTrips, patchTrip, recentlyAdded, TOTAL_CELLS, TOTAL_GROUPS, upcomingTrips, usePlaces, useTrips, useWishes } from '../lib/data';
 import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
@@ -13,6 +13,7 @@ import WishRolling from '../components/WishRolling';
 import NextTripHub from '../components/NextTripHub';
 import MonthPick, { useMonthPick } from '../components/MonthPick';
 import { nextCell, aboutMin } from '../lib/nextCell';
+import { safetyNews, useAbroad } from '../lib/abroad';
 import { withIeyo } from '../lib/ko';
 import type { Stats } from '../lib/stats';
 import { useHome } from '../lib/home';
@@ -20,7 +21,7 @@ import { memoryLine, pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
 import { formatWhen } from '../lib/dates';
-import { placeLabel } from '../lib/geo';
+import { COUNTRY_BY_ID, placeLabel } from '../lib/geo';
 import { spaceTitle, toneOf } from '../lib/members';
 import { times } from '../lib/ko';
 
@@ -120,6 +121,8 @@ export default function Home() {
           </div>
         )}
 
+        {trips && wishes && <SafetyLine trips={trips} wishes={wishes} />}
+
         {/* 예정 여행은 아래 '다음 여행 준비' 묶음이 맡는다 (같은 여행을 두 번 보여 주지 않게) */}
         {/* 여행 전·중·후 카드가 있을 땐 지금 중요한 것만 크게 보이게, 둘러보기(추천·가고 싶은 곳·추억)는 접어 둔다 */}
         {trips && wishes && <NextTripHub wishes={wishes} trips={trips} stats={stats} excludeTripId={stage?.trip.id ?? null} />}
@@ -166,6 +169,24 @@ function EmptyRecords() {
         <Link to="/record" className="btn sm">기록 남기기</Link>
       </span>
     </div>
+  );
+}
+
+/** 안전 소식 한 줄: 예정 여행·가고 싶은 나라의 최근 여행경보 조정·안전공지 (외교부, 없으면 안 보임) */
+function SafetyLine({ trips, wishes }: { trips: Trip[]; wishes: Wish[] }) {
+  const abroad = useAbroad();
+  const planned = trips.filter((t) => t.status === 'planned');
+  const ids = [...planned.flatMap((t) => t.places), ...wishes.filter((w) => !w.tripId).map((w) => w.place)].flatMap((p) => (p.t === 'country' ? [p.id] : []));
+  const n = useMemo(() => (ids.length ? safetyNews(ids, abroad ?? null) : null), [ids.join(), abroad]);
+  if (!n) return null;
+  const trip = planned.find((t) => t.places.some((p) => p.t === 'country' && p.id === n.countryId));
+  const wish = wishes.find((w) => w.place.t === 'country' && w.place.id === n.countryId);
+  const to = trip ? `/trips/${trip.id}?tab=prep` : wish ? `/wishes/${wish.id}` : '/wishes';
+  return (
+    <Link to={to} className="card safety-line" data-testid="safety-line">
+      <Icon name="shield" size={18} />
+      <span><b>{COUNTRY_BY_ID.get(n.countryId)?.name ?? ''} {n.kind === '경보' ? '여행경보' : '안전 공지'}</b> · {n.t}<span className="tiny muted" style={{ display: 'block' }}>외교부 {n.when} · 떠나기 전 확인</span></span>
+    </Link>
   );
 }
 

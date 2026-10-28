@@ -1297,3 +1297,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .hub-way-more > summary::after { content: ' ▾'; }
 .hub-way-more[open] > summary::after { content: ' ▴'; }
 .hub-way-more > .hub-way-rows { margin-top: 6px; }
+
+/* 안전 소식 한 줄 (홈) */
+.safety-line { display: flex; gap: 10px; align-items: flex-start; color: var(--ink); font-size: 14px; line-height: 1.45; background: #FFF8E8; }
+.safety-line > svg { flex: none; margin-top: 2px; color: #B7791F; }

@@ -10,6 +10,10 @@ export interface Abroad {
   alarm?: Record<string, { lvl: number; remark?: string }>; alarmAt?: string;
   visa?: Record<string, { free: boolean | null; stay?: string; note?: string }>; visaAt?: string;
   fx?: Record<string, number>; fxAt?: string;
+  /** 여행경보 조정 (나라 ISO2 k, 날짜 d, 제목 t) */
+  changes?: { k: string; d: string; t: string }[]; changesAt?: string;
+  /** 나라별 최근 안전공지 (ISO2 → 최근 것부터) */
+  notices?: Record<string, { d: string; t: string }[]>; noticesAt?: string;
 }
 let D: Abroad | null = null;
 let loading: Promise<Abroad | null> | null = null;
@@ -75,4 +79,23 @@ export function fxFor(cur: string, d: Abroad | null = D): { text: string; at: st
   const unit = cur.replace(code, '').trim() || code;
   const [n, shown] = v < 1 ? [100, v * 100] : v < 20 ? [1, v] : [1, v];
   return { text: `${n === 100 ? 100 : 1}${unit} ≈ ${shown >= 100 ? Math.round(shown).toLocaleString('ko-KR') : shown.toFixed(1)}원`, at: md(d.fxAt) };
+}
+
+/**
+ * 안전 소식 한 줄: 가고 싶은·계획한 나라의 최근 여행경보 조정·안전공지 중 가장 새것 하나.
+ * 경보 조정은 30일, 공지는 14일 안의 것만 (오래된 공지로 겁주지 않게). 앞의 나라(예정 여행)가 먼저.
+ */
+export interface SafetyNews { countryId: string; kind: '경보' | '공지'; d: string; t: string; when: string }
+export function safetyNews(countryIds: string[], d: Abroad | null = D, now = new Date()): SafetyNews | null {
+  if (!d) return null;
+  const ago = (x: string) => (now.getTime() - new Date(`${x}T00:00:00+09:00`).getTime()) / 86_400_000;
+  for (const id of [...new Set(countryIds)]) {
+    const k = iso2(id);
+    if (!k) continue;
+    const c = (d.changes ?? []).filter((x) => x.k.toUpperCase() === k && ago(x.d) <= 30 && ago(x.d) >= -1).sort((a, b) => b.d.localeCompare(a.d))[0];
+    const n = (d.notices?.[k] ?? []).filter((x) => ago(x.d) <= 14 && ago(x.d) >= -1).sort((a, b) => b.d.localeCompare(a.d))[0];
+    const pick = c && (!n || c.d >= n.d) ? { kind: '경보' as const, ...c } : n ? { kind: '공지' as const, ...n } : null;
+    if (pick) return { countryId: id, kind: pick.kind, d: pick.d, t: pick.t, when: md(pick.d) };
+  }
+  return null;
 }

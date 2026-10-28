@@ -445,6 +445,12 @@ test.describe.serial('보라핀 1단계', () => {
     const eatText = (await firstEat.getAttribute('aria-label'))!.replace(' 메모에 넣기', '');
     await firstEat.click();
     await expect(page.getByLabel('먹거리')).toHaveValue(new RegExp(eatText));
+    // 투어·티켓 찾기: 단추 하나 → 세 곳 고르기 창
+    await info.getByTestId('tour-pick').click();
+    const tc = page.getByTestId('tour-choice');
+    await expect(tc.getByRole('link')).toHaveText(['마이리얼트립', 'KKday', '클룩']);
+    await tc.getByRole('button', { name: '그대로 두기' }).click();
+    await expect(tc).toHaveCount(0);
     await shot(page, '10f-city-info');
     await page.getByTestId('wish-save').click();
     await expect(page.getByRole('status')).toContainText('고쳤어요');

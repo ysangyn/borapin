@@ -57,7 +57,7 @@ export function TourPrefSetting() {
             <button key={k} className={'chip' + (v === k ? ' on' : '')} aria-pressed={v === k} onClick={() => pick(k)}>{k === 'ask' ? '누를 때마다 고르기' : TOUR_SITES[k].name}</button>
           ))}
         </div>
-        <span className="tiny muted">이 폰에만 적용돼요. 예정된 여행의 준비 탭에 단추가 나와요.</span>
+        <span className="tiny muted">이 폰에만 적용돼요. 해외 도시의 가고 싶은 곳·예정 여행 준비 탭에 단추가 나와요.</span>
       </div>
     </section>
   );
