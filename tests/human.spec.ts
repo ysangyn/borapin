@@ -716,4 +716,30 @@ test.describe('사람처럼 쓰기', () => {
       await page.context().close();
     });
   }
+
+  test('여행 중: 단계 카드의 \'지금 여기\' → 위치 → (뒷단 없으면) 이 근처로 남기기', async ({ browser }) => {
+    const page = await phone(browser);
+    await page.context().grantPermissions(['geolocation']);
+    await page.context().setGeolocation({ latitude: 37.7956, longitude: 128.8961 }); // 강릉 경포
+    await signIn(page);
+    const t = new Date(); const t2 = new Date(t); t2.setDate(t.getDate() + 1);
+    const id = await page.evaluate((w) => (window as unknown as { __testAddTrip: (i: unknown) => Promise<string> }).__testAddTrip({
+      title: '강릉 지금 여행', kind: 'trip', status: 'planned', when: w, places: [{ t: 'kr', code: '51150' }], companions: [], memo: '', tags: [], source: 'app',
+    }), { p: 'day', y: t.getFullYear(), m: t.getMonth() + 1, d: t.getDate(), y2: t2.getFullYear(), m2: t2.getMonth() + 1, d2: t2.getDate() });
+    try {
+      await page.goto('/');
+      const stage = page.getByTestId('stage-card');
+      await expect(stage).toHaveAttribute('data-stage', 'during');
+      await stage.getByTestId('here-now').click();
+      const sheet = page.getByTestId('here-sheet');
+      // 에뮬레이터에선 뒷단(관광공사)을 부르지 않으므로 '이 근처로 남기기'만
+      await expect(sheet).toContainText('지금은 근처 장소를 찾을 수 없어요');
+      await sheet.getByTestId('here-fallback').click();
+      await expect(page.getByRole('status')).toContainText('이 근처 남겼어요');
+      await expect(sheet).toHaveCount(0);
+    } finally {
+      await page.evaluate((x) => (window as unknown as { __testDeleteTrip: (i: string) => Promise<void> }).__testDeleteTrip(x), id);
+      await page.context().close();
+    }
+  });
 });

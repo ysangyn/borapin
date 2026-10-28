@@ -52,6 +52,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
         run: |
           set -x
           npm ci 2>&1 | tail -3
@@ -69,6 +70,10 @@ jobs:
           test -n "$ID"
           sed -i "s/REPLACED_BY_CI/$ID/" wrangler.toml
           npx wrangler deploy 2>&1 | tee deploy-output.txt | tee -a worker-output.txt
+          # 관광공사 키(지금 여기 근처 관광지): 값은 표준입력으로만 넘겨 기록에 남지 않게
+          set +x
+          if [ -n "$DATA_GO_KR_KEY" ]; then printf '%s' "$DATA_GO_KR_KEY" | npx wrangler secret put DATA_GO_KR_KEY >/dev/null 2>&1 && echo "관광공사 키: 넣음" | tee -a worker-output.txt || echo "관광공사 키: 넣기 실패" | tee -a worker-output.txt; fi
+          set -x
           URL=$(grep -o 'https://[a-z0-9.-]*workers.dev' deploy-output.txt | head -1)
           test -n "$URL"
           curl -sf "$URL/health" | tee -a worker-output.txt

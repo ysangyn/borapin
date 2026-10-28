@@ -1306,3 +1306,12 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .capsule-card { display: flex; gap: 12px; align-items: center; color: var(--ink); background: #FFF1F5; }
 .capsule-env { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--outline); background: #fff; font-size: 22px; transform: rotate(-6deg); box-shadow: 2px 2px 0 var(--line2); }
 .capsule-sealed { padding: 12px; border: 2px dashed var(--line2); border-radius: 12px; background: #FFF8FB; color: var(--ink2); }
+
+/* 지금 여기 남기기 */
+.here-sheet { max-height: 86dvh; overflow: auto; }
+.here-list { display: flex; flex-direction: column; gap: 8px; }
+.here-item { display: flex; gap: 10px; align-items: center; text-align: left; width: 100%; padding: 8px; border: 2px solid var(--outline); border-radius: 14px; background: #fff; font: inherit; color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--line2); }
+.here-item:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--line2); }
+.here-item img, .here-noimg { flex: none; width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--mist2, #EEE9FB); }
+.here-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.here-copy b { font-size: 15px; }

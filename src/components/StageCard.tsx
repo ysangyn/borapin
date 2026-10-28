@@ -6,6 +6,7 @@ import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
 import { stageAction, type Stage } from '../lib/stage';
+import HereNow from './HereNow';
 
 /**
  * 여행 전·중·후에 따라 바뀌는 홈 맨 위 카드.
@@ -49,6 +50,7 @@ export default function StageCard({ stage }: { stage: Stage }) {
           <Link to={action.to} className="btn sm glass" data-testid="stage-action">
             {stage.kind === 'during' && <Icon name="image" size={15} stroke={2.2} />}{action.label}
           </Link>
+          {stage.kind === 'during' && <HereNow trip={t} />}
         </span>
       </span>
       <img className="stage-art" src={art} alt="" aria-hidden="true" decoding="async" />

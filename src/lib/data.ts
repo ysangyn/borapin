@@ -21,7 +21,7 @@ import {
   type WriteBatch,
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { db, SPACE_ID } from './firebase';
+import { db, SPACE_ID, USE_EMULATOR } from './firebase';
 import { displayName } from './auth';
 import { useStore } from './store';
 import { queued } from './writes';
@@ -272,3 +272,10 @@ export const getTripOnce = async (id: string) => {
 // 통계·집계는 Firebase 없이도 쓰도록 stats.ts에 있다 (찾아보기 채점 등)
 export * from './stats';
 export type { PlaceRec, Wish };
+
+// 에뮬레이터 시험용: 화면으로 만들기 번거로운 여행(오늘 진행 중인 여행 등)을 바로 넣고 지운다 (실제 앱에는 없음)
+if (USE_EMULATOR && typeof window !== 'undefined') {
+  const w = window as unknown as Record<string, unknown>;
+  w.__testAddTrip = async (input: TripInput) => { const { auth } = await import('./firebase'); return createTrip(input, auth.currentUser!); };
+  w.__testDeleteTrip = async (id: string) => { const s = await getDoc(doc(tripsCol(), id)); if (s.exists()) await deleteTripAll({ id, ...s.data() } as Trip); };
+}

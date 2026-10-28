@@ -13,6 +13,7 @@
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
+import { nearby } from './nearby';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
 import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, RateCounter, TtlCache, type TokenPayload } from './guard';
 
@@ -23,6 +24,8 @@ export interface Env {
   FIREBASE_PROJECTS: string;
   MODEL: string;
   DAILY_LIMIT: string;
+  /** 관광공사(공공데이터포털) 키: CI가 wrangler secret으로 넣는다. 없으면 /nearby는 503 */
+  DATA_GO_KR_KEY?: string;
 }
 
 const CORS = {
@@ -276,7 +279,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isNews = req.method === 'GET' && url.pathname === '/news';
     const isPlace = req.method === 'GET' && url.pathname === '/place';
     const isGeo = req.method === 'GET' && url.pathname === '/geo';
-    if (!isNews && !isPlace && !isGeo && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isNearby = req.method === 'GET' && url.pathname === '/nearby';
+    if (!isNews && !isPlace && !isGeo && !isNearby && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -312,6 +316,18 @@ async function handle(req: Request, env: Env): Promise<Response> {
       res.headers.set('cache-control', `public, max-age=${j[0] ? 30 * 86400 : 600}`);
       await cache.put(key, res.clone());
       return res;
+    }
+    // 지금 여기 근처 관광지 (관광공사, 키는 Worker 비밀값 DATA_GO_KR_KEY)
+    if (isNearby) {
+      if (!env.DATA_GO_KR_KEY) return json({ error: 'no key' }, 503);
+      const rl2 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl2.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad position' }, 400);
+      try {
+        const r = await nearby(env.DATA_GO_KR_KEY, lat, lng);
+        return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 502); }
     }
     if (isPlace) {
       const rl0 = await env.PER_USER.limit({ key: who.uid });
