@@ -14,6 +14,7 @@ import { recsAt } from '../lib/placeRecs';
 import { samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import { garden, growHint, plantLine } from '../lib/garden';
+import { useSwipeDown } from '../lib/swipe';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
@@ -107,14 +108,17 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const [stamped, setStamped] = useState(false);
   const [openMap, mapChoice] = useMapChoice();
   const prevVisits = useRef(visits);
+  // 아래로 끌어서 닫기
+  const sheetRef = useRef<HTMLDivElement>(null), scrollRef = useRef<HTMLDivElement>(null);
+  useSwipeDown(sheetRef, scrollRef, onClose);
   useEffect(() => {
     if (visits > prevVisits.current) { setStamped(true); const t = setTimeout(() => setStamped(false), 600); prevVisits.current = visits; return () => clearTimeout(t); }
     prevVisits.current = visits;
   }, [visits]);
   return (
-    <div className="sheet split" role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
-      <div className="sheet-scroll">
-      <div className="grip" />
+    <div className="sheet split" ref={sheetRef} role="dialog" aria-modal="false" aria-label={name} data-testid="region-sheet">
+      <div className="sheet-scroll" ref={scrollRef}>
+      <div className="grip" aria-hidden="true" />
       {photoForPlace(place) && (
         <div style={{ position: 'relative' }}>
           <ScenicPhoto photo={photoForPlace(place)} className="sheet-photo" label="bottom" onTap={(p) => openMap({ name: p.name, search: true, wish: { place, kind: 'spot' } })} />

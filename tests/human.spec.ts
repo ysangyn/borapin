@@ -207,7 +207,16 @@ test.describe('사람처럼 쓰기', () => {
     await expect(sheet.getByTestId('sheet-wish').or(sheet.getByTestId('sheet-wished'))).toContainText(/담기|담겼어요/);
     await sheet.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
-    await sheet.getByRole('button', { name: '닫기' }).click();
+    // 아래로 끌어서 닫기 (손잡이를 잡고 200px 내림)
+    await page.evaluate(() => {
+      const grip = document.querySelector('[data-testid="region-sheet"] .grip')!;
+      const r = grip.getBoundingClientRect(), x = r.left + r.width / 2;
+      const t = (y: number) => new Touch({ identifier: 1, target: grip, clientX: x, clientY: y });
+      grip.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, cancelable: true, touches: [t(r.top)], targetTouches: [t(r.top)], changedTouches: [t(r.top)] }));
+      for (const d of [20, 60, 120, 200]) grip.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, cancelable: true, touches: [t(r.top + d)], targetTouches: [t(r.top + d)], changedTouches: [t(r.top + d)] }));
+      grip.dispatchEvent(new TouchEvent('touchend', { bubbles: true, cancelable: true, touches: [], targetTouches: [], changedTouches: [t(r.top + 200)] }));
+    });
+    await expect(sheet).toHaveCount(0);
     await expect(page.getByTestId('headline')).not.toHaveText(before);
     const after = await page.getByTestId('headline').textContent();
     await page.reload();
