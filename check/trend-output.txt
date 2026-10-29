@@ -1,14 +1,14 @@
 관광빅데이터: 로컬 파일에 내용이 없어 실제 주소의 지난 자료를 받아 둡니다 — https://borapin.web.app/data/trend.json (시·군 160곳)
 지난 자료를 두었어요 → src/data/trend.json, public/data/trend.json
-방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"7","daywkDivNm":"일요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"112339.5","baseYmd":"20260913"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"7","daywkDivNm":"일요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"415236.5","baseYmd":"20260913"}] 
+방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"1","daywkDivNm":"월요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"188569.5","baseYmd":"20260914"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"1","daywkDivNm":"월요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"424620.0","baseYmd":"20260914"}] 
 방문자 받는 방식: 전체 한 번에(쪽으로)
-자료가 있는 마지막 날 2026-09-28 (어제보다 30일 전) → 최근 2026-09-01~2026-09-28, 작년 2025-09-02~2025-09-29
-방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"2","daywkDivNm":"화요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"187029.5","baseYmd":"20260901"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"2","daywkDivNm":"화요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"363468.0","baseYmd":"20260901"}]
+자료가 있는 마지막 날 2026-09-29 (어제보다 30일 전) → 최근 2026-09-02~2026-09-29, 작년 2025-09-03~2025-09-30
+방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"3","daywkDivNm":"수요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"194323.5","baseYmd":"20260902"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"3","daywkDivNm":"수요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"430360.0","baseYmd":"20260902"}]
 방문자: 최근 22596줄 → 시·군 160곳, 작년 22176줄 → 160곳 · 호출 53번
 연관 관광지 기준 달 202609
-연관 관광지 원본 예시 [{"baseYm":"202609","tAtsCd":"370a94de1961b98b7eda3dfb1f08cbe1","tAtsNm":"거잠포선착장","areaCd":"28","areaNm":"인천광역시","signguCd":"28155","signguNm":"영종구","rlteTatsCd":"43e3542bb845cdd8b7f28cb05c687673","rlteTatsNm":"잠진도선착장","rlteRegnCd":"28","rlteRegnNm":"인천광역시","rlteSignguCd":"28155","rlteSignguNm":"영종구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"기타관광","rlteCtgrySclsNm":"교통시설","rlteRank":"1"},{"baseYm":"202609","tAtsCd":"370a94de1961b98b7eda3dfb1f08cbe1","tAtsNm":"거잠포선착장","areaCd":"28","areaNm":"인천광역시","signguCd":"28155","signguNm":"영종구","rlteTatsCd":"38a26a16270ce8f2cf503ba9650b6c94","rlteTatsNm":"을왕리해수욕장","rlteRegnCd":"28","rlteRegnNm":"인천광역시","rlteSignguCd":"28155","rlteSignguNm":"영종구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"자연관광","rlteCtgrySclsNm":"자연경관(하천/해양)","rlteRank":"2"}]
-붐빔 원본 예시 [{"baseYmd":"20261028","areaCd":"28","areaNm":"인천광역시","signguCd":"28200","signguNm":"남동구","tAtsNm":"논현포대","cnctrRate":"84.4"},{"baseYmd":"20261029","areaCd":"28","areaNm":"인천광역시","signguCd":"28200","signguNm":"남동구","tAtsNm":"논현포대","cnctrRate":"73.58"}]
-관광빅데이터: 시·군 160곳 (작년 비교 160곳 · 연관 137곳 · 붐빔 137곳) · 호출 556번 · 24초
-요즘 뜨는 곳: 화성시 166%, 강릉시 33%, 영천시 28%, 밀양시 27%, 논산시 25%, 당진시 20%, 여주시 19%, 경주시 19%
-한적한 곳: 울릉군 3507, 영양군 6670, 양구군 8711, 장수군 11377, 화천군 12414, 계룡시 15155, 순창군 15598, 봉화군 15960
+연관 관광지 원본 예시 [{"baseYm":"202609","tAtsCd":"3fba20a4125c4816db66636c0cff7b70","tAtsNm":"KT&G상상마당/부산","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","rlteTatsCd":"8877984a63c9640ad6a4dec3ef934719","rlteTatsNm":"롯데백화점/부산본점","rlteRegnCd":"26","rlteRegnNm":"부산광역시","rlteSignguCd":"26230","rlteSignguNm":"부산진구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"쇼핑","rlteCtgrySclsNm":"백화점","rlteRank":"1"},{"baseYm":"202609","tAtsCd":"3fba20a4125c4816db66636c0cff7b70","tAtsNm":"KT&G상상마당/부산","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","rlteTatsCd":"553a1099bf1a5568f3e6153e44dbd6c7","rlteTatsNm":"김해국제공항","rlteRegnCd":"26","rlteRegnNm":"부산광역시","rlteSignguCd":"26440","rlteSignguNm":"강서구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"기타관광","rlteCtgrySclsNm":"교통시설","rlteRank":"2"}]
+붐빔 원본 예시 [{"baseYmd":"20261029","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","tAtsNm":"KT&G 상상마당 부산","cnctrRate":"71.8"},{"baseYmd":"20261030","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","tAtsNm":"KT&G 상상마당 부산","cnctrRate":"78.8"}]
+관광빅데이터: 시·군 160곳 (작년 비교 160곳 · 연관 137곳 · 붐빔 137곳) · 호출 557번 · 45초
+요즘 뜨는 곳: 화성시 165%, 강릉시 33%, 영천시 27%, 밀양시 27%, 논산시 25%, 당진시 21%, 여주시 19%, 공주시 19%
+한적한 곳: 울릉군 3527, 영양군 6720, 양구군 8782, 장수군 11419, 화천군 12594, 계룡시 15366, 순창군 15666, 봉화군 16053
 저장 → src/data/trend.json, public/data/trend.json
