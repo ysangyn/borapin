@@ -693,7 +693,8 @@ test.describe('사람처럼 쓰기', () => {
     await expect(page.getByTestId('planner-dest')).toContainText('통영');
     await expect(page.getByTestId('planner-make')).toHaveText('여행 만들기');
     await page.getByTestId('planner-make').click();
-    await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=plan/);
+    await expect(page).toHaveURL(/\/trips\/[^/?]+\/plan-next/);
+    await expect(page.getByTestId('plan-flow')).toBeVisible();
     // 여행 탭·메뉴의 '여행 계획하기'도 /plan 하나로
     await page.goto('/wishes?find=dice');
     await expect(page.getByTestId('dice')).toBeVisible();

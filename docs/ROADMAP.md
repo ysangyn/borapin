@@ -36,7 +36,8 @@
 - 시안: https://claude.ai/artifact/2ECB6Vcaxs6jtoDsbqhLVm (5걸음 + 여행 상세 '이어서 계획하기') · 가이드북 시안 2: https://claude.ai/artifact/AKfyysCPGSaFjGAsY1C8X7
 - 끝남(e57cff0): src/lib/route.ts(동선 정리)·src/lib/planPick.ts(담기 후보)·Trip.stay/hopes/planDone·PlanItem.by/lat/lng/kind/img·규칙
 - 끝남(17ab947, 숨김): src/pages/PlanFlow.tsx 1차 — 다섯 걸음이 돌아감(저장·건너뛰기)
-- 다음 할 일: ① 시안대로 다듬기(달력에 좋은 날·축제 점, 날씨·옷차림 칸, 숙소 동네 추천·링크 붙여넣기, 담기 아래 막대·자세히 창, 동선 지도·끌어 바꾸기·'이날은 많아요', 기대 둘 다·체크리스트) ②③ 끝(담기 때 by·kind·lat·img를 바로 저장, 스위치가 켜지면 '여기로 정해요'·바로 만들기가 뼈대 대신 다섯 걸음으로) ④ 여행 상세 '이어서 계획하기 n/5' 끝(홈 단계 카드는 아직) ⑤ 화면 시험(tests/planflow.spec.ts) ⑥ FLAGS.planFlow 켜기 → 가이드북(한 권)
+- 끝남(10-30, 숨김): ① 시안대로 다듬기 — 언제(달력 좋은 때 초록 점·축제 분홍 점, src/lib/planCal.ts, 가기 좋은 때·그때 축제·요즘 칸) · 숙소(지도 링크 붙여넣기로 자리까지, 묵기 좋은 동네 칸) · 담기(자세히 창, 직접 담기 이름·링크, 사람별 개수 막대) · 동선(작은 동선 그림·날짜 옮기기·위아래·'이동이 좀 많아요'·다시 정리) · 기대(둘 다 보이게 + 계획 체크리스트) · ④ 홈 단계 카드 '이어서 계획하기'(걸음 순서는 planPick.ts PLAN_STEPS) · ⑤ 화면 시험(tour.spec 다섯 걸음 사진 m07a~e, app·human spec 새 흐름) — 스위치는 에뮬레이터 빌드에서만 켜짐
+- 다음 할 일: CI 사진(ci-report test-results/tour/m07a~e)으로 시안과 비교해 다듬기 → 사용자 확인 → ⑥ FLAGS.planFlow를 true로 → 가이드북(한 권)
 - 사용자 기준: 이 기능만으로 따로 앱이 될 만큼 정교하고 쓰기 쉽게
 
 ## 남은 일 (2026-10-26 정리 — 설계서 docs/SPEC-2026-11.md)

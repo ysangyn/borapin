@@ -7,6 +7,8 @@ import { placeLabel } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
 import { stageAction, type Stage } from '../lib/stage';
 import HereNow from './HereNow';
+import { FLAGS } from '../lib/flags';
+import { nextPlanStep, PLAN_STEP_LABEL } from '../lib/planPick';
 
 /**
  * 여행 전·중·후에 따라 바뀌는 홈 맨 위 카드.
@@ -24,12 +26,14 @@ export default function StageCard({ stage }: { stage: Stage }) {
   const where = t.places.map(placeLabel).join(' · ');
   const art = stage.kind === 'before' ? '/art/bora-pack.webp' : stage.kind === 'during' ? '/art/bora-camera.webp' : '/art/bora-cheer.webp';
   const action = stageAction(stage, { photos: nPhotos ?? 0, notes: nNotes });
+  // 떠나기 전인데 계획 걸음이 남았으면 단추를 '이어서 계획하기'로 (FLAGS.planFlow)
+  const planNext = FLAGS.planFlow && stage.kind === 'before' && t.status === 'planned' ? nextPlanStep(t.planDone) : null;
 
   const lead = stage.kind === 'before'
     ? (stage.days === 0 ? '오늘 떠나요!' : `${stage.label} · ${where}`)
     : stage.kind === 'during' ? `${stage.label} · ${where}` : `${stage.label} · ${where}`;
   const sub = stage.kind === 'before'
-    ? (pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
+    ? (planNext ? `계획 ${t.planDone?.length ?? 0}/5 · 다음은 '${PLAN_STEP_LABEL[planNext]}'` : pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
     : stage.kind === 'during'
       ? (nPhotos ? `사진 ${nPhotos}장 올렸어요` : '오늘 찍은 사진을 바로 올려 두세요')
       : nPhotos && nNotes ? `사진 ${nPhotos}장 · 글 ${nNotes}개 남겼어요`
@@ -47,9 +51,13 @@ export default function StageCard({ stage }: { stage: Stage }) {
         <span className="stage-lead">{lead}</span>
         <span className="stage-sub">{sub} · {formatWhen(t.when)}</span>
         <span className="stage-actions">
-          <Link to={action.to} className="btn sm glass" data-testid="stage-action">
-            {stage.kind === 'during' && <Icon name="image" size={15} stroke={2.2} />}{action.label}
-          </Link>
+          {planNext ? (
+            <Link to={`/trips/${t.id}/plan-next?step=${planNext}`} className="btn sm glass" data-testid="stage-plan">이어서 계획하기</Link>
+          ) : (
+            <Link to={action.to} className="btn sm glass" data-testid="stage-action">
+              {stage.kind === 'during' && <Icon name="image" size={15} stroke={2.2} />}{action.label}
+            </Link>
+          )}
           {stage.kind === 'during' && <HereNow trip={t} />}
         </span>
       </span>

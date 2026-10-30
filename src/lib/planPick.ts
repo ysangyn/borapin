@@ -47,3 +47,9 @@ export function pickables(place: Place, d: { tour: TourData | null; info: Travel
 }
 
 export const PICK_LABEL: Record<PickKind, string> = { see: '볼 것', eat: '먹을 것', buy: '살 것', fest: '축제' };
+
+/** 계획 이어가기 다섯 걸음 (PlanFlow · 여행 상세 · 홈 카드가 같이 씀) */
+export const PLAN_STEPS = ['when', 'stay', 'pick', 'route', 'hope'] as const;
+export const PLAN_STEP_LABEL: Record<(typeof PLAN_STEPS)[number], string> = { when: '언제', stay: '어디서 자요', pick: '같이 찾아 담기', route: '동선 정리', hope: '기대 한 줄' };
+/** 아직 안 끝낸 첫 걸음 (다 끝냈으면 null) */
+export const nextPlanStep = (done: string[] | undefined) => PLAN_STEPS.find((s) => !(done ?? []).includes(s)) ?? null;

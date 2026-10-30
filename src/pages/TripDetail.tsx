@@ -1,3 +1,4 @@
+import { PLAN_STEPS, PLAN_STEP_LABEL, nextPlanStep } from '../lib/planPick';
 import { FLAGS } from '../lib/flags';
 import { toneOf } from '../lib/members';
 import { useEffect, useMemo, useState } from 'react';
@@ -134,9 +135,9 @@ export default function TripDetail() {
 
         {/* 계획 이어가기: 예정 여행이고 다섯 걸음을 다 끝내지 않았으면 맨 위에 (FLAGS.planFlow) */}
         {FLAGS.planFlow && trip.status === 'planned' && tab === 'info' && (trip.planDone?.length ?? 0) < 5 && (() => {
-          const order = ['when', 'stay', 'pick', 'route', 'hope'];
-          const next = order.find((s) => !(trip.planDone ?? []).includes(s)) ?? 'when';
-          const label: Record<string, string> = { when: '언제', stay: '어디서 자요', pick: '같이 찾아 담기', route: '동선 정리', hope: '기대 한 줄' };
+          const order = PLAN_STEPS;
+          const next = nextPlanStep(trip.planDone) ?? 'when';
+          const label = PLAN_STEP_LABEL;
           return (
             <Link to={`/trips/${trip.id}/plan-next?step=${next}`} className="card plan-continue" data-testid="plan-continue">
               <b className="jua" style={{ fontSize: 18 }}>이어서 계획하기</b>

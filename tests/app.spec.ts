@@ -376,8 +376,13 @@ test.describe.serial('보라핀 1단계', () => {
     // 날짜는 아직 몰라요: 홈 위 단계 카드가 아니라 '다음 여행 준비' 묶음이 이 여행을 맡는다
     await page.getByRole('button', { name: '아직 몰라요' }).click();
     await page.getByTestId('planner-make').click();
+    // 만들면 바로 계획 이어가기 (날짜를 몰라도 건너뛰고 갈 수 있게)
+    await expect(page).toHaveURL(/\/trips\/[^/?]+\/plan-next/);
+    await expect(page.getByTestId('plan-flow')).toHaveAttribute('data-step', 'when');
+    await page.getByTestId('flow-skip').click();
+    await expect(page.getByTestId('plan-flow')).toHaveAttribute('data-step', 'stay');
+    await page.goto(page.url().replace(/\/plan-next.*$/, ''));
     await expect(page.getByTestId('trip-title')).toHaveText('제주 여행');
-    await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=plan$/);
     await page.goto('/wishes');
     await expect(page.getByTestId('wish-card').filter({ hasText: '제주' })).toContainText('예정');
 
@@ -582,14 +587,23 @@ test.describe.serial('보라핀 1단계', () => {
     // 내 화면에도 바로 '여기로 정해요'가 뜬다
     await expect(cands.first().getByTestId('plan-decide')).toBeVisible({ timeout: 15_000 });
     await cands.first().getByTestId('plan-decide').click();
-    await expect(page.getByRole('status')).toContainText('하루 뼈대를 깔아 두었어요');
-    await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=plan$/);
-    const plan = page.getByTestId('plan-tab');
-    await expect(plan.getByTestId('plan-item').first()).toBeVisible();
-    expect(await plan.getByTestId('plan-item').count()).toBeGreaterThanOrEqual(4);
-    await expect(plan).toContainText('1일째');
-    await expect(plan).toContainText('2일째');
-    await shot(page, '10j-plan-skeleton');
+    // 정하면 바로 계획 이어가기 다섯 걸음 (에뮬레이터 빌드에서 FLAGS.planFlow 켜짐)
+    await expect(page.getByRole('status')).toContainText('이어서 계획해요');
+    await expect(page).toHaveURL(/\/trips\/[^/?]+\/plan-next/);
+    const flow = page.getByTestId('plan-flow');
+    await expect(flow).toHaveAttribute('data-step', 'when');
+    await expect(page.getByTestId('flow-nights')).toHaveText('1박 2일');
+    // 고른 날(다음 주말)이 달력에 칠해져 있다
+    await expect(page.getByTestId('flow-cal').locator('.c.start')).toHaveCount(1);
+    await shot(page, '10j-plan-when');
+    await page.getByTestId('flow-when-save').click();
+    await expect(flow).toHaveAttribute('data-step', 'stay');
+    // 여기서 멈추고 여행으로 → 맨 위 '이어서 계획하기 1/5 · 다음은 어디서 자요'
+    const tripUrl = page.url().replace(/\/plan-next.*$/, '');
+    await page.goto(tripUrl);
+    await expect(page.getByTestId('plan-continue')).toContainText("1/5 · 다음은 '어디서 자요'");
+    await page.getByTestId('plan-continue').click();
+    await expect(flow).toHaveAttribute('data-step', 'stay');
     // 정한 뒤 계획 화면은 '정했어요'
     await page.goto(url);
     await expect(page.getByTestId('plan-decided')).toBeVisible();
@@ -717,11 +731,13 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('headline')).toBeVisible();
     const stage = page.getByTestId('stage-card');
     await expect(stage).toHaveAttribute('data-stage', 'before');
-    await expect(stage.getByTestId('stage-action')).toHaveText('준비물 보기');
-    await expect(stage.getByTestId('stage-action')).toHaveAttribute('href', /^\/trips\/[^/?]+\?tab=prep$/);
+    // 계획 걸음이 남았으면 단추는 '이어서 계획하기' (남은 첫 걸음으로)
+    await expect(stage.getByTestId('stage-plan')).toHaveText('이어서 계획하기');
+    await expect(stage.getByTestId('stage-plan')).toHaveAttribute('href', /^\/trips\/[^/?]+\/plan-next\?step=stay$/);
+    await expect(stage).toContainText("계획 1/5 · 다음은 '어디서 자요'");
     // 접힌 둘러보기 칸 제목엔 '추억'이 없다 (추억 카드는 있으면 접힌 칸 안에)
     await expect(page.getByTestId('home-more').locator('summary')).toHaveText('이달의 추천 · 가고 싶은 곳');
-    await stage.getByTestId('stage-action').click();
+    await page.goto((await stage.getByTestId('stage-link').getAttribute('href'))! + '?tab=prep');
     await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=prep$/);
     await expect(page.getByRole('tab', { name: '준비' })).toHaveAttribute('aria-selected', 'true');
     // 예정 여행의 탭은 개요·일정·준비·사진 (글은 개요 아래)
