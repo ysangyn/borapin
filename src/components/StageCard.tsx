@@ -26,8 +26,9 @@ export default function StageCard({ stage }: { stage: Stage }) {
   const where = t.places.map(placeLabel).join(' · ');
   const art = stage.kind === 'before' ? '/art/bora-pack.webp' : stage.kind === 'during' ? '/art/bora-camera.webp' : '/art/bora-cheer.webp';
   const action = stageAction(stage, { photos: nPhotos ?? 0, notes: nNotes });
-  // 떠나기 전인데 계획 걸음이 남았으면 단추를 '이어서 계획하기'로 (FLAGS.planFlow)
-  const planNext = FLAGS.planFlow && stage.kind === 'before' && t.status === 'planned' ? nextPlanStep(t.planDone) : null;
+  // 계획 이어가기를 시작했는데 걸음이 남았으면 단추를 '이어서 계획하기'로 (FLAGS.planFlow)
+  // 기록 남기기로 바로 만든 예정 여행(걸음 0)은 그대로 준비물 — 계획은 여행 상세에서 권한다
+  const planNext = FLAGS.planFlow && stage.kind === 'before' && t.status === 'planned' && (t.planDone?.length ?? 0) > 0 ? nextPlanStep(t.planDone) : null;
 
   const lead = stage.kind === 'before'
     ? (stage.days === 0 ? '오늘 떠나요!' : `${stage.label} · ${where}`)
