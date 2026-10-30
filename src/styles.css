@@ -1412,14 +1412,14 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .flow-it .nm { flex: 1; min-width: 0; }
 .flow-it .ctl { display: flex; gap: 2px; align-items: center; }
 .flow-it .ctl .icon-btn { width: 30px; height: 30px; }
-.flow-it .ctl .select { padding: 2px 4px; font-size: 12px; width: auto; }
+.flow-it .ctl .select { height: 30px; min-height: 0; padding: 0 22px 0 8px; font-size: 12px; width: auto; border-radius: 10px; background-position: right 6px center; }
 .flow-warn { font-size: 12px; font-weight: 700; color: #B25A00; background: #FFF1D9; border-radius: 10px; padding: 4px 8px; }
 .flow-who { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13px; margin-bottom: 4px; }
 .flow-who i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--outline); display: grid; place-items: center; font-size: 11px; color: #fff; background: var(--pink); }
 .flow-who i.t1 { background: var(--blue); }
 .flow-hope, .flow-hope-in { font-size: 18px; border: 2px solid var(--outline); border-radius: 14px; padding: 8px 12px; background: #FFE8EE; }
 .flow-hope.t1, .flow-hope-in.t1 { background: #E1EBFF; }
-.flow-hope.empty { color: var(--ink3); background: #F4F1FF; }
+.flow-hope.empty { color: var(--ink3); background: #F4F1FF; font-family: inherit; font-size: 13px; border-style: dashed; }
 .flow-check { display: flex; flex-direction: column; gap: 4px; background: #FFF8D6; font-size: 14px; }
 .flow-check > b { font-weight: 400; font-size: 17px; }
 .flow-check > div { display: flex; gap: 8px; color: var(--ink3); } .flow-check > div.ok { color: var(--ink); }

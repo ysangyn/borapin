@@ -1,3 +1,4 @@
+import { withIGa } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { TopBar, useToast } from '../components/ui';
@@ -227,7 +228,10 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
     } else await addPlan(trip.id, t.slice(0, 80), (plan?.length ?? 0) + 1, null, { by: [name], kind: tab === 'fest' ? 'see' : tab });
     toast('담았어요');
   };
-  const shown = picks.filter((p) => p.kind === tab);
+  // 여러 카드에 똑같이 붙는 한 줄(그 고장 소개 등)은 빼서 카드마다 다른 말만 남긴다
+  const lineCount = new Map<string, number>();
+  for (const p of picks) if (p.line) lineCount.set(p.line, (lineCount.get(p.line) ?? 0) + 1);
+  const shown = picks.filter((p) => p.kind === tab).map((p) => (p.line && (lineCount.get(p.line) ?? 0) > 1 ? { ...p, line: undefined } : p));
   const mine = (plan ?? []).filter((p) => (p.by?.length ?? 0) > 0);
   const both = mine.filter((p) => members.length > 1 && members.every((n) => p.by?.includes(n)));
   const extra = mine.filter((p) => !picks.some((x) => x.name === p.name) && (p.kind ?? 'see') === tab);
@@ -363,12 +367,12 @@ function HopeStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
     if (text.trim() && name) await patchTrip(trip.id, { [`hopes.${name}`]: text.trim().slice(0, 100) }).then(() => toast('기대 한 줄을 남겼어요'), () => toast('저장하지 못했어요'));
     onNext();
   };
-  const picked = (plan ?? []).filter((p) => (p.by?.length ?? 0) > 0);
+  const picked = (plan ?? []).filter((p) => (p.by?.length ?? 0) > 0 || p.day);
   const routed = picked.some((p) => p.day);
   const list: [boolean, string][] = [
     [days.length > 0, days.length ? `${md(days[0])}${days.length > 1 ? ` – ${md(days[days.length - 1])}` : ''} · ${days.length > 1 ? `${days.length - 1}박 ${days.length}일` : '당일'}` : '날짜는 아직'],
     [!!trip.stay, trip.stay ? `${trip.stay.name}에서 자요` : '숙소는 아직'],
-    [picked.length > 0, picked.length ? `담은 곳 ${picked.length}${routed ? ' · 날마다 동선' : ''}` : '담은 곳은 아직'],
+    [picked.length > 0, picked.length ? `가 볼 곳 ${picked.length}${routed ? ' · 날마다 동선' : ''}` : '가 볼 곳은 아직'],
     [!!trip.packing?.length, trip.packing?.length ? `준비물 ${trip.packing.length}개` : "준비물 · 나중에 '준비' 탭에서"],
   ];
   return (
@@ -378,7 +382,7 @@ function HopeStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
           <textarea className={'textarea hand flow-hope-in t' + Math.max(0, toneOf(n))} rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="이번 여행에서 제일 기대되는 것 한 줄" aria-label="기대 한 줄" maxLength={100} /></div>
       ) : (
         <div key={n}><div className="flow-who"><i className={'t' + Math.max(0, toneOf(n))}>{[...n][0]}</i>{n}{!trip.hopes?.[n] && <span className="tiny muted"> · 아직 안 썼어요</span>}</div>
-          <div className={'hand flow-hope t' + Math.max(0, toneOf(n)) + (trip.hopes?.[n] ? '' : ' empty')}>{trip.hopes?.[n] ?? '…'}</div></div>
+          <div className={'hand flow-hope t' + Math.max(0, toneOf(n)) + (trip.hopes?.[n] ? '' : ' empty')}>{trip.hopes?.[n] ?? `${withIGa(n)} 폰에서 쓰면 여기 보여요`}</div></div>
       ))}
       <div className="card flow-check" data-testid="flow-check">
         <b className="jua">{list.every(([ok]) => ok) ? '계획이 다 됐어요' : '계획이 거의 다 됐어요'}</b>
