@@ -1,3 +1,4 @@
+import { FLAGS } from '../lib/flags';
 import { toneOf } from '../lib/members';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -130,6 +131,20 @@ export default function TripDetail() {
             {photos.length > 1 && <span className="pola-count">1 / {photos.length}</span>}
           </button>
         )}
+
+        {/* 계획 이어가기: 예정 여행이고 다섯 걸음을 다 끝내지 않았으면 맨 위에 (FLAGS.planFlow) */}
+        {FLAGS.planFlow && trip.status === 'planned' && tab === 'info' && (trip.planDone?.length ?? 0) < 5 && (() => {
+          const order = ['when', 'stay', 'pick', 'route', 'hope'];
+          const next = order.find((s) => !(trip.planDone ?? []).includes(s)) ?? 'when';
+          const label: Record<string, string> = { when: '언제', stay: '어디서 자요', pick: '같이 찾아 담기', route: '동선 정리', hope: '기대 한 줄' };
+          return (
+            <Link to={`/trips/${trip.id}/plan-next?step=${next}`} className="card plan-continue" data-testid="plan-continue">
+              <b className="jua" style={{ fontSize: 18 }}>이어서 계획하기</b>
+              <span className="small">{trip.planDone?.length ?? 0}/5 · 다음은 '{label[next]}'</span>
+              <span className="flow-steps">{order.map((s) => <i key={s} className={(trip.planDone ?? []).includes(s) ? 'done' : s === next ? 'on' : ''} />)}</span>
+            </Link>
+          );
+        })()}
 
         {/* 우리 사진이 아직 없으면 그 곳의 대표 사진이라도 (누르면 사진 탭으로 — 우리 사진을 올리면 바뀜) */}
         {tab === 'info' && photos.length === 0 && coverScene && (
