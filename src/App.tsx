@@ -22,7 +22,9 @@ const Feed = lazy(() => import('./pages/Feed'));
 const Backdrop = lazy(() => import('./components/Backdrop'));
 const Study = lazy(() => import('./pages/Study'));
 const Phrases = lazy(() => import('./pages/Phrases'));
+import { FLAGS } from './lib/flags';
 const Planner = lazy(() => import('./pages/Planner'));
+const PlanFlow = lazy(() => import('./pages/PlanFlow'));
 const PlanPick = lazy(() => import('./pages/Planner').then((m) => ({ default: m.PlanPick })));
 const Space = lazy(() => import('./pages/Space'));
 const Wishes = lazy(() => import('./pages/Wishes'));
@@ -104,6 +106,7 @@ export default function App() {
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/trips" element={<Trips />} />
               <Route path="/trips/:id" element={<TripDetail />} />
+              {FLAGS.planFlow && <Route path="/trips/:id/plan-next" element={<PlanFlow />} />}
               <Route path="/trips/:id/edit" element={<Record />} />
               <Route path="/record" element={<Record />} />
               <Route path="/map" element={<MapPage />} />
