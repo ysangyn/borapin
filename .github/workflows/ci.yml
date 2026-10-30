@@ -168,6 +168,9 @@ jobs:
         run: npm run test:migrate 2>&1 | tee migrate-test-output.txt
       - name: 화면 시험 (구글 창 로그인, 한글 입력, 끌어다 놓기, 375px, 새로 고침 포함 · 아이폰 사파리는 핵심 시험만)
         run: npm run test:e2e 2>&1 | tee test-output.txt
+      - name: 크롬 화면 사진 옮겨 두기 (아이폰 시험이 test-results를 지우므로)
+        if: always()
+        run: mkdir -p shots && cp -r test-results/screens test-results/tour shots/ 2>/dev/null || true
       - name: 크롬 실패 화면 먼저 모으기 (아이폰 시험이 test-results를 지우므로)
         if: failure()
         run: |
@@ -190,7 +193,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh test test-results/screens test-results/tour test-output.txt test-webkit-output.txt rules-output.txt migrate-test-output.txt failures
+        run: scripts/push-report.sh test shots/screens shots/tour test-output.txt test-webkit-output.txt rules-output.txt migrate-test-output.txt failures
 
   preview:
     name: 3. 미리보기 배포와 진짜 Firebase 시험
