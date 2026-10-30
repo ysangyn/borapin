@@ -146,7 +146,7 @@ Error: page.evaluate: TypeError: Illegal constructor
               - link "여기 기록" [ref=e107]:
                 - /url: /record?place=kr:46720
         - link "전주시 오늘은 전주시를 다시 볼까요? 전주시 여행 날짜 모름" [ref=e108]:
-          - /url: /trips/0E325ls2229DYgKgHGhh
+          - /url: /trips/mzNopo2XkI33vbtfFoOe
           - generic [ref=e109]: 전주시
           - generic [ref=e110]:
             - generic [ref=e111]: 오늘은 전주시를 다시 볼까요?
@@ -158,7 +158,7 @@ Error: page.evaluate: TypeError: Illegal constructor
             - link "전체 보기" [ref=e119]:
               - /url: /trips
           - link "전주시 여행 전북 전주시 · 날짜 모름" [ref=e121]:
-            - /url: /trips/0E325ls2229DYgKgHGhh
+            - /url: /trips/mzNopo2XkI33vbtfFoOe
             - generic [ref=e123]:
               - generic [ref=e124]: 전주시 여행
               - generic [ref=e125]: 전북 전주시 · 날짜 모름
@@ -235,7 +235,7 @@ Error: page.evaluate: TypeError: Illegal constructor
               - generic [ref=e219]: KTX 전주역 5km · 군산공항 46km
             - button "더보기" [ref=e220] [cursor=pointer]
           - link "전주시 여행 전북 전주시 · 날짜 모름" [ref=e222]:
-            - /url: /trips/0E325ls2229DYgKgHGhh
+            - /url: /trips/mzNopo2XkI33vbtfFoOe
             - generic [ref=e224]:
               - generic [ref=e225]: 전주시 여행
               - generic [ref=e226]: 전북 전주시 · 날짜 모름
