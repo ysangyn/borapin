@@ -32,6 +32,12 @@
 | - | 옛 사진으로 지난 여행 복원 | 미룸(사용자: 더 고민) | |
 | - | 우리 동네 지도(동 단위) | 보류 | |
 
+## 진행 중: 여행 계획하기 이어가기 (핵심 기능, 사용자 10-29)
+- 시안: https://claude.ai/artifact/2ECB6Vcaxs6jtoDsbqhLVm (5걸음 + 여행 상세 '이어서 계획하기') · 가이드북 시안 2: https://claude.ai/artifact/AKfyysCPGSaFjGAsY1C8X7
+- 끝남(e57cff0): src/lib/route.ts(동선 정리)·src/lib/planPick.ts(담기 후보)·Trip.stay/hopes/planDone·PlanItem.by/lat/lng/kind/img·규칙
+- 다음 할 일: src/pages/PlanFlow.tsx(/trips/:id/plan-next?step=1..5, FLAGS.planFlow) → Planner의 '여기로 정해요'·make가 뼈대 대신 여기로 → TripDetail '이어서 계획하기' 카드 → 가이드북(한 권)
+- 사용자 기준: 이 기능만으로 따로 앱이 될 만큼 정교하고 쓰기 쉽게
+
 ## 남은 일 (2026-10-26 정리 — 설계서 docs/SPEC-2026-11.md)
 - 작은 일: 카카오 SDK SRI(사용자가 해시 복사) · 아이폰(WebKit) 지도 시험 실패 원인(배포는 안 막음) · 옷차림 기후 못 받은 4곳(카파도키아·코츠월드·퀘벡·마라케시: 지오코딩 이름 고치기)
 - 10-28 꽃 도감: 국내 158/160 시·군 꽃(위키백과 정보 상자, scripts/flowers-collect.ts → flowers-normalize.ts), 꽃 그림 39종×3벌(scripts/flowers-build.ts), 지도 무늬가 고장 꽃 색, 지역 창 '○○의 꽃', 피어나기 그 꽃, 추억에 '모은 꽃'
