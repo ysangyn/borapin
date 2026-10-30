@@ -119,16 +119,10 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const toggle = async (p: Pick) => {
     if (!me) return;
     const it = byName.get(p.name);
-    if (!it) { await addPlan(trip.id, p.name, (plan?.length ?? 0) + 1).catch(() => {}); return; }
+    if (!it) { await addPlan(trip.id, p.name, (plan?.length ?? 0) + 1, null, { by: [me], kind: p.kind, lat: p.lat, lng: p.lng, img: p.img, info: (p.area ?? p.line ?? '').slice(0, 200) }).catch(() => {}); return; }
     const by = it.by ?? [];
     await updatePlan(it.id, { by: by.includes(me) ? by.filter((x) => x !== me) : [...by, me] }).catch(() => {});
   };
-  // 새로 담은 항목에 하트·자리·사진을 채운다 (addPlan은 이름만 받으므로)
-  useEffect(() => {
-    if (!plan || !me) return;
-    for (const p of picks) { const it = byName.get(p.name); if (it && it.by === undefined) void updatePlan(it.id, { by: [me], kind: p.kind, ...(p.lat != null ? { lat: p.lat, lng: p.lng } : {}), ...(p.img ? { img: p.img } : {}) }); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan, picks, me]);
   const shown = picks.filter((p) => p.kind === tab);
   const added = (plan ?? []).filter((p) => (p.by?.length ?? 0) > 0);
   const both = added.filter((p) => memberNames().every((n) => p.by?.includes(n)));

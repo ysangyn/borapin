@@ -59,8 +59,8 @@ export function usePlan(tripId: string | undefined) {
   const items = useByTrip<PlanItem>(plansCol, tripId);
   return useMemo(() => (items ? [...items].sort((a, b) => (a.day ?? '9999').localeCompare(b.day ?? '9999') || (a.time ?? '99').localeCompare(b.time ?? '99') || a.order - b.order) : null), [items]);
 }
-export const addPlan = (tripId: string, name: string, order: number, recId?: string | null) =>
-  queued(setDoc(doc(plansCol()), { tripId, name: name.trim(), order, day: null, time: null, info: '', recId: recId ?? null, done: false, createdAt: serverTimestamp(), v: 1 }));
+export const addPlan = (tripId: string, name: string, order: number, recId?: string | null, extra?: Partial<Pick<PlanItem, 'by' | 'lat' | 'lng' | 'kind' | 'img' | 'info'>>) =>
+  queued(setDoc(doc(plansCol()), { tripId, name: name.trim(), order, day: null, time: null, info: '', recId: recId ?? null, done: false, ...JSON.parse(JSON.stringify(extra ?? {})), createdAt: serverTimestamp(), v: 1 }));
 /** 뼈대 일정 한꺼번에 넣기 (여행 계획하기) */
 export const addPlans = (tripId: string, items: { day: string | null; time: string | null; name: string; info: string; recId?: string }[]) =>
   Promise.all(items.map((it, i) => queued(setDoc(doc(plansCol()), { tripId, name: it.name.slice(0, 80), order: i + 1, day: it.day, time: it.time, info: it.info.slice(0, 200), recId: it.recId ?? null, done: false, createdAt: serverTimestamp(), v: 1 }))));

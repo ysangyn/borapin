@@ -1,3 +1,4 @@
+import { FLAGS } from '../lib/flags';
 import { straightKm } from '../lib/placeApps';
 import { useHome } from '../lib/home';
 import PlaceHint from '../components/PlaceHint';
@@ -66,8 +67,10 @@ export default function Planner() {
     setBusy(true);
     try {
       const tripId = await createTrip({ title: `${placeLabel(fixed)} ${nights === 0 ? '나들이' : '여행'}`, kind: nights === 0 ? 'outing' : 'trip', status: 'planned', when: whenOf(conds), places: [fixed], companions: memberNames(), memo: '', tags: [], source: 'app' }, auth.user);
-      await addPlans(tripId, skeleton(fixed, conds, data));
       if (wish) await updateWish(wish.id, { tripId }).catch(() => undefined);
+      // 계획 이어가기가 켜져 있으면 뼈대 대신 다섯 걸음으로 (담은 곳으로 일정을 채운다)
+      if (FLAGS.planFlow) { toast(`${placeLabel(fixed)} 여행을 만들었어요`); nav(`/trips/${tripId}/plan-next`, { replace: true }); return; }
+      await addPlans(tripId, skeleton(fixed, conds, data));
       toast(`${placeLabel(fixed)} 여행을 만들었어요 · 하루 뼈대를 깔아 두었어요`);
       nav(`/trips/${tripId}?tab=plan`, { replace: true });
     } catch (e) { console.warn(e); toast('만들지 못했어요. 다시 해 주세요'); setBusy(false); }
@@ -183,9 +186,11 @@ export function PlanPick() {
     setBusy(true);
     try {
       const tripId = await createTrip({ title: `${placeLabel(c.place)} ${draft.conds.nights === 0 ? '나들이' : '여행'}`, kind: draft.conds.nights === 0 ? 'outing' : 'trip', status: 'planned', when: whenOf(draft.conds), places: [c.place], companions: memberNames(), memo: '', tags: [], source: 'app' }, auth.user);
-      await addPlans(tripId, skeleton(c.place, draft.conds, data));
+      if (!FLAGS.planFlow) await addPlans(tripId, skeleton(c.place, draft.conds, data));
       if (c.wishId) await updateWish(c.wishId, { tripId }).catch(() => undefined);
       await markDecided(draft.id, tripId);
+      // 계획 이어가기가 켜져 있으면 정한 다음 바로 다섯 걸음으로
+      if (FLAGS.planFlow) { toast(`${withRo(placeLabel(c.place))} 정했어요 · 이어서 계획해요`); nav(`/trips/${tripId}/plan-next`); return; }
       toast(`${withRo(placeLabel(c.place))} 정했어요 · 하루 뼈대를 깔아 두었어요`);
       nav(`/trips/${tripId}?tab=plan`);
     } catch (e) { console.warn(e); toast('만들지 못했어요. 다시 해 주세요'); setBusy(false); }
