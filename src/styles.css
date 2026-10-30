@@ -1372,7 +1372,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .flow-cal-grid .c.good.fest::before { left: calc(50% - 6px); }
 .flow-cal-grid .c.range { background: #E6E0FB; }
 .flow-cal-grid .c.start { background: var(--violet); color: #fff; border-radius: 12px 0 0 12px; }
-.flow-cal-grid .c.start:not(.range) { border-radius: 12px; }
+.flow-cal-grid .c.start:not(.range), .flow-cal-grid .c.start.end { border-radius: 12px; }
+.flow-cal-grid .c.end { border-radius: 0 12px 12px 0; }
+.flow-good { margin-left: 6px; font-family: inherit; font-size: 11.5px; vertical-align: 2px; background: #DDF2DF; color: #2F7A3B; border: 1.5px solid var(--outline); border-radius: 99px; padding: 1px 7px; }
 .flow-stepper { display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 700; }
 .flow-stepper b { font-weight: 400; font-size: 17px; min-width: 76px; text-align: center; }
 .flow-strip { display: flex; flex-direction: column; gap: 6px; background: #F4F1FF; border: 2px solid var(--outline); border-radius: 14px; padding: 10px 12px; font-size: 13px; color: var(--ink2); }

@@ -28,7 +28,7 @@ const STEPS = PLAN_STEPS;
 type Step = (typeof STEPS)[number];
 const TITLE: Record<Step, string> = { when: '언제 가요?', stay: '어디서 자요?', pick: '같이 찾아 담아요', route: '이렇게 다니면 어때요?', hope: '제일 기대되는 건?' };
 const SUB: Record<Step, string> = {
-  when: '초록 점은 가기 좋은 때, 분홍 점은 축제',
+  when: '떠나는 날을 누르고 며칠인지 정해요 · 분홍 점은 축제',
   stay: '정해 두면 하루 동선이 숙소에서 시작해요',
   pick: '각자 폰에서 하트 · 둘 다 누르면 ★',
   route: '가까운 곳끼리 날마다 묶었어요 · 바꿔도 돼요',
@@ -102,12 +102,14 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const place = trip.places[0];
   const season = seasonFor(seasons, place);
   const fests = place.t === 'kr' ? festivals?.cells[place.code] ?? [] : [];
-  const cells = monthCells(ym.y, ym.m, { today, goodMonths: season?.m ?? [], fests, start: start || null, nights });
+  const end = start ? (() => { const e = new Date(start); e.setDate(e.getDate() + nights); return ymd(e); })() : '';
+  const goodMonth = !!season?.m.includes(ym.m);
+  // 좋은 때는 달 단위 자료라 날마다 점을 찍으면 한 달이 다 초록 — 제목 옆 꼬리표로, 점은 축제만
+  const cells = monthCells(ym.y, ym.m, { today, goodMonths: [], fests, start: start || null, nights });
   const f = start ? festsIn(fests, start, nights) : null;
   const tags = place.t === 'kr' ? trendTags(place.code, trend) : [];
   const toast = useToast();
   const move = (k: number) => setYm(({ y, m }) => { const d = new Date(y, m - 1 + k, 1); return { y: d.getFullYear(), m: d.getMonth() + 1 }; });
-  const end = start ? (() => { const e = new Date(start); e.setDate(e.getDate() + nights); return ymd(e); })() : '';
   const save = async () => {
     if (!start) return toast('떠나는 날을 달력에서 골라 주세요');
     const s = new Date(start), e = new Date(end);
@@ -118,11 +120,11 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   return (
     <div className="flow-body">
       <div className="card white flow-cal">
-        <div className="flow-cal-head"><button className="icon-btn" onClick={() => move(-1)} aria-label="지난달">‹</button><b className="jua">{ym.y}년 {ym.m}월</b><button className="icon-btn" onClick={() => move(1)} aria-label="다음 달">›</button></div>
+        <div className="flow-cal-head"><button className="icon-btn" onClick={() => move(-1)} aria-label="지난달">‹</button><b className="jua">{ym.y}년 {ym.m}월{goodMonth && <span className="flow-good">가기 좋은 달</span>}</b><button className="icon-btn" onClick={() => move(1)} aria-label="다음 달">›</button></div>
         <div className="flow-cal-grid" data-testid="flow-cal">
           {WEEK.map((d) => <span key={d} className="h">{d}</span>)}
           {cells.map((c, k) => c ? (
-            <button key={c.ymd} type="button" disabled={c.past} className={['c', c.good && 'good', c.fest && 'fest', c.inRange && 'range', c.isStart && 'start'].filter(Boolean).join(' ')} onClick={() => setStart(c.ymd)} aria-label={`${c.d}일${c.good ? ' 가기 좋은 때' : ''}${c.fest ? ` ${c.fest}` : ''}`} aria-pressed={c.isStart}>{c.d}</button>
+            <button key={c.ymd} type="button" disabled={c.past} className={['c', c.fest && 'fest', c.inRange && 'range', c.isStart && 'start', c.inRange && c.ymd === end && 'end'].filter(Boolean).join(' ')} onClick={() => setStart(c.ymd)} aria-label={`${c.d}일${c.fest ? ` ${c.fest}` : ''}`} aria-pressed={c.isStart}>{c.d}</button>
           ) : <span key={`e${k}`} />)}
         </div>
       </div>
@@ -150,7 +152,7 @@ function StayStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const hoods = useMemo(() => {
     const out: { name: string; line: string; lat?: number; lng?: number }[] = [];
     const acc = accessFor(place);
-    if (acc?.station) out.push({ name: `${acc.station.n} 근처`, line: '기차 내려 바로' });
+    if (acc?.station && acc.station.km <= 8) out.push({ name: `${acc.station.n} 근처`, line: '기차 내려 바로' });
     if (place.t === 'kr') {
       for (const s of info?.cells[place.code]?.subs.slice(0, 2) ?? []) out.push({ name: s.name, line: s.theme });
       for (const [n, lat, lng] of tour?.cells[place.code]?.s.slice(0, 2) ?? []) out.push({ name: `${n} 근처`, line: '많이 가는 곳 가까이', lat, lng });
@@ -185,7 +187,7 @@ function StayStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
           {hoods.map((h) => <button key={h.name} type="button" className="card white flow-hood" disabled={busy} onClick={() => void save(h)} data-testid="flow-hood"><b>{h.name}</b><span className="tiny muted">{h.line}</span></button>)}
         </div>
       </>}
-      <button className="btn block" disabled={busy} onClick={() => void submit()} data-testid="flow-stay-save">{busy ? '찾는 중…' : text.trim() ? '여기서 자요' : '다음'}</button>
+      {(text.trim() || busy) && <button className="btn block" disabled={busy} onClick={() => void submit()} data-testid="flow-stay-save">{busy ? '찾는 중…' : '여기서 자요'}</button>}
     </div>
   );
 }

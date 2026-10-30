@@ -237,7 +237,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   const own = page.getByLabel('직접 담기');
   await own.fill('서피랑');
   await own.press('Enter');
-  await expect(page.getByTestId('pick-card').filter({ hasText: '서피랑' })).toBeVisible();
+  await expect(page.getByTestId('pick-card').filter({ hasText: '직접 담은 곳' }).filter({ hasText: '서피랑' })).toBeVisible();
   await snap(page, 'm07c-plan-pick');
   await page.getByTestId('flow-pick-next').click();
   await expect(page.getByTestId('plan-flow')).toHaveAttribute('data-step', 'route');
