@@ -17,7 +17,7 @@ defaults:
 jobs:
   media:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -39,6 +39,7 @@ jobs:
         run: |
           npx tsx scripts/media-cities.ts $(cat media/cities-only.txt 2>/dev/null) 2>&1 | tee media-cities-output.txt
           npx tsx scripts/media-cities.ts kr $(cat media/kr-only.txt 2>/dev/null) 2>&1 | tee -a media-cities-output.txt
+          npx tsx scripts/media-cities.ts country $(cat media/country-only.txt 2>/dev/null) 2>&1 | tee -a media-cities-output.txt
       - name: 도시 후보 올리기
         if: always() && github.ref == 'refs/heads/media-cities'
         env:

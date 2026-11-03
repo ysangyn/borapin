@@ -10,10 +10,14 @@ import sharp from 'sharp';
 import world from '../src/data/world.json' with { type: 'json' };
 import queriesRaw from '../media/city-queries.json' with { type: 'json' };
 import krRaw from '../media/kr-queries.json' with { type: 'json' };
+import countryRaw from '../media/country-queries.json' with { type: 'json' };
+import countriesRaw from '../src/data/countries.json' with { type: 'json' };
+import picksRaw from '../media/picks.json' with { type: 'json' };
 import regionsRaw from '../src/data/regions.json' with { type: 'json' };
 import travelinfo from '../src/data/travelinfo.json' with { type: 'json' };
 const QUERIES = queriesRaw as Record<string, string[]>;
 const KR = krRaw as Record<string, string[]>;
+const CQ = countryRaw as Record<string, string[]>;
 
 const OUT = 'media-cities';
 fs.mkdirSync(OUT, { recursive: true });
@@ -77,18 +81,21 @@ async function sheet(name: string, rows: { label: string; items: Buffer[] }[]) {
   await sharp({ create: { width: W * COLS, height: rows.length * (H + LABEL), channels: 3, background: '#222' } }).composite(tiles).jpeg({ quality: 78 }).toFile(path.join(OUT, `${name}.jpg`));
 }
 
-// 'kr'를 주면 국내 160 시·군, 아니면 세계 도시. 그 뒤에 이름을 주면 그것만.
+// 'kr'를 주면 국내 160 시·군, 'country'면 사진이 아직 없는 나라(나라 대표 장면), 아니면 세계 도시. 그 뒤에 이름을 주면 그것만.
 const args = process.argv.slice(2);
-const mode = args[0] === 'kr' ? 'kr' : 'world';
-const only = mode === 'kr' ? args.slice(1) : args;
+const mode = args[0] === 'kr' ? 'kr' : args[0] === 'country' ? 'country' : 'world';
+const only = mode === 'world' ? args : args.slice(1);
+const havePhoto = new Set((picksRaw as { photos: { place?: { t: string; id?: string } }[] }).photos.filter((x) => x.place?.t === 'country').map((x) => x.place!.id));
 interface Target { key: string; city: string; en: string; landmarks: string[] }
-const cities: Target[] = mode === 'kr'
+const cities: Target[] = mode === 'country'
+  ? (countriesRaw as { id: string; name: string; en: string }[]).filter((c) => !havePhoto.has(c.id) && (!only.length || only.includes(c.name) || only.includes(c.id))).map((c) => ({ key: `country:${c.id}`, city: c.name, en: c.en, landmarks: CQ[c.id] ?? [`${c.en} landmark`, `${c.en} landscape`, `${c.en} old town`] }))
+  : mode === 'kr'
   ? (regionsRaw as { regions: { code: string; name: string }[] }).regions.filter((r) => !only.length || only.includes(r.name)).map((r) => {
       const spots = ((travelinfo as { cells: Record<string, { main: { spots: string[] } }> }).cells[r.code]?.main.spots ?? []).slice(0, 2);
       return { key: `kr:${r.code}`, city: r.name, en: KR[r.code]?.[0] ?? r.name, landmarks: [...(KR[r.code] ?? []), ...spots] };
     })
   : (world as { cities: { c: string; city: string; en: string }[] }).cities.filter((c) => !only.length || only.includes(c.city)).map((c) => ({ key: `${c.c}:${c.city}`, city: c.city, en: c.en, landmarks: QUERIES[`${c.c}:${c.city}`] ?? [c.en] }));
-const PREFIX = mode === 'kr' ? 'kr' : 'cities';
+const PREFIX = mode === 'kr' ? 'kr' : mode === 'country' ? 'country' : 'cities';
 const report: Record<string, Cand[]> = {};
 const rows: { label: string; items: Buffer[] }[] = [];
 let sheetNo = 1;
