@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import TransitStops from './TransitStops';
 import { Link } from 'react-router-dom';
-import { Icon, useToast } from './ui';
+import { useToast } from './ui';
 import { useHome } from '../lib/home';
 import { straightKm } from '../lib/placeApps';
 import { stopovers } from '../lib/stopover';
@@ -9,6 +9,7 @@ import { useTravelInfo } from '../lib/travelinfo';
 import { computeStats, useTrips, useWishes } from '../lib/data';
 import { useAuth } from '../lib/auth';
 import { quickWish } from '../lib/wishActions';
+import { flowerOf, flowerSrc } from '../lib/flowers';
 import { placeParam, REGION_BY_CODE, regionLong } from '../lib/geo';
 
 const touch = () => typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
@@ -43,12 +44,19 @@ export default function Stopovers({ destCode, trip }: { destCode: string; trip?:
         const nav = `nmap://route/car?slat=${home.lat}&slng=${home.lng}&sname=${encodeURIComponent(home.label)}&v1lat=${r.lat}&v1lng=${r.lng}&v1name=${encodeURIComponent(r.name)}&dlat=${dest.lat}&dlng=${dest.lng}&dname=${encodeURIComponent(dest.name)}&appname=borapin.web.app`;
         return (
           <div key={s.code} className="stopover-row" data-testid="stopover">
+            <img className="stopover-flower" src={flowerSrc(flowerOf({ t: 'kr', code: s.code })?.icon ?? 'wild')} alt="" aria-hidden="true" />
             <Link to={`/map?sel=${placeParam({ t: 'kr', code: s.code })}`} className="stopover-main">
-              <b>{regionLong(s.code)}</b>
-              <span className="tiny muted">{s.extraMin <= 5 ? '거의 안 돌아가요' : `약 ${s.extraMin}분 더`}{s.visited ? ' · 가 봤어요' : ' · 처음'}{s.theme ? ` · ${s.theme}` : ''}</span>
+              <span className="stopover-head">
+                <b>{regionLong(s.code)}</b>
+                <span className="stopover-tag">{s.extraMin <= 5 ? '거의 안 돌아가요' : `${s.extraMin}분 더`}</span>
+                <span className={'stopover-tag ' + (s.visited ? 'was' : 'new')}>{s.visited ? '가 봤어요' : '처음'}</span>
+              </span>
+              {s.theme && <span className="stopover-theme">{s.theme}</span>}
             </Link>
-            {touch() && <a className="icon-btn" href={nav} aria-label={`${r.name} 들러 내비로 열기`}><Icon name="flag" size={15} /></a>}
-            <button className="icon-btn" onClick={() => void add(s.code)} aria-label={`${r.name} 가고 싶은 곳에 담기`}><Icon name="pin" size={15} /></button>
+            <span className="stopover-acts">
+              {touch() && <a className="stopover-btn" href={nav} aria-label={`${r.name} 들러 내비로 열기`}>내비</a>}
+              <button className="stopover-btn" onClick={() => void add(s.code)} aria-label={`${r.name} 가고 싶은 곳에 담기`}>담기</button>
+            </span>
           </div>
         );
       })}
