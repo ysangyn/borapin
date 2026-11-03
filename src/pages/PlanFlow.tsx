@@ -104,6 +104,9 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const f = start ? festsIn(fests, start, nights) : null;
   const tags = place.t === 'kr' ? trendTags(place.code, trend) : [];
   const toast = useToast();
+  // 우리 집에서 한 번에 가는 길 (기차 먼저, 없으면 버스)
+  const home = useHome(), routes = useRoutes();
+  const way = home && routes && place.t === 'kr' && home.code !== place.code ? directWays(routes, home.code, place.code)[0] ?? null : null;
   const move = (k: number) => setYm(({ y, m }) => { const d = new Date(y, m - 1 + k, 1); return { y: d.getFullYear(), m: d.getMonth() + 1 }; });
   const save = async () => {
     if (!start) return toast('떠나는 날을 달력에서 골라 주세요');
@@ -128,6 +131,7 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
         <div><span className="k">가기 좋은 때</span><b>{season ? monthsLabel(season.m) : '자료 없음'}</b>{season && start ? (season.m.includes(+start.slice(5, 7)) ? '고른 때가 좋은 때예요' : season.why) : season?.why}</div>
         <div><span className="k">그때 축제</span><b>{f ? (f.during[0]?.t ?? '없어요') : '날짜를 고르면'}</b>{f?.near ? `${+f.near.s.slice(4, 6)}월 ${+f.near.s.slice(6, 8)}일엔 ${f.near.t}` : f?.during.length ? '여행 중에 열려요' : ''}</div>
         {tags.length > 0 && <div><span className="k">요즘</span><b>{tags[0].t}</b>{tags[0].why ?? ''}</div>}
+        {way && <div data-testid="flow-way"><span className="k">가는 길</span><b>{wayName(way)} {way.from}→{way.to}</b>{aboutTime(way.min)} · 하루 {way.n}편</div>}
       </div>
       <button className="btn block" onClick={save} data-testid="flow-when-save">{start ? `${md(start)} ${dow(start)}${nights ? ` – ${md(end)} ${dow(end)}` : ''}로 정하기` : '날짜를 골라 주세요'}</button>
     </div>
@@ -271,6 +275,13 @@ function RouteStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
     const r = arrange(items.map((p) => ({ id: p.id, lat: p.lat, lng: p.lng, day: p.day, time: p.time })), days, stay);
     setDraft(Object.fromEntries(r.map((x) => [x.id, { day: x.day, order: x.order }])));
   }, [plan]);
+  // 동선 화면에서 '일정에 넣기'로 새로 들어온 것(가는 길 등)은 그 날짜·순서 맨 앞으로
+  useEffect(() => {
+    if (!draft) return;
+    const add = items.filter((p) => !draft[p.id]);
+    if (add.length) setDraft((dr) => ({ ...dr!, ...Object.fromEntries(add.map((p) => [p.id, { day: p.day ?? days[0], order: 0 }])) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
   const reArrange = () => { const r = arrange(items.map((p) => ({ id: p.id, lat: p.lat, lng: p.lng })), days, stay); setDraft(Object.fromEntries(r.map((x) => [x.id, { day: x.day, order: x.order }]))); toast('다시 정리했어요'); };
   const dayItems = (d: string) => items.filter((p) => draft?.[p.id]?.day === d).sort((a, b) => (draft![a.id].order) - (draft![b.id].order));
   const moveIn = (id: string, k: number) => setDraft((dr) => {
@@ -292,6 +303,13 @@ function RouteStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const abroad = trip.places[0].t === 'country';
   return (
     <div className="flow-body">
+      {trip.places[0].t === 'kr' && (
+        <details className="card white flow-way" data-testid="flow-way-box" open>
+          <summary className="jua">가는 길</summary>
+          <Stopovers destCode={trip.places[0].code} trip={{ id: trip.id, firstDay: days[0] ?? null }} />
+          <span className="tiny muted">고른 길을 '일정에 넣기'로 첫날 맨 앞에 넣어요. 우리 집을 정해 두면 나와요</span>
+        </details>
+      )}
       <RouteMap days={days} items={(d) => dayItems(d)} stay={stay} />
       {days.map((d, k) => {
         const list = dayItems(d);
