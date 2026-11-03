@@ -56,3 +56,42 @@ export function ensurePattern(map: MLMap, id: string) {
   const [, stage, d, ...icon] = id.split('-');
   map.addImage(id, draw(stage as keyof typeof COUNT, d === '2', icon.join('-')), { pixelRatio: R });
 }
+
+/**
+ * 수채 물들이기 (11-04 사용자 결정: 시안 A + C의 피어나는 순간).
+ * 다녀온 칸을 그 고장 꽃 색의 옅은 물빛으로 칠한다. 마음(사진·글·평)을 남길수록, 여러 번 갈수록 조금씩 진해진다.
+ * 흰 꽃(목련·배꽃 등)은 꽃 가운데 색을 쓴다. 꽃 그림은 칸을 누를 때 피어나는 한 송이로만.
+ */
+const hex = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
+const toHex = (v: number[]) => '#' + v.map((x) => Math.round(Math.max(0, Math.min(1, x)) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+const lum = ([r, g, b]: number[]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+const TINT = { seed: 0.62, sprout: 0.5, flower: 0.38 } as const;
+export function washColor(icon: string, stage: keyof typeof TINT, visits: number): string {
+  const k = KINDS[icon] ?? KINDS.wild ?? { petal: '#C9B8F5', mid: '#9B82F6' };
+  let base = hex(k.petal);
+  if (lum(base) > 0.85) base = hex(k.mid);
+  const t = Math.max(0.28, TINT[stage] - (visits > 1 ? 0.06 : 0));
+  return toHex(base.map((x) => x * (1 - t) + t));
+}
+
+/** 물빛 결: 칸 위에 옅게 얹는 종이·물감 얼룩 (한 장을 모든 칸이 같이 쓴다) */
+export function ensurePaper(map: MLMap) {
+  if (map.hasImage('g-paper')) return;
+  const S = 64 * R;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d')!;
+  // 고정된 씨앗으로 흩어 그려 매번 같은 결
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 26; i++) {
+    const x = rnd() * S, y = rnd() * S, r = (6 + rnd() * 16) * R;
+    const grd = g.createRadialGradient(x, y, 0, x, y, r);
+    const light = rnd() > 0.5;
+    grd.addColorStop(0, light ? 'rgba(255,255,255,0.32)' : 'rgba(60,30,90,0.07)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd;
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  }
+  map.addImage('g-paper', g.getImageData(0, 0, S, S), { pixelRatio: R });
+}

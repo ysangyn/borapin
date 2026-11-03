@@ -278,12 +278,12 @@ test.describe.serial('보라핀 1단계', () => {
     // 다시 꽂아 둔다
     await sheet.getByTestId('quick-pin').click();
     await expect(sheet.getByTestId('trip-row')).toHaveCount(1);
-    // 심는 지도: 핀만 꽂아도 꽃이 피기 시작 (꽃 몇 송이 무늬) (지도 칸 자료에 무늬 이름이 들어가고, 시트에 한 줄)
-    await expect(sheet.getByTestId('plant-line')).toContainText('꽃이 피기 시작했어요');
+    // 꽃 지도: 핀만 꽂아도 그 고장 꽃 색으로 물들기 시작 (지도 칸 자료에 물빛 색이 들어가고, 시트에 한 줄)
+    await expect(sheet.getByTestId('plant-line')).toContainText('꽃 색으로 물들기 시작했어요');
     await expect.poll(() => page.evaluate(() => {
       const m = (window as unknown as { __map: { querySourceFeatures: (s: string) => { properties: Record<string, unknown> }[] } }).__map;
-      return m.querySourceFeatures('kr').find((f) => f.properties.cell === '26')?.properties.pat ?? null;
-    })).toMatch(/^g-seed-1-/);
+      return m.querySourceFeatures('kr').find((f) => f.properties.cell === '26')?.properties.wash ?? null;
+    })).toMatch(/^#[0-9A-F]{6}$/);
     await expect(page.getByTestId('headline')).toContainText('세 번의 여행,핀 3개 꽂았어요');
     await shot(page, '09-sheet');
     await sheet.getByRole('button', { name: '닫기' }).click();

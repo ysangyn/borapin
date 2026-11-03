@@ -1329,6 +1329,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 @keyframes bloom-pop { 0% { transform: scale(0) rotate(-70deg); opacity: 0; } 25% { transform: scale(1.18) rotate(8deg); opacity: 1; } 35% { transform: scale(1) rotate(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: scale(.9); } }
 @media (prefers-reduced-motion: reduce) { .bloom-marker { animation: none; opacity: 0; } }
 .map-legend .lg-meadow { background: #C9E8BC; }
+.map-legend .lg-wash { background: linear-gradient(135deg, #FFD9E4, #FFF0C2); }
+.map-legend .lg-wash.deep { background: linear-gradient(135deg, #F7A9BE, #FFD86B); }
 .map-legend .lg-bloom { background: radial-gradient(circle at 50% 50%, #F5C542 0 2px, #fff 2.5px 4px, #AEDB9E 4.5px); }
 .bloom-box { pointer-events: none; }
 

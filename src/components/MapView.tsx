@@ -9,7 +9,7 @@ import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
 import { labelsFor } from './mapLabels';
-import { ensurePattern, patternId } from './gardenPatterns';
+import { ensurePaper, washColor } from './gardenPatterns';
 import { flowerOf, flowerSrc } from '../lib/flowers';
 import type { Plant } from '../lib/garden';
 import { toneOf } from '../lib/members';
@@ -241,10 +241,11 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       map.addLayer({ id: 'world-fill', type: 'fill', source: 'world', paint: { 'fill-color': fillExpr() } });
       map.addLayer({ id: 'world-line', type: 'line', source: 'world', paint: { 'line-color': '#FFFFFF', 'line-width': 0.6 } });
       map.addLayer({ id: 'kr-fill', type: 'fill', source: 'kr', paint: { 'fill-color': fillExpr() } });
-      // 심는 지도: 칸 자료에 무늬 이름(pat)·새싹 테두리 색(ring)을 넣어 그린다 (무늬는 feature-state로 못 바꿔서)
+      // 꽃 지도: 칸 자료에 물빛 색(wash)·한 사람만 남긴 칸의 테두리 색(ring)을 넣어 그린다 (feature-state로는 색 식을 못 넣어서)
       krData.current = g.kr as GeoJSON.FeatureCollection;
-      map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'pat'], paint: { 'fill-pattern': ['get', 'pat'] } });
-      map.addLayer({ id: 'kr-ring', type: 'line', source: 'kr', filter: ['has', 'ring'], paint: { 'line-color': ['get', 'ring'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.2, 8, 2.6] } });
+      map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-color': ['get', 'wash'], 'fill-outline-color': '#FFFFFF' } });
+      try { ensurePaper(map); map.addLayer({ id: 'kr-paper', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-pattern': 'g-paper', 'fill-opacity': 0.9 } }); } catch (e) { console.warn(e); }
+      map.addLayer({ id: 'kr-ring', type: 'line', source: 'kr', filter: ['has', 'ring'], paint: { 'line-color': ['get', 'ring'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.8, 8, 1.6], 'line-opacity': 0.8 } });
       map.addLayer({ id: 'kr-line', type: 'line', source: 'kr', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.3, 8, 1] } });
       map.addLayer({ id: 'kr-group', type: 'line', source: 'krmesh', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 8, 2.4] } });
       map.addLayer({
@@ -378,7 +379,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     (map as unknown as { __sel?: Record<string, string> }).__sel = sel;
   }, [selected, ready]);
 
-  // 심는 지도 무늬
+  // 꽃 지도 물빛
   useEffect(() => {
     const map = mapRef.current, base = krData.current;
     if (!map || !ready || !base) return;
@@ -391,9 +392,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         const p = garden?.get(code);
         if (!p || (focusSet && !focusSet.has(code))) return f;
         const t = p.stage === 'sprout' && p.by.length === 1 ? toneOf(p.by[0]) : -1;
-        const pat = patternId(p.stage, p.visits > 1, flowerOf({ t: 'kr', code })?.icon ?? 'wild');
-        try { ensurePattern(map, pat); } catch (e) { console.warn(e); return f; }
-        return { ...f, properties: { ...f.properties, pat, ...(t >= 0 ? { ring: RING[t % 2] } : {}) } };
+        const wash = washColor(flowerOf({ t: 'kr', code })?.icon ?? 'wild', p.stage, p.visits);
+        return { ...f, properties: { ...f.properties, wash, ...(t >= 0 ? { ring: RING[t % 2] } : {}) } };
       }),
     };
     (map.getSource('kr') as maplibregl.GeoJSONSource | undefined)?.setData(fc);
@@ -533,8 +533,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         <div className="map-legend" style={{ bottom: legendBottom }}>
           {garden ? (
             <>
-              <span><i className="lg-meadow" />다녀온 곳</span>
-              <span><i className="lg-bloom" />마음을 남길수록 꽃이 늘어요</span>
+              <span><i className="lg-wash" />고장 꽃 색으로 물들어요</span>
+              <span><i className="lg-wash deep" />마음을 남길수록 진해져요</span>
             </>
           ) : (
             <>
