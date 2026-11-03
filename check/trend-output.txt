@@ -1,0 +1,15 @@
+관광빅데이터: 로컬 파일에 내용이 없어 실제 주소의 지난 자료를 받아 둡니다 — https://borapin.web.app/data/trend.json (시·군 160곳)
+지난 자료를 두었어요 → src/data/trend.json, public/data/trend.json
+방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"6","daywkDivNm":"토요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"123812.5","baseYmd":"20260919"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"6","daywkDivNm":"토요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"581997.5","baseYmd":"20260919"}] 
+방문자 받는 방식: 전체 한 번에(쪽으로)
+자료가 있는 마지막 날 2026-10-04 (어제보다 30일 전) → 최근 2026-09-07~2026-10-04, 작년 2025-09-08~2025-10-05
+방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"1","daywkDivNm":"월요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"189371.0","baseYmd":"20260907"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"1","daywkDivNm":"월요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"405520.5","baseYmd":"20260907"}]
+방문자: 최근 22596줄 → 시·군 160곳, 작년 22176줄 → 160곳 · 호출 53번
+연관 관광지 202610: 0줄
+연관 관광지 기준 달 202609
+연관 관광지 원본 예시 [{"baseYm":"202609","tAtsCd":"0d0ef414138405cc56d8c8e0625b9c28","tAtsNm":"K현대미술관","areaCd":"11","areaNm":"서울특별시","signguCd":"11680","signguNm":"강남구","rlteTatsCd":"539a1f5af74c2f86b9487a4fc854bb95","rlteTatsNm":"도산근린공원","rlteRegnCd":"11","rlteRegnNm":"서울특별시","rlteSignguCd":"11680","rlteSignguNm":"강남구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"문화관광","rlteCtgrySclsNm":"도시공원","rlteRank":"1"},{"baseYm":"202609","tAtsCd":"0d0ef414138405cc56d8c8e0625b9c28","tAtsNm":"K현대미술관","areaCd":"11","areaNm":"서울특별시","signguCd":"11680","signguNm":"강남구","rlteTatsCd":"ac364ac5b7a88c24c39f1ecd406a7970","rlteTatsNm":"더현대/서울","rlteRegnCd":"11","rlteRegnNm":"서울특별시","rlteSignguCd":"11560","rlteSignguNm":"영등포구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"쇼핑","rlteCtgrySclsNm":"백화점","rlteRank":"2"}]
+붐빔 원본 예시 [{"baseYmd":"20261103","areaCd":"11","areaNm":"서울특별시","signguCd":"11680","signguNm":"강남구","tAtsNm":"K현대미술관","cnctrRate":"81.8"},{"baseYmd":"20261104","areaCd":"11","areaNm":"서울특별시","signguCd":"11680","signguNm":"강남구","tAtsNm":"K현대미술관","cnctrRate":"83.92"}]
+관광빅데이터: 시·군 160곳 (작년 비교 160곳 · 연관 137곳 · 붐빔 137곳) · 호출 558번 · 37초
+요즘 뜨는 곳: 화성시 162%, 강릉시 24%, 밀양시 20%, 영천시 18%, 논산시 16%, 당진시 15%, 이천시 14%, 공주시 13%
+한적한 곳: 울릉군 3862, 영양군 6686, 양구군 8937, 장수군 11338, 화천군 12925, 순창군 16100, 봉화군 16508, 태백시 16664
+저장 → src/data/trend.json, public/data/trend.json
