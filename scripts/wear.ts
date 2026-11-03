@@ -26,6 +26,14 @@ async function retry<T>(f: () => Promise<T>, what: string): Promise<T> {
   }
 }
 
+/** 지오코딩이 못 찾는 여행지(지역 이름)는 대표 마을 좌표로 */
+const COORD: Record<string, [number, number]> = {
+  'TUR:카파도키아': [38.643, 34.828], // 괴레메
+  'GBR:코츠월드': [51.885, -1.757], // 버턴온더워터
+  'CAN:퀘벡': [46.813, -71.208], // 퀘벡시티 구시가
+  'MAR:마라케시': [31.629, -7.989],
+};
+
 async function geocode(en: string, iso2: string): Promise<[number, number]> {
   return retry(async () => {
     const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(en)}&count=10&language=en&format=json`, { headers: UA });
@@ -56,7 +64,7 @@ async function main() {
   for (const w of (world as { cities: { c: string; city: string; en: string }[] }).cities) {
     const key = `${w.c}:${w.city}`;
     try {
-      const [lat, lng] = await geocode(w.en, iso.get(w.c) ?? '');
+      const [lat, lng] = COORD[key] ?? (await geocode(w.en, iso.get(w.c) ?? ''));
       cities[key] = { lat: r1(lat), lng: r1(lng), ...(await climate(lat, lng)) };
       ok++;
       console.log(`✓ ${key} ${lat.toFixed(2)},${lng.toFixed(2)}`);
