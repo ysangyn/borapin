@@ -91,7 +91,11 @@ export function ensurePaper(map: MLMap) {
     grd.addColorStop(0, light ? 'rgba(255,255,255,0.32)' : 'rgba(60,30,90,0.07)');
     grd.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = grd;
-    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    // 판 가장자리에서 잘린 얼룩은 반대편에 이어 그려 이음매(네모 칸)가 안 보이게
+    for (const dx of [-S, 0, S]) for (const dy of [-S, 0, S]) {
+      if ((dx && (x + dx + r < 0 || x + dx - r > S)) || (dy && (y + dy + r < 0 || y + dy - r > S))) continue;
+      g.save(); g.translate(dx, dy); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.restore();
+    }
   }
   map.addImage('g-paper', g.getImageData(0, 0, S, S), { pixelRatio: R });
 }
