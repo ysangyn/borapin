@@ -13,49 +13,47 @@
 
 Running 7 tests using 1 worker
 
-  ✘  1 [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (15.0s)
-  ✘  2 [webkit] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (3.8s)
-  ✘  3 [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (12.9s)
-  ✓  4 [webkit] › tests/human.spec.ts:654:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (1.3s)
-  ✓  5 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (887ms)
-  ✓  6 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.0s)
-  ✓  7 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (965ms)
+  ✘  1 [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (14.8s)
+  ✘  2 [webkit] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (4.9s)
+  ✘  3 [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (1.9s)
+  ✓  4 [webkit] › tests/human.spec.ts:654:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (1.6s)
+  ✓  5 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.1s)
+  ✓  6 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
+  ✓  7 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
 
 
   1) [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit ───
 
-    Error: pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=n_sOofMJckkr1ct1bHTEnA%3D%3D&AID=71&CI=0&TYPE=xmlhttp&zx=sec31jtaf97e&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cyC4fEggsgmg8veWa5x90g%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=3vhaczjn3wh9&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=n_sOofMJckkr1ct1bHTEnA%3D%3D&RID=46600&AID=71&zx=3qne3l8p7mgz&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=n_sOofMJckkr1ct1bHTEnA%3D%3D&AID=71&CI=0&TYPE=xmlhttp&zx=dp05ecwcflhv&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cyC4fEggsgmg8veWa5x90g%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=9j1vbfk1mwkw&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oJsGC8cFDWSNWRA4foToYg%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=sf6szwm70aiu&t=1 due to access control checks.
+    Error: pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=gTuizW8C_9rKBJ5hx5NE8A%3D%3D&AID=74&CI=0&TYPE=xmlhttp&zx=8yn8r51y8cvf&t=1 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NLtcRcieba4fxZcc7rIUVg%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=huelchpx9q9z&t=1 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=gTuizW8C_9rKBJ5hx5NE8A%3D%3D&RID=96907&AID=74&zx=dhre3dpng9er&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=gTuizW8C_9rKBJ5hx5NE8A%3D%3D&AID=74&CI=0&TYPE=xmlhttp&zx=yk7ezswcjlvw&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NLtcRcieba4fxZcc7rIUVg%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=ruvcy0q8xl1x&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=h812jDn8sJVKJ9Vsa562ew%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=g4txxsccg1ke&t=1 due to access control checks.
     console: Error: Worker failed to load. Check that the worker URL is correct.
     console: Error: Worker failed to load. Check that the worker URL is correct.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=oJsGC8cFDWSNWRA4foToYg%3D%3D&RID=22279&AID=49&zx=fb8rvqviiai6&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oJsGC8cFDWSNWRA4foToYg%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=2wa8qlxxn00d&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=JNwZ-If5WWus0e_pxPMhPA%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=5snzsie8fen&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=JNwZ-If5WWus0e_pxPMhPA%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=49aiinaaek2u&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=h812jDn8sJVKJ9Vsa562ew%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=dq1f7u78wm43&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=XK9wXUgZLnxqGlZsKN9M6A%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=25ntbxc9bi9r&t=1 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=XK9wXUgZLnxqGlZsKN9M6A%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=mh6j93b7108&t=2 due to access control checks.
 
     expect(received).toEqual(expected) // deep equality
 
     - Expected  -  1
-    + Received  + 14
+    + Received  + 13
 
     - Array []
     + Array [
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=n_sOofMJckkr1ct1bHTEnA%3D%3D&AID=71&CI=0&TYPE=xmlhttp&zx=sec31jtaf97e&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cyC4fEggsgmg8veWa5x90g%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=3vhaczjn3wh9&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=n_sOofMJckkr1ct1bHTEnA%3D%3D&RID=46600&AID=71&zx=3qne3l8p7mgz&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=n_sOofMJckkr1ct1bHTEnA%3D%3D&AID=71&CI=0&TYPE=xmlhttp&zx=dp05ecwcflhv&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cyC4fEggsgmg8veWa5x90g%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=9j1vbfk1mwkw&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oJsGC8cFDWSNWRA4foToYg%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=sf6szwm70aiu&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=gTuizW8C_9rKBJ5hx5NE8A%3D%3D&AID=74&CI=0&TYPE=xmlhttp&zx=8yn8r51y8cvf&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NLtcRcieba4fxZcc7rIUVg%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=huelchpx9q9z&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=gTuizW8C_9rKBJ5hx5NE8A%3D%3D&RID=96907&AID=74&zx=dhre3dpng9er&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=gTuizW8C_9rKBJ5hx5NE8A%3D%3D&AID=74&CI=0&TYPE=xmlhttp&zx=yk7ezswcjlvw&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NLtcRcieba4fxZcc7rIUVg%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=ruvcy0q8xl1x&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=h812jDn8sJVKJ9Vsa562ew%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=g4txxsccg1ke&t=1 due to access control checks.",
     +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
     +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=oJsGC8cFDWSNWRA4foToYg%3D%3D&RID=22279&AID=49&zx=fb8rvqviiai6&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oJsGC8cFDWSNWRA4foToYg%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=2wa8qlxxn00d&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=JNwZ-If5WWus0e_pxPMhPA%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=5snzsie8fen&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=JNwZ-If5WWus0e_pxPMhPA%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=49aiinaaek2u&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=h812jDn8sJVKJ9Vsa562ew%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=dq1f7u78wm43&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=XK9wXUgZLnxqGlZsKN9M6A%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=25ntbxc9bi9r&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=XK9wXUgZLnxqGlZsKN9M6A%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=mh6j93b7108&t=2 due to access control checks.",
     + ]
 
       32 | test.afterEach(() => {
@@ -110,70 +108,48 @@ Running 7 tests using 1 worker
 
   3) [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ────────────
 
-    Error: pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=dbmSMRN029CiF65b-5wnvQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=onyfzfw4u7xt&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NOshD8sTgoMgzt_NufrVzg%3D%3D&AID=20&CI=0&TYPE=xmlhttp&zx=6y8bx4t5twk7&t=1 due to access control checks.
+    Error: page.goto: Navigation to "http://127.0.0.1:5174/" is interrupted by another navigation to "http://127.0.0.1:5174/"
+    Call log:
+      - navigating to "http://127.0.0.1:5174/", waiting until "load"
+
+
+      317 |     const trip = await page.evaluate(() => document.querySelector<HTMLAnchorElement>('a[href^="/trips/"]')?.getAttribute('href'));
+      318 |     for (const route of ['/', '/trips', ...(trip ? [trip] : []), '/record', '/map', '/wishes', '/places', '/memories', '/ask', '/space', '/admin', '/credits']) {
+    > 319 |       await page.goto(route);
+          |                  ^
+      320 |       await page.waitForLoadState('load');
+      321 |       await page.waitForTimeout(900);
+      322 |       await check(route);
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:319:18
+
+    Error: pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=D0uLW3-RvebljHgKpz6SGQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=iby7nqyahmdd&t=1 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ejzvvsYvKsUekJE8tyyKrA%3D%3D&AID=17&CI=0&TYPE=xmlhttp&zx=1pupan9weqsh&t=1 due to access control checks.
+    pageerror: /127.0.0.1:5174/assets/maplibre-gl-worker-DxGNRm0a.mjs due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=ejzvvsYvKsUekJE8tyyKrA%3D%3D&RID=9163&AID=17&zx=yg1h18cpdc5d&t=2 due to access control checks.
     console: Error: Worker failed to load. Check that the worker URL is correct.
     console: Error: Worker failed to load. Check that the worker URL is correct.
     console: Error: Worker failed to load. Check that the worker URL is correct.
     console: Error: Worker failed to load. Check that the worker URL is correct.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=dbmSMRN029CiF65b-5wnvQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=ut7f76ev6ysb&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NOshD8sTgoMgzt_NufrVzg%3D%3D&AID=20&CI=0&TYPE=xmlhttp&zx=6asp9i2ze0ry&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oLpaGEUsxL3tmfn6TJgOAg%3D%3D&AID=60&CI=0&TYPE=xmlhttp&zx=bopil7750fm&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oLpaGEUsxL3tmfn6TJgOAg%3D%3D&AID=60&CI=0&TYPE=xmlhttp&zx=6xa76c2u7f3i&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=6PPvJlylQojNj0Q4DxdiEg%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=suf5guzgxbnd&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=6PPvJlylQojNj0Q4DxdiEg%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=g1i0vb1xwlyk&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=IHXKGRMyS5-KTxaOf4s7jw%3D%3D&AID=29&CI=0&TYPE=xmlhttp&zx=for9lnygl8gm&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=IHXKGRMyS5-KTxaOf4s7jw%3D%3D&AID=29&CI=0&TYPE=xmlhttp&zx=nppvoj5eizee&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=HBzW1CY9N8VySksTSo9iRA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=trnx5iamark&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=HBzW1CY9N8VySksTSo9iRA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=lgkc3fqhk0pz&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ZKB89ceZcnzjqwzPMzhZOQ%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=vu9ou5zh4hfa&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ZKB89ceZcnzjqwzPMzhZOQ%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=lyy6wt6t3lme&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cKuglH7PsmtUfq0TyrdSPA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=291g5vyhzv2b&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cKuglH7PsmtUfq0TyrdSPA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=ykf4z4bdowdh&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=U2VA8bseG2KPaTEOZ6CjNQ%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=gv2fwtntu5hm&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=U2VA8bseG2KPaTEOZ6CjNQ%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=tem10oh1cnud&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=q5j-83KdK3-QNbrIvffT5A%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=3mfkrr59mh89&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=q5j-83KdK3-QNbrIvffT5A%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=93kh6vrqiny8&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=huFsgpX3WZt11O98SqXxlg%3D%3D&AID=52&CI=0&TYPE=xmlhttp&zx=7no66v49puor&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=huFsgpX3WZt11O98SqXxlg%3D%3D&AID=52&CI=0&TYPE=xmlhttp&zx=ckl08pdbreza&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=PM1Uv4X5PX-CJjAuw6R8ng%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=posnije5k5vj&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=PM1Uv4X5PX-CJjAuw6R8ng%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=m0aj18oxr0qo&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=D0uLW3-RvebljHgKpz6SGQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=qdqramrtjg9x&t=2 due to access control checks.
+    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ejzvvsYvKsUekJE8tyyKrA%3D%3D&AID=17&CI=0&TYPE=xmlhttp&zx=5o65b5hahhfw&t=2 due to access control checks.
 
     expect(received).toEqual(expected) // deep equality
 
     - Expected  -  1
-    + Received  + 30
+    + Received  + 12
 
     - Array []
     + Array [
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=dbmSMRN029CiF65b-5wnvQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=onyfzfw4u7xt&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NOshD8sTgoMgzt_NufrVzg%3D%3D&AID=20&CI=0&TYPE=xmlhttp&zx=6y8bx4t5twk7&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=D0uLW3-RvebljHgKpz6SGQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=iby7nqyahmdd&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ejzvvsYvKsUekJE8tyyKrA%3D%3D&AID=17&CI=0&TYPE=xmlhttp&zx=1pupan9weqsh&t=1 due to access control checks.",
+    +   "pageerror: /127.0.0.1:5174/assets/maplibre-gl-worker-DxGNRm0a.mjs due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=ejzvvsYvKsUekJE8tyyKrA%3D%3D&RID=9163&AID=17&zx=yg1h18cpdc5d&t=2 due to access control checks.",
     +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
     +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
     +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
     +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=dbmSMRN029CiF65b-5wnvQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=ut7f76ev6ysb&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=NOshD8sTgoMgzt_NufrVzg%3D%3D&AID=20&CI=0&TYPE=xmlhttp&zx=6asp9i2ze0ry&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oLpaGEUsxL3tmfn6TJgOAg%3D%3D&AID=60&CI=0&TYPE=xmlhttp&zx=bopil7750fm&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=oLpaGEUsxL3tmfn6TJgOAg%3D%3D&AID=60&CI=0&TYPE=xmlhttp&zx=6xa76c2u7f3i&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=6PPvJlylQojNj0Q4DxdiEg%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=suf5guzgxbnd&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=6PPvJlylQojNj0Q4DxdiEg%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=g1i0vb1xwlyk&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=IHXKGRMyS5-KTxaOf4s7jw%3D%3D&AID=29&CI=0&TYPE=xmlhttp&zx=for9lnygl8gm&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=IHXKGRMyS5-KTxaOf4s7jw%3D%3D&AID=29&CI=0&TYPE=xmlhttp&zx=nppvoj5eizee&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=HBzW1CY9N8VySksTSo9iRA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=trnx5iamark&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=HBzW1CY9N8VySksTSo9iRA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=lgkc3fqhk0pz&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ZKB89ceZcnzjqwzPMzhZOQ%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=vu9ou5zh4hfa&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ZKB89ceZcnzjqwzPMzhZOQ%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=lyy6wt6t3lme&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cKuglH7PsmtUfq0TyrdSPA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=291g5vyhzv2b&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=cKuglH7PsmtUfq0TyrdSPA%3D%3D&AID=44&CI=0&TYPE=xmlhttp&zx=ykf4z4bdowdh&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=U2VA8bseG2KPaTEOZ6CjNQ%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=gv2fwtntu5hm&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=U2VA8bseG2KPaTEOZ6CjNQ%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=tem10oh1cnud&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=q5j-83KdK3-QNbrIvffT5A%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=3mfkrr59mh89&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=q5j-83KdK3-QNbrIvffT5A%3D%3D&AID=49&CI=0&TYPE=xmlhttp&zx=93kh6vrqiny8&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=huFsgpX3WZt11O98SqXxlg%3D%3D&AID=52&CI=0&TYPE=xmlhttp&zx=7no66v49puor&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=huFsgpX3WZt11O98SqXxlg%3D%3D&AID=52&CI=0&TYPE=xmlhttp&zx=ckl08pdbreza&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=PM1Uv4X5PX-CJjAuw6R8ng%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=posnije5k5vj&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=PM1Uv4X5PX-CJjAuw6R8ng%3D%3D&AID=47&CI=0&TYPE=xmlhttp&zx=m0aj18oxr0qo&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=D0uLW3-RvebljHgKpz6SGQ%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=qdqramrtjg9x&t=2 due to access control checks.",
+    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=ejzvvsYvKsUekJE8tyyKrA%3D%3D&AID=17&CI=0&TYPE=xmlhttp&zx=5o65b5hahhfw&t=2 due to access control checks.",
     + ]
 
       32 | test.afterEach(() => {
@@ -203,7 +179,7 @@ Running 7 tests using 1 worker
     [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit ────
     [webkit] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit 
     [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ─────────────
-  4 passed (45.9s)
+  4 passed (38.6s)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
