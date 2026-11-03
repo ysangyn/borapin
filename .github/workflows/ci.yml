@@ -123,6 +123,10 @@ jobs:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           KOREAEXIM_KEY: ${{ secrets.KOREAEXIM_KEY }}
         run: timeout 240 npx tsx scripts/abroad-build.ts 2>&1 | tee abroad-output.txt || echo '해외 자료 받기 시간 초과 → 지난 자료 유지'
+      - name: 기차·버스 노선 자료 (bus-data 브랜치에서 매달 다시 확인한 것 · 없으면 지난 자료)
+        run: |
+          git clone -q --depth 1 --branch bus-data "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" /tmp/busdata || true
+          STATE=/tmp/busdata/state.json npx tsx scripts/routes-build.ts 2>&1 | tee routes-output.txt
       - name: 빌드 (이 파일을 끝까지 그대로 쓴다)
         env:
           VITE_ASK_URL: ${{ needs.worker.outputs.url }}

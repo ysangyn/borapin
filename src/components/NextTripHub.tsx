@@ -16,6 +16,8 @@ import { newsAgo, useNews } from '../lib/news';
 import { answerAsk, questionFor, questionText, useTodayAsk } from '../lib/asks';
 import { useBank, useStudy } from '../lib/study/store';
 import HomeRoute from './HomeRoute';
+import DirectWays from './DirectWays';
+import { directWays, useRoutes } from '../lib/transit';
 import { alarmFor, useAbroad, visaFor } from '../lib/abroad';
 import Stopovers from './Stopovers';
 import { useHome } from '../lib/home';
@@ -258,6 +260,7 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
   const visa = city ? visaFor(city.c, abroad) : null, alarm = city ? alarmFor(city.c, abroad) : null;
   const good = news?.[0] ?? null;
   const home = useHome();
+  const routes = useRoutes();
   if (!s && !f && !flights && !good && !city && !accessLine(place)) return null;
   const go = () => nav(wishId ? `/wishes/${wishId}` : `/map?sel=${placeParam(place)}`);
   const r = place.t === 'kr' ? REGION_BY_CODE.get(place.code) : undefined;
@@ -268,6 +271,7 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
   if (city) rows.push(['visa', <button className="hub-way-row" onClick={go}><Icon name="shield" size={16} /><span>입국 <b>{visa?.text ?? city.entry}</b>{alarm ? <> · 여행경보 <b className={alarm.lvl >= 3 ? 'alarm-high' : ''}>{alarm.text}</b></> : null} · 떠나기 전 확인</span></button>]);
   if (f) rows.push(['fest', <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)}><Icon name="flag" size={16} /><span>{isOngoing(f) ? '지금 열리는 축제' : '다가오는 축제'} <b>{f.t}</b> · {festivalPeriod(f)}</span></button>]);
   if (r) rows.push(['home', <div className="hub-way-row" style={{ cursor: 'default' }}><Icon name="home" size={16} /><HomeRoute to={{ name: placeLabel(place), lat: r.lat, lng: r.lng }} note="시·군 가운데까지" /></div>]);
+  if (r && home && routes && home.code !== r.code && directWays(routes, home.code, r.code).length) rows.push(['rail', <DirectWays code={r.code} max={1} />]);
   if (place.t === 'kr' && accessLine(place)) rows.push(['access', <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>]);
   // 들러 가기는 집이 있고 60km 넘게 멀 때만 생긴다 (빈 '자세히'가 남지 않게)
   if (r && home && straightKm(home, r) >= 60) rows.push(['stop', <Stopovers destCode={r.code} />]);
@@ -292,7 +296,7 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
   );
 }
 
-const WAY_LABEL: Record<string, string> = { fest: '축제', home: '우리 집에서', access: '교통', stop: '들러 가기', city: '돈·말·콘센트', phrases: '한마디', flights: '항공권', news: '소식', visa: '입국' };
+const WAY_LABEL: Record<string, string> = { fest: '축제', home: '우리 집에서', rail: '기차·버스', access: '교통', stop: '들러 가기', city: '돈·말·콘센트', phrases: '한마디', flights: '항공권', news: '소식', visa: '입국' };
 
 /** 고르는 중인 여행 계획: 상대가 후보를 골라 두었거나, 내가 하트를 기다리는 중 */
 function DraftNudge() {

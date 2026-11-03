@@ -11,6 +11,7 @@ import { unseenHearts, useRecentHearts } from '../lib/hearts';
 
 const PATHS: Record<string, string> = {
   plane: 'M2 16l20-8-4 14-4-6-6-2zM14 16l6-8',
+  train: 'M7 3h10a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM4 11h16M8 15h.01M16 15h.01M8 18l-2 3M16 18l2 3',
   camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
   wave: 'M3 14c3-4 6-4 8 0s5 4 8 0M3 19c3-4 6-4 8 0s5 4 8 0M17 5a2 2 0 1 0 0 .1',
   star: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.3l6.1-.7z',

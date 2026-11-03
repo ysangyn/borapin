@@ -1,3 +1,4 @@
+import DirectWays from './DirectWays';
 import { useState } from 'react';
 import { useTravelInfo } from '../lib/travelinfo';
 import { accessLine } from '../lib/transport';
@@ -43,6 +44,7 @@ export default function RegionInfo({ code }: { code: string }) {
       {tapLine('먹거리', m.foods)}
       {mapChoice}
       <TourSpots code={code} />
+      <div className="hub-way-rows region-ways"><DirectWays code={code} /></div>
       {accessLine({ t: 'kr', code }) && <div className="info-line" data-testid="region-access"><span className="k">가는 길</span><span>{accessLine({ t: 'kr', code })}</span></div>}
       {more && (
         <>
