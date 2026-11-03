@@ -59,7 +59,7 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
     <section className="hub" data-testid="next-hub" data-anchor={nextTrip ? 'trip' : firstWish ? 'wish' : 'none'}>
       <div className="hub-head">
         <h2 className="h2 hub-title">다음 여행 준비</h2>
-        {active.length ? <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>가고 싶은 곳 {active.length}곳</Link> : <Link to="/wishes?find=dice" className="small" style={{ fontWeight: 700 }}>여행지 뽑기</Link>}
+        {active.length ? <Link to="/wishes" className="small" style={{ fontWeight: 500 }}>가고 싶은 곳 {active.length}곳</Link> : <Link to="/wishes?find=dice" className="small" style={{ fontWeight: 500 }}>여행지 뽑기</Link>}
       </div>
       <DraftNudge />
       {nextTrip ? <NextTripHero trip={nextTrip} more={upcoming.slice(1, 3)} wishes={active.slice(0, 2)} />

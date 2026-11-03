@@ -104,7 +104,7 @@ export default function TripDetail() {
       <TopBar
         back
         backTo="/trips"
-        title={<span style={{ fontWeight: 800, fontSize: 17 }}>{trip.status === 'planned' ? '예정된 여행' : trip.kind === 'outing' ? '나들이' : '여행'}</span>}
+        title={<span style={{ fontWeight: 600, fontSize: 17 }}>{trip.status === 'planned' ? '예정된 여행' : trip.kind === 'outing' ? '나들이' : '여행'}</span>}
         right={<Link to={`/trips/${trip.id}/edit`} className="btn sm line"><Icon name="edit" size={16} />고치기</Link>}
       />
       <div className="page" style={{ paddingTop: 4 }}>
@@ -239,7 +239,7 @@ export default function TripDetail() {
         <ShareLinkCard trip={trip} photos={photos} recs={tripRecs ?? []} />
 
         {!confirm ? (
-          <button className="link-btn" style={{ alignSelf: 'center', color: 'var(--ink4)', textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 700, fontSize: 12 }} onClick={() => setConfirm(true)}>이 여행 지우기</button>
+          <button className="link-btn" style={{ alignSelf: 'center', color: 'var(--ink4)', textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 500, fontSize: 12 }} onClick={() => setConfirm(true)}>이 여행 지우기</button>
         ) : (
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <b>정말 지울까요? {photos.length ? `사진 ${photos.length}장과 일정·글도 함께 지워져요. ` : '일정·글도 함께 지워져요. '}되돌릴 수 없어요.</b>
@@ -302,7 +302,7 @@ function PlacesSummary({ trip, recs, onOpen }: { trip: Trip; recs: PlaceRec[] | 
           </div>
         </span>
       </button>
-      <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 700, flex: 'none' }}>+ 장소 남기기</Link>
+      <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500, flex: 'none' }}>+ 장소 남기기</Link>
     </div>
   );
 }
@@ -322,7 +322,7 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
       <section>
         <div className="row-between" style={{ marginBottom: 2 }}>
           <h2 className="h2" style={{ fontSize: 17 }}>우리 장소{recs?.length ? ` · ${recs.length}` : ''}</h2>
-          <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 700 }}>+ 장소 남기기</Link>
+          <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500 }}>+ 장소 남기기</Link>
         </div>
         {recs && recs.length === 0 ? (
           <div className="small muted">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요. 또 가고 싶은 곳은 평가로 남겨요.</div>

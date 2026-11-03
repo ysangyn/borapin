@@ -40,7 +40,7 @@ export default function DateGame({ trips }: { trips: Trip[] }) {
 
   return (
     <section className="card coral-soft" style={{ display: 'flex', flexDirection: 'column', gap: 10 }} data-testid="date-game">
-      <div className="tiny" style={{ color: 'var(--coral-ink)', fontWeight: 800 }}>날짜 채우기 놀이</div>
+      <div className="tiny" style={{ color: 'var(--coral-ink)', fontWeight: 600 }}>날짜 채우기 놀이</div>
       <div><b>이 여행, 언제였을까요?</b> <Link to={`/trips/${pick.id}`} className="small">{pick.title}</Link></div>
       {!mine ? (
         <>

@@ -39,9 +39,9 @@ export default function SharedTripPage() {
   const abroad = d.places.every((p) => p.t === 'country');
   return (
     <div className="page" style={{ paddingTop: 20, paddingBottom: 40 }} data-testid="shared-trip">
-      <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}><Logo />보라핀 <span className="muted small" style={{ fontWeight: 600 }}>· {d.space}의 여행</span></div>
+      <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}><Logo />보라핀 <span className="muted small" style={{ fontWeight: 600 }}>· {d.space}의 여행</span></div>
       <div>
-        <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em' }}>{d.title}</div>
+        <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.03em' }}>{d.title}</div>
         <div className="muted">{d.when} · {d.places.map(placeLong).join(', ')}</div>
       </div>
       {photos[0] && (

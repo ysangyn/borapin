@@ -71,7 +71,7 @@ export default function PlanFlow() {
   const done = new Set(trip.planDone ?? []);
   return (
     <>
-      <TopBar back backTo={`/trips/${id}`} title={<span style={{ fontWeight: 800 }}>{placeLabel(trip.places[0])} 여행 계획</span>} />
+      <TopBar back backTo={`/trips/${id}`} title={<span style={{ fontWeight: 600 }}>{placeLabel(trip.places[0])} 여행 계획</span>} />
       <div className="page plan-flow" data-testid="plan-flow" data-step={step}>
         <div className="flow-steps" role="tablist" aria-label="계획 걸음">
           {STEPS.map((s, k) => <button key={s} role="tab" aria-selected={k === i} aria-label={`${k + 1}. ${TITLE[s]}`} className={k === i ? 'on' : done.has(s) ? 'done' : ''} onClick={() => setSp({ step: s }, { replace: true })} />)}

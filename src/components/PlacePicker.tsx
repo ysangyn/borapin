@@ -63,7 +63,7 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
           {hits.length === 0 && <div className="small muted" style={{ padding: 12 }}>찾는 곳이 없어요. 다르게 적어 볼까요?</div>}
           {hits.map((h, i) => (
             <button key={i} type="button" role="option" onClick={() => add(h.place)}>
-              <span style={{ fontWeight: 700 }}>{h.label}</span>
+              <span style={{ fontWeight: 500 }}>{h.label}</span>
               <span className="tiny muted">{h.sub}</span>
             </button>
           ))}

@@ -7,7 +7,7 @@ export default function NewsStrip({ place, max = 3, title = '요즘 소식' }: {
   if (!items || !items.length) return null;
   return (
     <div className="news-strip" data-testid="news-strip">
-      <div className="tiny" style={{ fontWeight: 800, color: 'var(--ink3)', marginBottom: 4 }}>{title}</div>
+      <div className="tiny" style={{ fontWeight: 600, color: 'var(--ink3)', marginBottom: 4 }}>{title}</div>
       {items.slice(0, max).map((n) => (
         <a key={n.link} href={n.link} target="_blank" rel="noreferrer" className="news-row">
           <span className="news-title">{n.title}</span>

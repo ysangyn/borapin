@@ -29,7 +29,7 @@ export default function CountryCities({ place, wishes }: { place: Place; wishes:
   };
   return (
     <div className="country-cities" data-testid="country-cities">
-      <div className="tiny" style={{ fontWeight: 800, color: 'var(--ink3)', marginBottom: 4 }}>가 볼 만한 도시 {list.length}</div>
+      <div className="tiny" style={{ fontWeight: 600, color: 'var(--ink3)', marginBottom: 4 }}>가 볼 만한 도시 {list.length}</div>
       <div className="list">
         {list.map((w) => (
           <div key={w.city}>

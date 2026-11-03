@@ -60,7 +60,7 @@ export default function WishRolling({ wishes, trips, stats, bare }: { wishes: Wi
             <div key={placeLong(c.place)} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {/* 이름을 누르면 지도의 지역 창(볼거리·축제·우리 기록·다녀왔어요·자세히 기록)으로 */}
               <Link to={`/map?sel=${placeParam(c.place)}`} className="pick-link" style={{ flex: 1, minWidth: 0 }} aria-label={`${placeLong(c.place)} 자세히 보기`} data-testid="pick-detail">
-                <span style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>{placeLong(c.place)}<Icon name="chev" size={14} /></span>
+                <span style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>{placeLong(c.place)}<Icon name="chev" size={14} /></span>
                 {c.theme && <span className="tiny muted" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.theme}</span>}
               </Link>
               <button className="btn sm coral" onClick={() => add(c)}><Icon name="pin" size={14} stroke={2.2} />담기</button>

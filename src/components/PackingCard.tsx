@@ -68,7 +68,7 @@ export default function PackingCard({ trip, trips }: { trip: Trip; trips: Trip[]
         <h2 className="h2" style={{ fontSize: 17 }}>준비물</h2>
         {list.length > 0 && (
           <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <span className="small" style={{ fontWeight: 700, color: done === list.length ? 'var(--ok)' : 'var(--ink3)' }}>{done}/{list.length} 챙김</span>
+            <span className="small" style={{ fontWeight: 500, color: done === list.length ? 'var(--ok)' : 'var(--ink3)' }}>{done}/{list.length} 챙김</span>
             <button className="link-btn small" onClick={sharePacking} aria-label="준비물 보내기" data-testid="packing-share">{kakaoReady() ? '카카오톡' : '보내기'}</button>
           </span>
         )}

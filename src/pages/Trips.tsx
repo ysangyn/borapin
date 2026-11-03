@@ -92,7 +92,7 @@ export default function Trips() {
             <Link to="/plan" className="trip-row" style={{ color: 'var(--ink2)' }} data-testid="trips-plan">
               <span className="trip-tile planned"><Icon name="calendar" size={20} stroke={2.2} /></span>
               <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontWeight: 700 }}>여행 계획하기</span>
+                <span style={{ fontWeight: 500 }}>여행 계획하기</span>
                 <span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에서 둘이 고르기</span>
               </span>
             </Link>
@@ -123,13 +123,13 @@ export default function Trips() {
         <section data-testid="trips-wishes">
           <div className="row-between" style={{ marginBottom: 4 }}>
             <h2 className="h2">가고 싶은 곳</h2>
-            <Link to="/wishes" className="small" style={{ fontWeight: 700 }}>{activeWishes.length ? `모두 보기 ${activeWishes.length}` : '담으러 가기'}</Link>
+            <Link to="/wishes" className="small" style={{ fontWeight: 500 }}>{activeWishes.length ? `모두 보기 ${activeWishes.length}` : '담으러 가기'}</Link>
           </div>
           {!wishes || !trips ? null : activeWishes.length === 0 ? (
             <Link to="/wishes" className="trip-row" style={{ color: 'var(--ink2)' }}>
               <span className="trip-tile wish"><Icon name="heart" size={20} stroke={2.2} /></span>
               <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontWeight: 700 }}>가고 싶은 곳 3곳만 담아볼까요?</span>
+                <span style={{ fontWeight: 500 }}>가고 싶은 곳 3곳만 담아볼까요?</span>
                 <span className="tiny muted">이번 달 추천과 여행지 뽑기가 있어요</span>
               </span>
             </Link>
