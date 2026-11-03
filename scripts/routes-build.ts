@@ -8,12 +8,12 @@
 import fs from 'node:fs';
 
 type Svc = 'S' | 'E' | 'T';
-type Route = [Svc, string, string, number, number, number, number?, number?, string?];
+type Route = [Svc, string, string, number, number, number, number?, number?, string?, [number, number, 0 | 1][]?];
 interface Stop { svc: Svc; id: string; name: string; region: string }
 interface State { stops: Stop[]; routes: Route[]; updated: string; scannedAt?: string; checkedAt?: string }
 
-/** 앱 자료: s = 정류지 [이름, 시·군 코드, 서비스], r = [서비스, 출발 정류지 번호, 도착 번호, 하루 편수, 가장 빠른 분, KTX 편수(-1 모름), KTX 가장 빠른 분, 반대 방향으로 확인 1] */
-export interface RoutesData { updated: string; s: [string, string, Svc][]; r: [Svc, number, number, number, number, number, number, 0 | 1][] }
+/** 앱 자료: s = 정류지 [이름, 시·군 코드, 서비스], r = [서비스, 출발 정류지 번호, 도착 번호, 하루 편수, 가장 빠른 분, KTX 편수(-1 모름), KTX 가장 빠른 분, 반대 방향으로 확인 1, 시각표(출발분·걸리는분·KTX 셋씩 펼침, 모르면 빈 칸)] */
+export interface RoutesData { updated: string; s: [string, string, Svc][]; r: [Svc, number, number, number, number, number, number, 0 | 1, number[]][] }
 
 const REG = (() => { try { return new Map((JSON.parse(fs.readFileSync('src/data/regions.json', 'utf8')) as { regions: { code: string; lat: number; lng: number }[] }).regions.map((r) => [r.code, r])); } catch { return new Map<string, { lat: number; lng: number }>(); } })();
 /** 이름이 같은 다른 곳(양주 장흥역 ↔ 전남 장흥군)을 걸러 낸다: 시·군 사이 직선거리를 그 시간에 갈 수 없으면(시속 300km 넘게) 버림 */
@@ -31,7 +31,7 @@ export function build(st: State): RoutesData {
   const have = new Set(ok.map(key));
   const all: [Route, 0 | 1][] = ok.map((r) => [r, 0]);
   for (const r of ok) {
-    const back: Route = [r[0], r[2], r[1], r[3], r[4], r[5], r[6], r[7], r[8]];
+    const back: Route = [r[0], r[2], r[1], r[3], r[4], r[5], r[6], r[7], r[8], []]; // 반대 방향 시각표는 모름
     if (!have.has(key(back))) { all.push([back, 1]); have.add(key(back)); }
   }
   const stops = new Map(st.stops.map((s) => [`${s.svc}|${s.id}`, s]));
@@ -47,7 +47,7 @@ export function build(st: State): RoutesData {
     const a = stops.get(`${x[0]}|${x[1]}`), b = stops.get(`${x[0]}|${x[2]}`);
     if (!a || !b || a.region === b.region || !plausible(a.region, b.region, x[4])) continue;
     used.add(a.region); used.add(b.region);
-    r.push([x[0], at(x[0], x[1]), at(x[0], x[2]), x[3], x[4], x[6] ?? -1, x[7] ?? -1, inferred]);
+    r.push([x[0], at(x[0], x[1]), at(x[0], x[2]), x[3], x[4], x[6] ?? -1, x[7] ?? -1, inferred, (x[9] ?? []).flat()]);
   }
   r.sort((p, q) => p[1] - q[1] || p[2] - q[2] || p[0].localeCompare(q[0]));
   const month = (st.checkedAt || st.scannedAt || st.updated || '').slice(0, 7);

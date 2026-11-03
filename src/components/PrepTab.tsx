@@ -1,4 +1,5 @@
 import DirectWays from './DirectWays';
+import Stopovers from './Stopovers';
 import { Link } from 'react-router-dom';
 import PackingCard from './PackingCard';
 import CityInfo from './CityInfo';
@@ -37,6 +38,7 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
               <div key={placeParam(p)} className="prep-place">
                 <div className="prep-place-name">{placeLong(p)}</div>
                 {p.t === 'kr' && <DirectWays code={p.code} />}
+                {p.t === 'kr' && <Stopovers destCode={p.code} />}
                 {line && <div className="hub-way-row static"><Icon name="pin" size={16} /><span>{p.t === 'kr' ? '가까운 역·공항' : '공항'} <b>{line}</b></span></div>}
                 {f && <a className="hub-way-row" href={f.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {f.label}{m ? ` · ${m}월` : ''}</span></a>}
                 {f && <a className="hub-way-row" href={f.google} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>가격 알림 켜기 (구글 항공권)</span></a>}

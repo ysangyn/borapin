@@ -178,6 +178,8 @@ async function seed(page: Page) {
   plans.forEach(([id, tripId, name, day, time, done], i) => batch.set(sp.collection('plans').doc(id), { tripId, name, order: i, day, time, info: '', recId: null, done, createdAt: Timestamp.now(), v: 1 }));
   batch.set(sp.collection('notes').doc('n1'), { tripId: 't1', text: '비 오는 바다도 좋더라. 다음엔 겨울에 다시 오자.', by: { uid: 'bora', name: '보라' }, createdAt: ts('2024-05-06T21:00:00+09:00'), v: 1 });
   batch.set(sp.collection('notes').doc('n2'), { tripId: 't1', text: '초당 순두부 아침 7시 오픈, 7시 반부터 줄 섬', by: { uid: 'owner', name: '영상' }, createdAt: ts('2024-05-06T22:00:00+09:00'), v: 1 });
+  // 우리 집: 고양 (기차·버스 한 번에 가는 길, 대중교통 들러 가기)
+  batch.set(sp, { home: { label: '고양시', code: '41280', lat: 37.658, lng: 126.832, exact: false } }, { merge: true });
   await batch.commit();
 
   // 사진: 강릉 6장, 제주 4장, 도쿄 4장, 파리 2장
@@ -221,6 +223,12 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm05-trip-notes');
   await page.goto('/trips/t11');
   await snap(page, 'm06-planned-info');
+  // 준비 탭: 대중교통으로 들러 가기 (고양 → 통영, 이달 시각표)
+  await page.goto('/trips/t11?tab=prep');
+  await page.getByTestId('stopover-transit').first().click();
+  await expect(page.getByTestId('transit-plan').first()).toBeVisible({ timeout: 15_000 });
+  await page.getByTestId('transit-stops').first().scrollIntoViewIfNeeded();
+  await snap(page, 'm06b-transit-stops');
   await page.getByRole('tab', { name: /일정/ }).click();
   await snap(page, 'm07-planned-plan');
   // 계획 이어가기 다섯 걸음 (에뮬레이터 빌드에서만 켜짐)

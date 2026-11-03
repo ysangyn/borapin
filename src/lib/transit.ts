@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
  * 앱이 처음 열릴 때 무겁지 않게 필요할 때만 불러온다. 시간·편수는 '○월 기준', 예매·시간표는 각 예매 사이트에서.
  */
 export type Svc = 'S' | 'E' | 'T';
-export interface RoutesData { updated: string; s: [string, string, Svc][]; r: [Svc, number, number, number, number, number, number, 0 | 1][] }
+export interface RoutesData { updated: string; s: [string, string, Svc][]; r: [Svc, number, number, number, number, number, number, 0 | 1, number[]?][] }
 export interface Way { svc: Svc; ktx: boolean; from: string; to: string; n: number; min: number; inferred: boolean }
 
 let cache: Promise<RoutesData | null> | null = null;
