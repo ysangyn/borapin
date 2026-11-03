@@ -27,3 +27,8 @@ test('자동차는 출발 한 줄이 없다', () => {
   assert.equal(departLine(CAR), null);
   assert.equal(departLine(undefined), null);
 });
+
+test('저장 모양에 목록 안 목록이 없다 (Firestore가 못 담아 저장이 막혔던 일)', () => {
+  const nested = (v: unknown): boolean => Array.isArray(v) ? v.some((x) => Array.isArray(x) || nested(x)) : !!v && typeof v === 'object' && Object.values(v).some(nested);
+  assert.equal(nested(pickOf(stop, 'weekday')), false);
+});

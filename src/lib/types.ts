@@ -214,8 +214,8 @@ export interface WayPick {
   kind?: 'direct' | 'fast' | 'stop' | 'overnight';
   /** 들르는 시·군 코드 */
   mid?: string | null;
-  /** 구간: [탈것 S·E·T, KTX면 1, 출발 정류지, 도착 정류지, 출발 분, 도착 분] (다음 날은 +1440) */
-  legs?: [string, number, string, string, number, number][];
+  /** 구간 (Firestore는 목록 안 목록을 못 담아서 칸 이름으로): 탈것 S·E·T, KTX면 true, 출발·도착 정류지, 출발·도착 분(다음 날은 +1440) */
+  legs?: { svc: string; ktx: boolean; from: string; to: string; dep: number; arr: number }[];
   day?: 'weekday' | 'sat';
   /** 그 노선 막차 출발 분 */
   last?: number | null;
