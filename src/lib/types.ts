@@ -49,6 +49,8 @@ export interface Trip {
   hopes?: Record<string, string>;
   /** 계획 이어가기에서 끝낸 걸음 (건너뛴 것도 지난 것으로) */
   planDone?: string[];
+  /** 가는 길·돌아오는 길 (계획하기 '동선'에서 고름, 준비 탭·홈 카드·가이드북이 씀) */
+  way?: { go?: WayPick | null; back?: WayPick | null };
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
@@ -204,3 +206,17 @@ export interface Access {
   relations?: Record<string, Relation>;
 }
 export type Relation = 'spouse' | 'partner' | 'family' | 'friend' | 'relative' | 'other';
+
+/** 고른 교통편 한 가지 (src/lib/way.ts) */
+export interface WayPick {
+  mode: 'car' | 'transit';
+  /** 대중교통: 바로 가기 · 가장 빠른 길 · 들러 가기 · 1박 */
+  kind?: 'direct' | 'fast' | 'stop' | 'overnight';
+  /** 들르는 시·군 코드 */
+  mid?: string | null;
+  /** 구간: [탈것 S·E·T, KTX면 1, 출발 정류지, 도착 정류지, 출발 분, 도착 분] (다음 날은 +1440) */
+  legs?: [string, number, string, string, number, number][];
+  day?: 'weekday' | 'sat';
+  /** 그 노선 막차 출발 분 */
+  last?: number | null;
+}

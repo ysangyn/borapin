@@ -223,16 +223,19 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm05-trip-notes');
   await page.goto('/trips/t11');
   await snap(page, 'm06-planned-info');
-  // 준비 탭: 대중교통으로 들러 가기 (고양 → 통영, 이달 시각표)
+  // 준비 탭: 가는 길 정하기 (고양 → 통영, 이달 시각표 · 떠나는 날이 토요일이라 토요일 시각표로)
   await page.goto('/trips/t11?tab=prep');
-  await page.getByTestId('stopover-transit').first().click();
-  await expect(page.getByTestId('transit-plan').first()).toBeVisible({ timeout: 15_000 });
-  await page.getByTestId('transit-stops').first().scrollIntoViewIfNeeded();
-  await snap(page, 'm06b-transit-stops');
-  // 들르는 도시를 일정에 넣기 (떠나는 날이 토요일이라 토요일 시각표로 시작)
-  await expect(page.getByTestId('transit-sat').first()).toHaveAttribute('aria-selected', 'true');
-  await page.getByTestId('transit-to-plan').first().click();
-  await expect(page.getByRole('status')).toContainText('일정에 넣었어요');
+  await expect(page.getByTestId('way-go')).toContainText('가는 길');
+  await page.getByTestId('way-go-open').click();
+  const sheet = page.getByTestId('way-sheet');
+  await expect(sheet.getByTestId('transit-plan').first()).toBeVisible({ timeout: 15_000 });
+  await expect(sheet.getByTestId('transit-sat')).toHaveAttribute('aria-selected', 'true');
+  await snap(page, 'm06b-transit-stops', false);
+  await sheet.getByTestId('transit-plan').filter({ hasText: '들러 가기' }).first().getByTestId('transit-pick').click();
+  await expect(page.getByRole('status')).toContainText('가는 길을 정했어요');
+  await expect(page.getByTestId('way-go')).toContainText('들러 가기');
+  await expect(page.getByTestId('way-go')).toContainText('막차');
+  await snap(page, 'm06c-way-picked');
   await page.getByRole('tab', { name: /일정/ }).click();
   await snap(page, 'm07-planned-plan');
   // 계획 이어가기 다섯 걸음 (에뮬레이터 빌드에서만 켜짐)

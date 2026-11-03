@@ -22,17 +22,25 @@ const hhmm = (m: number) => clock(m).padStart(5, '0');
 /** 떠나는 날이 토·일이면 토요일 시각표로 시작 */
 const isWeekend = (ymd?: string | null) => { if (!ymd) return false; const w = new Date(ymd + 'T00:00:00').getDay(); return w === 0 || w === 6; };
 
-export default function TransitStops({ from, to, visited, onWish, trip }: { from: string; to: string; visited: Set<string> | Map<string, number>; onWish: (code: string) => void; trip?: { id: string; firstDay: string | null } }) {
+export default function TransitStops({ from, to, visited, onWish, trip, onPick, start, firstDay }: { from: string; to: string; visited: Set<string> | Map<string, number>; onWish?: (code: string) => void; trip?: { id: string; firstDay: string | null }; onPick?: (p: TransitPlan, day: 'weekday' | 'sat') => void; start?: number; firstDay?: string | null }) {
   const d = useRoutes();
   const info = useTravelInfo();
   const toast = useToast();
   const [mode, setMode] = useState<Mode>('all');
-  const [day, setDay] = useState<'weekday' | 'sat'>(() => (isWeekend(trip?.firstDay) ? 'sat' : 'weekday'));
-  const plans = useMemo(() => (d ? transitPlans(d, from, to, { day, mode, visited, themeOf: (c) => info?.cells[c]?.main.theme }) : []), [d, from, to, day, mode, visited, info]);
+  const [day, setDay] = useState<'weekday' | 'sat'>(() => (isWeekend(firstDay ?? trip?.firstDay) ? 'sat' : 'weekday'));
+  const plans = useMemo(() => (d ? transitPlans(d, from, to, { day, mode, visited, start, themeOf: (c) => info?.cells[c]?.main.theme }) : []), [d, from, to, day, mode, visited, info, start]);
   const toPlan = async (p: TransitPlan) => {
-    if (!trip || !p.mid) return;
-    const m = REGION_BY_CODE.get(p.mid)?.name ?? '';
+    if (!trip) return;
     const [l1, l2] = p.legs;
+    if (!p.mid || !l2) {
+      // 바로 가기: '행신 → 강릉 KTX'를 첫날 떠나는 시각에
+      try {
+        await addPlans(trip.id, [{ day: trip.firstDay, time: hhmm(l1.dep), name: `${l1.from} → ${l1.to} ${legName(l1)}`.slice(0, 80), info: `${clock(l1.dep)} 출발 · ${clock(l1.arr)} 도착` }]);
+        toast('일정에 넣었어요');
+      } catch { toast('넣지 못했어요. 다시 해 주세요'); }
+      return;
+    }
+    const m = REGION_BY_CODE.get(p.mid)?.name ?? '';
     const line = `${clock(l1.dep)} ${l1.from} ${legName(l1)} → ${clock(l1.arr)} ${l1.to} · ${p.kind === 'overnight' ? '다음 날 ' : ''}${clock(l2.dep)} ${l2.from} ${legName(l2)} → ${clock(l2.arr)} ${l2.to}`;
     try {
       await addPlans(trip.id, [{ day: trip.firstDay, time: hhmm(l1.arr), name: p.kind === 'overnight' ? `${m}에서 하룻밤` : `${m} 들르기`, info: line.slice(0, 200) }]);
@@ -75,7 +83,9 @@ export default function TransitStops({ from, to, visited, onWish, trip }: { from
           <div className="transit-foot tiny muted">
             차 타는 시간 {span(p.ride)} · {p.kind === 'overnight' ? '다음 날 ' : ''}{clock(p.end)} 도착
             {p.last != null && p.last > p.legs[p.legs.length - 1].dep % 1440 ? <> · <span className="transit-last">막차 {clock(p.last)}</span></> : p.last != null ? <> · <span className="transit-last">이게 막차</span></> : null}
-            {p.mid && p.kind !== 'fast' && (
+            {onPick && <>{' · '}<button className="link-btn transit-pick" onClick={() => onPick(p, day)} data-testid="transit-pick">이 길로</button></>}
+            {!onPick && trip && (p.kind === 'direct' || p.kind === 'fast') && <>{' · '}<button className="link-btn" onClick={() => void toPlan(p)} data-testid="transit-to-plan">일정에 넣기</button></>}
+            {!onPick && p.mid && p.kind !== 'fast' && onWish && (
               <>
                 {' · '}<Link to={`/map?sel=${placeParam({ t: 'kr', code: p.mid })}`}>둘러보기</Link>
                 {' · '}<button className="link-btn" onClick={() => onWish(p.mid!)}>가고 싶은 곳에 담기</button>

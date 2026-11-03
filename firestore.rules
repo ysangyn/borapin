@@ -59,6 +59,7 @@ service cloud.firestore {
         && (!('stay' in d) || d.stay == null || (d.stay is map && d.stay.name is string && d.stay.name.size() <= 80))
         && (!('hopes' in d) || (d.hopes is map && d.hopes.size() <= 10))
         && optList(d, 'planDone', 10)
+        && (!('way' in d) || (d.way is map && d.way.keys().hasOnly(['go', 'back'])))
         && d.v == 1;
     }
 

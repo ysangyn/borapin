@@ -8,6 +8,7 @@ import { photoForPlace } from '../lib/media';
 import { stageAction, type Stage } from '../lib/stage';
 import HereNow from './HereNow';
 import { nextPlanStep, PLAN_STEP_LABEL } from '../lib/planPick';
+import { departLine } from '../lib/way';
 
 /**
  * 여행 전·중·후에 따라 바뀌는 홈 맨 위 카드.
@@ -32,8 +33,10 @@ export default function StageCard({ stage }: { stage: Stage }) {
   const lead = stage.kind === 'before'
     ? (stage.days === 0 ? '오늘 떠나요!' : `${stage.label} · ${where}`)
     : stage.kind === 'during' ? `${stage.label} · ${where}` : `${stage.label} · ${where}`;
+  // 떠나기 일주일 안: 고른 교통편 첫 차를 한 줄로 (예매 잊지 않게)
+  const depart = stage.kind === 'before' && stage.days <= 7 ? departLine(t.way?.go) : null;
   const sub = stage.kind === 'before'
-    ? (planNext ? `계획 ${t.planDone?.length ?? 0}/5 · 다음은 '${PLAN_STEP_LABEL[planNext]}'` : pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
+    ? (depart ? `${depart} · 예매하셨어요?` : planNext ? `계획 ${t.planDone?.length ?? 0}/5 · 다음은 '${PLAN_STEP_LABEL[planNext]}'` : pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
     : stage.kind === 'during'
       ? (nPhotos ? `사진 ${nPhotos}장 올렸어요` : '오늘 찍은 사진을 바로 올려 두세요')
       : nPhotos && nNotes ? `사진 ${nPhotos}장 · 글 ${nNotes}개 남겼어요`
