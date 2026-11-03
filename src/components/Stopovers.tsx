@@ -14,7 +14,7 @@ import { placeParam, REGION_BY_CODE, regionLong } from '../lib/geo';
 const touch = () => typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
 
 /** 차로 갈 때 가는 길에 들르기: 조금만 돌아가는 안 가 본 시·군 (집이 정해져 있을 때) */
-export default function Stopovers({ destCode }: { destCode: string }) {
+export default function Stopovers({ destCode, trip }: { destCode: string; trip?: { id: string; firstDay: string | null } }) {
   const home = useHome();
   const info = useTravelInfo();
   const { trips } = useTrips();
@@ -36,7 +36,7 @@ export default function Stopovers({ destCode }: { destCode: string }) {
         <button role="tab" aria-selected={mode === 'car'} className={mode === 'car' ? 'on' : ''} onClick={() => setMode('car')}>자동차</button>
         <button role="tab" aria-selected={mode === 'transit'} className={mode === 'transit' ? 'on' : ''} onClick={() => setMode('transit')} data-testid="stopover-transit">대중교통</button>
       </div>
-      {mode === 'transit' && <TransitStops from={home.code} to={dest.code} visited={visited} onWish={(c) => void add(c)} />}
+      {mode === 'transit' && <TransitStops from={home.code} to={dest.code} visited={visited} onWish={(c) => void add(c)} trip={trip} />}
       {mode === 'car' && !list.length && <span className="tiny muted">차로 조금만 돌아가면 들를 곳이 없어요</span>}
       {mode === 'car' && list.map((s) => {
         const r = REGION_BY_CODE.get(s.code)!;

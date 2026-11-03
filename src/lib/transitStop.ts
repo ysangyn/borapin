@@ -20,17 +20,19 @@ export interface TransitPlan {
   move?: number; // 시내 이동 분 (다른 역·터미널로)
   ride: number; // 차 타는 분 합
   end: number; // 마지막에 닿는 시각(분, 다음 날이면 +1440)
+  last?: number; // 마지막 구간의 막차 출발 시각(그 노선)
 }
-export interface StopOpts { mode?: Mode; start?: number; visited?: Set<string> | Map<string, number>; themeOf?: (code: string) => string | undefined; n?: number }
+export interface StopOpts { day?: 'weekday' | 'sat'; mode?: Mode; start?: number; visited?: Set<string> | Map<string, number>; themeOf?: (code: string) => string | undefined; n?: number }
 
 const SAME = 10, TOWN = 30, STAY_MIN = 120, STAY_MAX = 300, LATEST = 22 * 60, OVERNIGHT_RIDE = 6 * 60;
 
 interface Edge { svc: Svc; from: number; to: number; fromCode: string; toCode: string; deps: [number, number, boolean][] }
 
-function edges(d: RoutesData): Edge[] {
+function edges(d: RoutesData, day: 'weekday' | 'sat' = 'weekday'): Edge[] {
   const out: Edge[] = [];
   for (const x of d.r) {
-    const flat = x[8] ?? [];
+    // 토요일: 토요일 시각표를 받았으면 그것(토요일엔 안 다니면 빈 칸), 아직 안 받았으면 평일 것
+    const flat = (day === 'sat' && x[9] != null ? x[9] : x[8]) ?? [];
     if (!flat.length) continue;
     const deps: [number, number, boolean][] = [];
     for (let i = 0; i + 2 < flat.length; i += 3) deps.push([flat[i], flat[i + 1], flat[i + 2] === 1]);
@@ -43,6 +45,7 @@ const okFirst = (svc: Svc, mode: Mode) => mode === 'all' || (mode === 'bus' ? sv
 // 기차만: 첫 구간은 기차, 마지막 구간은 버스도 된다 (기차역이 없는 곳까지)
 const okSecond = (svc: Svc, mode: Mode) => mode !== 'bus' || svc !== 'T';
 
+const lastOf = (e: Edge) => e.deps[e.deps.length - 1]?.[0];
 const leg = (d: RoutesData, e: Edge, dep: [number, number, boolean], day = 0): Leg => ({ svc: e.svc, ktx: dep[2], from: d.s[e.from][0], to: d.s[e.to][0], fromCode: e.fromCode, toCode: e.toCode, dep: dep[0] + day, arr: dep[0] + dep[1] + day });
 
 /** 갈아타는 데 드는 분: 같은 정류지 10분, 같은 시·군 다른 곳 30분 */
@@ -50,7 +53,7 @@ const transferMin = (a: Edge, b: Edge) => (a.svc === b.svc && a.to === b.from ? 
 
 export function transitPlans(d: RoutesData, from: string, to: string, o: StopOpts = {}): TransitPlan[] {
   const mode = o.mode ?? 'all', start = o.start ?? 7 * 60, n = o.n ?? 3;
-  const all = edges(d);
+  const all = edges(d, o.day);
   const out: TransitPlan[] = [];
 
   // 바로 가기: 아침 뒤 첫 차 (같으면 빠른 것)
@@ -60,7 +63,7 @@ export function transitPlans(d: RoutesData, from: string, to: string, o: StopOpt
     for (const dp of e.deps) {
       if (dp[0] < start) continue;
       const l = leg(d, e, dp);
-      if (!direct || l.dep < direct.legs[0].dep || (l.dep === direct.legs[0].dep && l.arr < direct.end)) direct = { kind: 'direct', legs: [l], ride: dp[1], end: l.arr };
+      if (!direct || l.dep < direct.legs[0].dep || (l.dep === direct.legs[0].dep && l.arr < direct.end)) direct = { kind: 'direct', legs: [l], ride: dp[1], end: l.arr, last: lastOf(e) };
       break; // 시각표는 출발 순
     }
   }
@@ -93,12 +96,12 @@ export function transitPlans(d: RoutesData, from: string, to: string, o: StopOpt
           if (wait < 0) continue;
           const l1 = leg(d, e1, dp1), l2 = leg(d, e2, dp2);
           const end = l2.arr, ride = dp1[1] + dp2[1];
-          if (wait <= 120 && (!fast || end < fast.end)) fast = { kind: 'fast', legs: [l1, l2], mid: e1.toCode, stay: wait, move: tr === TOWN ? TOWN : 0, ride, end };
+          if (wait <= 120 && (!fast || end < fast.end)) fast = { kind: 'fast', legs: [l1, l2], mid: e1.toCode, stay: wait, move: tr === TOWN ? TOWN : 0, ride, end, last: lastOf(e2) };
           if (wait >= STAY_MIN && wait <= STAY_MAX && end <= LATEST && ride <= OVERNIGHT_RIDE) {
             const was = o.visited?.has(e1.toCode) ?? false;
             const midness = direct0 ? 1 - Math.abs(km(f, m) / Math.max(1, km(f, m) + km(m, t)) - 0.5) * 2 : 0.5;
             const score = (was ? 0 : 3) + (o.themeOf?.(e1.toCode) ? 2 : 0) + midness * 2 - (end - dp1[0]) / 600 - (end > 19 * 60 ? 1.5 : 0) - (dp1[0] < 7 * 60 + 30 ? 0.5 : 0);
-            stops.push({ kind: 'stop', legs: [l1, l2], mid: e1.toCode, stay: wait, move: tr === TOWN ? TOWN : 0, ride, end, score });
+            stops.push({ kind: 'stop', legs: [l1, l2], mid: e1.toCode, stay: wait, move: tr === TOWN ? TOWN : 0, ride, end, last: lastOf(e2), score });
           }
           if (dp2[0] > arr1 + tr + STAY_MAX) break;
         }
@@ -113,7 +116,7 @@ export function transitPlans(d: RoutesData, from: string, to: string, o: StopOpt
         const dp2 = e2.deps.find((x) => x[0] >= 9 * 60 && x[0] <= 12 * 60);
         if (!dp2) continue;
         const was = o.visited?.has(e1.toCode) ?? false;
-        overnight.push({ kind: 'overnight', legs: [leg(d, e1, dp1), leg(d, e2, dp2, 1440)], mid: e1.toCode, ride: dp1[1] + dp2[1], end: dp2[0] + dp2[1] + 1440, move: transferMin(e1, e2) === TOWN ? TOWN : 0, score: (was ? 0 : 3) + (o.themeOf?.(e1.toCode) ? 2 : 0) });
+        overnight.push({ kind: 'overnight', legs: [leg(d, e1, dp1), leg(d, e2, dp2, 1440)], mid: e1.toCode, ride: dp1[1] + dp2[1], end: dp2[0] + dp2[1] + 1440, last: lastOf(e2), move: transferMin(e1, e2) === TOWN ? TOWN : 0, score: (was ? 0 : 3) + (o.themeOf?.(e1.toCode) ? 2 : 0) });
       }
       break; // 오후 첫 차 하나만
     }

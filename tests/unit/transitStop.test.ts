@@ -54,3 +54,16 @@ test('clock · span', () => {
   assert.equal(span(120), '2시간');
   assert.equal(span(40), '40분');
 });
+
+test('막차: 바로 가기는 그 노선의 마지막 출발', () => {
+  const direct = transitPlans(D, GOYANG, NAMWON).find((x) => x.kind === 'direct')!;
+  assert.equal(clock(direct.last!), '15:00');
+});
+
+test('토요일: 받은 토요일 시각표를 쓰고, 아직 안 받은 노선은 평일 것', () => {
+  const sat: RoutesData = { ...D, r: D.r.map((x, i) => (i === 0 ? [...x.slice(0, 9), flat([[h(11), 150, 1]])] as unknown as RoutesData['r'][number] : x)) };
+  const direct = transitPlans(sat, GOYANG, NAMWON, { day: 'sat' }).find((x) => x.kind === 'direct')!;
+  assert.equal(clock(direct.legs[0].dep), '11:00');
+  const weekday = transitPlans(sat, GOYANG, NAMWON).find((x) => x.kind === 'direct')!;
+  assert.equal(clock(weekday.legs[0].dep), '9:00');
+});

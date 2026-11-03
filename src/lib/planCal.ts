@@ -1,3 +1,4 @@
+import type { When } from './types';
 import type { Festival } from './festivals';
 
 /**
@@ -31,3 +32,14 @@ export function festsIn(fests: Festival[], start: string, nights: number): { dur
   const near = during.length ? null : fests.filter((f) => f.s.slice(0, 6) === s.slice(0, 6)).sort((a, b) => Math.abs(+a.s - +s) - Math.abs(+b.s - +s))[0] ?? null;
   return { during, near };
 }
+
+/** 여행 날짜(하루 단위로 정해진 때만) → 'YYYY-MM-DD' 목록 (최대 15일) */
+export const daysOf = (w: When): string[] => {
+  if (w.p !== 'day' || !w.y || !w.m || !w.d) return [];
+  const s = new Date(w.y, w.m - 1, w.d);
+  const e = w.d2 ? new Date(w.y2 ?? w.y, (w.m2 ?? w.m) - 1, w.d2) : s;
+  const out: string[] = [];
+  for (let t = new Date(s); t <= e && out.length < 15; t.setDate(t.getDate() + 1)) out.push(ymdOf(t));
+  return out;
+};
+function ymdOf(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }

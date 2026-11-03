@@ -13,7 +13,8 @@ import { loadTour, trendTags, useTrend, type TourData } from '../lib/trend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { pickables, PICK_LABEL, PLAN_STEPS, type Pick, type PickKind } from '../lib/planPick';
 import { arrange, dayDistance } from '../lib/route';
-import { festsIn, monthCells } from '../lib/planCal';
+import { daysOf, festsIn, monthCells } from '../lib/planCal';
+export { daysOf };
 import { accessFor } from '../lib/transport';
 import { lookupLink } from '../lib/placeLookup';
 import { placeLabel, REGION_BY_CODE } from '../lib/geo';
@@ -42,14 +43,7 @@ const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
 const md = (s: string) => `${+s.slice(5, 7)}월 ${+s.slice(8, 10)}일`;
 const WEEK = ['일', '월', '화', '수', '목', '금', '토'];
 const dow = (s: string) => WEEK[new Date(s).getDay()];
-export const daysOf = (w: When): string[] => {
-  if (w.p !== 'day' || !w.y || !w.m || !w.d) return [];
-  const s = new Date(w.y, w.m - 1, w.d);
-  const e = w.d2 ? new Date(w.y2 ?? w.y, (w.m2 ?? w.m) - 1, w.d2) : s;
-  const out: string[] = [];
-  for (let t = new Date(s); t <= e && out.length < 15; t.setDate(t.getDate() + 1)) out.push(ymd(t));
-  return out;
-};
+
 const me = (auth: ReturnType<typeof useAuth>) => (auth.status === 'ready' ? displayName(auth.user) : '');
 
 export default function PlanFlow() {

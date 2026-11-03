@@ -229,6 +229,10 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await expect(page.getByTestId('transit-plan').first()).toBeVisible({ timeout: 15_000 });
   await page.getByTestId('transit-stops').first().scrollIntoViewIfNeeded();
   await snap(page, 'm06b-transit-stops');
+  // 들르는 도시를 일정에 넣기 (떠나는 날이 토요일이라 토요일 시각표로 시작)
+  await expect(page.getByTestId('transit-sat').first()).toHaveAttribute('aria-selected', 'true');
+  await page.getByTestId('transit-to-plan').first().click();
+  await expect(page.getByRole('status')).toContainText('일정에 넣었어요');
   await page.getByRole('tab', { name: /일정/ }).click();
   await snap(page, 'm07-planned-plan');
   // 계획 이어가기 다섯 걸음 (에뮬레이터 빌드에서만 켜짐)

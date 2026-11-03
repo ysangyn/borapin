@@ -1437,6 +1437,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 
 /* 대중교통 들러 가기 */
 .transit-stops { display: flex; flex-direction: column; gap: 8px; }
+.transit-segs { display: flex; flex-wrap: wrap; gap: 6px; }
+.transit-last { color: var(--coral-ink); }
 .transit-plan { display: flex; flex-direction: column; gap: 4px; background: #fff; border: 1.5px solid var(--edge, #D4CBF2); border-radius: 14px; padding: 10px 12px; }
 .transit-plan.stop { background: var(--mist2); }
 .transit-title { font-size: 14px; }

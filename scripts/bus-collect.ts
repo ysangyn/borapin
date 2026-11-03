@@ -41,8 +41,9 @@ type Svc = 'S' | 'E' | 'T';
 interface Stop { svc: Svc; id: string; name: string; region: string; extra?: true }
 /** 시각표 한 칸: [출발 분(0~1439), 걸리는 분, KTX면 1] */
 export type Dep = [number, number, 0 | 1];
-export type Route = [Svc, string, string, number, number, number, number, number, string, Dep[]?];
-type Job = [string, string, 'scan' | 'check'];
+export type Route = [Svc, string, string, number, number, number, number, number, string, Dep[]?, (Dep[] | null)?];
+/** sat: 토요일 시각표만 다시 받기 (주말 들러 가기) */
+type Job = [string, string, 'scan' | 'check' | 'sat'];
 interface State {
   v: 2; stops: Stop[]; routes: Route[]; updated: string;
   queue: Record<Svc, Job[]>; scannedAt: string; checkedAt: string; homeScanned: string[];
@@ -117,12 +118,13 @@ function checkJobs(st: State): Record<Svc, Job[]> {
   const q: Record<Svc, Job[]> = { S: [], E: [], T: [] };
   const have = new Set(st.routes.map((r) => `${r[0]}|${r[1]}|${r[2]}`));
   for (const r of st.routes) {
-    q[r[0]].push([r[1], r[2], 'check']);
+    q[r[0]].push([r[1], r[2], 'check'], [r[1], r[2], 'sat']);
     if (!have.has(`${r[0]}|${r[2]}|${r[1]}`)) q[r[0]].push([r[2], r[1], 'scan']);
   }
   return q;
 }
 
+const satDay = (() => { const d = new Date(Date.now() + 9 * 3600_000 + 86400_000); while (d.getUTCDay() !== 6) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ''); })();
 const day = (() => { const d = new Date(Date.now() + 9 * 3600_000 + 86400_000); while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ''); })();
 const mins = (x: Item) => { const d = String(x.depPlandTime ?? x.depplandtime ?? ''), a = String(x.arrPlandTime ?? x.arrplandtime ?? ''); if (d.length < 12 || a.length < 12) return 0; const m = (t: string) => +t.slice(8, 10) * 60 + +t.slice(10, 12); return (m(a) - m(d) + 1440) % 1440; };
 const fastest = (xs: Item[]) => xs.map(mins).filter((m) => m > 0).reduce((a, b) => Math.min(a, b), Infinity);
@@ -190,8 +192,10 @@ if (needStops) {
 }
 // 시각표 칸이 없는 노선이 있으면(시각표를 받기 전 자료) 이번 달이어도 다시 확인
 if (st.checkedAt !== month || st.routes.some((r) => !r[9])) { add(checkJobs(st)); st.checkedAt = month; console.log(`이번 달 확인 예약: 아는 노선 ${st.routes.length}개 + 반대 방향`); }
-// 같은 짝이 두 번 들어가지 않게
-for (const s of ['S', 'E', 'T'] as const) { const seen = new Set<string>(); st.queue[s] = st.queue[s].filter((j) => { const k = j[0] + '|' + j[1]; return !seen.has(k) && !!seen.add(k); }); }
+// 토요일 시각표를 아직 안 받은 노선이 있으면 그것만 (이번 달 확인을 이미 했어도)
+if (st.routes.some((r) => r[10] === undefined)) { for (const r of st.routes) if (r[10] === undefined) st.queue[r[0]].push([r[1], r[2], 'sat']); console.log('토요일 시각표 받기 예약'); }
+// 같은 짝이 두 번 들어가지 않게 (토요일 받기는 따로 센다)
+for (const s of ['S', 'E', 'T'] as const) { const seen = new Set<string>(); st.queue[s] = st.queue[s].filter((j) => { const k = j[0] + '|' + j[1] + (j[2] === 'sat' ? '|sat' : ''); return !seen.has(k) && !!seen.add(k); }); }
 console.log(`할 일 시외 ${st.queue.S.length} · 고속 ${st.queue.E.length} · 열차 ${st.queue.T.length}`);
 
 // ── 처리 ──
@@ -205,17 +209,18 @@ async function lane(svc: Svc) {
   let used = 0;
   while (st.queue[svc].length && used < MAX_CALLS) {
     const batch = st.queue[svc].slice(0, CONC);
-    const res = await Promise.all(batch.map(([a, b]) => api(name, op, { [dk]: a, [ak]: b, depPlandTime: day })));
+    const res = await Promise.all(batch.map(([a, b, kind]) => api(name, op, { [dk]: a, [ak]: b, depPlandTime: kind === 'sat' ? satDay : day })));
     used += batch.length;
     if (res.some((r) => r === null)) { console.log(`${name}: 오늘 한도에 닿아 멈춰요`); return; }
     res.forEach((r, i) => {
       const [a, b, kind] = batch[i];
       const key = `${svc}|${a}|${b}`;
       if (!r) return; // 연결 실패: 그대로 둔다
+      if (kind === 'sat') { const at = index.get(key); if (at !== undefined) st.routes[at][10] = r.length ? summarize(svc, a, b, r)[9] ?? [] : []; return; }
       if (r.length) {
         const row = summarize(svc, a, b, r);
         const at = index.get(key);
-        if (at === undefined) { index.set(key, st.routes.length); st.routes.push(row); found++; } else { st.routes[at] = row; removed.delete(key); }
+        if (at === undefined) { index.set(key, st.routes.length); st.routes.push(row); found++; } else { row[10] = st.routes[at][10]; st.routes[at] = row; removed.delete(key); }
       } else if (kind === 'check' && index.has(key)) { removed.add(key); gone++; }
     });
     st.queue[svc].splice(0, batch.length);
