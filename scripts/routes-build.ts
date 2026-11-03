@@ -15,6 +15,15 @@ interface State { stops: Stop[]; routes: Route[]; updated: string; scannedAt?: s
 /** 앱 자료: s = 정류지 [이름, 시·군 코드, 서비스], r = [서비스, 출발 정류지 번호, 도착 번호, 하루 편수, 가장 빠른 분, KTX 편수(-1 모름), KTX 가장 빠른 분, 반대 방향으로 확인 1] */
 export interface RoutesData { updated: string; s: [string, string, Svc][]; r: [Svc, number, number, number, number, number, number, 0 | 1][] }
 
+const REG = (() => { try { return new Map((JSON.parse(fs.readFileSync('src/data/regions.json', 'utf8')) as { regions: { code: string; lat: number; lng: number }[] }).regions.map((r) => [r.code, r])); } catch { return new Map<string, { lat: number; lng: number }>(); } })();
+/** 이름이 같은 다른 곳(양주 장흥역 ↔ 전남 장흥군)을 걸러 낸다: 시·군 사이 직선거리를 그 시간에 갈 수 없으면(시속 300km 넘게) 버림 */
+export function plausible(fromCode: string, toCode: string, min: number): boolean {
+  const a = REG.get(fromCode), b = REG.get(toCode);
+  if (!a || !b) return true;
+  const km = Math.hypot((a.lat - b.lat) * 111, (a.lng - b.lng) * 88);
+  return km / Math.max(min / 60, 0.1) <= 300;
+}
+
 export function build(st: State): RoutesData {
   const used = new Set<string>();
   const ok = st.routes.filter((r) => r[3] > 0 && r[4] > 0 && r[4] < 24 * 60);
@@ -36,7 +45,7 @@ export function build(st: State): RoutesData {
   const r: RoutesData['r'] = [];
   for (const [x, inferred] of all) {
     const a = stops.get(`${x[0]}|${x[1]}`), b = stops.get(`${x[0]}|${x[2]}`);
-    if (!a || !b || a.region === b.region) continue;
+    if (!a || !b || a.region === b.region || !plausible(a.region, b.region, x[4])) continue;
     used.add(a.region); used.add(b.region);
     r.push([x[0], at(x[0], x[1]), at(x[0], x[2]), x[3], x[4], x[6] ?? -1, x[7] ?? -1, inferred]);
   }

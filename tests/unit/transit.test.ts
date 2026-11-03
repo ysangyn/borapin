@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { aboutTime, directFrom, directWays, wayLine, type RoutesData } from '../../src/lib/transit';
-import { build } from '../../scripts/routes-build';
+import { build, plausible } from '../../scripts/routes-build';
 
 const GOYANG = '41280', GANGNEUNG = '51150', CHEONGJU = '43110';
 
@@ -59,4 +59,9 @@ test('directFrom: 우리 시·군에서 한 번에 가는 곳마다 가장 빠�
   assert.deepEqual([...m.keys()].sort(), [CHEONGJU, GANGNEUNG].sort());
   assert.equal(m.get(GANGNEUNG)!.ktx, true);
   assert.equal(m.get(CHEONGJU)!.inferred, true);
+});
+
+test('plausible: 이름만 같은 먼 곳(대곡→장흥 30분)은 버린다', () => {
+  assert.equal(plausible('41280', '46800', 30), false); // 고양 → 전남 장흥군 30분
+  assert.equal(plausible('41280', GANGNEUNG, 150), true);
 });
