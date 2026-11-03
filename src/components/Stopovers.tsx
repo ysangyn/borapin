@@ -28,7 +28,7 @@ export default function Stopovers({ destCode }: { destCode: string }) {
   };
   return (
     <div className="stopovers" data-testid="stopovers">
-      <div className="tiny" style={{ fontWeight: 800, color: 'var(--ink3)' }}>차로 가면 들러 가기 좋은 곳</div>
+      <div className="tiny" style={{ fontWeight: 600, color: 'var(--ink3)' }}>차로 가면 들러 가기 좋은 곳</div>
       {list.map((s) => {
         const r = REGION_BY_CODE.get(s.code)!;
         const nav = `nmap://route/car?slat=${home.lat}&slng=${home.lng}&sname=${encodeURIComponent(home.label)}&v1lat=${r.lat}&v1lng=${r.lng}&v1name=${encodeURIComponent(r.name)}&dlat=${dest.lat}&dlng=${dest.lng}&dname=${encodeURIComponent(dest.name)}&appname=borapin.web.app`;

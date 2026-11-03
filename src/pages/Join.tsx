@@ -28,7 +28,7 @@ export default function Join({ code, user }: { code: string; user: User }) {
       {invite === undefined && <div className="small muted">초대를 확인하는 중…</div>}
       {invite && !bad && (
         <>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>보라핀에 초대받았어요</div>
+          <div style={{ fontSize: 20, fontWeight: 600 }}>보라핀에 초대받았어요</div>
           <div className="small muted" style={{ maxWidth: 320 }}>
             {invite.name ? <>앞으로 앱에서 <b>{invite.name}</b>{withRo(invite.name).slice(invite.name.trim().length)} 불려요. </> : null}
             <b>{user.email}</b> 계정으로 들어가요. 들어가면 함께 쓰는 사람들의 기록과 사진을 같이 보게 돼요.
@@ -39,7 +39,7 @@ export default function Join({ code, user }: { code: string; user: User }) {
       )}
       {bad && (
         <>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>{state === 'used' || invite?.usedBy ? '이미 쓰인 초대 링크예요' : '초대 링크가 만료됐거나 없어요'}</div>
+          <div style={{ fontSize: 20, fontWeight: 600 }}>{state === 'used' || invite?.usedBy ? '이미 쓰인 초대 링크예요' : '초대 링크가 만료됐거나 없어요'}</div>
           <div className="small muted" style={{ maxWidth: 320 }}>초대한 사람에게 새 링크를 부탁해 주세요. 링크는 7일 동안, 한 번만 쓸 수 있어요.</div>
           <button className="btn line" onClick={() => { clearPendingInvite(); location.replace('/'); }}>처음으로</button>
         </>

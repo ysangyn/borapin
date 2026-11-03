@@ -92,7 +92,7 @@ export default function DicePicker({ stats, info, seasons, wishes, initialScope 
       {scope !== 'world' && face && (
         <div className={'dice-face' + (rolling ? ' rolling' : '')} data-testid="dice-face" aria-live="polite">
           {!rolling && photoForPlace(face.place) && <ScenicPhoto photo={photoForPlace(face.place)} className="photo-banner" />}
-          <div style={{ fontSize: 20, fontWeight: 800 }}>{placeLong(face.place)}</div>
+          <div style={{ fontSize: 20, fontWeight: 600 }}>{placeLong(face.place)}</div>
           {face.theme && <div className="small" style={{ color: '#33248a', fontWeight: 600 }}>{face.theme}</div>}
           {face.spots && face.spots.length > 0 && <div className="tiny muted">{face.spots.slice(0, 4).join(' · ')}</div>}
           {season && <div className="tiny" style={{ color: '#b4472c' }}>가기 좋은 때 {monthsLabel(season.m)}</div>}

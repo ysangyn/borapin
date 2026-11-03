@@ -119,12 +119,12 @@ export default function Space() {
 
   return (
     <div style={{ background: 'var(--page)', minHeight: '100%' }}>
-      <TopBar back title={<span style={{ fontWeight: 800, fontSize: 18 }}>우리 공간</span>} />
+      <TopBar back title={<span style={{ fontWeight: 600, fontSize: 18 }}>우리 공간</span>} />
       <div className="page" style={{ paddingTop: 0, gap: 14 }}>
         <div className="setting-group" style={{ padding: 16, display: 'flex', gap: 14, alignItems: 'center' }}>
           <Avatars size={44} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }} data-testid="space-title">{spaceTitle()}{spaceRelation() && <span className="tag coral" data-testid="space-relation">{RELATION_ICON[spaceRelation()!]} {RELATION_LABEL[spaceRelation()!]}</span>}</div>
+            <div style={{ fontSize: 19, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }} data-testid="space-title">{spaceTitle()}{spaceRelation() && <span className="tag coral" data-testid="space-relation">{RELATION_ICON[spaceRelation()!]} {RELATION_LABEL[spaceRelation()!]}</span>}</div>
             <div className="small muted">{stats ? `함께 다닌 여행 ${times(stats.tripsDone)} · 핀 ${stats.pins}개` : '기록을 불러오는 중…'}</div>
             <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{withRo(nameOf(user.email))} 들어와 있어요 · {user.email}</div>
             <div className="tiny" style={{ color: 'var(--violet)', marginTop: 2 }}>각자 계정으로 들어와도 같은 기록을 함께 봐요</div>

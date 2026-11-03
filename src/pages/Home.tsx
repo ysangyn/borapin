@@ -67,7 +67,7 @@ export default function Home() {
       <div className="page" style={{ paddingTop: 4 }}>
         <div className="home-head">
           <div style={{ minWidth: 0 }}>
-            <div className="small" style={{ fontWeight: 700, color: 'var(--ink3)' }}>{spaceTitle()}의 지도</div>
+            <div className="small" style={{ fontWeight: 500, color: 'var(--ink3)' }}>{spaceTitle()}의 지도</div>
             <div className="headline" data-testid="headline">
               {stats ? (stats.tripsDone ? <>{times(stats.tripsDone)}의 여행,<br />핀 <b>{stats.pins}</b>개 꽂았어요</> : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
             </div>
@@ -84,7 +84,7 @@ export default function Home() {
               <button role="tab" aria-selected={mode === 'kr'} className={mode === 'kr' ? 'on' : ''} onClick={() => { setMode('kr'); setSel(null); }}>국내</button>
               <button role="tab" aria-selected={mode === 'world'} className={mode === 'world' ? 'on' : ''} onClick={() => { setMode('world'); setSel(null); }}>세계</button>
             </div>
-            <Link to="/map" className="small" style={{ fontWeight: 700 }}>지도 크게 보기</Link>
+            <Link to="/map" className="small" style={{ fontWeight: 500 }}>지도 크게 보기</Link>
           </div>
           <MapView mode={mode} stats={stats} garden={plants} height={290} cooperative controls={true} selected={sel} onSelect={setSel} flags={flags} spots={spots} near={near} nearZoom={nearZoom} />
           <div className="tiny muted" style={{ textAlign: 'center', marginTop: 6, lineHeight: 1.5 }} data-testid="map-hint">지역을 누르면 핀 꽂기 단추가 나와요<br />전체 보기 단추를 누르면 전국이 보여요</div>
@@ -234,8 +234,8 @@ function MemoryCard({ memory }: { memory: Memory }) {
     <Link to={`/trips/${memory.trip.id}`} className="card" style={{ display: 'flex', gap: 12, alignItems: 'center', color: 'inherit' }} data-testid="memory">
       <span className="trip-tile">{memory.trip.places[0] ? placeLabel(memory.trip.places[0]).slice(0, 4) : '여행'}</span>
       <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <span className="tiny" style={{ color: 'var(--violet)', fontWeight: 800 }}>{memory.label}</span>
-        <span style={{ fontWeight: 700 }}>{memory.trip.title}</span>
+        <span className="tiny" style={{ color: 'var(--violet)', fontWeight: 600 }}>{memory.label}</span>
+        <span style={{ fontWeight: 500 }}>{memory.trip.title}</span>
         <span className="tiny muted">{formatWhen(memory.trip.when)}</span>
         {line && <span className="hand mem-line" data-testid="memory-line"><span className={'who-dot t' + Math.max(0, toneOf(line.who))} aria-hidden="true" />“{line.text}” <span className="tiny muted">— {line.who}, {line.place}</span></span>}
       </span>

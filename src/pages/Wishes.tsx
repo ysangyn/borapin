@@ -121,7 +121,7 @@ export default function Wishes() {
             )}
             {(active.length < 3 || dice) && picks.length > 0 && (
               <div className="card white wish-rows" style={{ marginTop: 10 }}>
-                <div className="tiny" style={{ fontWeight: 800, color: 'var(--ink3)', padding: '4px 0 2px' }}>{month}월에 가 볼 만한 곳</div>
+                <div className="tiny" style={{ fontWeight: 600, color: 'var(--ink3)', padding: '4px 0 2px' }}>{month}월에 가 볼 만한 곳</div>
                 {picks.map((c) => {
                   const season = seasonFor(seasons, c.place);
                   const fest = c.place.t === 'kr' ? upcomingFestivals(festivals, c.place.code, new Date(), 40)[0] : undefined;
@@ -131,7 +131,7 @@ export default function Wishes() {
                         <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                           <span className="t">{placeLong(c.place)}</span>
                           {c.theme && <span className="tiny" style={{ color: '#33248a' }}>{c.theme}</span>}
-                          {fest && <span className="tiny" style={{ color: 'var(--coral-ink)', fontWeight: 700 }}>축제 · {fest.t} {festivalPeriod(fest)}</span>}
+                          {fest && <span className="tiny" style={{ color: 'var(--coral-ink)', fontWeight: 500 }}>축제 · {fest.t} {festivalPeriod(fest)}</span>}
                           {season && <span className="tiny muted">가기 좋은 때 {monthsLabel(season.m)}</span>}
                         </span>
                       </div>

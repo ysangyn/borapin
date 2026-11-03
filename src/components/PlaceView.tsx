@@ -122,7 +122,7 @@ export default function PlaceView({ rec, trip, onEdit, onRemove, onEnrich }: {
 
         {rec.memo && (
           <section className="pv-memo card white">
-            <div className="tiny" style={{ fontWeight: 800, color: 'var(--ink3)' }}>메모</div>
+            <div className="tiny" style={{ fontWeight: 600, color: 'var(--ink3)' }}>메모</div>
             <p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{rec.memo}</p>
           </section>
         )}

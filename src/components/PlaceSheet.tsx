@@ -170,22 +170,22 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       {here.length > 0 && (
         <div className="list" style={{ marginTop: 4 }}>
           {here.slice(0, 3).map((t) => <TripRow key={t.id} trip={t} />)}
-          {here.length > 3 && <Link to={`/trips?q=${encodeURIComponent(placeLabel(place))}`} className="small" style={{ padding: '6px 0', fontWeight: 700 }}>{here.length - 3}건 더 보기</Link>}
+          {here.length > 3 && <Link to={`/trips?q=${encodeURIComponent(placeLabel(place))}`} className="small" style={{ padding: '6px 0', fontWeight: 500 }}>{here.length - 3}건 더 보기</Link>}
         </div>
       )}
 
       <div className="sheet-recs">
         <div className="row-between" style={{ alignItems: 'center' }}>
-          <span className="small" style={{ fontWeight: 800 }}>우리 장소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
-          <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 700 }} data-testid="sheet-place-new">+ 장소 남기기</Link>
+          <span className="small" style={{ fontWeight: 600 }}>우리 장소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
+          <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-place-new">+ 장소 남기기</Link>
         </div>
         {recsHere(recs, place).slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
       </div>
 
       <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
         <span style={{ flex: 1 }}>'핀 꽂기'는 날짜 없이 다녀온 표시만 해요</span>
-        <a href={links.naver} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>네이버지도</a>
-        <a href={links.google} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>구글지도</a>
+        <a href={links.naver} target="_blank" rel="noreferrer" style={{ fontWeight: 500 }}>네이버지도</a>
+        <a href={links.google} target="_blank" rel="noreferrer" style={{ fontWeight: 500 }}>구글지도</a>
       </div>
       </div>
       {/* 가장 많이 쓰는 버튼은 창 아래에 늘 보이게 (내용이 길어도 스크롤 밖) */}

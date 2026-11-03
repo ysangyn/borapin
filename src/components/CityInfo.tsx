@@ -65,9 +65,9 @@ export function CityFacts({ w, onAdd, compact, updated, tours, month }: { w: Wor
       {phraseLink(w)}
       {tours && <TourPick city={w.city} />}
       <div className="city-picks">
-        <span className="tiny muted" style={{ fontWeight: 800 }}>먹거리</span>
+        <span className="tiny muted" style={{ fontWeight: 600 }}>먹거리</span>
         <div className="chips">{w.eat.map((t) => <Pick key={t} text={t} onAdd={onAdd ? () => onAdd('foods', t) : undefined} />)}</div>
-        <span className="tiny muted" style={{ fontWeight: 800 }}>볼거리</span>
+        <span className="tiny muted" style={{ fontWeight: 600 }}>볼거리</span>
         <div className="chips">{w.see.map((t) => <Pick key={t} text={t} onAdd={onAdd ? () => onAdd('spots', t) : undefined} />)}</div>
       </div>
     </div>

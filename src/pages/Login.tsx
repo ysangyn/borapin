@@ -173,7 +173,7 @@ export function VerifyEmail({ email }: { email: string | null }) {
   return (
     <div className="center-screen" data-testid="verify">
       <KoreaMosaic className="auth-mosaic" />
-      <div style={{ fontSize: 20, fontWeight: 800 }}>메일함을 확인해 주세요</div>
+      <div style={{ fontSize: 20, fontWeight: 600 }}>메일함을 확인해 주세요</div>
       <div className="small muted"><b style={{ color: 'var(--ink)' }}>{email}</b>{email ? withRo(email).slice(email.length) : ''} 인증 메일을 보냈어요.<br />메일의 링크를 누른 뒤 아래 버튼을 눌러 주세요.</div>
       <button
         className="btn" disabled={busy} data-testid="verified"
@@ -205,7 +205,7 @@ export function Denied({ email }: { email: string | null }) {
   return (
     <div className="center-screen">
       <KoreaMosaic className="auth-mosaic" />
-      <div style={{ fontSize: 20, fontWeight: 800 }}>아직 초대되지 않은 계정이에요</div>
+      <div style={{ fontSize: 20, fontWeight: 600 }}>아직 초대되지 않은 계정이에요</div>
       <div className="small muted" style={{ maxWidth: 320 }}>
         보라핀은 초대받은 사람끼리만 써요. 함께 쓸 사람(공간 주인)에게 아래 메일 주소를 보내고, <b>우리 공간 → 함께 쓰는 사람 → 추가</b>에 넣어 달라고 해 주세요. 추가되면 이 화면이 저절로 바뀌어요.
       </div>
