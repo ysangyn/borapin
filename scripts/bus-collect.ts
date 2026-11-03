@@ -39,7 +39,9 @@ async function api(svc: string, op: string, p: Record<string, string> = {}): Pro
 
 type Svc = 'S' | 'E' | 'T';
 interface Stop { svc: Svc; id: string; name: string; region: string; extra?: true }
-export type Route = [Svc, string, string, number, number, number, number, number, string];
+/** 시각표 한 칸: [출발 분(0~1439), 걸리는 분, KTX면 1] */
+export type Dep = [number, number, 0 | 1];
+export type Route = [Svc, string, string, number, number, number, number, number, string, Dep[]?];
 type Job = [string, string, 'scan' | 'check'];
 interface State {
   v: 2; stops: Stop[]; routes: Route[]; updated: string;
@@ -129,7 +131,12 @@ export function summarize(svc: Svc, a: string, b: string, items: Item[]): Route 
   const ktx = svc === 'T' ? items.filter((x) => /KTX/i.test(String(x.traingradename ?? ''))) : [];
   const kf = ktx.length ? fastest(ktx) : 0;
   const charge = Number(items[0].charge ?? items[0].adultcharge ?? 0);
-  return [svc, a, b, items.length, Number.isFinite(f) ? f : 0, charge, ktx.length, Number.isFinite(kf) ? kf : 0, month];
+  // 들러 가기(갈아타기 시간 맞추기)에 쓰는 시각표
+  const deps: Dep[] = items.map((x): Dep => {
+    const d = String(x.depPlandTime ?? x.depplandtime ?? '');
+    return [d.length >= 12 ? +d.slice(8, 10) * 60 + +d.slice(10, 12) : -1, mins(x), /KTX/i.test(String(x.traingradename ?? '')) ? 1 : 0];
+  }).filter((x) => x[0] >= 0 && x[1] > 0).sort((p, q) => p[0] - q[0]);
+  return [svc, a, b, items.length, Number.isFinite(f) ? f : 0, charge, ktx.length, Number.isFinite(kf) ? kf : 0, month, deps];
 }
 
 // ── 상태 읽기 (v1 → v2 이어받기) ──
@@ -181,7 +188,8 @@ if (needStops) {
     }
   } else console.log('터미널 목록을 못 받아 정류지는 그대로');
 }
-if (st.checkedAt !== month) { add(checkJobs(st)); st.checkedAt = month; console.log(`이번 달 확인 예약: 아는 노선 ${st.routes.length}개 + 반대 방향`); }
+// 시각표 칸이 없는 노선이 있으면(시각표를 받기 전 자료) 이번 달이어도 다시 확인
+if (st.checkedAt !== month || st.routes.some((r) => !r[9])) { add(checkJobs(st)); st.checkedAt = month; console.log(`이번 달 확인 예약: 아는 노선 ${st.routes.length}개 + 반대 방향`); }
 // 같은 짝이 두 번 들어가지 않게
 for (const s of ['S', 'E', 'T'] as const) { const seen = new Set<string>(); st.queue[s] = st.queue[s].filter((j) => { const k = j[0] + '|' + j[1]; return !seen.has(k) && !!seen.add(k); }); }
 console.log(`할 일 시외 ${st.queue.S.length} · 고속 ${st.queue.E.length} · 열차 ${st.queue.T.length}`);
