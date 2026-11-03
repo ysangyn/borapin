@@ -1,5 +1,4 @@
 import { PLAN_STEPS, PLAN_STEP_LABEL, nextPlanStep } from '../lib/planPick';
-import { FLAGS } from '../lib/flags';
 import { toneOf } from '../lib/members';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -133,8 +132,8 @@ export default function TripDetail() {
           </button>
         )}
 
-        {/* 계획 이어가기: 예정 여행이고 다섯 걸음을 다 끝내지 않았으면 맨 위에 (FLAGS.planFlow) */}
-        {FLAGS.planFlow && trip.status === 'planned' && tab === 'info' && (trip.planDone?.length ?? 0) < 5 && (() => {
+        {/* 계획 이어가기: 예정 여행이고 다섯 걸음을 다 끝내지 않았으면 맨 위에 */}
+        {trip.status === 'planned' && tab === 'info' && (trip.planDone?.length ?? 0) < 5 && (() => {
           const order = PLAN_STEPS;
           const next = nextPlanStep(trip.planDone) ?? 'when';
           const label = PLAN_STEP_LABEL;

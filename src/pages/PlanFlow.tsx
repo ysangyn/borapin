@@ -21,7 +21,7 @@ import { memberNames, toneOf } from '../lib/members';
 import type { PlanItem, Trip, When } from '../lib/types';
 
 /**
- * 계획 이어가기 (FLAGS.planFlow): 여행지를 정한 뒤 다섯 걸음 — 언제 · 어디서 자요 · 같이 찾아 담기 · 동선 정리 · 기대 한 줄.
+ * 계획 이어가기: 여행지를 정한 뒤 다섯 걸음 — 언제 · 어디서 자요 · 같이 찾아 담기 · 동선 정리 · 기대 한 줄.
  * 걸음마다 바로 저장되고 건너뛸 수 있다. 끝낸 걸음은 trip.planDone에 남아 여행 상세의 '이어서 계획하기'가 다음 걸음으로 연다.
  * 시안: https://claude.ai/artifact/2ECB6Vcaxs6jtoDsbqhLVm
  */
