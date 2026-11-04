@@ -1,3 +1,4 @@
+import { useTripMemories } from '../lib/gardenCounts';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import TripRow from './TripRow';
@@ -56,7 +57,8 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const season = seasonFor(seasons, place, wish?.months);
   const auth = useAuth();
   // 심는 지도: 이 칸의 식물 (다녀온 칸만)
-  const plant = useMemo(() => (place.t === 'kr' ? garden(trips, recs).get(place.code) : undefined), [place, trips, recs]);
+  const mem = useTripMemories(trips);
+  const plant = useMemo(() => (place.t === 'kr' ? garden(trips, recs, mem).get(place.code) : undefined), [place, trips, recs, mem]);
   const flower = flowerOf(place);
   const hint = growHint(plant, auth.status === 'ready' ? displayName(auth.user) : '');
   const toast = useToast();

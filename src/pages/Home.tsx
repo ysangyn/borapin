@@ -1,3 +1,4 @@
+import { useTripMemories } from '../lib/gardenCounts';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatars, Icon, Logo, useToast } from '../components/ui';
@@ -34,7 +35,8 @@ export default function Home() {
   const { places: recs } = usePlaces();
   const flags = useWishFlags(wishes, trips);
   const spots = usePlaceSpots(recs ?? null);
-  const plants = useMemo(() => (trips && recs ? garden(trips, recs) : null), [trips, recs]);
+  const mem = useTripMemories(trips);
+  const plants = useMemo(() => (trips && recs ? garden(trips, recs, mem) : null), [trips, recs, mem]);
   const [mode, setMode] = useState<MapMode>('kr');
   const [sel, setSel] = useState<Place | null>(null);
   const [q, setQ] = useState('');

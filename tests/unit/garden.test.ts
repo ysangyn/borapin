@@ -51,3 +51,11 @@ test('보라 수채: 어떤 꽃이든 보라 범위, 마음을 남길수록 진�
   const L = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)).reduce((a, b) => a + b, 0);
   assert.ok(L(washColor('rose', 'flower', 2, '26')) < L(washColor('rose', 'seed', 1, '26')));
 });
+
+test('사진 3장 이상·글 하나도 마음으로 센다', () => {
+  const t = { id: 'a', status: 'done', when: { p: 'day', y: 2025, m: 5, d: 1 }, places: [{ t: 'kr', code: '26' }], memo: '' } as unknown as Parameters<typeof garden>[0][number];
+  assert.equal(garden([t], []).get('26')!.stage, 'seed');
+  assert.equal(garden([t], [], new Map([['a', { photos: 2, notes: 0 }]])).get('26')!.stage, 'seed');
+  assert.equal(garden([t], [], new Map([['a', { photos: 3, notes: 0 }]])).get('26')!.stage, 'sprout');
+  assert.equal(garden([t], [], new Map([['a', { photos: 5, notes: 1 }]])).get('26')!.stage, 'flower');
+});

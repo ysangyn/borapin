@@ -7,15 +7,16 @@ import type { PlaceRec, Trip } from './types';
  * - 새싹(꽃이 늘어남): 누군가 마음을 하나 남김 (한 줄 평 한 사람, 또는 여행 메모, 또는 장소 기록)
  * - 꽃:   마음이 둘 이상 (두 사람의 한 줄 평, 한 줄 평 + 메모 …) — 혼자 쓰는 공간도 같은 규칙으로 핀다
  * 새싹이 한 사람의 한 줄 평이면 그 사람 색 테두리 ('나도 한 줄 써야지'의 전부, 알림·숙제 없음).
- * 사진·글 수는 읽기 횟수가 늘어 아직 넣지 않았다(이미 받아 둔 여행·장소 자료만 쓴다).
+ * 사진·글도 마음으로 센다 (11-04): 그 여행에 사진 3장 이상이면 하나, 글이 하나라도 있으면 하나 (개수만 서버에서 — gardenCounts.ts).
  * 꽃 종류(고장의 꽃)는 꽃 도감(C2)에서, 지금은 들꽃.
  */
 export type Stage = 'seed' | 'sprout' | 'flower';
 export interface Plant { code: string; stage: Stage; visits: number; by: string[]; years: number[] }
 
-export function garden(trips: Trip[], recs: PlaceRec[]): Map<string, Plant> {
+export function garden(trips: Trip[], recs: PlaceRec[], mem?: Map<string, { photos: number; notes: number }> | null): Map<string, Plant> {
   const out = new Map<string, Plant>();
   const memo = new Set<string>();
+  const photo = new Set<string>(), noted = new Set<string>();
   for (const t of trips) {
     if (t.status !== 'done') continue;
     const codes = [...new Set(t.places.flatMap((p) => (p.t === 'kr' ? [p.code] : [])))];
@@ -25,6 +26,9 @@ export function garden(trips: Trip[], recs: PlaceRec[]): Map<string, Plant> {
       if (t.when.y && !p.years.includes(t.when.y)) p.years.push(t.when.y);
       out.set(code, p);
       if (t.memo?.trim()) memo.add(code);
+      const m = mem?.get(t.id);
+      if (m && m.photos >= 3) photo.add(code);
+      if (m && m.notes >= 1) noted.add(code);
     }
   }
   const reviewers = new Map<string, Set<string>>();
@@ -37,7 +41,7 @@ export function garden(trips: Trip[], recs: PlaceRec[]): Map<string, Plant> {
   }
   for (const p of out.values()) {
     const by = [...(reviewers.get(p.code) ?? [])].sort();
-    const score = by.length + (memo.has(p.code) ? 1 : 0) + (plain.has(p.code) ? 1 : 0);
+    const score = by.length + (memo.has(p.code) ? 1 : 0) + (plain.has(p.code) ? 1 : 0) + (photo.has(p.code) ? 1 : 0) + (noted.has(p.code) ? 1 : 0);
     p.by = by;
     p.stage = score >= 2 ? 'flower' : score === 1 ? 'sprout' : 'seed';
     p.years.sort();
@@ -55,6 +59,6 @@ export function plantLine(p: Plant | undefined): string | null {
 /** 다음 단계로 가는 말 (씨앗·새싹일 때만) */
 export function growHint(p: Plant | undefined, me: string): string | null {
   if (!p || p.stage === 'flower') return null;
-  if (p.stage === 'seed') return '한 줄 평이나 메모를 남기면 색이 진해져요';
+  if (p.stage === 'seed') return '사진·글·한 줄 평을 남기면 색이 진해져요';
   return p.by.length === 1 && p.by[0] !== me ? '나도 한 줄 남기면 보랏빛이 가득 물들어요' : '마음을 하나 더 남기면 보랏빛이 가득 물들어요';
 }

@@ -1,3 +1,4 @@
+import { useTripMemories } from '../lib/gardenCounts';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { MapMode } from '../components/MapView';
@@ -20,7 +21,8 @@ export default function MapPage() {
   const [sel, setSel] = useState<Place | null>(initial);
   const flags = useWishFlags(wishes, trips);
   const spots = usePlaceSpots(recs ?? null);
-  const plants = useMemo(() => (trips && recs ? garden(trips, recs) : null), [trips, recs]);
+  const mem = useTripMemories(trips);
+  const plants = useMemo(() => (trips && recs ? garden(trips, recs, mem) : null), [trips, recs, mem]);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   return (
