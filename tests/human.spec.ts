@@ -20,8 +20,8 @@ test.beforeAll(async ({ browserName }) => {
 
 const problems: string[] = [];
 function watch(page: Page) {
-  // 사파리는 시험용 Firestore 에뮬레이터의 긴 연결을 끊을 때 '접근 확인' 오류를 내는데, 앱 오류가 아니라서 뺀다
-  page.on('pageerror', (e) => { if (!/Firestore\/(Listen|Write)\/channel.*access control checks/.test(e.message)) problems.push(`pageerror: ${e.message}`); });
+  // 사파리는 화면을 옮기며 끊긴 요청(에뮬레이터 긴 연결·자료 받기)을 모두 '접근 확인' 오류로 알리는데, 앱 오류가 아니라서 뺀다
+  page.on('pageerror', (e) => { if (!/due to access control checks/.test(e.message)) problems.push(`pageerror: ${e.message}`); });
   page.on('console', (m) => {
     if (m.type() === 'error' && !/permission|insufficient/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`);
   });
