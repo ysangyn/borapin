@@ -67,3 +67,25 @@ test('토요일: 받은 토요일 시각표를 쓰고, 아직 안 받은 노선�
   const weekday = transitPlans(sat, GOYANG, NAMWON).find((x) => x.kind === 'direct')!;
   assert.equal(clock(weekday.legs[0].dep), '9:00');
 });
+
+test('갈아타기: 자리를 알면 걸어서(700m 안)·택시(4km 안), 모르면 시내 이동 30분', async () => {
+  const { transfer } = await import('../../src/lib/transitStop');
+  const mk = (a: [number, number] | null, b: [number, number] | null): RoutesData => ({
+    updated: '2026-11',
+    s: [['행신', GOYANG, 'T'], a ? ['전주', JEONJU, 'T', a[0], a[1]] : ['전주', JEONJU, 'T'], b ? ['전주고속', JEONJU, 'E', b[0], b[1]] : ['전주고속', JEONJU, 'E'], ['남원', NAMWON, 'E']],
+    r: [],
+  });
+  const e1 = { svc: 'T' as const, from: 0, to: 1, fromCode: GOYANG, toCode: JEONJU, deps: [] };
+  const e2 = { svc: 'E' as const, from: 2, to: 3, fromCode: JEONJU, toCode: NAMWON, deps: [] };
+  assert.equal(transfer(mk(null, null), e1, e2).how, 'town');
+  const walk = transfer(mk([35.85, 127.16], [35.853, 127.162]), e1, e2);
+  assert.equal(walk.how, 'walk');
+  assert.ok(walk.min >= 10 && walk.min <= 16);
+  assert.equal(transfer(mk([35.85, 127.16], [35.87, 127.18]), e1, e2).how, 'taxi');
+});
+
+test('일요일: 일요일 시각표가 아직 없으면 토요일 것', () => {
+  const sat: RoutesData = { ...D, r: D.r.map((x, i) => (i === 0 ? [...x.slice(0, 9), flat([[h(11), 150, 1]]), null] as unknown as RoutesData['r'][number] : x)) };
+  const p = transitPlans(sat, GOYANG, NAMWON, { day: 'sun' }).find((x) => x.kind === 'direct')!;
+  assert.equal(clock(p.legs[0].dep), '11:00');
+});

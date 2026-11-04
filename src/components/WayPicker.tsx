@@ -67,7 +67,7 @@ export default function WayPicker({ trip, dir }: { trip: Trip; dir: 'go' | 'back
         <>
           {(pick.legs ?? []).map((l, i) => <span key={i} className="way-leg">{i > 0 && pick.kind === 'overnight' ? '다음 날 ' : ''}{legLine(l)}</span>)}
           <span className="tiny muted">
-            {pick.last != null ? `막차 ${clock(pick.last)} · ` : ''}{pick.day === 'sat' ? '토요일' : '평일'} 시각표 · 떠나기 전 확인:{' '}
+            {pick.last != null ? `막차 ${clock(pick.last)} · ` : ''}{pick.day === 'sat' ? '토요일' : pick.day === 'sun' ? '일요일' : '평일'} 시각표 · 떠나기 전 확인:{' '}
             {pickSvcs(pick).map((s, i) => <span key={s}>{i ? ' · ' : ''}<a href={BOOK[s].url} target="_blank" rel="noreferrer">{BOOK[s].name}<Icon name="external" size={11} /></a></span>)}
           </span>
         </>

@@ -216,7 +216,7 @@ export interface WayPick {
   mid?: string | null;
   /** 구간 (Firestore는 목록 안 목록을 못 담아서 칸 이름으로): 탈것 S·E·T, KTX면 true, 출발·도착 정류지, 출발·도착 분(다음 날은 +1440) */
   legs?: { svc: string; ktx: boolean; from: string; to: string; dep: number; arr: number }[];
-  day?: 'weekday' | 'sat';
+  day?: 'weekday' | 'sat' | 'sun';
   /** 그 노선 막차 출발 분 */
   last?: number | null;
 }

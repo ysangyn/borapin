@@ -33,17 +33,24 @@ jobs:
         run: |
           git clone -q --depth 1 --branch bus-data "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" prev || true
           mkdir -p bus && cp prev/state.json bus/state.json 2>/dev/null || true
+          cp prev/stops-geo.json bus/stops-geo.json 2>/dev/null || true
       - name: 노선 모으기
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           STATE: bus/state.json
         run: npx tsx scripts/bus-collect.ts 2>&1 | tee bus/collect-output.txt
+      - name: 역·터미널 자리 (갈아타기 거리, 오픈스트리트맵 · 모르는 것만)
+        continue-on-error: true
+        env:
+          STATE: bus/state.json
+          GEO: bus/stops-geo.json
+        run: timeout 900 npx tsx scripts/stops-geo.ts 2>&1 | tee bus/geo-output.txt
       - name: 상태 올리기
         if: always()
         run: |
           d=$(mktemp -d)
           git -C "$d" init -q -b bus-data
-          cp bus/state.json bus/collect-output.txt "$d"/ 2>/dev/null || true
+          cp bus/state.json bus/collect-output.txt bus/stops-geo.json bus/geo-output.txt "$d"/ 2>/dev/null || true
           git -C "$d" add -A
           git -C "$d" -c user.name=borapin-ci -c user.email=ci@users.noreply.github.com commit -q -m "bus state $(date -u +%F)"
           git -C "$d" push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:bus-data

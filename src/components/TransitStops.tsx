@@ -20,14 +20,14 @@ const legName = (l: Leg) => (l.ktx ? 'KTX' : SVC_LABEL[l.svc]);
  */
 const hhmm = (m: number) => clock(m).padStart(5, '0');
 /** 떠나는 날이 토·일이면 토요일 시각표로 시작 */
-const isWeekend = (ymd?: string | null) => { if (!ymd) return false; const w = new Date(ymd + 'T00:00:00').getDay(); return w === 0 || w === 6; };
+const weekdayKind = (ymd?: string | null): 'weekday' | 'sat' | 'sun' => { if (!ymd) return 'weekday'; const w = new Date(ymd + 'T00:00:00').getDay(); return w === 6 ? 'sat' : w === 0 ? 'sun' : 'weekday'; };
 
-export default function TransitStops({ from, to, visited, onWish, trip, onPick, start, firstDay }: { from: string; to: string; visited: Set<string> | Map<string, number>; onWish?: (code: string) => void; trip?: { id: string; firstDay: string | null }; onPick?: (p: TransitPlan, day: 'weekday' | 'sat') => void; start?: number; firstDay?: string | null }) {
+export default function TransitStops({ from, to, visited, onWish, trip, onPick, start, firstDay }: { from: string; to: string; visited: Set<string> | Map<string, number>; onWish?: (code: string) => void; trip?: { id: string; firstDay: string | null }; onPick?: (p: TransitPlan, day: 'weekday' | 'sat' | 'sun') => void; start?: number; firstDay?: string | null }) {
   const d = useRoutes();
   const info = useTravelInfo();
   const toast = useToast();
   const [mode, setMode] = useState<Mode>('all');
-  const [day, setDay] = useState<'weekday' | 'sat'>(() => (isWeekend(firstDay ?? trip?.firstDay) ? 'sat' : 'weekday'));
+  const [day, setDay] = useState<'weekday' | 'sat' | 'sun'>(() => weekdayKind(firstDay ?? trip?.firstDay));
   const plans = useMemo(() => (d ? transitPlans(d, from, to, { day, mode, visited, start, themeOf: (c) => info?.cells[c]?.main.theme }) : []), [d, from, to, day, mode, visited, info, start]);
   const toPlan = async (p: TransitPlan) => {
     if (!trip) return;
@@ -57,7 +57,7 @@ export default function TransitStops({ from, to, visited, onWish, trip, onPick, 
           {MODES.map(([m, l]) => <button key={m} role="tab" aria-selected={mode === m} className={mode === m ? 'on' : ''} onClick={() => setMode(m)}>{l}</button>)}
         </div>
         <div className="seg" role="tablist" aria-label="요일">
-          {([['weekday', '평일'], ['sat', '토요일']] as const).map(([v, l]) => <button key={v} role="tab" aria-selected={day === v} className={day === v ? 'on' : ''} onClick={() => setDay(v)} data-testid={`transit-${v}`}>{l}</button>)}
+          {([['weekday', '평일'], ['sat', '토요일'], ['sun', '일요일']] as const).map(([v, l]) => <button key={v} role="tab" aria-selected={day === v} className={day === v ? 'on' : ''} onClick={() => setDay(v)} data-testid={`transit-${v}`}>{l}</button>)}
         </div>
       </div>
       {!plans.length && <span className="tiny muted">{mode === 'all' ? '시각표로 이어지는 길을 찾지 못했어요' : `${mode === 'bus' ? '버스' : '기차'}로만 이어지는 길이 없어요`}</span>}
@@ -69,7 +69,7 @@ export default function TransitStops({ from, to, visited, onWish, trip, onPick, 
               {k > 0 && p.mid && (
                 <div className="transit-mid">
                   {p.kind === 'overnight' ? '자고 다음 날 아침' : p.kind === 'stop' ? `${span(p.stay ?? 0)} 머물기` : `${span(p.stay ?? 0)} 기다리기`}
-                  {p.move ? ` · ${l.from}까지 시내 이동 약 ${p.move}분` : ''}
+                  {p.move ? ` · ${l.from}까지 ${p.moveHow === 'walk' ? '걸어서' : p.moveHow === 'taxi' ? '택시로' : '시내 이동'} 약 ${p.move}분` : ''}
                   {p.kind !== 'fast' && info?.cells[p.mid]?.main.theme ? <span className="muted"> · {info.cells[p.mid].main.theme}</span> : null}
                 </div>
               )}
@@ -97,7 +97,7 @@ export default function TransitStops({ from, to, visited, onWish, trip, onPick, 
       ))}
       {plans.length > 0 && (
         <span className="tiny muted">
-          {basisLabel(d)} {day === 'sat' ? '토요일' : '평일'} 시각표 · 일요일·공휴일은 다를 수 있어요 · 떠나기 전 확인:{' '}
+          {basisLabel(d)} {day === 'sat' ? '토요일' : day === 'sun' ? '일요일' : '평일'} 시각표 · 공휴일은 다를 수 있어요 · 떠나기 전 확인:{' '}
           {svcs.map((s, i) => <span key={s}>{i ? ' · ' : ''}<a href={BOOK[s].url} target="_blank" rel="noreferrer">{BOOK[s].name}<Icon name="external" size={11} /></a></span>)}
         </span>
       )}

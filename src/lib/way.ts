@@ -8,7 +8,7 @@ import type { WayPick } from './types';
  * 고른 교통편(가는 길·돌아오는 길)을 여행에 저장하는 모양과 보여 주는 글.
  * 계획하기 '동선'에서 고르고, 준비 탭·홈 카드·가이드북이 그대로 읽는다.
  */
-export function pickOf(p: TransitPlan, day: 'weekday' | 'sat'): WayPick {
+export function pickOf(p: TransitPlan, day: 'weekday' | 'sat' | 'sun'): WayPick {
   return {
     mode: 'transit', kind: p.kind, mid: p.mid ?? null, day, last: p.last ?? null,
     legs: p.legs.map((l) => ({ svc: l.svc, ktx: l.ktx, from: l.from, to: l.to, dep: l.dep, arr: l.arr })),
