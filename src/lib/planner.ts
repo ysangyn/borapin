@@ -8,7 +8,7 @@ import { seasonFor, monthsLabel, type SeasonData } from './seasons';
 import { upcomingFestivals, festivalPeriod, type FestivalData } from './festivals';
 import { pickCities, cityFor, cityPlace, type WorldData } from './world';
 import { candidates as krCandidates } from './recommend';
-import { dailyShuffle, samePlace, bothWant, wishState } from './wishes';
+import { dailyShuffle, samePlace, bothWant, recNames, wishState } from './wishes';
 import { accessLine } from './transport';
 import type { Stats } from './stats';
 import type { TravelInfo } from './travelinfo';
@@ -101,7 +101,11 @@ export function planCandidates(c: PlanConds, d: PlannerData, now = new Date(), s
 
   // 1. 가고 싶은 곳 (둘 다 원하면 크게)
   for (const w of d.wishes) {
-    if (wishState(w, d.trips).kind !== 'wish' || !fitsScope(w.place) || !fitsLength(w.place)) continue;
+    if (!fitsScope(w.place) || !fitsLength(w.place)) continue;
+    const st = wishState(w, d.trips, recNames(d.recs, w.place));
+    // 다녀왔지만 담아 둔 곳이 남은 곳: 조금 낮게, 남은 곳을 이유로
+    if (st.kind === 'again') { add(w.place, placeLabel(w.place), 4, `다시 가고 싶은 곳 · 못 가 본 곳 ${st.left.length}`, w.id); continue; }
+    if (st.kind !== 'wish') continue;
     const both = bothWant(w);
     add(w.place, placeLabel(w.place), both ? 10 : 5, both ? '둘 다 가고 싶다고 한 곳' : `${(w.wantedBy ?? []).join('·') || '누군가'}가 가고 싶다고 한 곳`, w.id);
     if (w.priority) add(w.place, '', 4 - w.priority, `${w.priority}순위`);

@@ -12,7 +12,7 @@ import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/ge
 import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
 import PlaceRecRow from './PlaceRecRow';
 import { recsAt } from '../lib/placeRecs';
-import { samePlace as samePlaceW } from '../lib/wishes';
+import { leftItems, recNames, samePlace as samePlaceW } from '../lib/wishes';
 import { quickWish } from '../lib/wishActions';
 import { garden, growHint, plantLine } from '../lib/garden';
 import { useSwipeDown } from '../lib/swipe';
@@ -55,6 +55,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const fests = place.t === 'kr' ? upcomingFestivals(festData, place.code, new Date(), 120).slice(0, 2) : [];
   const wish = wishes.find((w) => samePlaceW(w.place, place));
   const season = seasonFor(seasons, place, wish?.months);
+  const left = useMemo(() => (wish ? leftItems(wish, recNames(recs, wish.place)) : []), [wish, recs]);
   const auth = useAuth();
   // 심는 지도: 이 칸의 식물 (다녀온 칸만)
   const mem = useTripMemories(trips);
@@ -156,6 +157,11 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
                 {hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}
               </span>
             </div>
+          )}
+          {wish && visits > 0 && left.length > 0 && (
+            <Link to={`/wishes/${wish.id}`} className="leftover-line tiny" data-testid="sheet-left">
+              못 가 본 곳 {left.length} · {left.slice(0, 3).join(', ')}{left.length > 3 ? ' …' : ''}
+            </Link>
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 'none' }}>

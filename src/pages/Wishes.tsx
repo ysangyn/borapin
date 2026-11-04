@@ -5,13 +5,13 @@ import { Icon, TopBar, useToast } from '../components/ui';
 import WishCard, { wishTitle } from '../components/WishCard';
 import DicePicker from '../components/DicePicker';
 import { useAuth, displayName } from '../lib/auth';
-import { computeStats, deleteWish, restoreWish, reviveWish, useTrips, useWishes } from '../lib/data';
+import { computeStats, deleteWish, restoreWish, reviveWish, useTrips, useWishes, usePlaces } from '../lib/data';
 import { placeLong } from '../lib/geo';
 import type { Wish } from '../lib/types';
 import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
-import { bothWant, sortWishes, wishState, type WishState } from '../lib/wishes';
+import { bothWant, recNames, sortWishes, wishState, type WishState } from '../lib/wishes';
 import { everyoneLabel } from '../lib/members';
 import NewsDigest from '../components/NewsDigest';
 import { quickWish } from '../lib/wishActions';
@@ -25,6 +25,7 @@ import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festival
 export default function Wishes() {
   const { wishes } = useWishes();
   const { trips } = useTrips();
+  const { places: recs } = usePlaces();
   const seasons = useSeasons();
   const info = useTravelInfo();
   const auth = useAuth();
@@ -40,14 +41,15 @@ export default function Wishes() {
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
 
   const withState = useMemo(
-    () => (wishes && trips ? sortWishes(wishes).map((w) => ({ w, s: wishState(w, trips) })) : []),
-    [wishes, trips],
+    () => (wishes && trips ? sortWishes(wishes).map((w) => ({ w, s: wishState(w, trips, recNames(recs, w.place)) })) : []),
+    [wishes, trips, recs],
   );
   const active = withState.filter((x) => x.s.kind !== 'done');
   const done = withState.filter((x) => x.s.kind === 'done');
   const shown = active.filter(({ w }) => (who === 'all' ? true : who === 'both' ? bothWant(w) : (w.wantedBy ?? []).includes(who)));
   const both = shown.filter(({ w, s }) => bothWant(w) && s.kind === 'wish');
   const planned = shown.filter(({ s }) => s.kind === 'planned');
+  const again = shown.filter(({ s }) => s.kind === 'again');
   // 한 명만: 상대가 담은 곳(내가 하트를 누를 차례)을 먼저
   const single = shown.filter(({ w, s }) => !bothWant(w) && s.kind === 'wish').sort((a, b) => Number((a.w.wantedBy ?? []).includes(me)) - Number((b.w.wantedBy ?? []).includes(me)));
   const festivals = useFestivals();
@@ -107,6 +109,7 @@ export default function Wishes() {
         {group(everyoneLabel(), both, true, '여행으로 만들 차례')}
         {group('한 명만 원해요', single, false, single.some(({ w }) => !(w.wantedBy ?? []).includes(me)) ? '하트를 눌러 마음을 맞춰요' : undefined)}
         {group('예정', planned)}
+        {group('다시 가고 싶어요', again, false, '다녀왔지만 못 가 본 곳이 남았어요')}
 
         {wishes && trips && (
           <section className="wish-group" data-testid="wish-find">

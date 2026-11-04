@@ -145,6 +145,7 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
           </span>
           {state.kind === 'wish' && action}
           {state.kind === 'planned' && <Link to={`/trips/${state.trip.id}`} className="tag violet">예정 · {formatWhen(state.trip.when)}</Link>}
+          {state.kind === 'again' && <span className="tag coral" data-testid="wish-again">못 간 곳 {state.left.length}</span>}
         </div>
       </div>
     );
@@ -167,6 +168,7 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
       {state.kind === 'wish' && action}
       {state.kind === 'planned' && <Link to={`/trips/${state.trip.id}`} className="tag violet">예정 · {formatWhen(state.trip.when)}</Link>}
       {state.kind === 'done' && <span className="tag">다녀왔어요</span>}
+      {state.kind === 'again' && <span className="tag coral" data-testid="wish-again">못 간 곳 {state.left.length}</span>}
     </div>
   );
 }

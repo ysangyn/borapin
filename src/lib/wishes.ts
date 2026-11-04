@@ -9,22 +9,35 @@ const ms = (t: { toMillis?: () => number } | null | undefined) => (t?.toMillis ?
 export const samePlace = (a: Place, b: Place) =>
   a.t === 'kr' ? b.t === 'kr' && a.code === b.code : b.t === 'country' && a.id === b.id && (!a.city || !b.city || a.city === b.city);
 
-export type WishState = { kind: 'wish' } | { kind: 'planned'; trip: Trip } | { kind: 'done'; trip: Trip };
+export type WishState = { kind: 'wish' } | { kind: 'planned'; trip: Trip } | { kind: 'done'; trip: Trip } | { kind: 'again'; trip: Trip; left: string[] };
+
+/** 이름 맞추기: 띄어쓰기·괄호를 빼고, 한쪽이 다른 쪽을 품으면 같은 곳 ('동피랑 벽화마을' ≈ '동피랑') */
+const norm = (s: string) => s.replace(/\(.*?\)|\s|·/g, '').toLowerCase();
+export const sameName = (a: string, b: string) => { const x = norm(a), y = norm(b); return !!x && !!y && (x === y || (Math.min(x.length, y.length) >= 2 && (x.includes(y) || y.includes(x)))); };
+
+/** 가고 싶은 곳의 볼거리·먹거리 중 아직 안 간 것 (다녀온 표시 gone + 그 지역에 남긴 장소 기록 이름으로 지움) */
+export function leftItems(w: Wish, visitedNames: string[] = []): string[] {
+  const gone = [...(w.gone ?? []), ...visitedNames];
+  return [...w.spots, ...w.foods].filter((n) => n.trim() && !gone.some((g) => sameName(g, n)));
+}
 
 /**
  * 가고 싶은 곳의 지금 상태.
  * - '여행 만들기'로 생긴 여행이 있으면 그 여행 상태를 따른다.
  * - 아니어도, 담은 뒤에 그곳에 다녀온 기록이 생기면 '다녀왔어요'로 옮겨간다.
+ * - 다만 담아 둔 볼거리·먹거리 중 못 간 곳이 남았으면 '다시 가고 싶어요'(again)로 남는다.
  */
-export function wishState(w: Wish, trips: Trip[]): WishState {
+export function wishState(w: Wish, trips: Trip[], visitedNames: string[] = []): WishState {
+  // 다녀왔어도 담아 둔 볼거리·먹거리가 남았으면 '다시 가고 싶어요' (다 가 봤을 때만 '다녀왔어요')
+  const done = (t: Trip): WishState => { const left = leftItems(w, visitedNames); return left.length ? { kind: 'again', trip: t, left } : { kind: 'done', trip: t }; };
   if (w.tripId) {
     const t = trips.find((x) => x.id === w.tripId);
-    if (t) return t.status === 'done' ? { kind: 'done', trip: t } : { kind: 'planned', trip: t };
+    if (t) return t.status === 'done' ? done(t) : { kind: 'planned', trip: t };
   }
   const since = ms(w.createdAt);
   const after = trips.filter((t) => ms(t.createdAt) >= since && t.places.some((p) => samePlace(p, w.place)));
-  const done = after.find((t) => t.status === 'done');
-  if (done) return { kind: 'done', trip: done };
+  const went = after.find((t) => t.status === 'done');
+  if (went) return done(went);
   const planned = after.find((t) => t.status === 'planned');
   if (planned) return { kind: 'planned', trip: planned };
   return { kind: 'wish' };
@@ -86,3 +99,12 @@ export const hasWishItem = (existing: Wish[], place: Place, name: string, kind: 
 /** 예정 여행 중 이곳이 들어간 것 (있으면 '담기'가 그 여행 일정으로 간다) */
 export const plannedTripFor = (trips: Trip[] | null | undefined, place: Place) =>
   trips?.find((t) => t.status === 'planned' && t.places.some((p) => samePlace(p, place))) ?? null;
+
+/** 그 지역에 남긴 장소 기록 이름들 (다녀온 곳 지우기에 씀) */
+export const recNames = (recs: { name: string; region: Place }[] | null | undefined, place: Place) => (recs ?? []).filter((r) => samePlace(r.region, place)).map((r) => r.name);
+
+/** 다녀온 여행의 일정 중 못 간 것(체크 안 한 것) → 가고 싶은 곳에 아직 없는 것만 */
+export function leftoverPlans(items: { name: string; done: boolean; kind?: string }[], existing: Wish | null): { name: string; food: boolean }[] {
+  const have = existing ? [...existing.spots, ...existing.foods] : [];
+  return items.filter((p) => !p.done && p.name.trim() && p.kind !== 'stay' && !/들르기$|하룻밤$|→/.test(p.name) && !have.some((h) => sameName(h, p.name))).map((p) => ({ name: p.name.trim(), food: p.kind === 'eat' }));
+}

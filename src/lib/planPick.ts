@@ -13,7 +13,7 @@ import type { Place } from './types';
  * 같은 이름은 하나로(자리·사진이 있는 쪽을 남김). 순수 함수.
  */
 export type PickKind = 'see' | 'do' | 'eat' | 'buy' | 'fest';
-export interface Pick { key: string; name: string; kind: PickKind; line?: string; img?: string; lat?: number; lng?: number; area?: string }
+export interface Pick { key: string; name: string; kind: PickKind; line?: string; img?: string; lat?: number; lng?: number; area?: string; wished?: boolean }
 
 const norm = (s: string) => s.replace(/\s+/g, '').replace(/[()（）\[\]]/g, '');
 

@@ -61,3 +61,15 @@ test('뼈대: 1박 2일이면 날짜 둘, 첫날 출발·오전·점심·오후�
   // 날짜를 모르면 날짜 없이
   assert.ok(skeleton({ t: 'kr', code: '51150' }, C({ when: 'unknown' }), base, now).every((i) => i.day === null));
 });
+
+test('후보: 다녀왔지만 담아 둔 곳이 남은 가고 싶은 곳은 "다시 가고 싶은 곳"으로, 다 가 봤으면 빠진다', () => {
+  const ts = { toMillis: () => 1 } as never;
+  const w = { ...wish('w3', '48220', ['보라']), spots: ['미륵산', '동피랑'], createdAt: ts } as Wish;
+  const trip = { id: 't1', places: [{ t: 'kr', code: '48220' }], status: 'done', createdAt: { toMillis: () => 2 } } as never;
+  const list = planCandidates(C({ nights: 2 }), { ...base, wishes: [w], trips: [trip] }, now, [], 20);
+  const c = list.find((x) => x.wishId === 'w3');
+  assert.ok(c, list.map((x) => x.title).join(','));
+  assert.ok(c!.reasons.some((r) => r === '다시 가고 싶은 곳 · 못 가 본 곳 2'));
+  const recs = [{ name: '미륵산 케이블카', region: { t: 'kr', code: '48220' } }, { name: '동피랑 벽화마을', region: { t: 'kr', code: '48220' } }] as PlaceRec[];
+  assert.ok(!planCandidates(C({ nights: 2 }), { ...base, wishes: [w], trips: [trip], recs }, now, [], 20).some((x) => x.wishId === 'w3'));
+});

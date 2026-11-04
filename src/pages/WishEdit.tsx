@@ -6,10 +6,10 @@ import CityInfo from '../components/CityInfo';
 import PlaceHint from '../components/PlaceHint';
 
 import { useAuth, displayName } from '../lib/auth';
-import { createWish, deleteWish, restoreWish, saveWishEdits, useTrips, useWishes } from '../lib/data';
+import { createWish, deleteWish, restoreWish, saveWishEdits, updateWish, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { parsePlaceParam } from '../lib/geo';
-import { lines, wishState } from '../lib/wishes';
+import { lines, sameName, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
 
@@ -199,6 +199,24 @@ export default function WishEdit() {
           <span className="label">먹거리</span>
           <textarea className="textarea" aria-label="먹거리" rows={2} value={foods} onChange={(e) => setFoods(e.target.value)} placeholder="고기국수" />
         </div>
+
+        {/* 다녀온 것 표시: 누르면 바로 저장 (남은 것이 있으면 '다시 가고 싶어요'로 남는다) */}
+        {existing && [...existing.spots, ...existing.foods].length > 0 && (
+          <div className="field" data-testid="wish-gone">
+            <span className="label">다녀온 것 표시<span className="tiny muted"> · 누르면 ✓</span></span>
+            <div className="chips">
+              {[...existing.spots, ...existing.foods].map((n) => {
+                const on = (existing.gone ?? []).some((g) => sameName(g, n));
+                return (
+                  <button key={n} type="button" className={'chip' + (on ? ' on' : '')} aria-pressed={on} onClick={() => {
+                    const gone = on ? (existing.gone ?? []).filter((g) => !sameName(g, n)) : [...(existing.gone ?? []), n];
+                    updateWish(existing.id, { gone }).catch(() => toast('저장하지 못했어요'));
+                  }}>{on ? '✓ ' : ''}{n}</button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="field">
           <span className="label">가기 좋은 때</span>

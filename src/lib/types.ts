@@ -81,6 +81,8 @@ export interface Wish {
   months?: number[];
   /** '여행 만들기'로 생긴 여행 */
   tripId?: string | null;
+  /** 볼거리·먹거리 중 이미 다녀온 것 (다녀온 여행에서 체크한 일정·직접 체크) — 남은 것이 있으면 '다시 가고 싶어요' */
+  gone?: string[];
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;

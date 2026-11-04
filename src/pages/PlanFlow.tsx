@@ -4,7 +4,8 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { TopBar, useToast } from '../components/ui';
 import SpotDetail, { type SpotTarget } from '../components/SpotDetail';
 import { useAuth, displayName } from '../lib/auth';
-import { patchTrip, useTrips } from '../lib/data';
+import { patchTrip, usePlaces, useTrips, useWishes } from '../lib/data';
+import { leftItems, recNames, samePlace, sameName } from '../lib/wishes';
 import { addPlan, updatePlan, usePlan } from '../lib/tripExtras';
 import { useTravelInfo } from '../lib/travelinfo';
 import { useFestivals } from '../lib/festivals';
@@ -213,11 +214,23 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   // 해외: 지금 연 칸(볼 것·할 것·먹을 것·살 것)만 위키보이지에서 함께 찾아 보탠다 (A3)
   const abroadCity = place.t === 'country' ? cityFor(world, place) : null;
   const found = useFind(auth.status === 'ready' ? auth.user : null, abroadCity?.en, abroadCity && tab !== 'fest' ? tab : null);
+  // 가고 싶은 곳에 담아 둔 볼거리·먹거리(다녀온 곳에서 못 가 본 것 포함)를 맨 앞에
+  const { wishes } = useWishes();
+  const { places: recs } = usePlaces();
+  const wish = useMemo(() => (wishes ?? []).find((w) => samePlace(w.place, place)) ?? null, [wishes, place]);
+  const wished = useMemo(() => {
+    if (!wish) return [] as Pick[];
+    const left = leftItems(wish, recNames(recs, wish.place));
+    return left.map((n): Pick => ({ key: `wish:${n}`, name: n, kind: wish.foods.some((f) => sameName(f, n)) ? 'eat' : 'see', line: '가고 싶은 곳에 담아 둔 곳', wished: true }));
+  }, [wish, recs]);
   const picks = useMemo(() => {
-    if (!found?.length) return base;
-    const have = new Set(base.map((p) => p.name.toLowerCase()));
-    return [...base, ...found.filter((x) => !have.has(x.name.toLowerCase())).map((x): Pick => ({ key: `find:${x.kind}:${x.name}`, name: x.name, kind: x.kind, line: x.line, lat: x.lat, lng: x.lng, area: x.area }))];
-  }, [base, found]);
+    const fromWish = wished.filter((w) => !base.some((b) => sameName(b.name, w.name)));
+    const marked = base.map((b) => (wished.some((w) => sameName(w.name, b.name)) ? { ...b, wished: true } : b));
+    const all = [...fromWish, ...marked].sort((a, b) => Number(!!b.wished) - Number(!!a.wished));
+    if (!found?.length) return all;
+    const have = new Set(all.map((p) => p.name.toLowerCase()));
+    return [...all, ...found.filter((x) => !have.has(x.name.toLowerCase())).map((x): Pick => ({ key: `find:${x.kind}:${x.name}`, name: x.name, kind: x.kind, line: x.line, lat: x.lat, lng: x.lng, area: x.area }))];
+  }, [base, found, wished]);
   const [detail, setDetail] = useState<SpotTarget | null>(null);
   const [own, setOwn] = useState('');
   const toast = useToast();
@@ -243,7 +256,7 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   // 여러 카드에 똑같이 붙는 한 줄(그 고장 소개 등)은 빼서 카드마다 다른 말만 남긴다
   const lineCount = new Map<string, number>();
   for (const p of picks) if (p.line) lineCount.set(p.line, (lineCount.get(p.line) ?? 0) + 1);
-  const shown = picks.filter((p) => p.kind === tab).map((p) => (p.line && (lineCount.get(p.line) ?? 0) > 1 ? { ...p, line: undefined } : p));
+  const shown = picks.filter((p) => p.kind === tab).map((p) => (p.line && !p.wished && (lineCount.get(p.line) ?? 0) > 1 ? { ...p, line: undefined } : p));
   const mine = (plan ?? []).filter((p) => (p.by?.length ?? 0) > 0);
   const both = mine.filter((p) => members.length > 1 && members.every((n) => p.by?.includes(n)));
   const extra = mine.filter((p) => !picks.some((x) => x.name === p.name) && (p.kind ?? 'see') === tab);
@@ -258,7 +271,7 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
             <div key={p.key} className={'pick-card' + (by.includes(name) ? ' mine' : '')} data-testid="pick-card">
               <button type="button" className="pick-hit" onClick={() => void toggle(p)} aria-pressed={by.includes(name)} aria-label={`${p.name} ${by.includes(name) ? '하트 빼기' : '담기'}`}>
                 {p.img ? <img src={p.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className={'pick-noimg ' + p.kind} aria-hidden="true">{p.kind === 'eat' ? '🍲' : p.kind === 'buy' ? '🛍' : p.kind === 'fest' ? '🎪' : '📍'}</span>}
-                {members.length > 1 && members.every((n) => by.includes(n)) && <span className="pick-star">★ 둘 다</span>}
+                {members.length > 1 && members.every((n) => by.includes(n)) ? <span className="pick-star">★ 둘 다</span> : p.wished ? <span className="pick-star wish" data-testid="pick-wished">가고 싶던 곳</span> : null}
                 <span className="pick-hearts">{members.map((n) => <i key={n} className={'t' + Math.max(0, toneOf(n)) + (by.includes(n) ? ' on' : '')}>{[...n][0]}</i>)}</span>
                 <b>{p.name}</b>
                 {(p.area || p.line) && <span className="tiny muted">{p.area ?? p.line}</span>}

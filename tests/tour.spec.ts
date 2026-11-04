@@ -110,6 +110,8 @@ const WISHES = [
   { id: 'w3', place: { t: 'country', id: 'ESP', city: '바르셀로나' }, wantedBy: ['영상'], priority: 1, spots: ['사그라다 파밀리아'], todos: [], foods: ['빠에야'], note: '결혼 10주년에' },
   { id: 'w4', place: { t: 'kr', code: '51110' }, wantedBy: ['보라', '영상'], priority: null, spots: [], todos: [], foods: ['닭갈비'], note: '' },
   { id: 'w5', place: { t: 'country', id: 'AUS', city: '시드니' }, wantedBy: [], priority: 3, spots: [], todos: [], foods: [], note: '' },
+  // 다녀온 강릉: 박이추 커피는 장소 기록이 있어 '가 봄', 경포대·오죽헌이 남아 '다시 가고 싶어요'
+  { id: 'w6', place: { t: 'kr', code: '51150' }, tripId: 't1', wantedBy: ['보라'], priority: null, spots: ['경포대', '오죽헌', '보헤미안 박이추 커피'], todos: [], foods: [], note: '' },
 ];
 const RECS = [
   { id: 'r1', name: '초당할머니순두부', kind: 'food', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 영상: '아침으로 최고', 보라: '짬뽕순두부가 더 맛있었어' }, verdict: 'again', address: '강원 강릉시 초당순두부길 77' },
@@ -280,7 +282,11 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.getByRole('tab', { name: '세계' }).first().click({ timeout: 5000 }).catch(() => undefined);
   await snap(page, 'm12-map-world', false);
   await page.goto('/wishes');
+  await expect(page.getByTestId('wish-again').first()).toContainText('못 간 곳 2');
   await snap(page, 'm13-wishes');
+  await page.goto('/wishes/w6');
+  await expect(page.getByTestId('wish-gone')).toBeVisible();
+  await snap(page, 'm13b-wish-gone');
   await page.goto('/wishes/w1');
   await snap(page, 'm14-wish-edit');
   await page.goto('/places');
