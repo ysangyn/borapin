@@ -47,3 +47,13 @@ test('여행의 못 간 일정: 체크 안 한 것만, 숙소·들르기·이동
   ];
   assert.deepEqual(leftoverPlans(items, wish({ spots: ['소매물도 등대섬'] })), [{ name: '미륵산', food: false }, { name: '충무김밥', food: true }]);
 });
+
+test('편집 화면 칩: 다녀옴 표시는 gone, 장소 기록으로 가 본 곳은 rec, 나머지는 없음', async () => {
+  const { itemMarks } = await import('../../src/lib/wishes');
+  const w = wish({ spots: ['경포대', '오죽헌', '보헤미안 박이추 커피'], gone: ['경포대'] });
+  assert.deepEqual(itemMarks(w, ['보헤미안 박이추 커피']), [
+    { name: '경포대', mark: 'gone' },
+    { name: '오죽헌', mark: null },
+    { name: '보헤미안 박이추 커피', mark: 'rec' },
+  ]);
+});

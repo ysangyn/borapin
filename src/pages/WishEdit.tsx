@@ -6,10 +6,10 @@ import CityInfo from '../components/CityInfo';
 import PlaceHint from '../components/PlaceHint';
 
 import { useAuth, displayName } from '../lib/auth';
-import { createWish, deleteWish, restoreWish, saveWishEdits, updateWish, useTrips, useWishes } from '../lib/data';
+import { createWish, deleteWish, restoreWish, saveWishEdits, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { parsePlaceParam } from '../lib/geo';
-import { lines, sameName, wishState } from '../lib/wishes';
+import { itemMarks, lines, recNames, sameName, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
 
@@ -25,6 +25,7 @@ export default function WishEdit() {
   const { wishes } = useWishes();
   const { trips } = useTrips();
   const existing = useMemo(() => wishes?.find((w) => w.id === id), [wishes, id]);
+  const { places: recs } = usePlaces();
 
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const [places, setPlaces] = useState<Place[]>(() => parsePlaceParam(sp.get('place')));
@@ -203,10 +204,11 @@ export default function WishEdit() {
         {/* 다녀온 것 표시: 누르면 바로 저장 (남은 것이 있으면 '다시 가고 싶어요'로 남는다) */}
         {existing && [...existing.spots, ...existing.foods].length > 0 && (
           <div className="field" data-testid="wish-gone">
-            <span className="label">다녀온 것 표시<span className="tiny muted"> · 누르면 ✓</span></span>
+            <span className="label">다녀온 것 표시<span className="tiny muted"> · 누르면 ✓ · 장소 기록이 있는 곳은 저절로</span></span>
             <div className="chips">
-              {[...existing.spots, ...existing.foods].map((n) => {
-                const on = (existing.gone ?? []).some((g) => sameName(g, n));
+              {itemMarks(existing, recNames(recs, existing.place)).map(({ name: n, mark }) => {
+                const on = mark === 'gone';
+                if (mark === 'rec') return <span key={n} className="chip on" title="장소 기록이 있어요" data-testid="wish-gone-rec">✓ {n}<small className="muted"> · 기록</small></span>;
                 return (
                   <button key={n} type="button" className={'chip' + (on ? ' on' : '')} aria-pressed={on} onClick={() => {
                     const gone = on ? (existing.gone ?? []).filter((g) => !sameName(g, n)) : [...(existing.gone ?? []), n];

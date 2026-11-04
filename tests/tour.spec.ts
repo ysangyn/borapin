@@ -286,6 +286,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm13-wishes');
   await page.goto('/wishes/w6');
   await expect(page.getByTestId('wish-gone')).toBeVisible();
+  await expect(page.getByTestId('wish-gone-rec')).toContainText('보헤미안 박이추 커피');
   await snap(page, 'm13b-wish-gone');
   await page.goto('/wishes/w1');
   await snap(page, 'm14-wish-edit');

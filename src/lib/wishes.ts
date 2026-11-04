@@ -21,6 +21,14 @@ export function leftItems(w: Wish, visitedNames: string[] = []): string[] {
   return [...w.spots, ...w.foods].filter((n) => n.trim() && !gone.some((g) => sameName(g, n)));
 }
 
+/** 편집 화면 칩: 다녀옴 표시(gone)·장소 기록으로 가 본 곳(rec)·아직(null) */
+export function itemMarks(w: Wish, visitedNames: string[] = []): { name: string; mark: 'gone' | 'rec' | null }[] {
+  return [...w.spots, ...w.foods].filter((n) => n.trim()).map((name) => ({
+    name,
+    mark: (w.gone ?? []).some((g) => sameName(g, name)) ? 'gone' : visitedNames.some((g) => sameName(g, name)) ? 'rec' : null,
+  }));
+}
+
 /**
  * 가고 싶은 곳의 지금 상태.
  * - '여행 만들기'로 생긴 여행이 있으면 그 여행 상태를 따른다.
