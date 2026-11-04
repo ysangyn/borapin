@@ -533,8 +533,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         <div className="map-legend" style={{ bottom: legendBottom }}>
           {garden ? (
             <>
-              <span><i className="lg-wash" />고장 꽃 따라 보라로 물들어요</span>
-              <span><i className="lg-wash deep" />마음을 남길수록 진해져요</span>
+              <span><i className="lg-wash" />다녀온 곳</span>
+              <span><i className="lg-wash deep" />마음 남길수록 진하게</span>
             </>
           ) : (
             <>
