@@ -20,7 +20,8 @@ test.beforeAll(async ({ browserName }) => {
 
 const problems: string[] = [];
 function watch(page: Page) {
-  page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
+  // 사파리는 시험용 Firestore 에뮬레이터의 긴 연결을 끊을 때 '접근 확인' 오류를 내는데, 앱 오류가 아니라서 뺀다
+  page.on('pageerror', (e) => { if (!/Firestore\/(Listen|Write)\/channel.*access control checks/.test(e.message)) problems.push(`pageerror: ${e.message}`); });
   page.on('console', (m) => {
     if (m.type() === 'error' && !/permission|insufficient/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`);
   });
@@ -208,13 +209,20 @@ test.describe('사람처럼 쓰기', () => {
     await sheet.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
     // 아래로 끌어서 닫기 (손잡이를 잡고 200px 내림)
+    // 사파리(WebKit)는 new Touch()를 막아서, 손가락 자리만 담은 터치 이벤트를 만들어 보낸다 (앱은 touches[0].clientY만 읽음)
     await page.evaluate(() => {
       const grip = document.querySelector('[data-testid="region-sheet"] .grip')!;
       const r = grip.getBoundingClientRect(), x = r.left + r.width / 2;
-      const t = (y: number) => new Touch({ identifier: 1, target: grip, clientX: x, clientY: y });
-      grip.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, cancelable: true, touches: [t(r.top)], targetTouches: [t(r.top)], changedTouches: [t(r.top)] }));
-      for (const d of [20, 60, 120, 200]) grip.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, cancelable: true, touches: [t(r.top + d)], targetTouches: [t(r.top + d)], changedTouches: [t(r.top + d)] }));
-      grip.dispatchEvent(new TouchEvent('touchend', { bubbles: true, cancelable: true, touches: [], targetTouches: [], changedTouches: [t(r.top + 200)] }));
+      const fire = (type: string, y: number | null) => {
+        const ev = new Event(type, { bubbles: true, cancelable: true });
+        const list = y == null ? [] : [{ identifier: 1, target: grip, clientX: x, clientY: y }];
+        for (const k of ['touches', 'targetTouches']) Object.defineProperty(ev, k, { value: list });
+        Object.defineProperty(ev, 'changedTouches', { value: [{ identifier: 1, target: grip, clientX: x, clientY: y ?? r.top + 200 }] });
+        grip.dispatchEvent(ev);
+      };
+      fire('touchstart', r.top);
+      for (const d of [20, 60, 120, 200]) fire('touchmove', r.top + d);
+      fire('touchend', null);
     });
     await expect(sheet).toHaveCount(0);
     await expect(page.getByTestId('headline')).not.toHaveText(before);
@@ -316,7 +324,8 @@ test.describe('사람처럼 쓰기', () => {
     await signIn(page);
     const trip = await page.evaluate(() => document.querySelector<HTMLAnchorElement>('a[href^="/trips/"]')?.getAttribute('href'));
     for (const route of ['/', '/trips', ...(trip ? [trip] : []), '/record', '/map', '/wishes', '/places', '/memories', '/ask', '/space', '/admin', '/credits']) {
-      await page.goto(route);
+      // 앱이 같은 주소로 한 번 더 옮기면(로그인 직후 등) 사파리는 앞 이동을 끊는다 → 한 번 더
+      await page.goto(route).catch(async (e) => { if (!/interrupted by another navigation/.test(String(e))) throw e; await page.waitForLoadState('load'); await page.goto(route); });
       await page.waitForLoadState('load');
       await page.waitForTimeout(900);
       await check(route);
