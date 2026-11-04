@@ -8,56 +8,42 @@
 [32m[1m✔  firestore:[22m[39m Firestore Emulator was started in standard edition.
 [32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
 [36m[1mi [22m[39m Running script: [1mplaywright test --project=webkit[22m
-[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/lib/geodata.ts is dynamically imported by src/main.tsx but also statically imported by src/components/HereNow.tsx, src/components/MapView.tsx, src/components/SpotMap.tsx, src/lib/photos.ts, src/lib/shareCard.ts, ..., dynamic import will not move module into another chunk.
-[WebServer] 
 
 Running 7 tests using 1 worker
 
-  ✘  1 [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (22.9s)
-  ✘  2 [webkit] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (6.2s)
-  ✘  3 [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (1.9s)
-  ✓  4 [webkit] › tests/human.spec.ts:654:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (1.5s)
-  ✓  5 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
-  ✓  6 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
-  ✓  7 [webkit] › tests/human.spec.ts:705:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
+  ✘  1 [webkit] › tests/human.spec.ts:159:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (17.3s)
+  ✓  2 [webkit] › tests/human.spec.ts:194:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (7.5s)
+  ✘  3 [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (13.9s)
+  ✓  4 [webkit] › tests/human.spec.ts:663:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (1.7s)
+  ✓  5 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
+  ✓  6 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
+  ✓  7 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
 
 
-  1) [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit ───
+  1) [webkit] › tests/human.spec.ts:159:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit ───
 
-    Error: pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=4aHA7Z47BD94SRgK8QwNrQ%3D%3D&AID=71&CI=0&TYPE=xmlhttp&zx=6r5ypeu6emn8&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=9nx3S7helqUbFERGT9KXVg%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=64vafxrhi7lz&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=9nx3S7helqUbFERGT9KXVg%3D%3D&AID=6&CI=0&TYPE=xmlhttp&zx=sjfn7bt5sbsq&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=4aHA7Z47BD94SRgK8QwNrQ%3D%3D&AID=75&CI=0&TYPE=xmlhttp&zx=4cwt1rtuyy75&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=e9cV63HR_LzxrzRs-pIULQ%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=n5vzmf9bbw95&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=e9cV63HR_LzxrzRs-pIULQ%3D%3D&RID=1286&AID=45&zx=j8oxmg578oq&t=2 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=2t665TTu_73DTHzSncq51w%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=ct0lg2uv2vqq&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=2t665TTu_73DTHzSncq51w%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=30zm2jrnyy3&t=2 due to access control checks.
+    Error: console: Error: Worker failed to load. Check that the worker URL is correct.
+    console: Error: Worker failed to load. Check that the worker URL is correct.
 
     expect(received).toEqual(expected) // deep equality
 
-    - Expected  -  1
-    + Received  + 10
+    - Expected  - 1
+    + Received  + 4
 
     - Array []
     + Array [
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=4aHA7Z47BD94SRgK8QwNrQ%3D%3D&AID=71&CI=0&TYPE=xmlhttp&zx=6r5ypeu6emn8&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=9nx3S7helqUbFERGT9KXVg%3D%3D&AID=5&CI=0&TYPE=xmlhttp&zx=64vafxrhi7lz&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=9nx3S7helqUbFERGT9KXVg%3D%3D&AID=6&CI=0&TYPE=xmlhttp&zx=sjfn7bt5sbsq&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=4aHA7Z47BD94SRgK8QwNrQ%3D%3D&AID=75&CI=0&TYPE=xmlhttp&zx=4cwt1rtuyy75&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=e9cV63HR_LzxrzRs-pIULQ%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=n5vzmf9bbw95&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&SID=e9cV63HR_LzxrzRs-pIULQ%3D%3D&RID=1286&AID=45&zx=j8oxmg578oq&t=2 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=2t665TTu_73DTHzSncq51w%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=ct0lg2uv2vqq&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=2t665TTu_73DTHzSncq51w%3D%3D&AID=45&CI=0&TYPE=xmlhttp&zx=30zm2jrnyy3&t=2 due to access control checks.",
+    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
+    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
     + ]
 
-      32 | test.afterEach(() => {
-      33 |   const p = problems.splice(0);
-    > 34 |   expect(p, p.join('\n')).toEqual([]);
+      33 | test.afterEach(() => {
+      34 |   const p = problems.splice(0);
+    > 35 |   expect(p, p.join('\n')).toEqual([]);
          |                           ^
-      35 | });
-      36 |
-      37 | async function phone(browser: Browser, width = 375, height = 667) {
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:34:27
+      36 | });
+      37 |
+      38 | async function phone(browser: Browser, width = 375, height = 667) {
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:35:27
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/human-사람처럼-쓰기-375px-손으로-입력해-기록하고-새로-고침해도-남아-있다-webkit/test-failed-1.png
@@ -73,79 +59,28 @@ Running 7 tests using 1 worker
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  2) [webkit] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit 
+  2) [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ────────────
 
-    Error: page.evaluate: TypeError: Illegal constructor
-
-      209 |     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
-      210 |     // 아래로 끌어서 닫기 (손잡이를 잡고 200px 내림)
-    > 211 |     await page.evaluate(() => {
-          |                ^
-      212 |       const grip = document.querySelector('[data-testid="region-sheet"] .grip')!;
-      213 |       const r = grip.getBoundingClientRect(), x = r.left + r.width / 2;
-      214 |       const t = (y: number) => new Touch({ identifier: 1, target: grip, clientX: x, clientY: y });
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:211:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다-webkit/error-context.md
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다-webkit/trace.zip
-    Usage:
-
-        npx playwright show-trace test-results/human-사람처럼-쓰기-375px-지도에서-지-3612a-이-스크롤-없이-보이고-새로-고침해도-핀이-남는다-webkit/trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  3) [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ────────────
-
-    Error: page.goto: Navigation to "http://127.0.0.1:5174/" is interrupted by another navigation to "http://127.0.0.1:5174/"
-    Call log:
-      - navigating to "http://127.0.0.1:5174/", waiting until "load"
-
-
-      317 |     const trip = await page.evaluate(() => document.querySelector<HTMLAnchorElement>('a[href^="/trips/"]')?.getAttribute('href'));
-      318 |     for (const route of ['/', '/trips', ...(trip ? [trip] : []), '/record', '/map', '/wishes', '/places', '/memories', '/ask', '/space', '/admin', '/credits']) {
-    > 319 |       await page.goto(route);
-          |                  ^
-      320 |       await page.waitForLoadState('load');
-      321 |       await page.waitForTimeout(900);
-      322 |       await check(route);
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:319:18
-
-    Error: pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=jMoIAj-NXtHdnWeyEhrwUw%3D%3D&AID=19&CI=0&TYPE=xmlhttp&zx=vwo3p3r685zb&t=1 due to access control checks.
-    pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=AOX3p7UgJPVQzdtDaNiWYw%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=tpodtyriqtde&t=1 due to access control checks.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
+    Error: pageerror: /127.0.0.1:5174/assets/maplibre-gl-worker-DxGNRm0a.mjs due to access control checks.
 
     expect(received).toEqual(expected) // deep equality
 
     - Expected  - 1
-    + Received  + 8
+    + Received  + 3
 
     - Array []
     + Array [
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=jMoIAj-NXtHdnWeyEhrwUw%3D%3D&AID=19&CI=0&TYPE=xmlhttp&zx=vwo3p3r685zb&t=1 due to access control checks.",
-    +   "pageerror: /127.0.0.1:8080/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fdemo-borapin%2Fdatabases%2F(default)&RID=rpc&SID=AOX3p7UgJPVQzdtDaNiWYw%3D%3D&AID=4&CI=0&TYPE=xmlhttp&zx=tpodtyriqtde&t=1 due to access control checks.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
+    +   "pageerror: /127.0.0.1:5174/assets/maplibre-gl-worker-DxGNRm0a.mjs due to access control checks.",
     + ]
 
-      32 | test.afterEach(() => {
-      33 |   const p = problems.splice(0);
-    > 34 |   expect(p, p.join('\n')).toEqual([]);
+      33 | test.afterEach(() => {
+      34 |   const p = problems.splice(0);
+    > 35 |   expect(p, p.join('\n')).toEqual([]);
          |                           ^
-      35 | });
-      36 |
-      37 | async function phone(browser: Browser, width = 375, height = 667) {
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:34:27
+      36 | });
+      37 |
+      38 | async function phone(browser: Browser, width = 375, height = 667) {
+        at /home/runner/work/borapin/borapin/tests/human.spec.ts:35:27
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/human-사람처럼-쓰기-375px-어느-화면도-옆으로-넘치지-않는다-webkit/test-failed-1.png
@@ -161,11 +96,10 @@ Running 7 tests using 1 worker
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  3 failed
-    [webkit] › tests/human.spec.ts:158:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit ────
-    [webkit] › tests/human.spec.ts:193:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit 
-    [webkit] › tests/human.spec.ts:305:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ─────────────
-  4 passed (50.3s)
+  2 failed
+    [webkit] › tests/human.spec.ts:159:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit ────
+    [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ─────────────
+  5 passed (54.6s)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
