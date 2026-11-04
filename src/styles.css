@@ -97,6 +97,14 @@
   --ok-mist: #1C3A2B;
   --danger: #FF7B83;
 }
+/* 밤 모드: 지도 위 글씨는 흰 그림자 대신 어두운 그림자, 반투명 흰 판은 어두운 판으로 */
+:root[data-theme="dark"] .map-label { color: #CFC8EE; text-shadow: 0 0 2px #15122A, 0 0 3px #15122A, 0 0 5px #15122A; }
+:root[data-theme="dark"] .map-label.province, :root[data-theme="dark"] .map-label.metro, :root[data-theme="dark"] .map-label.country { color: #E2DCFA; }
+:root[data-theme="dark"] .map-label.on { color: #C9B8FF; }
+:root[data-theme="dark"] .sea-label { color: #6F6898; text-shadow: none; }
+:root[data-theme="dark"] .map-legend, :root[data-theme="dark"] .ask-hero .chip { background: rgba(34, 28, 61, 0.92); }
+:root[data-theme="dark"] .ask-bar { background: linear-gradient(180deg, rgba(22, 18, 43, 0), var(--page) 30%); }
+:root[data-theme="dark"] .login-card { background: rgba(34, 28, 61, 0.9); }
 :root[data-theme="dark"] img:not([src$=".svg"]) { filter: brightness(.92); }
 html, body, #root { height: 100%; }
 body {
@@ -169,7 +177,7 @@ b, strong { font-weight: 600; }
 .btn.soft:not(:disabled):active { background: var(--mist); }
 .btn.ghost { background: var(--page); color: var(--ink); }
 .btn.line { background: var(--card); color: var(--ink2); border: 1px solid var(--line); font-weight: 600; }
-.btn.danger { background: var(--card); color: var(--danger); border: 1px solid #f1d4d6; }
+.btn.danger { background: var(--card); color: var(--danger); border: 1px solid var(--line); }
 .btn.sm { height: 36px; padding: 0 12px; border-radius: 11px; font-size: 13px; }
 .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--page); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; }
 
@@ -287,7 +295,7 @@ b, strong { font-weight: 600; }
 .kv .k { width: 72px; flex: none; color: var(--ink3); font-size: 13px; font-weight: 600; padding-top: 1px; }
 
 .setting-group { background: var(--card); border-radius: 18px; overflow: hidden; }
-.setting-row { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; border-top: 1px solid #f1eff6; width: 100%; border-left: none; border-right: none; border-bottom: none; background: var(--card); text-align: left; color: inherit; }
+.setting-row { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; border-top: 1px solid var(--line); width: 100%; border-left: none; border-right: none; border-bottom: none; background: var(--card); text-align: left; color: inherit; }
 .setting-row:first-child { border-top: none; }
 .setting-row .ico { width: 32px; height: 32px; border-radius: 10px; background: var(--page); color: var(--ink2); display: flex; align-items: center; justify-content: center; flex: none; }
 
