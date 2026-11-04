@@ -392,7 +392,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         const p = garden?.get(code);
         if (!p || (focusSet && !focusSet.has(code))) return f;
         const t = p.stage === 'sprout' && p.by.length === 1 ? toneOf(p.by[0]) : -1;
-        const wash = washColor(flowerOf({ t: 'kr', code })?.icon ?? 'wild', p.stage, p.visits);
+        const wash = washColor(flowerOf({ t: 'kr', code })?.icon ?? 'wild', p.stage, p.visits, code);
         return { ...f, properties: { ...f.properties, wash, ...(t >= 0 ? { ring: RING[t % 2] } : {}) } };
       }),
     };
@@ -533,7 +533,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
         <div className="map-legend" style={{ bottom: legendBottom }}>
           {garden ? (
             <>
-              <span><i className="lg-wash" />고장 꽃 색으로 물들어요</span>
+              <span><i className="lg-wash" />고장 꽃 따라 보라로 물들어요</span>
               <span><i className="lg-wash deep" />마음을 남길수록 진해져요</span>
             </>
           ) : (

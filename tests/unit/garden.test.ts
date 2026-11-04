@@ -18,7 +18,7 @@ test('한 사람의 한 줄 평이면 그 사람의 새싹, 둘 다면 꽃', () 
   assert.equal(one.stage, 'sprout');
   assert.deepEqual(one.by, ['보라']);
   assert.equal(plantLine(one), '보라의 마음으로 색이 진해졌어요 · 2024');
-  assert.equal(growHint(one, '영상'), '나도 한 줄 남기면 꽃 색이 가득 물들어요');
+  assert.equal(growHint(one, '영상'), '나도 한 줄 남기면 보랏빛이 가득 물들어요');
   const two = garden(t, [rec('51150', { 보라: '최고', 영상: '또 가자' })]).get('51150')!;
   assert.equal(two.stage, 'flower');
   assert.equal(growHint(two, '영상'), null);
@@ -38,5 +38,16 @@ test('두 번 이상 가면 촘촘한 무늬, 나이테는 해마다', () => {
   const g = garden([trip('a', '51150', { when: { p: 'year', y: 2019 } }), trip('b', '51150', { when: { p: 'year', y: 2024 } })], []).get('51150')!;
   assert.equal(g.visits, 2);
   assert.deepEqual(g.years, [2019, 2024]);
-  assert.equal(plantLine(g), '꽃 색으로 물들기 시작했어요 · 2019 · 2024');
+  assert.equal(plantLine(g), '보랏빛으로 물들기 시작했어요 · 2019 · 2024');
+});
+
+test('보라 수채: 어떤 꽃이든 보라 범위, 마음을 남길수록 진하게', async () => {
+  const { washColor } = await import('../../src/components/gardenPatterns');
+  const hue = (c: string) => { const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; };
+  for (const icon of ['rose', 'forsythia', 'camellia', 'magnolia', 'iris', 'wild']) {
+    const h = hue(washColor(icon, 'sprout', 1, '41280'));
+    assert.ok(h >= 238 && h <= 296, `${icon} ${h}`);
+  }
+  const L = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)).reduce((a, b) => a + b, 0);
+  assert.ok(L(washColor('rose', 'flower', 2, '26')) < L(washColor('rose', 'seed', 1, '26')));
 });
