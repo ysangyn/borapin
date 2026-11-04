@@ -1,3 +1,4 @@
+import { setThemePref, themePref } from '../lib/theme';
 import { josa } from 'es-hangul';
 import { times, withRo } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
@@ -226,6 +227,7 @@ export default function Space() {
 
         <HomeSetting />
 
+        <ThemeSetting />
         <MapPrefSetting />
         <TourPrefSetting />
 
@@ -271,5 +273,23 @@ export default function Space() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** 화면 밝기: 밝게 · 어둡게(밤 모드) · 자동(폰 설정). 이 기기에만 */
+function ThemeSetting() {
+  const v = themePref();
+  return (
+    <section data-testid="theme-pref">
+      <div className="label" style={{ padding: '0 4px 6px' }}>화면</div>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="chips">
+          {([['light', '밝게'], ['dark', '어둡게'], ['auto', '자동']] as const).map(([k, l]) => (
+            <button key={k} className={'chip' + (v === k ? ' on' : '')} aria-pressed={v === k} onClick={() => { if (k !== v) setThemePref(k); }} data-testid={`theme-${k}`}>{l}</button>
+          ))}
+        </div>
+        <span className="tiny muted">이 기기에만 적용돼요. '자동'은 폰·컴퓨터의 밝기 설정을 따라요.</span>
+      </div>
+    </section>
   );
 }

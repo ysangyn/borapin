@@ -1,3 +1,4 @@
+import { isDark } from '../lib/theme';
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
@@ -49,12 +50,16 @@ function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number,
   map.fitBounds(b, { padding: { top: 90, bottom: 60, left: 50, right: 70 }, maxZoom: 3.2, duration });
 }
 
-const COLORS = { v1: '#B9A8F5', v2: '#8D73EE', v3: '#5B3FD1', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0' };
+// 밤 모드면 바다·땅·경계선을 어둡게 (밤 모드를 바꾸면 새로 불러 다시 정함 — src/lib/theme.ts)
+const DARK = isDark();
+const COLORS = DARK
+  ? { v1: '#5A4A9E', v2: '#7A62D8', v3: '#A08CFF', none: '#2B2547', sea: '#15122A', land: '#2B2547', line: '#3D3568', planned: '#332B5A' }
+  : { v1: '#B9A8F5', v2: '#8D73EE', v3: '#5B3FD1', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0', line: '#FFFFFF', planned: '#F6F2FF' };
 
 function fillExpr() {
   return [
     'case',
-    ['boolean', ['feature-state', 'planned'], false], '#F6F2FF',
+    ['boolean', ['feature-state', 'planned'], false], COLORS.planned,
     ['>=', ['coalesce', ['feature-state', 'visits'], 0], 3], COLORS.v3,
     ['==', ['coalesce', ['feature-state', 'visits'], 0], 2], COLORS.v2,
     ['==', ['coalesce', ['feature-state', 'visits'], 0], 1], COLORS.v1,
@@ -239,15 +244,15 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       map.addSource('kr', { type: 'geojson', data: g.kr, promoteId: 'cell' });
       map.addSource('krmesh', { type: 'geojson', data: { type: 'Feature', geometry: g.krMesh, properties: {} } });
       map.addLayer({ id: 'world-fill', type: 'fill', source: 'world', paint: { 'fill-color': fillExpr() } });
-      map.addLayer({ id: 'world-line', type: 'line', source: 'world', paint: { 'line-color': '#FFFFFF', 'line-width': 0.6 } });
+      map.addLayer({ id: 'world-line', type: 'line', source: 'world', paint: { 'line-color': COLORS.line, 'line-width': 0.6 } });
       map.addLayer({ id: 'kr-fill', type: 'fill', source: 'kr', paint: { 'fill-color': fillExpr() } });
       // 꽃 지도: 칸 자료에 물빛 색(wash)·한 사람만 남긴 칸의 테두리 색(ring)을 넣어 그린다 (feature-state로는 색 식을 못 넣어서)
       krData.current = g.kr as GeoJSON.FeatureCollection;
-      map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-color': ['get', 'wash'], 'fill-outline-color': '#FFFFFF' } });
+      map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-color': ['get', 'wash'], 'fill-outline-color': COLORS.line, 'fill-opacity': DARK ? 0.88 : 1 } });
       try { ensurePaper(map); map.addLayer({ id: 'kr-paper', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-pattern': 'g-paper', 'fill-opacity': 0.9 } }); } catch (e) { console.warn(e); }
       map.addLayer({ id: 'kr-ring', type: 'line', source: 'kr', filter: ['has', 'ring'], paint: { 'line-color': ['get', 'ring'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.8, 8, 1.6], 'line-opacity': 0.8 } });
-      map.addLayer({ id: 'kr-line', type: 'line', source: 'kr', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.3, 8, 1] } });
-      map.addLayer({ id: 'kr-group', type: 'line', source: 'krmesh', paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 8, 2.4] } });
+      map.addLayer({ id: 'kr-line', type: 'line', source: 'kr', paint: { 'line-color': COLORS.line, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.3, 8, 1] } });
+      map.addLayer({ id: 'kr-group', type: 'line', source: 'krmesh', paint: { 'line-color': COLORS.line, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 8, 2.4] } });
       map.addLayer({
         id: 'kr-planned', type: 'line', source: 'kr',
         paint: { 'line-color': COLORS.v3, 'line-width': 1.2, 'line-dasharray': [2, 1.5], 'line-opacity': ['case', ['boolean', ['feature-state', 'planned'], false], 1, 0] },
@@ -543,7 +548,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
               <span><i style={{ background: COLORS.v3 }} />3번 이상</span>
             </>
           )}
-          <span><i style={{ background: '#F6F2FF', border: '1.5px dashed #5B3FD1' }} />예정</span>
+          <span><i style={{ background: COLORS.planned, border: '1.5px dashed #5B3FD1' }} />예정</span>
           {!!flags?.length && <span><i className="lg-flag" />가고 싶은 곳</span>}
           {!!spots?.length && <span><i className="lg-star" />우리 장소</span>}
         </div>
