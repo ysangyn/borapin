@@ -16,6 +16,9 @@ import { arrange, dayDistance } from '../lib/route';
 import WayPicker from '../components/WayPicker';
 import { useHome } from '../lib/home';
 import { aboutTime, directWays, useRoutes, wayName } from '../lib/transit';
+import { useFind, FIND_SOURCE } from '../lib/find';
+import { aiAvailable } from '../lib/ask/url';
+import { cityFor } from '../lib/world';
 import { daysOf, festsIn, monthCells } from '../lib/planCal';
 export { daysOf };
 import { accessFor } from '../lib/transport';
@@ -205,8 +208,16 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const plan = usePlan(trip.id);
   const days = daysOf(trip.when);
   const place = trip.places[0];
-  const picks = useMemo(() => pickables(place, { tour, info, festivals, world }, days.length ? { start: new Date(days[0]), days: days.length } : null), [place, tour, info, festivals, world, days.length]);
+  const base = useMemo(() => pickables(place, { tour, info, festivals, world }, days.length ? { start: new Date(days[0]), days: days.length } : null), [place, tour, info, festivals, world, days.length]);
   const [tab, setTab] = useState<PickKind>('see');
+  // 해외: 지금 연 칸(볼 것·할 것·먹을 것·살 것)만 위키보이지에서 함께 찾아 보탠다 (A3)
+  const abroadCity = place.t === 'country' ? cityFor(world, place) : null;
+  const found = useFind(auth.status === 'ready' ? auth.user : null, abroadCity?.en, abroadCity && tab !== 'fest' ? tab : null);
+  const picks = useMemo(() => {
+    if (!found?.length) return base;
+    const have = new Set(base.map((p) => p.name.toLowerCase()));
+    return [...base, ...found.filter((x) => !have.has(x.name.toLowerCase())).map((x): Pick => ({ key: `find:${x.kind}:${x.name}`, name: x.name, kind: x.kind, line: x.line, lat: x.lat, lng: x.lng, area: x.area }))];
+  }, [base, found]);
   const [detail, setDetail] = useState<SpotTarget | null>(null);
   const [own, setOwn] = useState('');
   const toast = useToast();
@@ -239,7 +250,7 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const area = place.t === 'kr' ? REGION_BY_CODE.get(place.code)?.name ?? '' : placeLabel(place);
   return (
     <div className="flow-body" style={{ paddingBottom: 70 }}>
-      <div className="flow-tabs" role="tablist">{(['see', 'eat', 'buy', 'fest'] as PickKind[]).filter((k) => k === 'see' || picks.some((p) => p.kind === k)).map((k) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{PICK_LABEL[k]} <small>{picks.filter((p) => p.kind === k).length}</small></button>)}</div>
+      <div className="flow-tabs" role="tablist">{(abroadCity && aiAvailable() ? (['see', 'do', 'eat', 'buy'] as PickKind[]) : (['see', 'eat', 'buy', 'fest'] as PickKind[]).filter((k) => k === 'see' || picks.some((p) => p.kind === k))).map((k) => { const n = picks.filter((p) => p.kind === k).length; return <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{PICK_LABEL[k]}{n > 0 && <small> {n}</small>}</button>; })}</div>
       <div className="pick-grid">
         {[...extra.map((p): Pick => ({ key: `own:${p.id}`, name: p.name, kind: (p.kind as PickKind) ?? 'see', img: p.img, line: '직접 담은 곳' })), ...shown].map((p) => {
           const by = byName.get(p.name)?.by ?? [];
@@ -257,7 +268,9 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
           );
         })}
       </div>
-      {!shown.length && !extra.length && <p className="small muted">이 칸엔 아직 후보가 없어요. 아래에 직접 담아 보세요.</p>}
+      {abroadCity && found === undefined && <div className="skeleton-list" aria-busy="true"><i /><i /></div>}
+      {!shown.length && !extra.length && found !== undefined && <p className="small muted">이 칸엔 아직 후보가 없어요. 아래에 직접 담아 보세요.</p>}
+      {abroadCity && !!found?.length && <span className="tiny muted">{FIND_SOURCE}에서 함께 찾았어요 · 한 줄은 우리말로 옮긴 것</span>}
       <div className="flow-own"><input className="input" value={own} onChange={(e) => setOwn(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) void addOwn(); }} placeholder="찾는 곳이 없나요? 이름이나 지도 링크" aria-label="직접 담기" /><button className="btn sm" onClick={() => void addOwn()} disabled={!own.trim()}>담기</button></div>
       <div className="flow-bar" data-testid="flow-bar"><span className="jua">담은 곳 {mine.length}</span>{members.length > 1 && <span className="tiny" style={{ color: '#CFC6F2' }}>★ {both.length} · {members.map((n) => `${n} ${mine.filter((p) => p.by?.includes(n)).length}`).join(' · ')}</span>}<button className="btn sm line" onClick={onNext} data-testid="flow-pick-next">동선 보기 ›</button></div>
       {detail && <SpotDetail spot={detail} onClose={() => setDetail(null)} />}

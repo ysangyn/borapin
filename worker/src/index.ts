@@ -12,6 +12,7 @@
  * - 사람당 분당 20번(/news는 따로 메모리로 분당 20번), 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
+import { find } from './find';
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { nearby, spot } from './nearby';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
@@ -281,7 +282,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isGeo = req.method === 'GET' && url.pathname === '/geo';
     const isNearby = req.method === 'GET' && url.pathname === '/nearby';
     const isSpot = req.method === 'GET' && url.pathname === '/spot';
-    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isFind = req.method === 'GET' && url.pathname === '/find';
+    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -342,6 +344,18 @@ async function handle(req: Request, env: Env): Promise<Response> {
         const r = await spot(env.DATA_GO_KR_KEY, name, Number.isFinite(lat) ? lat : undefined, Number.isFinite(lng) ? lng : undefined);
         return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
       } catch { return json({ error: 'upstream' }, 502); }
+    }
+    // 해외 함께 찾기: 위키보이지 볼 것·할 것·먹을 것·살 것 (하루 캐시, 한 줄은 번역만)
+    if (isFind) {
+      const rl4 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl4.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const city = (url.searchParams.get('city') ?? '').trim().slice(0, 60);
+      const kind = url.searchParams.get('kind') ?? '';
+      if (!city || !['see', 'do', 'eat', 'buy'].includes(kind)) return json({ error: 'bad request' }, 400);
+      try {
+        const r = await find(env.AI, env.MODEL, city, kind as 'see' | 'do' | 'eat' | 'buy');
+        return new Response(r.body, { status: r.status, headers: { ...Object.fromEntries(r.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 503); }
     }
     if (isPlace) {
       const rl0 = await env.PER_USER.limit({ key: who.uid });

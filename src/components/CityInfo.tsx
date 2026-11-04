@@ -1,3 +1,4 @@
+import FindTogether from './FindTogether';
 import { alarmFor, fxFor, safetyNews, useAbroad, visaFor } from '../lib/abroad';
 import { Link } from 'react-router-dom';
 import { josa } from 'es-hangul';
@@ -32,7 +33,7 @@ export default function CityInfo({ place, onAdd, compact, tours, month }: { plac
   const world = useWorld();
   const w = cityFor(world, place);
   if (!w) return null;
-  return <CityFacts w={w} onAdd={onAdd} compact={compact} updated={world?.updated} tours={tours} month={month} />;
+  return <><CityFacts w={w} onAdd={onAdd} compact={compact} updated={world?.updated} tours={tours} month={month} />{!compact && <FindTogether place={{ t: 'country', id: w.c, city: w.city }} cityEn={w.en} />}</>;
 }
 
 export function CityFacts({ w, onAdd, compact, updated, tours, month }: { w: WorldCity; onAdd?: (kind: 'foods' | 'spots', text: string) => void; compact?: boolean; updated?: string; tours?: boolean; month?: number | null }) {

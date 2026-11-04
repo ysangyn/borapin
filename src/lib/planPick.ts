@@ -12,7 +12,7 @@ import type { Place } from './types';
  * 해외: 세계 도시 자료의 볼거리·먹거리 (뒷단 /find가 생기면 더해진다)
  * 같은 이름은 하나로(자리·사진이 있는 쪽을 남김). 순수 함수.
  */
-export type PickKind = 'see' | 'eat' | 'buy' | 'fest';
+export type PickKind = 'see' | 'do' | 'eat' | 'buy' | 'fest';
 export interface Pick { key: string; name: string; kind: PickKind; line?: string; img?: string; lat?: number; lng?: number; area?: string }
 
 const norm = (s: string) => s.replace(/\s+/g, '').replace(/[()（）\[\]]/g, '');
@@ -46,7 +46,7 @@ export function pickables(place: Place, d: { tour: TourData | null; info: Travel
   return out;
 }
 
-export const PICK_LABEL: Record<PickKind, string> = { see: '볼 것', eat: '먹을 것', buy: '살 것', fest: '축제' };
+export const PICK_LABEL: Record<PickKind, string> = { see: '볼 것', do: '할 것', eat: '먹을 것', buy: '살 것', fest: '축제' };
 
 /** 계획 이어가기 다섯 걸음 (PlanFlow · 여행 상세 · 홈 카드가 같이 씀) */
 export const PLAN_STEPS = ['when', 'stay', 'pick', 'route', 'hope'] as const;

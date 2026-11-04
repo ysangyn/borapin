@@ -107,7 +107,9 @@ function Credits() {
       <p>지역 축제·관광지·무장애 정보와 관광지 사진: 한국관광공사 TourAPI (공공누리 제1유형). 매일 받아 씁니다.</p>
       <p>여행경보·입국허가요건: 외교부 해외안전여행(공공데이터포털). 매일 받아 씁니다. 떠나기 전 0404.go.kr에서 확인하세요.</p>
       <p>환율: 한국수출입은행 현재환율(매매기준율). 매일 받아 씁니다.</p>
-      <p>장소 자리 찾기: OpenStreetMap Nominatim (© OpenStreetMap 기여자).</p>
+      <p>장소 자리 찾기·역과 터미널 자리: OpenStreetMap Nominatim (© OpenStreetMap 기여자).</p>
+      <p>기차·고속버스·시외버스 노선과 시각표: 국토교통부 TAGO(공공데이터포털). 매달 다시 확인합니다.</p>
+      <p>해외 도시 '같이 찾아볼까요?'의 볼 것·할 것·먹을 것·살 것: 위키보이지(Wikivoyage, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>) 영어판 목록. 한 줄 설명은 우리말로 옮긴 것이에요.</p>
     </>
   );
 }
