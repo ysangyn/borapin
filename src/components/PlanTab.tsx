@@ -1,3 +1,4 @@
+import { wayClash } from '../lib/way';
 import { useState } from 'react';
 import { josa } from 'es-hangul';
 import { Icon, useToast } from './ui';
@@ -49,6 +50,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
     if (rest.length) groups.push({ key: 'none', title: days.length ? '날짜 없이' : noun, list: rest });
   }
   const region = trip.places[0];
+  const clash = items ? wayClash(trip.way, days, items) : {};
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="plan-tab">
@@ -86,6 +88,9 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
           <span className="small">순서와 날짜 없이 적기만 해도 돼요. 원하면 날짜와 시간, 예약 정보까지 넣어요.</span>
         </div>
       )}
+      {/* 고른 버스·기차 시각과 맞지 않는 일정 (닿기 전·떠난 뒤) */}
+      {clash.go && <div className="way-clash" data-testid="way-clash-go">{clash.go.at}에 {clash.go.place}에 닿아요 · 그 전에 잡은 {clash.go.names.slice(0, 2).join(', ')}{clash.go.names.length > 2 ? ` 외 ${clash.go.names.length - 2}` : ''}의 시간을 다시 봐 주세요</div>}
+      {clash.back && <div className="way-clash" data-testid="way-clash-back">돌아오는 차가 {clash.back.at}에 {clash.back.place}에서 떠나요 · 그 뒤에 잡은 {clash.back.names.slice(0, 2).join(', ')}{clash.back.names.length > 2 ? ` 외 ${clash.back.names.length - 2}` : ''}의 시간을 다시 봐 주세요</div>}
       {groups.map((g) => (
         <section key={g.key}>
           <div className="year-head">{g.title}</div>
@@ -99,8 +104,11 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
                     <input type="checkbox" checked={it.done} onChange={(e) => updatePlan(it.id, { done: e.target.checked }).catch(() => toast('저장하지 못했어요'))} aria-label={`${it.name} 다녀옴`} />
                     <button className="plan-name" onClick={() => setOpen(isOpen ? null : it.id)} aria-expanded={isOpen}>
                       {it.time && <span className="tag violet">{it.time}</span>}
-                      <span>{it.name}</span>
-                      {it.info && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.info}</span>}
+                      {/* 이름은 한 줄로 두고, 긴 설명(가는 길 등)은 그 아래 작게 (좁은 화면에서 이름이 한 글자씩 꺾이지 않게) */}
+                      <span className="plan-text">
+                        <span className="plan-title">{it.name}</span>
+                        {it.info && <span className="tiny muted plan-sub">{it.info}</span>}
+                      </span>
                     </button>
                     {links && <a href={links.naver} target="_blank" rel="noreferrer" className="btn sm ghost" aria-label={`${it.name} 네이버지도`}>지도</a>}
                   </div>

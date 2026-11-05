@@ -392,7 +392,7 @@ b, strong { font-weight: 600; }
 .seg.tabs button { flex: 1; min-width: 0; padding: 0 8px; white-space: nowrap; }
 .plan-row { padding: 10px 0; display: flex; flex-direction: column; gap: 8px; }
 .plan-row + .plan-row { border-top: 1px solid var(--line); }
-.plan-row.done .plan-name span:not(.tag) { color: var(--ink4); text-decoration: line-through; }
+.plan-row.done .plan-name .plan-title { color: var(--ink4); text-decoration: line-through; }
 .plan-name { flex: 1; min-width: 0; border: none; background: none; padding: 0; text-align: left; display: flex; gap: 8px; align-items: center; font-size: 15px; font-weight: 600; color: var(--ink); }
 .plan-more { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding-left: 28px; }
 .plan-more .btn { grid-column: 1 / -1; justify-self: start; }
@@ -1491,7 +1491,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .flow-check > div { display: flex; gap: 8px; color: var(--ink3); } .flow-check > div.ok { color: var(--ink); }
 .flow-check > div span { width: 16px; font-weight: 600; color: #5DAA6A; }
 .plan-continue { display: flex; flex-direction: column; gap: 4px; background: var(--violet); color: #fff; text-decoration: none; }
-.plan-continue .flow-steps > * { border-color: var(--card); background: transparent; } .plan-continue .flow-steps .done { background: #A996F2; } .plan-continue .flow-steps .on { background: var(--card); }
+/* 끝낸 걸음은 꽉 채우고, 다음 걸음은 옅게 (0/5인데 한 칸이 찬 것처럼 보이지 않게) */
+.plan-continue .flow-steps > * { border-color: rgba(255,255,255,.7); background: transparent; } .plan-continue .flow-steps .done { background: var(--card); } .plan-continue .flow-steps .on { background: rgba(255,255,255,.3); }
 
 /* 한 번에 가는 기차·버스 (지역 창) */
 .region-ways:empty { display: none; }
@@ -1535,3 +1536,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .leftover-line{display:block;margin-top:6px;color:var(--violet);text-decoration:none}
 .leftover-line:hover{text-decoration:underline}
 .pick-star.wish{background:var(--mist);color:var(--violet)}
+
+.plan-text{display:flex;flex-direction:column;min-width:0;gap:1px}
+.plan-title{overflow-wrap:anywhere}
+.plan-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
+.way-clash{font-size:13px;line-height:1.45;padding:9px 12px;border-radius:12px;background:var(--butter);color:var(--butter-ink);border:1px solid var(--edge)}

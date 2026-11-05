@@ -1,4 +1,4 @@
-import { withIGa } from '../lib/ko';
+import { withIGa, withRo } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { TopBar, useToast } from '../components/ui';
@@ -140,7 +140,7 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
         {tags.length > 0 && <div><span className="k">요즘</span><b>{tags[0].t}</b>{tags[0].why ?? ''}</div>}
         {way && <div data-testid="flow-way"><span className="k">가는 길</span><b>{wayName(way)} {way.from}→{way.to}</b>{aboutTime(way.min)} · 하루 {way.n}편{way.min >= 240 && !nights ? ' · 편도가 길어 1박 이상이 편해요' : ''}</div>}
       </div>
-      <button className="btn block" onClick={save} data-testid="flow-when-save">{start ? `${md(start)} ${dow(start)}${nights ? ` – ${md(end)} ${dow(end)}` : ''}로 정하기` : '날짜를 골라 주세요'}</button>
+      <button className="btn block" onClick={save} data-testid="flow-when-save">{start ? `${withRo(`${md(start)} ${dow(start)}${nights ? ` – ${md(end)} ${dow(end)}` : ''}`)} 정하기` : '날짜를 골라 주세요'}</button>
     </div>
   );
 }

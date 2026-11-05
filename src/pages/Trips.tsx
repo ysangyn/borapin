@@ -115,7 +115,7 @@ export default function Trips() {
           )}
           {[...byYear.entries()].map(([y, ts]) => (
             <div key={y}>
-              <div className="year-head"><span className="jua">{y}</span><i /><span className="tiny muted">{times(ts.length)}</span></div>
+              <div className="year-head"><span className="jua">{y}</span><i />{ts.length > 1 && <span className="tiny muted">{times(ts.length)}</span>}</div>
               <div className="list">{ts.map((t) => <TripRow key={t.id} trip={t} />)}</div>
             </div>
           ))}

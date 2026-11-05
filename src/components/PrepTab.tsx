@@ -8,6 +8,7 @@ import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { flightLinks } from '../lib/flights';
 import { accessLine } from '../lib/transport';
 import { cityFor, useWorld } from '../lib/world';
+import { LANG_LABEL, phraseLangFor } from '../lib/phrases';
 import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 import type { Trip } from '../lib/types';
@@ -21,6 +22,11 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
   const world = useWorld();
   const fest = useFestivals();
   const places = trip.places;
+  const abroad = places.map((p) => (p.t === 'country' ? cityFor(world, p) : null)).find(Boolean) ?? null;
+  const code = abroad ? phraseLangFor(abroad.lang) : null;
+  const speak = !abroad ? null
+    : code && code !== 'en' ? { to: `/phrases/${code}?city=${encodeURIComponent(abroad.city)}`, title: `${LANG_LABEL[code]} 한마디`, line: '인사·주문·길 묻기 30문장 · 한글 발음과 소리로' }
+    : { to: '/study', title: '오늘의 영어', line: '떠나기 전 하루 3문장씩 · 공항·호텔·식당 표현부터' };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="prep-tab">
       <PackingCard trip={trip} trips={trips} />
@@ -63,10 +69,13 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
         );
       })}
 
-      <Link to="/study" className="card white prep-card" style={{ color: 'inherit' }}>
-        <div className="hub-label">오늘의 영어</div>
-        <div className="small">떠나기 전 하루 3문장씩 · 공항·호텔·식당 표현부터</div>
-      </Link>
+      {/* 말 익히기: 해외 여행일 때만, 그 나라 말로 (영어권은 오늘의 영어) */}
+      {speak && (
+        <Link to={speak.to} className="card white prep-card" style={{ color: 'inherit' }} data-testid="prep-speak">
+          <div className="hub-label">{speak.title}</div>
+          <div className="small">{speak.line}</div>
+        </Link>
+      )}
     </div>
   );
 }
