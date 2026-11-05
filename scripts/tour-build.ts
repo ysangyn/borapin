@@ -1,12 +1,14 @@
 /**
- * 관광공사 자료 (CI 빌드 때, 실패하면 지난 자료): 시·군마다 관광지 12곳 · 음식점 8곳 · 쇼핑 6곳(이름·좌표·사진) + 무장애 관광지 수
+ * 관광공사 자료 (CI 빌드 때, 실패하면 지난 자료): 시·군마다 관광지 12곳 · 음식점 20곳 · 쇼핑 15곳(이름·좌표·사진) + 무장애 관광지 수
  * → src/data/tour.json  { updated, cells: { [우리 시군 코드]: { s: 관광지, f: 음식점, b: 쇼핑 — 모두 [[이름, 위도, 경도, 사진]], easy: 무장애 곳 수 } } } (+ public/data/tour.json 사본)
- * 하루 한 번만 받는다: 실제 주소의 자료가 오늘 것이고 음식점·쇼핑까지 들어 있으면 건너뜀(FORCE=1이면 받음) — 무료 하루 호출 수를 아끼려고.
+ * 한 번에 전국을 받지 않는다: 받은 지 오래된 시·군부터 25곳씩(처음엔 60곳) — 일주일에 한 바퀴 (scripts/tour-rotate.ts). FORCE=1이면 전국.
+ *   가게 목록은 날마다 바뀌지 않고, 무료 하루 호출 수를 아끼려고. 칸마다 받은 날(at)을 적어 둔다.
  * 우리 시·군 코드 = 법정동 시군구 코드(5자리). 광역 하나인 칸(서울 '11' 등)은 시도 코드로 묻는다.
  * 지난 자료: 로컬 파일에 내용이 없으면(새 체크아웃·자리표시) 실제 주소(/data/tour.json)의 것을 먼저 받아 둔다 (scripts/data-health.ts).
  */
 import fs from 'node:fs';
 import { loadPrevious, seedFiles, tourHealth, writeJsonTo } from './data-health';
+import { pickBatch } from './tour-rotate';
 
 const KEY = process.env.DATA_GO_KR_KEY || process.env.TOUR_API_KEY;
 const OUT = 'src/data/tour.json';
@@ -17,11 +19,7 @@ type TourFile = { updated?: string; note?: string; cells: Record<string, unknown
 const prev = await loadPrevious<TourFile>('관광공사', OUTS, LIVE, tourHealth);
 seedFiles(OUTS, prev.data, tourHealth); // 비어 있는 쪽(public 사본 등)에만 쓴다
 if (!KEY) { console.log('키 없음: 지난 자료 그대로'); process.exit(0); }
-{
-  const today = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
-  const full = Object.values(prev.data?.cells ?? {}).some((c) => Array.isArray((c as { f?: unknown }).f));
-  if (!process.env.FORCE && prev.data?.updated === today && full) { console.log(`오늘(${today}) 받은 자료가 있어 건너뜀`); process.exit(0); }
-}
+const TODAY = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
 type Item = Record<string, string>;
 async function q(svc: string, op: string, p: Record<string, string>): Promise<Item[]> {
   const qs = new URLSearchParams({ serviceKey: KEY!, MobileOS: 'ETC', MobileApp: 'borapin', _type: 'json', pageNo: '1', ...p });
@@ -61,11 +59,14 @@ function areas(code: string): Record<string, string>[] {
 }
 const https = (u: string) => (u ? u.replace(/^http:/, 'https:') : '');
 
-const prevCells = prev.data?.cells ?? {};
+const prevCells = (prev.data?.cells ?? {}) as Record<string, { at?: string; f?: unknown }>;
 type Row = [string, number, number, string];
-const cells: Record<string, { s: Row[]; f: Row[]; b: Row[]; easy: number }> = {};
+const cells: Record<string, { s: Row[]; f: Row[]; b: Row[]; easy: number; at: string }> = {};
 let ok = 0;
-const codes = regionList.map((r) => r.code).filter((c) => /^\d+$/.test(c));
+const all = regionList.map((r) => r.code).filter((c) => /^\d+$/.test(c));
+const codes = process.env.FORCE ? all : pickBatch(all, prevCells, TODAY);
+console.log(`이번에 받을 시·군 ${codes.length}곳 (전체 ${all.length}, 음식점·쇼핑 채워진 곳 ${all.filter((c) => Array.isArray(prevCells[c]?.f)).length})`);
+if (!codes.length) { console.log('이번 주 몫은 다 받았어요 → 지난 자료 그대로'); process.exit(0); }
 for (let i = 0; i < codes.length; i += 6) {
   await Promise.all(codes.slice(i, i + 6).map(async (code) => {
     const as = areas(code);
@@ -75,12 +76,12 @@ for (let i = 0; i < codes.length; i += 6) {
       q('KorService2', 'areaBasedList2', { ...a, contentTypeId: '12', arrange: 'Q', numOfRows: String(per) }),
       q('KorWithService2', 'areaBasedList2', { ...a, contentTypeId: '12', numOfRows: '1' }),
       // 음식점(39)·쇼핑(38): 사진 있는 것 먼저(arrange Q) — 가이드북 '먹을 것·살 것'과 계획하기 담기 후보
-      q('KorService2', 'areaBasedList2', { ...a, contentTypeId: '39', arrange: 'Q', numOfRows: n(8) }),
-      q('KorService2', 'areaBasedList2', { ...a, contentTypeId: '38', arrange: 'Q', numOfRows: n(6) }),
+      q('KorService2', 'areaBasedList2', { ...a, contentTypeId: '39', arrange: 'Q', numOfRows: n(20) }),
+      q('KorService2', 'areaBasedList2', { ...a, contentTypeId: '38', arrange: 'Q', numOfRows: n(15) }),
     ])));
     const spots = got.flatMap(([x]) => x).slice(0, 12);
-    const foods = got.flatMap(([, , x]) => x).slice(0, 8);
-    const shops = got.flatMap(([, , , x]) => x).slice(0, 6);
+    const foods = got.flatMap(([, , x]) => x).slice(0, 20);
+    const shops = got.flatMap(([, , , x]) => x).slice(0, 15);
     const row = (x: Item) => [x.title.replace(/\s*\(.*?\)\s*$/, '').slice(0, 30), +(+x.mapy).toFixed(5), +(+x.mapx).toFixed(5), https(x.firstimage2 || x.firstimage || '')] as [string, number, number, string];
     const easy = Object.assign([] as Item[], { total: got.reduce((n, [, e]) => n + ((e as Item[] & { total?: number }).total ?? 0), 0) });
     if (!spots.length) return;
@@ -90,10 +91,11 @@ for (let i = 0; i < codes.length; i += 6) {
       f: foods.map(row).filter((x) => x[1] && x[2]),
       b: shops.map(row).filter((x) => x[1] && x[2]),
       easy: (easy as Item[] & { total?: number }).total ?? 0,
+      at: TODAY,
     };
   }));
 }
-console.log(`관광공사: 시·군 ${codes.length} 중 ${ok}곳 받음 · 음식점 ${Object.values(cells).reduce((a, c) => a + c.f.length, 0)} · 쇼핑 ${Object.values(cells).reduce((a, c) => a + c.b.length, 0)}`);
+console.log(`관광공사: 이번 ${codes.length}곳 중 ${ok}곳 받음 · 음식점 ${Object.values(cells).reduce((a, c) => a + c.f.length, 0)} · 쇼핑 ${Object.values(cells).reduce((a, c) => a + c.b.length, 0)}`);
 if (ok < codes.length * 0.6) { console.log(`너무 적게 받아 지난 자료 그대로 (${prev.from ? tourHealth(prev.data).why : '지난 자료 없음'})`); process.exit(0); }
 writeJsonTo(OUTS, { updated: new Date().toISOString().slice(0, 10), note: '한국관광공사 TourAPI(국문 관광정보·무장애 여행), 공공누리 제1유형', cells: { ...prevCells, ...cells } });
 console.log(`저장 → ${OUTS.join(', ')}`);
