@@ -20,7 +20,7 @@ export default function StopoverFind({ destCode, trip, noHomeHint = true }: { de
   return (
     <>
       <button type="button" className="hub-way-row stopover-find" aria-expanded={open} onClick={() => setOpen((v) => !v)} data-testid="stopover-find">
-        <Icon name="pin" size={16} /><span><b>가는 길에 들를 곳 찾기</b> · 조금만 돌아가는 처음 가 보는 곳</span><span className="stopover-find-arrow" aria-hidden="true">{open ? '▴' : '▾'}</span>
+        <Icon name="pin" size={16} /><span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}><b>가는 길에 들를 곳 찾기</b><span className="tiny muted">조금만 돌아가는 처음 가 보는 곳</span></span><span className="stopover-find-arrow" aria-hidden="true">{open ? '▴' : '▾'}</span>
       </button>
       {open && <Stopovers destCode={destCode} trip={trip} />}
     </>
