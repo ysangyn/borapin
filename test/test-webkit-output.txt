@@ -11,66 +11,18 @@
 
 Running 7 tests using 1 worker
 
-  ✓  1 [webkit] › tests/human.spec.ts:159:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (36.6s)
-  ✓  2 [webkit] › tests/human.spec.ts:194:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (9.6s)
-  ✘  3 [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (15.0s)
-  ✓  4 [webkit] › tests/human.spec.ts:663:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (1.8s)
-  ✓  5 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.4s)
-  ✓  6 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.4s)
-  ✓  7 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.4s)
+  ✓  1 [webkit] › tests/human.spec.ts:159:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (21.8s)
+  ✓  2 [webkit] › tests/human.spec.ts:194:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (8.6s)
+  ✓  3 [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (14.3s)
+  ✓  4 [webkit] › tests/human.spec.ts:663:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (1.6s)
+  ✓  5 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
+  ✓  6 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
+  ✓  7 [webkit] › tests/human.spec.ts:714:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (1.2s)
 
-
-  1) [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ────────────
-
-    Error: console: Error: Worker failed to load. Check that the worker URL is correct.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
-    console: Error: Worker failed to load. Check that the worker URL is correct.
-
-    expect(received).toEqual(expected) // deep equality
-
-    - Expected  - 1
-    + Received  + 6
-
-    - Array []
-    + Array [
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    +   "console: Error: Worker failed to load. Check that the worker URL is correct.",
-    + ]
-
-      33 | test.afterEach(() => {
-      34 |   const p = problems.splice(0);
-    > 35 |   expect(p, p.join('\n')).toEqual([]);
-         |                           ^
-      36 | });
-      37 |
-      38 | async function phone(browser: Browser, width = 375, height = 667) {
-        at /home/runner/work/borapin/borapin/tests/human.spec.ts:35:27
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-375px-어느-화면도-옆으로-넘치지-않는다-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/human-사람처럼-쓰기-375px-어느-화면도-옆으로-넘치지-않는다-webkit/error-context.md
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results/human-사람처럼-쓰기-375px-어느-화면도-옆으로-넘치지-않는다-webkit/trace.zip
-    Usage:
-
-        npx playwright show-trace test-results/human-사람처럼-쓰기-375px-어느-화면도-옆으로-넘치지-않는다-webkit/trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  1 failed
-    [webkit] › tests/human.spec.ts:313:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit ─────────────
-  6 passed (1.3m)
-[33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
+  7 passed (58.4s)
+[32m[1m✔ [22m[39m Script exited successfully (code 0)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
 [36m[1mi  auth:[22m[39m Stopping Authentication Emulator
 [36m[1mi  hub:[22m[39m Stopping emulator hub
 [36m[1mi  logging:[22m[39m Stopping Logging Emulator
-
-[1m[31mError:[39m[22m Script "[1mplaywright test --project=webkit[22m" exited with code 1
