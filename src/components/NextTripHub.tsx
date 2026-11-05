@@ -18,9 +18,8 @@ import HomeRoute from './HomeRoute';
 import DirectWays from './DirectWays';
 import { directWays, useRoutes } from '../lib/transit';
 import { alarmFor, useAbroad, visaFor } from '../lib/abroad';
-import Stopovers from './Stopovers';
+import StopoverFind from './StopoverFind';
 import { useHome } from '../lib/home';
-import { straightKm } from '../lib/placeApps';
 import { summary, todaySet, ymd } from '../lib/study/srs';
 import { everyoneLabel, memberNames } from '../lib/members';
 import { upcomingTrips } from '../lib/stats';
@@ -272,8 +271,6 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
   if (r) rows.push(['home', <div className="hub-way-row" style={{ cursor: 'default' }}><Icon name="home" size={16} /><HomeRoute to={{ name: placeLabel(place), lat: r.lat, lng: r.lng }} note="시·군 가운데까지" /></div>]);
   if (r && home && routes && home.code !== r.code && directWays(routes, home.code, r.code).length) rows.push(['rail', <DirectWays code={r.code} max={1} />]);
   if (place.t === 'kr' && accessLine(place)) rows.push(['access', <button className="hub-way-row" onClick={() => nav(`/map?sel=${placeParam(place)}`)} data-testid="hub-access"><Icon name="pin" size={16} /><span>가는 길 <b>{accessLine(place)}</b></span></button>]);
-  // 들러 가기는 집이 있고 60km 넘게 멀 때만 생긴다 (빈 '자세히'가 남지 않게)
-  if (r && home && straightKm(home, r) >= 60) rows.push(['stop', <Stopovers destCode={r.code} />]);
   if (city) rows.push(['city', <button className="hub-way-row" onClick={go} data-testid="hub-city"><Icon name="globe" size={16} /><span>{city.cur} · {city.lang} · 콘센트 {city.plug} · {tzText(place) || tzLabel(city.tz)}</span></button>]);
   if (city && lang && lang !== 'en') rows.push(['phrases', <button className="hub-way-row" onClick={() => nav(`/phrases/${lang}?city=${encodeURIComponent(city.city)}`)} data-testid="hub-phrases"><Icon name="play" size={16} /><span>{LANG_LABEL[lang]} 한마디 30문장 · 인사·식당·길</span></button>]);
   if (good) rows.push(['news', <a className="hub-way-row" href={good.link} target="_blank" rel="noreferrer" data-testid="hub-news"><Icon name="feed" size={16} /><span className="hub-news-title">{good.title}<span className="tiny muted"> · {good.source}{good.at ? ` · ${newsAgo(good.at)}` : ''}</span></span></a>]);
@@ -283,6 +280,8 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
       <div className="hub-label">{placeLong(place)} 가는 길</div>
       <div className="hub-way-rows">
         {shown.map(([k, el]) => <Fragment key={k}>{el}</Fragment>)}
+        {/* 경유지 찾기는 '자세히' 안에 숨기지 않고 늘 보이게 */}
+        {place.t === 'kr' && <StopoverFind destCode={place.code} />}
         {rest.length > 0 && (
           <details className="hub-way-more" data-testid="hub-way-more">
             <summary>자세히 · {rest.map(([k]) => WAY_LABEL[k]).filter(Boolean).slice(0, 3).join('·')}</summary>

@@ -396,6 +396,14 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   // 지역 창이 뜨면 바로 (못 뜨면 전처럼 그냥 찍는다: 이 파일은 디자인 검수용 사진이 목적)
   await page.getByTestId('region-sheet').waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
   await snap(page, 'm22-sheet', false);
+  // 경유지: 홈 다음 여행 카드와 준비 탭에 '가는 길에 들를 곳 찾기'가 늘 보이고, 누르면 들러 가기가 펼쳐진다
+  await page.goto('/');
+  await expect(page.getByTestId('stopover-find').first()).toBeVisible({ timeout: 15_000 });
+  await page.goto('/trips/t11?tab=prep');
+  await page.getByTestId('stopover-find').first().click();
+  await expect(page.getByTestId('stopovers')).toBeVisible();
+  await page.getByTestId('stopovers').scrollIntoViewIfNeeded();
+  await snap(page, 'm23-stopover-find', false);
   // 밤 모드: 설정 → 화면 '어둡게' (새로 불러 지도 색까지 바뀜) → 주요 화면을 어둡게 한 번 더
   await page.goto('/space');
   await page.getByTestId('theme-dark').click();

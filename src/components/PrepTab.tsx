@@ -1,5 +1,7 @@
 import DirectWays from './DirectWays';
 import WayPicker from './WayPicker';
+import StopoverFind from './StopoverFind';
+import { daysOf } from '../lib/planCal';
 import { Link } from 'react-router-dom';
 import PackingCard from './PackingCard';
 import BookingsCard from './BookingsCard';
@@ -47,7 +49,7 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
                 <div className="prep-place-name">{placeLong(p)}</div>
                 {/* 여행지(첫 곳)는 고른 가는 길·돌아오는 길, 나머지 곳은 한 번에 가는 길 한 줄 */}
                 {p.t === 'kr' && placeParam(p) === placeParam(places[0]) ? (
-                  <><WayPicker trip={trip} dir="go" /><WayPicker trip={trip} dir="back" /></>
+                  <><WayPicker trip={trip} dir="go" /><StopoverFind destCode={p.code} trip={{ id: trip.id, firstDay: daysOf(trip.when)[0] ?? null }} noHomeHint={false} /><WayPicker trip={trip} dir="back" /></>
                 ) : p.t === 'kr' ? <DirectWays code={p.code} /> : null}
                 {line && <div className="hub-way-row static"><Icon name="pin" size={16} /><span>{p.t === 'kr' ? '가까운 역·공항' : '공항'} <b>{line}</b></span></div>}
                 {f && <a className="hub-way-row" href={f.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {f.label}{m ? ` · ${m}월` : ''}</span></a>}
