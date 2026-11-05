@@ -174,7 +174,7 @@ jobs:
         run: npm run test:e2e 2>&1 | tee test-output.txt
       - name: 크롬 화면 사진 옮겨 두기 (아이폰 시험이 test-results를 지우므로)
         if: always()
-        run: mkdir -p shots && cp -r test-results/screens test-results/tour test-results/walk shots/ 2>/dev/null || true
+        run: mkdir -p shots && cp -r test-results/screens test-results/tour shots/ 2>/dev/null || true
       - name: 크롬 실패 화면 먼저 모으기 (아이폰 시험이 test-results를 지우므로)
         if: failure()
         run: |
@@ -197,7 +197,34 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh test shots/screens shots/tour shots/walk test-output.txt test-webkit-output.txt rules-output.txt migrate-test-output.txt failures
+        run: scripts/push-report.sh test shots/screens shots/tour test-output.txt test-webkit-output.txt rules-output.txt migrate-test-output.txt failures
+
+  walk:
+    name: 2b. 써 보기 (사람처럼 메뉴·여행 이야기 · 참고용, 배포를 막지 않음)
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: 써 보기 (둘러보기 자료 위에서 · 걸음마다 화면과 보고서)
+        run: npm run test:walk 2>&1 | tee walk-output.txt || true
+      - name: 결과 올리기 (ci-report/walk)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh walk test-results/walk walk-output.txt
 
   preview:
     name: 3. 미리보기 배포와 진짜 Firebase 시험

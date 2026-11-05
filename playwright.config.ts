@@ -10,7 +10,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   // 보안 규칙·순수 함수 시험은 node --test로 따로 돌린다
-  testIgnore: ['live.spec.ts', 'preview.spec.ts', 'rules/**', 'unit/**'],
+  // 써 보기(walk.spec.ts)는 길어서 배포 관문에서 빼고 따로 돈다 (ci.yml 2b, WALK=1)
+  testIgnore: ['live.spec.ts', 'preview.spec.ts', 'rules/**', 'unit/**', ...(process.env.WALK ? [] : ['walk.spec.ts'])],
   timeout: 60_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

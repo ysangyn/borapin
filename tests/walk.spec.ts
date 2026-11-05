@@ -1,6 +1,6 @@
 /**
  * 써 보기: 사람이 폰으로 메뉴를 하나씩 눌러 보듯 걸어 다니며, 걸음마다 '보이는 화면 그대로' 찍고 점검한다.
- * - 둘러보기(tour.spec.ts)가 채워 둔 기록(보라·영상, 통영 예정 여행 등) 위에서 돈다 (파일 순서상 tour 다음).
+ * - 둘러보기(tour.spec.ts)가 채워 둔 기록(보라·영상, 통영 예정 여행 등) 위에서 돈다. 배포 관문과 따로 돈다 (npm run test:walk · ci.yml 2b).
  * - 화면 점검: 옆으로 넘침, 너무 작은 누를 곳, 잘린 글, 아래 메뉴에 가려진 단추, 오류 글.
  * - 막힌 걸음은 실패로 멈추지 않고 보고서(test-results/walk/report.txt)에 '막힘'으로 남긴다 (배포를 막지 않음).
  */
@@ -119,7 +119,7 @@ async function photos(page: Page, k: number) {
 const say = (page: Page, s: string) => page.getByText(s).first().isVisible().catch(() => false);
 
 test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도시에서 — 계획하고 다녀와서 기록까지', async ({ browser }) => {
-  test.setTimeout(45 * 60_000);
+  test.setTimeout(28 * 60_000);
   const me = await phone(browser);
   const bora = await phone(browser);
   await signIn(me);
@@ -321,7 +321,7 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
 });
 
 test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
-  test.setTimeout(15 * 60_000);
+  test.setTimeout(10 * 60_000);
   const page = await phone(browser);
   await signIn(page);
 
