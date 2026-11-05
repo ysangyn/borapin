@@ -755,7 +755,7 @@ test.describe('사람처럼 쓰기', () => {
       // 에뮬레이터에선 뒷단(관광공사)을 부르지 않으므로 '이 근처로 남기기'만
       await expect(sheet).toContainText('지금은 근처 장소를 찾을 수 없어요');
       await sheet.getByTestId('here-fallback').click({ timeout: 15_000 });
-      await expect(page.getByRole('status')).toContainText('이 근처 남겼어요');
+      await expect(page.getByRole('status')).toContainText('이 근처를 남겼어요');
       await expect(sheet).toHaveCount(0);
     } finally {
       // 지우기가 막혀도 시험 실패 이유가 가려지지 않게 10초만 기다린다
