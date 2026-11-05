@@ -301,6 +301,11 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm14-wish-edit');
   await page.goto('/places');
   await snap(page, 'm15-places');
+  // 장소 한 곳: 앱 안의 작은 거리 지도 (좌표가 있으면 골목까지)
+  await page.goto('/places/r7');
+  await expect(page.getByTestId('mini-street')).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(2500); // 타일
+  await snap(page, 'm15a-place-street');
   // 내 지도: 강릉 카페 3곳 → 거리 지도 + 순위, 새 곳을 담으면 견주기, 보내기 → 앱 없이 보는 페이지
   await page.goto('/maps?m=kr:51150|cafe');
   await expect(page.getByTestId('mymaps')).toBeVisible();

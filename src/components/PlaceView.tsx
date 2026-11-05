@@ -9,6 +9,7 @@ import { formatWhen } from '../lib/dates';
 import { placeLong } from '../lib/geo';
 import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
 import { MapAppButton } from './MapChoice';
+import MiniStreet from './MiniStreet';
 import { lookupLink } from '../lib/placeLookup';
 import { memberNames, toneOf } from '../lib/members';
 import type { PlaceRec, Trip } from '../lib/types';
@@ -83,7 +84,9 @@ export default function PlaceView({ rec, trip, onEdit, onRemove, onEnrich }: {
 
         {rec.lat != null && rec.lng != null && <HomeRoute to={{ name: rec.name, lat: rec.lat, lng: rec.lng }} />}
 
-        {rec.region.t === 'kr' && (
+        {rec.lat != null && rec.lng != null ? (
+          <div className="pv-map card white"><MiniStreet name={rec.name} lat={rec.lat} lng={rec.lng} height={photo ? 150 : 190} /></div>
+        ) : rec.region.t === 'kr' && (
           <div className="pv-map card white">
             <SpotMap region={rec.region} lat={rec.lat} lng={rec.lng} height={photo ? 130 : 170} />
             {rec.lat == null && <span className="tiny muted pv-map-note">{rec.naverUrl ? '정확한 자리는 지도 링크에서 찾는 중이에요' : '네이버지도 링크를 넣으면 정확한 자리에 핀이 꽂혀요'}</span>}

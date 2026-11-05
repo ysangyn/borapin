@@ -5,6 +5,7 @@ import { useHome } from '../lib/home';
 import { fetchSpot, type SpotInfo } from '../lib/nearby';
 import { straightKm } from '../lib/placeApps';
 import { MapAppButton, useWishItem } from './MapChoice';
+import MiniStreet from './MiniStreet';
 import type { Place } from '../lib/types';
 
 /**
@@ -54,6 +55,7 @@ export default function SpotDetail({ spot, onClose }: { spot: SpotTarget; onClos
           </dl>
         )}
         {info && <span className="tiny muted">한국관광공사 · 시간은 바뀔 수 있어요, 가기 전에 확인</span>}
+        {spot.lat != null && spot.lng != null && <MiniStreet name={spot.name} lat={spot.lat} lng={spot.lng} height={150} />}
         <MapAppButton t={{ name: spot.name, area: spot.area, lat: spot.lat, lng: spot.lng }} label="지도 앱으로 길찾기" />
         <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} disabled={wished || !!wi.saving} onClick={() => void wi.add(spot.place, spot.name, 'spot')} data-testid="spot-wish">{wished ? '♥ 담겨 있어요' : '♡ 가고 싶어요'}</button>
         <button className="link-btn" style={{ alignSelf: 'center' }} onClick={onClose}>닫기</button>

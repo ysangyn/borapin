@@ -48,3 +48,44 @@ export const straightKm = (a: { lat: number; lng: number }, b: { lat: number; ln
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 };
+
+/**
+ * 지도 앱을 '앱으로' 바로 연다 (설정한 네이버·카카오).
+ * - 안드로이드: intent:// 주소 하나로 앱을 열고, 앱이 없으면 크롬이 알아서 웹 주소로 (S.browser_fallback_url)
+ * - 아이폰: 앱 주소(scheme)를 먼저 열고, 1.5초 안에 화면을 떠나지 않으면 웹으로 (부품이 처리)
+ * - PC: 웹을 새 창으로. 네이버 공유 주소(naver.me 등)가 있으면 그 주소가 그 가게를 정확히 연다
+ */
+export function appOpen(app: 'naver' | 'kakao', t: { name: string; area?: string; lat?: number | null; lng?: number | null }, ua: string, naverUrl?: string): { href: string; scheme?: string; newTab: boolean } {
+  const enc = encodeURIComponent;
+  const q = [t.area, t.name].filter(Boolean).join(' ');
+  const pos = t.lat != null && t.lng != null;
+  const android = /Android/i.test(ua);
+  const ios = /iPhone|iPad|iPod/i.test(ua);
+  if (app === 'naver') {
+    if (naverUrl) return { href: naverUrl, newTab: !android && !ios };
+    const web = `https://map.naver.com/p/search/${enc(q)}`;
+    const path = pos ? `place?lat=${t.lat}&lng=${t.lng}&name=${enc(t.name)}&appname=borapin.web.app` : `search?query=${enc(q)}&appname=borapin.web.app`;
+    if (android) return { href: `intent://${path}#Intent;scheme=nmap;package=com.nhn.android.nmap;S.browser_fallback_url=${enc(web)};end`, newTab: false };
+    if (ios) return { href: web, scheme: `nmap://${path}`, newTab: false };
+    return { href: web, newTab: true };
+  }
+  const web = pos ? `https://map.kakao.com/link/map/${enc(t.name)},${t.lat},${t.lng}` : `https://map.kakao.com/link/search/${enc(q)}`;
+  const path = pos ? `search?q=${enc(t.name)}&p=${t.lat},${t.lng}` : `search?q=${enc(q)}`;
+  if (android) return { href: `intent://${path}#Intent;scheme=kakaomap;package=net.daum.android.map;S.browser_fallback_url=${enc(web)};end`, newTab: false };
+  if (ios) return { href: web, scheme: `kakaomap://${path}`, newTab: false };
+  return { href: web, newTab: true };
+}
+
+/** 아이폰: 앱 주소를 열어 보고, 화면을 떠나지 않으면(앱이 없으면) 웹으로 */
+export function openWithFallback(scheme: string, web: string, wait = 1500) {
+  let left = false;
+  const off = () => { left = true; };
+  document.addEventListener('visibilitychange', off, { once: true });
+  window.addEventListener('pagehide', off, { once: true });
+  location.href = scheme;
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', off);
+    window.removeEventListener('pagehide', off);
+    if (!left && document.visibilityState === 'visible') location.href = web;
+  }, wait);
+}

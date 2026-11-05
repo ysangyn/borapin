@@ -6,7 +6,7 @@ import { loadMapShare } from '../lib/placeMapData';
 import { meters } from '../lib/placeMaps';
 import { VERDICT_LABEL } from '../lib/placeRecs';
 import { KIND_COLOR, themeLabel, themeOf } from '../lib/placeMaps';
-import { mapApps } from '../lib/placeApps';
+import { AppLink, mapPref } from '../components/MapChoice';
 import type { MapShare } from '../lib/types';
 
 /**
@@ -75,7 +75,6 @@ export default function SharedMapPage() {
 
         <div className="list" style={{ gap: 10 }}>
           {places.map((p, i) => {
-            const apps = mapApps(p.name, data.regionLabel, p.lat, p.lng, p.naverUrl);
             const m = (p as { m?: number }).m;
             return (
               <article key={p.id} className={'card white shared-map-item' + (picked === p.id ? ' on' : '')} data-testid="shared-map-item" onClick={() => setPicked(p.id)}>
@@ -85,7 +84,7 @@ export default function SharedMapPage() {
                   {p.lines.map((l) => <span key={l.who} className="hand" style={{ fontSize: 17, lineHeight: 1.2, color: 'var(--pink-ink)' }}>{l.who} · {l.text}</span>)}
                   <span className="tiny muted">{[p.address, m != null && Number.isFinite(m) ? `여기서 ${meters(m)}` : null].filter(Boolean).join(' · ')}</span>
                   <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                    <a className="btn sm line" href={apps.naver} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>길찾기</a>
+                    <span onClick={(e) => e.stopPropagation()} style={{ display: 'contents' }}><AppLink app={mapPref() === 'kakao' ? 'kakao' : 'naver'} t={{ name: p.name, area: data.regionLabel, lat: p.lat, lng: p.lng }} naverUrl={p.naverUrl} className="btn sm line">길찾기</AppLink></span>
                     <Link className="btn sm soft" to={`/places/new?from=${encodeURIComponent(p.name)}`} onClick={(e) => e.stopPropagation()}>♡ 내 지도에 담기</Link>
                   </div>
                 </div>

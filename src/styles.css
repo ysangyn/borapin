@@ -1683,3 +1683,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .feed-text.quote.hand { font-size: 19px; line-height: 1.45; }
 :root[data-theme="dark"] .polaroid { background: #EDE9FF; }
 :root[data-theme="dark"] .wish-cover-chip { background: var(--card); }
+.mini-street { border-radius: 14px; overflow: hidden; position: relative; background: var(--page); flex: none; }
+.mini-street-wait { background: repeating-linear-gradient(135deg, var(--page) 0 12px, var(--mist) 12px 24px); opacity: .5; }
+.pv-map .mini-street { border-radius: 12px; align-self: stretch; }
+.mini-street { width: 100%; }

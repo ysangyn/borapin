@@ -8,6 +8,7 @@ import { addPlan, usePlan } from '../lib/tripExtras';
 import { plannedTripFor } from '../lib/wishes';
 import { hasWishItem, wishItem, type WishItemKind } from '../lib/wishActions';
 import type { Place } from '../lib/types';
+import { appOpen, openWithFallback } from '../lib/placeApps';
 
 /** 누른 곳을 어느 지도 앱으로 열지 고르는 작은 창: 네이버지도 / 카카오맵 (축제는 네이버 검색도) */
 export interface MapTarget {
@@ -27,13 +28,30 @@ export function mapChoiceLinks(t: MapTarget) {
   };
 }
 
+/** 지도 앱 링크: 폰에선 앱으로 바로(없으면 웹), PC에선 웹 새 창 (lib/placeApps.ts appOpen) */
+export function AppLink({ app, t, naverUrl, className, children, onDone, testId }: { app: 'naver' | 'kakao'; t: MapTarget; naverUrl?: string; className?: string; children: ReactNode; onDone?: () => void; testId?: string }) {
+  const o = appOpen(app, t, typeof navigator === 'undefined' ? '' : navigator.userAgent, naverUrl);
+  return (
+    <a className={className} href={o.href} {...(o.newTab ? { target: '_blank', rel: 'noreferrer' } : {})} data-testid={testId} data-app={app}
+      onClick={(e) => { if (o.scheme) { e.preventDefault(); openWithFallback(o.scheme, o.href); } onDone?.(); }}>
+      {children}
+    </a>
+  );
+}
+/** 코드에서 바로 열기 (창 없이) */
+export function openApp(app: 'naver' | 'kakao', t: MapTarget) {
+  const o = appOpen(app, t, navigator.userAgent);
+  if (o.scheme) openWithFallback(o.scheme, o.href);
+  else if (o.newTab) window.open(o.href, '_blank', 'noopener');
+  else location.href = o.href;
+}
+
 /** 앱 밖으로 나가는 단 하나의 길: 설정한 지도 앱(우리 공간 '장소를 누르면 열 지도')으로 길찾기. naverUrl이 있으면 네이버는 그 주소로 */
 export function MapAppButton({ t, naverUrl, label = '길찾기', className = 'btn block line' }: { t: MapTarget; naverUrl?: string; label?: string; className?: string }) {
   const [open, el] = useMapChoice();
   const p = mapPref();
   if (p === 'ask') return <><button type="button" className={className} onClick={() => open(t)} data-testid="map-app">{label}</button>{el}</>;
-  const href = p === 'kakao' ? mapChoiceLinks(t).kakao : naverUrl || mapChoiceLinks(t).naver;
-  return <a className={className} href={href} target="_blank" rel="noreferrer" data-testid="map-app"><span className={'app-badge ' + (p === 'kakao' ? 'k' : 'n')} aria-hidden="true">{p === 'kakao' ? 'K' : 'N'}</span>{label}</a>;
+  return <AppLink app={p} t={t} naverUrl={naverUrl} className={className} testId="map-app"><span className={'app-badge ' + (p === 'kakao' ? 'k' : 'n')} aria-hidden="true">{p === 'kakao' ? 'K' : 'N'}</span>{label}</AppLink>;
 }
 
 /** '가고 싶어요' 담기: [담겼는지, 담기]. 창과 관광지 카드 하트가 함께 쓴다 */
@@ -73,7 +91,7 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
   const wi = useWishItem();
   const setT = (x: MapTarget | null) => {
     const p = mapPref();
-    if (x && p !== 'ask' && !x.search) { window.open(p === 'kakao' ? mapChoiceLinks(x).kakao : mapChoiceLinks(x).naver, '_blank', 'noopener'); return; }
+    if (x && p !== 'ask' && !x.search) { openApp(p, x); return; }
     setT0(x);
   };
   const close = () => setT(null);
@@ -107,8 +125,8 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
         <b className="jua" style={{ fontSize: 19 }}>{t.name}</b>
         {t.area && <span className="tiny muted">{t.area}</span>}
         <div className="map-choice-row">
-          <a className={'btn ' + (mapPref() === 'kakao' ? 'line' : '')} href={mapChoiceLinks(t).naver} target="_blank" rel="noreferrer" onClick={close}><span className="app-badge n" aria-hidden="true">N</span>네이버지도</a>
-          <a className={'btn ' + (mapPref() === 'kakao' ? '' : 'line')} href={mapChoiceLinks(t).kakao} target="_blank" rel="noreferrer" onClick={close}><span className="app-badge k" aria-hidden="true">K</span>카카오맵</a>
+          <AppLink app="naver" t={t} className={'btn ' + (mapPref() === 'kakao' ? 'line' : '')} onDone={close}><span className="app-badge n" aria-hidden="true">N</span>네이버지도</AppLink>
+          <AppLink app="kakao" t={t} className={'btn ' + (mapPref() === 'kakao' ? '' : 'line')} onDone={close}><span className="app-badge k" aria-hidden="true">K</span>카카오맵</AppLink>
         </div>
         {t.wish && (
           <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} onClick={addWish} disabled={wished || saving} aria-pressed={wished} data-testid="map-choice-wish">
