@@ -1613,3 +1613,73 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .mymap-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(30,22,64,.15); }
 .mymap-theme-head { display: flex; align-items: center; gap: 8px; padding: 10px 0 4px; font-size: 13px; font-weight: 600; color: var(--ink2); }
 .mymap-theme-head i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+
+/* ---------- 피드: 여행 일기장 (스크랩북 + 달력 띠) ---------- */
+.diary-head { display: flex; flex-direction: column; gap: 0; padding: 2px 4px 2px; }
+.diary-title { font-size: 28px; line-height: 1.15; }
+.diary-week { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.diary-stamp { width: 46px; height: 46px; flex: none; border-radius: 50%; border: 2px dashed var(--v3, #9B82F6); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--violet); transform: rotate(-8deg); }
+.diary-month { padding: 12px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.diary-month .icon-btn.sm { width: 30px; height: 30px; font-size: 20px; line-height: 1; border: none; background: none; color: var(--ink2); }
+.diary-month .icon-btn.sm:disabled { opacity: .3; }
+.diary-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.diary-wd { font-size: 10.5px; color: var(--ink3); text-align: center; }
+.diary-cell { position: relative; aspect-ratio: 1; border-radius: 8px; border: none; padding: 0; background: var(--page); color: var(--ink4); font: inherit; font-size: 11px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.diary-cell.has { background: var(--mist); color: var(--violet); font-weight: 700; cursor: pointer; }
+.diary-cell.has:not(.photo)::after { content: ''; position: absolute; bottom: 4px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--violet); }
+.diary-cell.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.diary-cell.photo span { position: absolute; left: 3px; top: 1px; color: #fff; font-size: 10px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.diary-cell span { position: relative; }
+.diary-cell.today { outline: 2px solid var(--violet); outline-offset: 1px; }
+.diary-cell:disabled { cursor: default; }
+.diary-end { text-align: center; color: var(--ink3); font-size: 17px; margin: 14px 0 6px; }
+
+.feed-list > li { scroll-margin-top: 70px; }
+.feed-day { display: flex; align-items: center; gap: 10px; padding: 14px 4px 8px; font-size: 15px; color: var(--violet); font-weight: 400; scroll-margin-top: 70px; }
+.feed-list > li + li .feed-day { padding-top: 18px; }
+.feed-day i { flex: 1; height: 0; border-top: 1.5px dashed var(--line); }
+
+.ink-t0 { color: var(--pink-ink); }
+.ink-t1 { color: var(--blue-ink); }
+.ink-t2 { color: var(--peach-ink, #B5651D); }
+.ink-t3 { color: var(--mint-ink, #1E7A52); }
+
+.feed-item.scrap { padding: 14px 14px 12px; border-radius: 20px; }
+.scrap-title { font-size: 21px; line-height: 1.2; margin-top: -2px; }
+.scrap-quote { margin: 2px 2px 0; font-size: 20px; line-height: 1.35; word-break: keep-all; }
+.polaroids { position: relative; height: 300px; margin: 2px 0 4px; }
+.polaroids.n1 { height: 290px; }
+.polaroid { position: absolute; padding: 7px 7px 28px; background: #fff; border: none; box-shadow: 0 6px 16px rgba(30, 22, 64, 0.16); cursor: zoom-in; }
+.polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--page); }
+.polaroid-cap { position: absolute; left: 9px; right: 9px; bottom: 4px; font-size: 15px; color: #2B57B5; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.polaroids.n1 .polaroid.p0 { left: 50%; top: 10px; width: 62%; transform: translateX(-50%) rotate(-3deg); }
+.polaroids.n2 .polaroid.p0 { left: 2%; top: 12px; width: 54%; transform: rotate(-5deg); }
+.polaroids.n2 .polaroid.p1 { right: 1%; top: 58px; width: 47%; transform: rotate(4deg); }
+.polaroids.flip.n2 .polaroid.p0 { left: auto; right: 2%; transform: rotate(5deg); }
+.polaroids.flip.n2 .polaroid.p1 { right: auto; left: 1%; transform: rotate(-4deg); }
+.polaroids .tape { position: absolute; width: 62px; height: 18px; pointer-events: none; z-index: 2; }
+.polaroids .tape.t0 { left: 22%; top: 2px; background: rgba(240, 122, 149, 0.55); transform: rotate(-12deg); }
+.polaroids .tape.t1 { right: 12%; top: 50px; background: rgba(185, 168, 255, 0.7); transform: rotate(10deg); }
+.polaroids.n1 .tape.t0 { left: 50%; margin-left: -31px; }
+.polaroids.flip .tape.t0 { left: auto; right: 22%; transform: rotate(12deg); }
+.polaroids.flip .tape.t1 { right: auto; left: 12%; transform: rotate(-10deg); }
+.polaroid-more { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); z-index: 3; height: 36px; padding: 0 14px; border-radius: 99px; border: none; background: #1E1640; color: #fff; font: inherit; font-size: 13px; font-weight: 600; }
+
+.feed-item.ticket { flex-direction: row; padding: 0; gap: 0; overflow: hidden; }
+.ticket-main { flex: 1; min-width: 0; padding: 12px 12px 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+.ticket-line { font-size: 17px; line-height: 1.25; }
+.ticket-stub { width: 74px; flex: none; border-left: 2px dashed var(--line); display: flex; align-items: center; justify-content: center; text-align: center; padding: 6px; background: var(--page); color: var(--ink3); font-size: 14px; line-height: 1.15; word-break: keep-all; }
+.ticket-stub.again { background: var(--pink-mist); color: var(--pink-ink); }
+
+.feed-item.ask-card { background: var(--butter, #FFF2BF); border-color: transparent; }
+.ask-bubble { align-self: flex-start; max-width: 100%; padding: 9px 12px; border-radius: 14px 14px 14px 4px; background: var(--card); display: flex; flex-direction: column; gap: 2px; }
+
+.feed-item.wish-cover { padding: 0 0 10px; overflow: hidden; gap: 6px; }
+.wish-cover-img { position: relative; display: block; height: 150px; background: center / cover no-repeat var(--page); }
+.wish-cover-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wish-cover-chip { position: absolute; left: 12px; top: 12px; padding: 4px 10px; border-radius: 99px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 600; }
+.feed-item.wish-cover .wish-cover-body, .feed-item.wish-cover .feed-foot { padding: 0 14px; }
+.feed-quote-card span.hand { font-size: 23px; font-weight: 700; line-height: 1.35; }
+.feed-text.quote.hand { font-size: 19px; line-height: 1.45; }
+:root[data-theme="dark"] .polaroid { background: #EDE9FF; }
+:root[data-theme="dark"] .wish-cover-chip { background: var(--card); }

@@ -112,3 +112,50 @@ export function ago(at: number, now = Date.now()): string {
 export function unseenCount(items: FeedItem[], lastSeen: number, me: string): number {
   return items.filter((i) => i.at > lastSeen && i.by !== me).length;
 }
+
+// ---------- 일기장 모양 (날짜 띠·이번 주 한 줄·달력) ----------
+const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
+const pad = (n: number) => String(n).padStart(2, '0');
+/** 현지 날짜 'YYYY-MM-DD' (달력 칸과 날짜 띠를 잇는 이름) */
+export const dayId = (at: number) => { const d = new Date(at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+/** 날짜 띠: 오늘 · 어제 · 11월 3일 월요일 · 2025년 3월 2일 일요일 */
+export function dayBand(at: number, now = Date.now()): string {
+  const h = dayHeading(at, now);
+  return h === '오늘' || h === '어제' ? h : `${h} ${WEEKDAY[new Date(at).getDay()]}요일`;
+}
+
+const itemTrip = (it: FeedItem): Trip | null => (it.kind === 'photos' || it.kind === 'note' || it.kind === 'trip' ? it.trip : it.kind === 'place' ? it.trip : null);
+/** 이번 주(7일) 한 줄: 가장 많이 남긴 여행 + 사진·글·장소·가고 싶은 곳 수. 아무것도 없으면 null */
+export function weekLine(items: FeedItem[], now = Date.now()): { title: string; sub: string } | null {
+  const week = items.filter((i) => now - i.at < 7 * 86400_000 && i.at <= now + 60_000);
+  if (!week.length) return null;
+  let photos = 0, notes = 0, places = 0, wishes = 0;
+  const per = new Map<string, { trip: Trip; n: number }>();
+  for (const it of week) {
+    if (it.kind === 'photos') photos += it.photos.length;
+    else if (it.kind === 'note') notes++;
+    else if (it.kind === 'place') places++;
+    else if (it.kind === 'wish') wishes++;
+    else if (it.kind === 'wishes') wishes += it.wishes.length;
+    const t = itemTrip(it);
+    if (t && it.kind !== 'trip') { const g = per.get(t.id) ?? { trip: t, n: 0 }; g.n += it.kind === 'photos' ? it.photos.length : 1; per.set(t.id, g); }
+  }
+  const top = [...per.values()].sort((a, b) => b.n - a.n)[0];
+  const sub = [photos && `사진 ${photos}장`, notes && `글 ${notes}`, places && `장소 ${places}`, wishes && `가고 싶은 곳 ${wishes}`].filter(Boolean).join(' · ');
+  const title = top ? `이번 주엔 ${top.trip.title} 이야기가 쌓였어요` : `이번 주에 ${week.length}가지를 남겼어요`;
+  return { title, sub };
+}
+
+/** 달력 한 달(month는 0부터): 앞 빈칸 수와 날마다 소식 수·대표 사진 */
+export function monthCells(items: FeedItem[], year: number, month: number): { lead: number; days: { day: number; id: string; n: number; photoId?: string }[] } {
+  const last = new Date(year, month + 1, 0).getDate();
+  const days = Array.from({ length: last }, (_, i) => ({ day: i + 1, id: `${year}-${pad(month + 1)}-${pad(i + 1)}`, n: 0 as number, photoId: undefined as string | undefined }));
+  for (const it of items) {
+    const d = new Date(it.at);
+    if (d.getFullYear() !== year || d.getMonth() !== month) continue;
+    const c = days[d.getDate() - 1];
+    c.n++;
+    if (!c.photoId && it.kind === 'photos') c.photoId = it.photos[0]?.id;
+  }
+  return { lead: new Date(year, month, 1).getDay(), days };
+}

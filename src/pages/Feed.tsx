@@ -1,11 +1,11 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TopBar } from '../components/ui';
 import PhotoImg from '../components/PhotoImg';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { usePhotos } from '../lib/photos';
 import { useAllNotes } from '../lib/tripExtras';
-import { ago, buildFeed, dayHeading, type FeedItem } from '../lib/feed';
+import { ago, buildFeed, dayBand, dayId, monthCells, weekLine, type FeedItem } from '../lib/feed';
 import { tileText } from '../components/TripRow';
 import { placeLabel, placeLong } from '../lib/geo';
 import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
@@ -18,8 +18,9 @@ import QuickUpload from '../components/QuickUpload';
 import { photoForPlace } from '../lib/media';
 import { heartKey, toggleHeart, useHearts, type Heart } from '../lib/hearts';
 import { asksForFeed, useRecentAsks } from '../lib/asks';
-import { memberNames } from '../lib/members';
+import { memberNames, spaceTitle } from '../lib/members';
 import { localDate } from '../lib/dates';
+import { withIGa } from '../lib/ko';
 
 /** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로. 둘의 소식만 (여행 소식은 홈 묶음·지역 창에) */
 export default function Feed() {
@@ -32,26 +33,52 @@ export default function Feed() {
   const hearts = useHearts();
   const asks = useRecentAsks();
   const ready = !!(trips && photos && recs && wishes && notes);
-  const items = useMemo(() => (ready ? buildFeed({ trips: trips!, photos: photos!, notes: notes!, recs: recs!, wishes: wishes!, asks: asksForFeed(asks, memberNames().length) }) : null), [ready, trips, photos, notes, recs, wishes, asks]);
+  const all = useMemo(() => (ready ? buildFeed({ trips: trips!, photos: photos!, notes: notes!, recs: recs!, wishes: wishes!, asks: asksForFeed(asks, memberNames().length) }, 400) : null), [ready, trips, photos, notes, recs, wishes, asks]);
+  const [shown, setShown] = useState(40);
+  const items = all ? all.slice(0, shown) : null;
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
+  const week = useMemo(() => (all ? weekLine(all) : null), [all]);
 
   // 들어와서 봤으면 '새 소식' 표시를 지운다
   useEffect(() => {
     if (items && hearts) markFeedSeen(Math.max(items[0]?.at ?? 0, Date.now()));
   }, [items, hearts]);
 
+  /** 달력에서 날을 누르면 그날 띠로 (아직 안 펼친 날이면 거기까지 펼친다) */
+  const goDay = (id: string) => {
+    if (!all) return;
+    const at = all.findIndex((it) => dayId(it.at) === id);
+    if (at < 0) return;
+    if (at >= shown) setShown(at + 10);
+    requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById('day-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })));
+  };
+
   return (
     <>
       <TopBar title="피드" right={<Link to="/memories" className="btn sm soft" data-testid="to-memories">추억 돌아보기</Link>} />
       <div className="page feed" style={{ paddingTop: 4 }} data-testid="feed">
+        <div className="diary-head">
+          <span className="tiny muted">{spaceTitle()}의</span>
+          <span className="jua diary-title">여행 일기장</span>
+        </div>
         {trips && trips.length > 0 && <QuickUpload trips={trips} />}
+        {week && (
+          <div className="card white diary-week" data-testid="feed-week">
+            <span className="diary-stamp jua" aria-hidden="true">{new Date().getMonth() + 1}월</span>
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+              <span className="hand" style={{ fontSize: 19, lineHeight: 1.2 }}>{week.title}</span>
+              {week.sub && <span className="tiny muted">{week.sub}</span>}
+            </span>
+          </div>
+        )}
+        {all && all.length > 0 && <MonthStrip items={all} onDay={goDay} />}
         {!items && <div className="skeleton-list" aria-busy="true"><i /><i /><i /></div>}
         {items && items.length === 0 && (
           <div className="card art-row" data-testid="feed-empty">
             <img src="/art/bora-camera.webp" alt="" aria-hidden="true" width={360} height={623} decoding="async" />
             <span>
               <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>아직 소식이 없어요</b>
-              <span className="small muted" style={{ display: 'block', marginBottom: 10 }}>기록을 남기거나 가고 싶은 곳을 담으면 여기에 둘의 소식이 쌓여요.</span>
+              <span className="small muted" style={{ display: 'block', marginBottom: 10 }}>기록을 남기거나 가고 싶은 곳을 담으면 여기에 한 쪽씩 쌓여요.</span>
               <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <Link to="/record" className="btn sm" data-testid="feed-empty-record">기록 남기기</Link>
                 <Link to="/wishes" className="btn sm soft" data-testid="feed-empty-wish">가고 싶은 곳 담기</Link>
@@ -62,19 +89,56 @@ export default function Feed() {
         {items && items.length > 0 && (
           <ol className="feed-list">
             {items.map((it, i) => {
-              const head = dayHeading(it.at);
-              const prev = i > 0 ? dayHeading(items[i - 1].at) : null;
+              const head = dayBand(it.at);
+              const prev = i > 0 ? dayBand(items[i - 1].at) : null;
               return (
                 <li key={keyOf(it)}>
-                  {head !== prev && <div className="feed-day" data-testid="feed-day">{head}</div>}
-                  <FeedRow item={it} me={me} heart={hearts?.get(heartKey(it))} onHeart={auth.status === 'ready' ? () => toggleHeart(heartKey(it), hearts?.get(heartKey(it)), auth.user).catch((e) => console.warn(e)) : undefined} uid={auth.status === 'ready' ? auth.user.uid : ''} />
+                  {head !== prev && <div className="feed-day" id={'day-' + dayId(it.at)} data-testid="feed-day"><span className="jua">{head}</span><i aria-hidden="true" /></div>}
+                  <FeedRow item={it} i={i} me={me} heart={hearts?.get(heartKey(it))} onHeart={auth.status === 'ready' ? () => toggleHeart(heartKey(it), hearts?.get(heartKey(it)), auth.user).catch((e) => console.warn(e)) : undefined} uid={auth.status === 'ready' ? auth.user.uid : ''} />
                 </li>
               );
             })}
           </ol>
         )}
+        {all && items && all.length > items.length && <button type="button" className="btn soft" onClick={() => setShown((n) => n + 40)} data-testid="feed-more">지난 이야기 더 보기</button>}
+        {all && items && items.length > 0 && all.length <= items.length && <p className="hand diary-end">여기까지가 {spaceTitle() === '우리' ? '나의' : '우리'} 이야기</p>}
       </div>
     </>
+  );
+}
+
+/** 이번 달 달력 띠: 소식이 있는 날은 그날 사진(없으면 점), 누르면 그날로 */
+function MonthStrip({ items, onDay }: { items: FeedItem[]; onDay: (id: string) => void }) {
+  const now = new Date();
+  const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() });
+  const oldest = items.length ? new Date(items[items.length - 1].at) : now;
+  const canPrev = ym.y * 12 + ym.m > oldest.getFullYear() * 12 + oldest.getMonth();
+  const canNext = ym.y * 12 + ym.m < now.getFullYear() * 12 + now.getMonth();
+  const step = (d: number) => setYm(({ y, m }) => { const t = y * 12 + m + d; return { y: Math.floor(t / 12), m: t % 12 }; });
+  const { lead, days } = monthCells(items, ym.y, ym.m);
+  const today = dayId(Date.now());
+  const active = days.filter((d) => d.n > 0).length;
+  return (
+    <div className="card white diary-month" data-testid="feed-month">
+      <div className="row-between" style={{ alignItems: 'center' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button type="button" className="icon-btn sm" onClick={() => step(-1)} disabled={!canPrev} aria-label="지난달">‹</button>
+          <b className="jua" style={{ fontSize: 17 }}>{ym.y !== now.getFullYear() ? `${ym.y}년 ` : ''}{ym.m + 1}월</b>
+          <button type="button" className="icon-btn sm" onClick={() => step(1)} disabled={!canNext} aria-label="다음 달">›</button>
+        </span>
+        <span className="tiny muted">{active ? `남긴 날 ${active}` : '이달엔 아직 없어요'}</span>
+      </div>
+      <div className="diary-grid">
+        {['일', '월', '화', '수', '목', '금', '토'].map((w) => <span key={w} className="diary-wd">{w}</span>)}
+        {Array.from({ length: lead }, (_, i) => <span key={'b' + i} />)}
+        {days.map((d) => (
+          <button key={d.id} type="button" className={'diary-cell' + (d.n ? ' has' : '') + (d.photoId ? ' photo' : '') + (d.id === today ? ' today' : '')} disabled={!d.n} onClick={() => onDay(d.id)} aria-label={`${ym.m + 1}월 ${d.day}일${d.n ? ` 소식 ${d.n}` : ''}`} data-testid={d.n ? 'feed-month-day' : undefined}>
+            {d.photoId && <PhotoImg id={d.photoId} />}
+            <span>{d.day}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -104,26 +168,20 @@ function HeartBtn({ heart, uid, onHeart }: { heart?: Heart; uid: string; onHeart
   );
 }
 
-function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string; heart?: Heart; uid: string; onHeart?: () => void }) {
+function FeedRow({ item, i, me, heart, uid, onHeart }: { item: FeedItem; i: number; me: string; heart?: Heart; uid: string; onHeart?: () => void }) {
   const when = <span className="tiny muted feed-when">{ago(item.at)}</span>;
   const foot = (link: string | null, label: string) => (
     <div className="feed-foot">{link ? <Link to={link} className="tiny feed-link">{label}</Link> : <span />}<HeartBtn heart={heart} uid={uid} onHeart={onHeart} /></div>
   );
   if (item.kind === 'photos') {
-    const shown = item.photos.slice(0, 4);
+    const quote = item.captions[0];
     return (
-      <article className="feed-item" data-testid="feed-item" data-kind="photos">
-        <header><Who name={item.by} me={me} /><span className="small">{item.trip.title}에 사진 {item.photos.length}장</span>{when}</header>
-        <div className={'feed-photos n' + Math.min(shown.length, 4)}>
-          {shown.map((p, i) => (
-            <button key={p.id} type="button" className="feed-photo" aria-label={`사진 ${i + 1} 크게 보기`} onClick={() => openSlideshow(item.photos, i)}>
-              <PhotoImg id={p.id} />
-              {i === 3 && item.photos.length > 4 && <span className="feed-more">+{item.photos.length - 4}</span>}
-            </button>
-          ))}
-        </div>
-        {item.captions[0] && <p className="feed-text">{item.captions[0]}</p>}
-        {foot(`/trips/${item.trip.id}`, '여행 보기')}
+      <article className="feed-item scrap" data-testid="feed-item" data-kind="photos">
+        <header><Who name={item.by} me={me} /><span className="small">사진 {item.photos.length}장</span>{when}</header>
+        <b className="jua scrap-title">{item.trip.title}</b>
+        <Polaroids photos={item.photos} flip={i % 2 === 1} />
+        {quote && <p className={'hand scrap-quote ' + inkOf(item.by)}>“{quote}” <span className="tiny">— {item.by === me ? '나' : item.by}</span></p>}
+        {foot(`/trips/${item.trip.id}`, '이 여행 펼치기')}
       </article>
     );
   }
@@ -137,42 +195,62 @@ function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string
         <header><Who name={item.by} me={me} /><span className="small">{item.trip.title}에 글</span>{when}</header>
         {short ? (
           <p className={'feed-quote-card g' + hue + (photo ? ' has-photo' : '')} style={photo ? { backgroundImage: `url(${photo.src.s})` } : undefined} data-testid="feed-quote-card">
-            <span>{item.note.text}</span>
+            <span className="hand">{item.note.text}</span>
           </p>
         ) : (
-          <p className="feed-text quote">{item.note.text}</p>
+          <p className={'feed-text quote hand ' + inkOf(item.by)}>{item.note.text}</p>
         )}
         {foot(`/trips/${item.trip.id}`, '여행 보기')}
       </article>
     );
   }
   if (item.kind === 'place') {
+    const lines = Object.entries(item.rec.reviews ?? {}).filter(([, t]) => t?.trim());
     return (
-      <article className="feed-item" data-testid="feed-item" data-kind="place">
-        <header><Who name={item.by} me={me} /><span className="small">{placeLabel(item.rec.region)}에 {KIND_LABEL[item.rec.kind]} 남김</span>{when}</header>
-        <p className="feed-text"><b>{item.rec.name}</b>{item.rec.verdict ? <span className="tag" style={{ marginLeft: 6 }}>{VERDICT_LABEL[item.rec.verdict]}</span> : null}{item.review ? <span className="muted"> · “{item.review}”</span> : null}</p>
-        {foot(`/places/${item.rec.id}`, '장소 보기')}
+      <article className="feed-item ticket" data-testid="feed-item" data-kind="place">
+        <div className="ticket-main">
+          <header><Who name={item.by} me={me} /><span className="small">{KIND_LABEL[item.rec.kind]} · {placeLabel(item.rec.region)}</span>{when}</header>
+          <b className="jua" style={{ fontSize: 20, lineHeight: 1.2 }}>{item.rec.name}</b>
+          {lines.map(([w, t]) => <span key={w} className={'hand ticket-line ' + inkOf(w)}>{w === me ? '나' : w} · {t}</span>)}
+          {foot(`/places/${item.rec.id}`, '장소 보기')}
+        </div>
+        <div className={'ticket-stub' + (item.rec.verdict === 'again' ? ' again' : '')} aria-hidden={!item.rec.verdict}>
+          <span className="jua">{item.rec.verdict ? VERDICT_LABEL[item.rec.verdict] : KIND_LABEL[item.rec.kind]}</span>
+        </div>
       </article>
     );
   }
   if (item.kind === 'ask') {
+    const open = item.opened || item.by === me;
     return (
-      <article className="feed-item" data-testid="feed-item" data-kind="ask">
-        <header><Who name={item.by} me={me} /><span className="small">오늘의 질문에 답함</span>{when}</header>
+      <article className="feed-item ask-card" data-testid="feed-item" data-kind="ask">
+        <header><span className="tiny" style={{ fontWeight: 600, color: 'var(--butter-ink)', flex: 1 }}>오늘의 한 질문</span>{when}</header>
+        <b className="jua" style={{ fontSize: 18, lineHeight: 1.3 }}>{item.question}</b>
         {/* 홈은 오늘 질문만 받는다: 지난 날 질문은 '나도 답하기'로 보내지 않는다 */}
-        <p className="feed-text"><span className="muted small" style={{ display: 'block' }}>{item.question}</span>{item.opened || item.by === me ? <b>{item.text}</b> : item.day === localDate() ? <span className="muted">내가 답하면 열려요 🔒</span> : <span className="muted">지난 질문이라 답은 닫혀 있어요 🔒</span>}</p>
-        {(item.opened || item.by === me) ? foot('/', '홈에서 보기') : foot(item.day === localDate() ? '/' : null, '나도 답하기')}
+        <div className="ask-bubble">
+          <span className={'tiny ' + inkOf(item.by)} style={{ fontWeight: 600 }}>{item.by === me ? '나' : item.by}</span>
+          {open ? <span className="hand" style={{ fontSize: 18, lineHeight: 1.25 }}>{item.text}</span> : item.day === localDate() ? <span className="small muted">내가 답하면 열려요 🔒</span> : <span className="small muted">지난 질문이라 답은 닫혀 있어요 🔒</span>}
+        </div>
+        {open ? foot('/', '홈에서 보기') : foot(item.day === localDate() ? '/' : null, '나도 답하기')}
       </article>
     );
   }
   if (item.kind === 'wish') {
+    const ph = photoForPlace(item.wish.place);
     return (
-      <article className="feed-item" data-testid="feed-item" data-kind="wish">
-        <header><Who name={item.by} me={me} /><span className="small">가고 싶은 곳에 담음</span>{when}</header>
-        <Link to={`/wishes/${item.wish.id}`} className="feed-place">
-          <PlaceThumb place={item.wish.place} />
-          <span className="feed-place-copy"><b>{wishTitle(item.wish)}</b>{item.wish.spotName ? <span className="muted small">{placeLong(item.wish.place)}</span> : null}</span>
-        </Link>
+      <article className={'feed-item' + (ph ? ' wish-cover' : '')} data-testid="feed-item" data-kind="wish">
+        {ph ? (
+          <Link to={`/wishes/${item.wish.id}`} className="wish-cover-img" style={{ backgroundImage: `url(${ph.lqip})` }}>
+            <img src={ph.src.l} alt="" loading="lazy" decoding="async" />
+            <span className="wish-cover-chip">{item.by === me ? '내가' : withIGa(item.by || '누군가')} 담았어요</span>
+          </Link>
+        ) : <header><Who name={item.by} me={me} /><span className="small">가고 싶은 곳에 담음</span>{when}</header>}
+        <div className="wish-cover-body">
+          <Link to={`/wishes/${item.wish.id}`} className="feed-place-copy" style={{ color: 'inherit' }}>
+            <b className="jua" style={{ fontSize: 19 }}>{wishTitle(item.wish)}</b>
+            <span className="muted small">{item.wish.spotName ? placeLong(item.wish.place) : '가고 싶은 곳'}{ph ? ` · ${ago(item.at)}` : ''}</span>
+          </Link>
+        </div>
         {foot(`/wishes/${item.wish.id}`, '보기')}
       </article>
     );
@@ -210,5 +288,30 @@ function PlaceThumb({ place, planned }: { place: Parameters<typeof photoForPlace
     <span className={'trip-tile' + (ph ? ' photo' : planned ? ' planned' : place.t === 'country' ? ' abroad' : '')} style={ph ? { backgroundImage: `url(${ph.lqip})` } : undefined} aria-hidden="true">
       {ph ? <img src={ph.src.s} alt="" loading="lazy" decoding="async" /> : tileText({ places: [place] } as never)}
     </span>
+  );
+}
+
+/** 사람마다 손글씨 색 (보라 분홍·영상 파랑처럼 사람 색을 따른다) */
+function inkOf(name: string) {
+  const t = toneOf(name);
+  return 'ink-t' + (t >= 0 ? t % 4 : 0);
+}
+
+/** 폴라로이드 두 장을 겹쳐 붙이고 테이프, 나머지는 '+n장' */
+function Polaroids({ photos, flip }: { photos: { id: string; caption?: string; place?: Parameters<typeof placeLabel>[0] | null }[]; flip: boolean }) {
+  const two = photos.slice(0, 2);
+  const cap = (p: (typeof photos)[number]) => (p.place ? placeLabel(p.place) : '');
+  return (
+    <div className={'polaroids n' + two.length + (flip ? ' flip' : '')}>
+      {two.map((p, k) => (
+        <button key={p.id} type="button" className={'polaroid p' + k} aria-label={`사진 ${k + 1} 크게 보기`} onClick={() => openSlideshow(photos as never, k)}>
+          <PhotoImg id={p.id} />
+          {cap(p) && <span className="hand polaroid-cap">{cap(p)}</span>}
+        </button>
+      ))}
+      <i className="tape t0" aria-hidden="true" />
+      {two.length > 1 && <i className="tape t1" aria-hidden="true" />}
+      {photos.length > 2 && <button type="button" className="polaroid-more" onClick={() => openSlideshow(photos as never, 2)}>+{photos.length - 2}장 더 보기</button>}
+    </div>
   );
 }

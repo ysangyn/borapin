@@ -68,3 +68,37 @@ test('잇따라 담은 가고 싶은 곳은 한 묶음, 날짜 머리글', async
   assert.equal(dayHeading(t0 - 86400000, t0), '어제');
   assert.match(dayHeading(t0 - 10 * 86400000, t0), /^10월 6일$/);
 });
+
+test('피드 날짜 띠: 요일까지, 이번 주 한 줄, 달력 칸', async () => {
+  const { dayBand, dayId, weekLine, monthCells } = await import('../../src/lib/feed');
+  const t0 = new Date(2026, 10, 6, 12).getTime(); // 11월 6일 금요일 (현지 시각)
+  assert.equal(dayBand(t0, t0), '오늘');
+  assert.equal(dayBand(t0 - day, t0), '어제');
+  assert.equal(dayBand(new Date(2026, 10, 3, 9).getTime(), t0), '11월 3일 화요일');
+  assert.equal(dayBand(new Date(2025, 2, 2, 9).getTime(), t0), '2025년 3월 2일 일요일');
+  assert.equal(dayId(new Date(2026, 10, 3, 23, 59).getTime()), '2026-11-03');
+
+  const t = trip('a', t0 - 30 * day);
+  t.title = '안동 1박 2일';
+  const items = buildFeed({
+    trips: [t],
+    photos: [photo('1', 'a', t0 - 2 * day, '보라'), photo('2', 'a', t0 - 2 * day + 1000, '보라'), photo('3', 'a', t0 - 1 * day, '영상'), photo('9', 'a', t0 - 20 * day, '영상')],
+    notes: [{ id: 'n', tripId: 'a', text: '좋았다', by: { uid: 'u', name: '영상' }, createdAt: T(t0 - 3 * day), v: 1 } as Note],
+    recs: [{ id: 'r', name: '찜닭', kind: 'food', region: { t: 'kr', code: '47170' }, tripId: 'a', reviews: { 보라: '맵다', 영상: '최고' }, v: 1, createdBy: by('보라'), createdAt: T(t0 - 1 * day) } as unknown as PlaceRec],
+    wishes: [],
+  });
+  const w = weekLine(items, t0)!;
+  assert.equal(w.title, '이번 주엔 안동 1박 2일 이야기가 쌓였어요');
+  assert.equal(w.sub, '사진 3장 · 글 1 · 장소 1');
+  // 이번 주에 아무것도 없으면 없다
+  assert.equal(weekLine(items, t0 + 30 * day), null);
+
+  const cells = monthCells(items, 2026, 10); // 11월 (0부터)
+  assert.equal(cells.lead, 0); // 2026-11-01은 일요일
+  assert.equal(cells.days.length, 30);
+  const d4 = cells.days[3]; // 11월 4일: 사진 묶음
+  assert.equal(d4.id, '2026-11-04');
+  assert.equal(d4.photoId, '1');
+  assert.ok(d4.n >= 1);
+  assert.equal(cells.days[0].n, 0);
+});

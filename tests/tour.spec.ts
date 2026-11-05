@@ -226,6 +226,12 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm04-trip-photos');
   await page.getByRole('tab', { name: /글/ }).click();
   await snap(page, 'm05-trip-notes');
+  // 피드: 여행 일기장 (이번 주 한 줄 · 달력 띠 · 폴라로이드 · 기차표 장소)
+  await page.goto('/feed');
+  await expect(page.getByTestId('feed-month')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('feed-week')).toBeVisible();
+  await expect(page.getByTestId('feed-month-day').first()).toBeVisible();
+  await snap(page, 'm05b-feed');
   await page.goto('/trips/t11');
   await snap(page, 'm06-planned-info');
   // 준비 탭: 가는 길 정하기 (고양 → 통영, 이달 시각표 · 떠나는 날이 토요일이라 토요일 시각표로)
