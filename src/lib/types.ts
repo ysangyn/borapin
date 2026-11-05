@@ -192,6 +192,32 @@ export interface PackItem {
 }
 
 /** 공개 링크용 여행 사본 (로그인 없이 읽힘 — 메모·글·동행 이름은 넣지 않는다) */
+/** 내 지도 한 장: 지역×주제 묶음에 붙는 제목·소개·순위(1등부터 장소 id)·공개 토큰. 문서 이름은 mapKey (lib/placeMaps.ts) */
+export interface PlaceMap {
+  id: string;
+  region: Place;
+  theme: PlaceKind;
+  title?: string;
+  intro?: string;
+  order?: string[];
+  share?: { token: string } | null;
+  updatedAt?: Timestamp | null;
+  v: 1;
+}
+
+/** 링크 공개된 내 지도 사본 (/m/토큰): 앱 없이 보는 한 쪽. 한 줄 평은 이름과 함께, 메모는 넣지 않는다 */
+export interface MapShare {
+  title: string;
+  intro: string;
+  theme: PlaceKind;
+  /** '보라 & 영상' */
+  by: string;
+  regionLabel: string;
+  places: { id: string; name: string; kind: PlaceKind; lat?: number | null; lng?: number | null; photoUrl?: string; address?: string; naverUrl?: string; verdict: Verdict | null; lines: { who: string; text: string }[] }[];
+  updatedAt?: Timestamp | null;
+  v: 1;
+}
+
 export interface SharedTrip {
   title: string;
   when: string;

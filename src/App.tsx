@@ -29,6 +29,8 @@ const Space = lazy(() => import('./pages/Space'));
 const Wishes = lazy(() => import('./pages/Wishes'));
 const WishEdit = lazy(() => import('./pages/WishEdit'));
 const Places = lazy(() => import('./pages/Places'));
+const MyMaps = lazy(() => import('./pages/MyMaps'));
+const SharedMapPage = lazy(() => import('./pages/SharedMapPage'));
 const PlaceEdit = lazy(() => import('./pages/PlaceEdit'));
 const Ask = lazy(() => import('./pages/Ask'));
 const Admin = lazy(() => import('./pages/Admin'));
@@ -54,13 +56,14 @@ export default function App() {
     return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off); };
   }, []);
   // 링크 공개된 여행과 약관·개인정보 처리방침은 로그인 없이 본다
-  if (loc.pathname.startsWith('/s/') || ['/privacy', '/terms', '/credits'].includes(loc.pathname)) {
+  if (loc.pathname.startsWith('/s/') || loc.pathname.startsWith('/m/') || ['/privacy', '/terms', '/credits'].includes(loc.pathname)) {
     return (
       <div className="app">
         <ErrorBoundary resetKey={loc.pathname}>
           <Suspense fallback={<Spinner />}>
             <Routes>
               <Route path="/s/:token" element={<SharedTripPage />} />
+              <Route path="/m/:token" element={<SharedMapPage />} />
               <Route path="/privacy" element={<Legal kind="privacy" />} />
               <Route path="/terms" element={<Legal kind="terms" />} />
               <Route path="/credits" element={<Legal kind="credits" />} />
@@ -121,6 +124,7 @@ export default function App() {
               <Route path="/ask" element={<Ask />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/places" element={<Places />} />
+              <Route path="/maps" element={<MyMaps />} />
               <Route path="/places/:id" element={<PlaceEdit />} />
               <Route path="/join/:code" element={<AlreadyIn />} />
               <Route path="*" element={<Navigate to="/" replace />} />

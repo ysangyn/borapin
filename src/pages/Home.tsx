@@ -24,6 +24,7 @@ import { useHome } from '../lib/home';
 import { memoryLine, pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
+import NearbyCard from '../components/NearbyCard';
 import { DraftNudge } from '../components/NextTripHub';
 import { formatWhen } from '../lib/dates';
 import { COUNTRY_BY_ID, placeLabel } from '../lib/geo';
@@ -135,6 +136,7 @@ export default function Home() {
 
 
         {trips && <CapsuleCard trips={trips} />}
+        <NearbyCard />
         {trips && wishes && <SafetyLine trips={trips} wishes={wishes} />}
 
         {/* 예정 여행은 아래 '다음 여행 준비' 묶음이 맡는다 (같은 여행을 두 번 보여 주지 않게) */}

@@ -57,6 +57,7 @@ beforeEach(async () => {
     await setDoc(T(db), trip());
     await setDoc(doc(db, 'spaces/main/notes/n-owner'), { tripId: 't1', text: '영상이 쓴 글', by: { uid: 'owner', name: '영상' }, v: 1 });
     await setDoc(doc(db, 'shares/tok1'), { title: '공개 여행', when: '2024', places: [], photos: [], v: 1 });
+    await setDoc(doc(db, 'mapShares/map1'), { title: '성동구 카페 지도', intro: '', theme: 'cafe', by: '보라 & 영상', regionLabel: '서울 성동구', places: [], v: 1 });
     await setDoc(doc(db, 'spaces/main/photoData/p1_l'), { photoId: 'p1', tripId: 't1', kind: 'l', data: Bytes.fromUint8Array(new Uint8Array([1, 2, 3])), size: 3, public: false, v: 1 });
     await setDoc(doc(db, 'spaces/main/photoData/p2_l'), { photoId: 'p2', tripId: 't1', kind: 'l', data: Bytes.fromUint8Array(new Uint8Array([4, 5, 6])), size: 3, public: true, v: 1 });
   });
@@ -79,6 +80,10 @@ describe('로그인 안 한 사람', () => {
     await assertSucceeds(getDoc(doc(as.anon(), 'shares/tok1')));
     await assertFails(getDocs(collection(as.anon(), 'shares')));
     await assertFails(setDoc(doc(as.anon(), 'shares/tok2'), { title: 'x', when: '', places: [], photos: [], v: 1 }));
+    // 내 지도 공개 사본도 같다
+    await assertSucceeds(getDoc(doc(as.anon(), 'mapShares/map1')));
+    await assertFails(getDocs(collection(as.anon(), 'mapShares')));
+    await assertFails(setDoc(doc(as.anon(), 'mapShares/map2'), { title: 'x', theme: 'cafe', by: 'x', places: [], v: 1 }));
   });
   test('공개된 사진 파일만 읽고, 비공개 사진은 못 본다', async () => {
     await assertSucceeds(getDoc(doc(as.anon(), 'spaces/main/photoData/p2_l')));
@@ -121,6 +126,19 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertSucceeds(updateDoc(T(db, 't2'), { title: '경주 벚꽃 여행' }));
     await assertSucceeds(deleteDoc(T(db, 't2')));
   });
+  test('내 지도: 지역×주제 문서에 제목·소개·순위·공개 토큰, 공개 사본은 멤버만 쓰고 메모는 못 넣는다', async () => {
+    const db = as.bora();
+    const M = doc(db, 'spaces/main/placeMaps/kr:11|cafe');
+    await assertSucceeds(setDoc(M, { region: { t: 'kr', code: '11' }, theme: 'cafe', title: '성수 카페 지도', intro: '조용한 곳만', order: ['p1', 'p2'], share: null, v: 1 }));
+    await assertSucceeds(updateDoc(M, { order: ['p2', 'p1'], share: { token: 'map9' } }));
+    await assertFails(setDoc(doc(db, 'spaces/main/placeMaps/bad'), { theme: 'cafe', v: 1 })); // 지역 없음
+    await assertFails(setDoc(doc(db, 'spaces/main/placeMaps/bad2'), { region: { t: 'kr', code: '11' }, theme: 'cafe', title: 'x'.repeat(61), v: 1 }));
+    await assertFails(getDoc(doc(as.stranger(), 'spaces/main/placeMaps/kr:11|cafe')));
+    await assertSucceeds(setDoc(doc(db, 'mapShares/map9'), { title: '성수 카페 지도', intro: '', theme: 'cafe', by: '보라 & 영상', regionLabel: '서울 성동구', places: [{ id: 'p1', name: '센터커피', kind: 'cafe', verdict: 'again', lines: [{ who: '보라', text: '창가' }] }], v: 1 }));
+    await assertFails(setDoc(doc(db, 'mapShares/map8'), { title: '메모 딸린 것', theme: 'cafe', by: 'x', places: [], memo: '비밀', v: 1 }));
+    await assertSucceeds(deleteDoc(doc(db, 'mapShares/map9')));
+  });
+
   test('장소: 사진 주소는 https만, 좌표는 범위 안만', async () => {
     const db = as.bora();
     const P = (id: string) => doc(db, `spaces/main/places/${id}`);

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useTripMemories } from '../lib/gardenCounts';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -35,6 +36,7 @@ export default function MapPage() {
         <div className="seg dark floating" role="tablist" style={{ alignSelf: 'flex-start', borderRadius: 14 }}>
           <button role="tab" aria-selected={mode === 'kr'} className={mode === 'kr' ? 'on' : ''} onClick={() => { setMode('kr'); setSel(null); }}>국내</button>
           <button role="tab" aria-selected={mode === 'world'} className={mode === 'world' ? 'on' : ''} onClick={() => { setMode('world'); setSel(null); }}>세계</button>
+          <Link role="tab" aria-selected={false} to="/maps" data-testid="map-mymaps">내 지도</Link>
         </div>
         {stats && (
           <div className="chips" data-testid="map-stats">

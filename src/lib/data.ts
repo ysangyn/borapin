@@ -27,6 +27,7 @@ import { useStore } from './store';
 import { queued } from './writes';
 import { DELETE, editsOf, isTimestampLike, restoreFields, type Edit } from './tripActions';
 import { syncShareAfterWrite } from './share';
+import { syncMapShareAfterWrite } from './placeMapData';
 import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation } from './types';
 import { whenSortKey } from './dates';
 
@@ -168,6 +169,7 @@ export async function createPlace(input: PlaceRecInput, user: User): Promise<str
   const ref = doc(placesCol());
   await queued(setDoc(ref, { ...clean(input), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
   syncShareAfterWrite(input.tripId);
+  syncMapShareAfterWrite(input);
   return ref.id;
 }
 /** 고친 칸만 저장. opened는 편집 화면을 '연 때'의 장소. 한 줄 평은 이름별(reviews.이름)로만 보내고 남의 칸은 지우지 않는다(me = 내 이름) */
@@ -175,6 +177,7 @@ export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecI
   await patchEdits(doc(placesCol(), id), editsOf(opened, input, { perPerson: ['reviews'], me }));
   // 여행을 옮겼으면 두 여행의 사본 모두
   syncShareAfterWrite(opened.tripId, input.tripId);
+  syncMapShareAfterWrite(opened, input);
 }
 /** 링크에서 가져온 사진·자리만 조용히 채우기 (이미 있는 값은 건드리지 않는다) */
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
@@ -184,9 +187,10 @@ export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?:
 export async function deletePlace(id: string) {
   const ref = doc(placesCol(), id);
   // 지우기 전에 어느 여행 것이었는지(캐시에서, 읽기 0) 봐 두었다가 그 여행의 사본을 맞춘다
-  const tripId = await getDocFromCache(ref).then((s) => (s.data()?.tripId as string | null | undefined) ?? null, () => null);
+  const was = await getDocFromCache(ref).then((s) => (s.data() as PlaceRec | undefined) ?? null, () => null);
   await queued(deleteDoc(ref));
-  syncShareAfterWrite(tripId);
+  syncShareAfterWrite(was?.tripId);
+  syncMapShareAfterWrite(was);
 }
 /** 지운 장소 되돌리기 (createdAt을 지켜 피드·정렬 자리도 돌아온다) */
 export async function restorePlace(p: PlaceRec) {

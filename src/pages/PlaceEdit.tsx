@@ -1,4 +1,5 @@
 import { withJosa } from '../lib/ko';
+import RankAsk from '../components/RankAsk';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { hideReview, useBlind } from '../lib/blind';
@@ -33,8 +34,8 @@ export default function PlaceEdit() {
   const tripParam = sp.get('trip');
   const tripFromParam = trips?.find((t) => t.id === tripParam);
 
-  const [name, setName] = useState('');
-  const [kind, setKind] = useState<PlaceKind>('food');
+  const [name, setName] = useState(() => (sp.get('from') ?? '').slice(0, 80)); // 받은 지도에서 '내 지도에 담기'로 온 이름
+  const [kind, setKind] = useState<PlaceKind>(() => { const k = sp.get('kind'); return ['food', 'cafe', 'sight', 'stay', 'shop', 'etc'].includes(k ?? '') ? (k as PlaceKind) : 'food'; });
   const [region, setRegion] = useState<Place[]>(() => parsePlaceParam(sp.get('region')));
   const [tripId, setTripId] = useState<string>(tripParam ?? '');
   const [reviews, setReviews] = useState<Record<string, string>>({});
@@ -49,6 +50,7 @@ export default function PlaceEdit() {
   // (실시간 existing과 견주면 상대가 그사이 고친 칸이 내 옛 값으로 덮이고, 상대 한 줄 평이 지워진다)
   const [opened, setOpened] = useState<PlaceRec | null>(null);
   const [saving, setSaving] = useState(false);
+  const [rank, setRank] = useState<{ id: string; name: string; kind: PlaceKind; region: Place } | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' ? 'view' : 'form');
   const [kindTouched, setKindTouched] = useState(false);
@@ -163,11 +165,14 @@ export default function PlaceEdit() {
       lng: coords?.lng,
     };
     try {
+      let newId: string | null = null;
       if (editing && id && opened) await updatePlace(id, opened, input, me);
-      else await createPlace(input, auth.user);
+      else newId = await createPlace(input, auth.user);
       if (news) celebrate();
       toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
       if (editing) { setSaving(false); setMode('view'); return; }
+      // 새로 담은 곳: 같은 지역·주제에 이미 담은 곳이 있으면 한 번 견줘 내 지도 순위에 끼운다 (없으면 바로 돌아감)
+      if (newId && (places ?? []).some((r) => r.kind === input.kind && samePlace(r.region, input.region))) { setRank({ id: newId, name: input.name, kind: input.kind, region: input.region }); setSaving(false); return; }
       goBack(tripParam ? `/trips/${tripParam}` : '/places');
     } catch (e) {
       console.warn(e);
@@ -214,6 +219,7 @@ export default function PlaceEdit() {
 
   return (
     <>
+      {rank && <RankAsk rec={rank} all={places ?? []} onDone={() => { const k = `${rank.region.t === 'kr' ? 'kr:' + rank.region.code : 'country:' + rank.region.id}|${rank.kind}`; setRank(null); goBack(tripParam ? `/trips/${tripParam}` : `/maps?m=${encodeURIComponent(k)}`); }} />}
       <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '장소 남기기'} right={editing ? <button className="btn sm ghost" onClick={() => { if (dirty && !window.confirm('고친 내용이 사라져요. 그만 고칠까요?')) return; setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         <div className="field">

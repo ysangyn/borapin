@@ -114,8 +114,10 @@ const WISHES = [
   { id: 'w6', place: { t: 'kr', code: '51150' }, tripId: 't1', wantedBy: ['보라'], priority: null, spots: ['경포대', '오죽헌', '보헤미안 박이추 커피'], todos: [], foods: [], note: '' },
 ];
 const RECS = [
-  { id: 'r1', name: '초당할머니순두부', kind: 'food', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 영상: '아침으로 최고', 보라: '짬뽕순두부가 더 맛있었어' }, verdict: 'again', address: '강원 강릉시 초당순두부길 77' },
-  { id: 'r2', name: '보헤미안 박이추 커피', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '바다 뷰' }, verdict: 'again' },
+  { id: 'r1', name: '초당할머니순두부', kind: 'food', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 영상: '아침으로 최고', 보라: '짬뽕순두부가 더 맛있었어' }, verdict: 'again', address: '강원 강릉시 초당순두부길 77', lat: 37.7916, lng: 128.9129 },
+  { id: 'r2', name: '보헤미안 박이추 커피', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '바다 뷰' }, verdict: 'again', lat: 37.8003, lng: 128.9059 },
+  { id: 'r7', name: '테라로사 커피공장', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 영상: '공장 구경하다 한 시간' }, verdict: 'again', lat: 37.7008, lng: 128.8629 },
+  { id: 'r8', name: '카페 툇마루', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '흑임자 라테' }, verdict: 'once', lat: 37.7676, lng: 128.8763 },
   { id: 'r3', name: '해녀의 집', kind: 'food', region: { t: 'kr', code: '50' }, tripId: 't2', reviews: { 영상: '전복죽' }, verdict: 'once' },
   { id: 'r4', name: '감천문화마을', kind: 'sight', region: { t: 'kr', code: '26' }, tripId: 't5', reviews: {}, verdict: 'once' },
   { id: 'r5', name: '이치란 시부야', kind: 'food', region: { t: 'country', id: 'JPN', city: '도쿄' }, tripId: 't8', reviews: { 영상: '줄이 길다' }, verdict: 'meh' },
@@ -292,6 +294,38 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await snap(page, 'm14-wish-edit');
   await page.goto('/places');
   await snap(page, 'm15-places');
+  // 내 지도: 강릉 카페 3곳 → 거리 지도 + 순위, 새 곳을 담으면 견주기, 보내기 → 앱 없이 보는 페이지
+  await page.goto('/maps?m=kr:51150|cafe');
+  await expect(page.getByTestId('mymaps')).toBeVisible();
+  await expect(page.getByTestId('street-map')).toBeVisible();
+  await expect(page.getByTestId('mymap-list').getByTestId('place-rec')).toHaveCount(3);
+  await page.waitForTimeout(2500); // 타일
+  await snap(page, 'm15b-mymaps');
+  await page.goto('/places/new?region=kr:51150&kind=cafe');
+  await page.getByLabel('장소 이름').fill('안목 커피거리 2호점');
+  await page.getByTestId('place-save').click();
+  await expect(page.getByTestId('rank-ask')).toBeVisible();
+  await snap(page, 'm15c-rank-ask', false);
+  await page.getByTestId('rank-better').click();
+  // 3곳이면 많아야 2번 묻는다
+  if (await page.getByTestId('rank-ask').isVisible().catch(() => false)) await page.getByTestId('rank-better').click();
+  await expect(page).toHaveURL(/\/maps\?m=/);
+  await expect(page.getByTestId('mymap-list').getByTestId('place-rec').first()).toContainText('안목 커피거리 2호점');
+  // 보내기: 공개 사본이 생기고 토큰으로 열린다
+  await page.getByTestId('mymap-share').click();
+  await expect(page.getByRole('status')).toContainText(/복사했어요|열었어요/);
+  const mapDoc = await sp.collection('placeMaps').doc('kr:51150|cafe').get();
+  const token = (mapDoc.data() as { share?: { token: string } }).share?.token;
+  expect(token).toBeTruthy();
+  const anon = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
+  const guest = await anon.newPage();
+  await guest.goto(`/m/${token}`);
+  await expect(guest.getByTestId('shared-map')).toBeVisible();
+  await expect(guest.getByTestId('shared-map-item')).toHaveCount(4);
+  await expect(guest.getByTestId('shared-map-cta')).toBeVisible();
+  await guest.waitForTimeout(2500);
+  await guest.screenshot({ path: path.join(OUT, 'm15d-shared-map.jpg'), fullPage: true, type: 'jpeg', quality: 82 });
+  await anon.close();
   await page.goto('/places/r1');
   await snap(page, 'm16-place-edit');
   await page.goto('/memories');
