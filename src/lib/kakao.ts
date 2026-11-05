@@ -7,7 +7,7 @@
 const JS_KEY = '3fa4657079c863251f5d20d044c88f65';
 const SDK = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
 /** SDK 파일 무결성 (sha384). CI(scripts/kakao-sri.ts)가 받아서 계산·대조한다. 비어 있으면 검사 없이 받는다 */
-export const SDK_SRI = '';
+export const SDK_SRI = 'sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4yyC7wy6K1Hs90nka';
 
 interface KakaoSdk {
   isInitialized(): boolean;

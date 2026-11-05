@@ -48,8 +48,8 @@
 - 11-04 해외 함께 찾기(A3) 배포: 뒷단 /find(위키보이지 영어판 목록 틀 풀기 worker/src/findParse.ts, 한 줄은 Workers AI 번역만·가격 숫자 지움, 하루 캐시), 도시 카드 아래 '같이 찾아볼까요?'(볼 것·할 것·먹을 것·살 것 → 지도·담기: 예정 여행이면 일정, 아니면 가고 싶은 곳), 계획하기 담기 걸음에 해외면 네 칸. 출처 /credits
 - 11-04 교통: 역·터미널 자리(scripts/stops-geo.ts, bus.yml에서 오픈스트리트맵) → 갈아타기 걸어서·택시·시내 이동, 일요일 시각표 · 꽃 지도 사진·글도 마음으로 · 아이폰 시험 고침
 - 11-06 피드 새 디자인: 여행 일기장(시안 A 스크랩북 + C 달력 띠, claude.ai/artifact/EMnuL4MatUHDNtWN9dRrFe) — 이번 주 한 줄(weekLine), 달력 한 주(펼치면 한 달, monthCells), 요일 날짜 띠(dayBand), 폴라로이드·기차표 장소·질문 카드·가고 싶은 곳 사진 표지
-- 11-06 보안: CSP 실제 적용(img-src https:, 지도 타일 connect-src), 카카오 SDK 무결성은 CI(scripts/kakao-sri.ts)가 계산 → 첫 값을 src/lib/kakao.ts SDK_SRI에 고정할 것(ci-report check/kakao-sri.txt)
-- 다음 할 일: SDK_SRI 고정 → 가이드북·후기북(한 권) — 첫 쪽 '가는 길'은 Trip.way를 그대로 (빈칸: 돈 기록, 날씨 예보 Open-Meteo, 해외 시내 교통)
+- 11-06 보안: CSP 실제 적용(img-src https:, 지도 타일 connect-src), 카카오 SDK 무결성 고정(SDK_SRI, CI scripts/kakao-sri.ts가 매번 대조 · 다르면 배포 멈춤)
+- 다음 할 일: 가이드북·후기북(한 권) — 첫 쪽 '가는 길'은 Trip.way를 그대로 (빈칸: 돈 기록, 날씨 예보 Open-Meteo, 해외 시내 교통)
 - 사용자 기준: 이 기능만으로 따로 앱이 될 만큼 정교하고 쓰기 쉽게
 
 ## 남은 일 (2026-10-26 정리 — 설계서 docs/SPEC-2026-11.md)
