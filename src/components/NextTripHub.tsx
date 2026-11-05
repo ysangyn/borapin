@@ -297,14 +297,17 @@ function WayThere({ place, months, wishId }: { place: Place; months?: number[]; 
 const WAY_LABEL: Record<string, string> = { fest: '축제', home: '우리 집에서', rail: '기차·버스', access: '교통', stop: '들러 가기', city: '돈·말·콘센트', phrases: '한마디', flights: '항공권', news: '소식', visa: '입국' };
 
 /** 고르는 중인 여행 계획: 상대가 후보를 골라 두었거나, 내가 하트를 기다리는 중 */
-function DraftNudge() {
+/** top: 홈 맨 위(여행 카드 바로 아래)에는 '상대가 골라 둔 후보 · 내 차례'일 때만, 묶음 안에서는 그 밖의 경우만 (두 번 보이지 않게) */
+export function DraftNudge({ top = false }: { top?: boolean }) {
   const drafts = useOpenDrafts();
   const auth = useAuthHub();
   const uid = auth.status === 'ready' ? auth.user.uid : '';
   const d = drafts?.[0];
   if (!d) return null;
   const mineDone = (d.hearts[uid] ?? []).length > 0;
-  const text = d.by.uid !== uid && !mineDone ? `${josa(d.by.name, '이/가')} 여행 후보 ${d.cands.length}곳을 골라 뒀어요` : mineDone ? '여행 후보 · 상대 하트를 기다리는 중' : '고르던 여행 후보가 있어요';
+  const myTurn = d.by.uid !== uid && !mineDone;
+  if (top !== myTurn) return null;
+  const text = myTurn ? `${josa(d.by.name, '이/가')} 여행 후보 ${d.cands.length}곳을 골라 뒀어요 · 같이 골라요` : mineDone ? '여행 후보 · 상대 하트를 기다리는 중' : '고르던 여행 후보가 있어요';
   return (
     <Link to={`/plan/${d.id}`} className="card coral-soft draft-nudge" data-testid="draft-nudge">
       <Icon name="heart" size={18} stroke={2.2} />

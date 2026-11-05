@@ -505,7 +505,22 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
     const res = neg.map((n) => THEMES.find((t) => t.id === n)!.re);
     list = list.filter((c) => !(c.place.t === 'kr' && res.some((re) => re.test([c.theme, ...(c.spots ?? [])].join(' ')))));
   }
-  if (month) list = list.filter((c) => seasonFor(d.seasons, c.place)?.m.includes(month));
+  // 그 달이 '가기 좋은 때'인 곳 → 모자라면 앞뒤 달 → 겨울(12~2월)이면 겨울에 어울리는 곳(온천·눈·해돋이…)으로 넓힌다
+  // (12월처럼 좋은 때로 꼽힌 곳이 드문 달에 '조건에 맞는 곳을 찾지 못했어요'로 끝나지 않게, 써 보기 11-05)
+  let relaxed: string | null = null;
+  if (month) {
+    const all = list;
+    const goodIn = (ms: number[]) => all.filter((c) => { const m = seasonFor(d.seasons, c.place)?.m ?? []; return ms.some((x) => m.includes(x)); });
+    list = goodIn([month]);
+    if (list.length < 3) {
+      const near = goodIn([((month + 10) % 12) + 1, (month % 12) + 1]).filter((c) => !list.includes(c));
+      if (near.length) { list = [...list, ...near]; relaxed = `${month}월이 딱 좋은 때로 꼽힌 곳이 적어서 앞뒤 달이 좋은 곳까지 골랐어요.`; }
+    }
+    if (list.length < 3 && (month === 12 || month <= 2)) {
+      const winter = all.filter((c) => !list.includes(c) && /온천|눈|스키|해돋이|일출|얼음|빙어|겨울|설경|눈꽃/.test([c.theme ?? '', ...(c.spots ?? [])].join(' ')));
+      if (winter.length) { list = [...list, ...winter]; relaxed = '겨울은 가기 좋은 때로 꼽힌 곳이 드물어서 온천·눈·해돋이처럼 겨울에 어울리는 곳으로 골랐어요.'; }
+    }
+  }
   const picks = dailyShuffle(list, q).slice(0, 3);
   const themeLabel = pos.map((p) => THEMES.find((t) => t.id === p)!.label).join('·');
   const sightWord = sight ? (q.match(sight.re)?.[0] ?? '') : '';
@@ -520,7 +535,7 @@ function recommend(q: string, d: AskData, _now: Date, monthArg?: number | null, 
     }),
     unused: unusedWords(q, d.info),
     // 이번 주·주말 날씨를 물어도 예보는 보지 않는다 → 본 척하지 않고 평년 날씨라고 밝힌다
-    ...(WEATHER_SOON.test(q) ? { lines: [`이번 주 날씨 예보는 아직 보지 못해요. ${month ?? new Date().getMonth() + 1}월 평년 날씨로 고른 곳이니 떠나기 전 예보를 확인해 주세요.`] } : {}),
+    ...((WEATHER_SOON.test(q) || relaxed) ? { lines: [...(relaxed ? [relaxed] : []), ...(WEATHER_SOON.test(q) ? [`이번 주 날씨 예보는 아직 보지 못해요. ${month ?? new Date().getMonth() + 1}월 평년 날씨로 고른 곳이니 떠나기 전 예보를 확인해 주세요.`] : [])] } : {}),
     buttons: [{ label: '다른 곳', ask: q + ' ' }],
     source: `${INFO_SRC(d)} · 날씨: NASA POWER 월평균`,
   };

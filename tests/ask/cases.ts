@@ -16,6 +16,14 @@ export interface Case {
 }
 
 export const CASES: Case[] = [
+  // 계획하는 사람이 처음 묻는 말 (써 보기 11-05: '조건에 맞는 곳을 찾지 못했어요'로 막혔던 것)
+  { q: '12월에 어디 갈까', intent: 'recommend', has: '가 볼 만한 곳' },
+  { q: '1월 여행지 추천', intent: 'recommend', has: '가 볼 만한 곳' },
+  { q: '다음 달에 1박 2일로 어디 갈까', intent: 'recommend' },
+  { q: '1박 2일 어디 가지', intent: 'recommend' },
+  { q: '다음 달 여행지 추천', intent: 'recommend' },
+  { q: '이번 주말 당일치기 어디 갈까', intent: 'recommend' },
+  { q: '2박 3일로 갈 만한 곳', intent: 'recommend' },
   // 해외 쪽 추천은 세계 도시 자료로 (국내로 엉뚱하게 답하지 않게)
   { q: '북극해 여행지 추천', intent: 'recommend', has: '북극권' },
   { q: '카리브해 여행지 추천', intent: 'recommend', has: '자료가 없어요' },

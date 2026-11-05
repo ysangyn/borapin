@@ -24,6 +24,7 @@ import { useHome } from '../lib/home';
 import { memoryLine, pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
+import { DraftNudge } from '../components/NextTripHub';
 import { formatWhen } from '../lib/dates';
 import { COUNTRY_BY_ID, placeLabel } from '../lib/geo';
 import { spaceTitle, toneOf } from '../lib/members';
@@ -79,6 +80,8 @@ export default function Home() {
 
         {/* 단계 카드는 그 여행의 사진·글 개수만 서버에서 센다 (사진·글 전체 구독 없음) */}
         {stage && <StageCard key={stage.trip.id} stage={stage} />}
+        {/* 상대가 여행 후보를 골라 두었으면 내 차례: 맨 위에 */}
+        <DraftNudge top />
 
         <div className="card map-card" style={{ padding: 12 }}>
           <div className="row-between" style={{ alignItems: 'center', marginBottom: 8 }}>

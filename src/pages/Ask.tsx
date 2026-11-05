@@ -65,6 +65,8 @@ export default function Ask() {
   const [msgs, setMsgs] = useState<Msg[]>(() => loadChat()?.msgs ?? []);
   const [ctx, setCtx] = useState<AskCtx>(() => loadChat()?.ctx ?? {});
   useEffect(() => { saveChat(msgs, ctx); }, [msgs, ctx]);
+  // 한 번 써 보면 떠 있는 보라의 '물어봐요' 말풍선은 이제 그만
+  useEffect(() => { try { localStorage.setItem('bp-ask-seen', '1'); } catch { /* */ } }, []);
   // 대화 중에는 새 버전으로 바꾸지 않는다 (화면이 갑자기 새로 고쳐지지 않게)
   useBusy(msgs.length > 0);
   const [text, setText] = useState('');

@@ -20,11 +20,15 @@ test.describe.configure({ mode: 'serial' });
 
 const lines: string[] = [];
 let n = 0;
-const log = (s: string) => { lines.push(s); console.log(s); };
+const log = (s: string) => { lines.push(s); console.log(s); try { fs.appendFileSync(path.join(OUT, 'report.txt'), s + '\n'); } catch { /* */ } };
+try { fs.writeFileSync(path.join(OUT, 'report.txt'), ''); } catch { /* */ }
 
 async function phone(browser: Browser) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 760 }, deviceScaleFactor: 1.5, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
   const page = await ctx.newPage();
+  // 없는 단추를 끝없이 기다리지 않게: 8초 안에 못 찾으면 그 걸음은 '막힘'
+  page.setDefaultTimeout(8000);
+  page.setDefaultNavigationTimeout(20_000);
   page.on('pageerror', (e) => log(`  ! 오류: ${e.message.slice(0, 160)}`));
   page.on('console', (m) => { if (m.type() === 'error' && !/permission|insufficient|Failed to load resource/i.test(m.text())) log(`  ! 콘솔: ${m.text().slice(0, 160)}`); });
   return page;
@@ -114,7 +118,7 @@ async function photos(page: Page, k: number) {
 const say = (page: Page, s: string) => page.getByText(s).first().isVisible().catch(() => false);
 
 test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도시에서 — 계획하고 다녀와서 기록까지', async ({ browser }) => {
-  test.setTimeout(25 * 60_000);
+  test.setTimeout(45 * 60_000);
   const me = await phone(browser);
   const bora = await phone(browser);
   await signIn(me);
@@ -162,8 +166,8 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
     if (await hood.count()) await hood.click(); else await me.getByLabel('숙소').fill('바다 보이는 숙소');
   });
   await step(me, 'k18-flow-pick', async () => {
-    const save = me.getByTestId('flow-stay-save');
-    if (await save.isVisible().catch(() => false)) await save.click(); else await me.getByTestId('flow-skip').click();
+    // 동네를 누르면 바로 다음 걸음으로 간다. 아직 숙소 걸음이면 저장
+    if ((await me.getByTestId('plan-flow').getAttribute('data-step')) === 'stay') await me.getByTestId('flow-stay-save').click();
     await me.getByTestId('pick-card').first().waitFor();
   }, true);
   await step(me, 'k19-flow-pick-hearts', async () => { for (let i = 0; i < 3; i++) await me.getByTestId('pick-card').nth(i).locator('.pick-hit').click(); });
@@ -292,7 +296,6 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'w24-map-world', async () => { await me.goto('/map'); await me.getByRole('tab', { name: '세계' }).first().click(); });
   await step(me, 'w25-trips-list', async () => { await me.goto('/trips'); }, true);
 
-  fs.writeFileSync(path.join(OUT, 'report.txt'), lines.join('\n') + '\n');
   await me.context().close();
   await bora.context().close();
 });
@@ -451,6 +454,5 @@ test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
   await step(page, 'not-found', async () => { await page.goto('/없는주소'); });
   await step(page, 'trip-missing', async () => { await page.goto('/trips/없는여행'); });
 
-  fs.writeFileSync(path.join(OUT, 'report.txt'), lines.join('\n') + '\n');
   await page.context().close();
 });

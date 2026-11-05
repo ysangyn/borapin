@@ -1541,3 +1541,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .plan-title{overflow-wrap:anywhere}
 .plan-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
 .way-clash{font-size:13px;line-height:1.45;padding:9px 12px;border-radius:12px;background:var(--butter);color:var(--butter-ink);border:1px solid var(--edge)}
+.ask-fab.quiet img { width: 44px; height: 44px; }
+/* 계획 걸음 막대: 보이는 건 얇게, 누르는 곳은 손가락 크기로 */
+.flow-steps button { position: relative; }
+.flow-steps button::before { content: ''; position: absolute; left: 0; right: 0; top: -16px; bottom: -16px; }
+.pick-more::before { content: ''; position: absolute; inset: -10px -6px; }

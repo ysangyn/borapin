@@ -90,7 +90,7 @@ export default function App() {
       </div>
     );
   // 떠 있는 보라: 목록 화면(홈·여행·피드·추억·가고 싶은 곳·우리 장소)에만. 상세·지도·입력 화면에서는 단추를 가리므로 뺀다
-  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/welcome') && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin');
+  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/welcome') && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin') && !loc.pathname.startsWith('/plan') && !loc.pathname.startsWith('/phrases');
   const hideNav = hideNavFor(loc.pathname);
   return (
     <DataProvider>
@@ -136,9 +136,12 @@ export default function App() {
 
 /** 우하단에 떠 있는 보라 얼굴 + 말풍선: 누르면 물어보기(챗봇)로 */
 function AskFab() {
+  // 말풍선은 처음 몇 번만: 물어보기를 한 번 써 본 뒤엔 얼굴만 (카드·단추를 덜 가리게)
+  let seen = false;
+  try { seen = localStorage.getItem('bp-ask-seen') === '1'; } catch { /* */ }
   return (
-    <Link to="/ask" className="ask-fab" aria-label="물어보기" data-testid="ask-fab">
-      <span className="ask-fab-bubble" aria-hidden="true">물어봐요</span>
+    <Link to="/ask" className={'ask-fab' + (seen ? ' quiet' : '')} aria-label="물어보기" data-testid="ask-fab">
+      {!seen && <span className="ask-fab-bubble" aria-hidden="true">물어봐요</span>}
       <img src="/art/pini.svg" alt="" width={80} height={80} decoding="async" />
     </Link>
   );
