@@ -112,7 +112,7 @@ jobs:
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
         # 공공데이터 서버가 느린 날은 6분에서 끊고 지난 자료를 쓴다 (빌드 전체가 시간 초과로 취소되지 않게)
-        run: timeout 360 npx tsx scripts/tour-build.ts 2>&1 | tee tour-output.txt || echo '관광공사 자료 받기 시간 초과 → 지난 자료 유지'
+        run: timeout 540 npx tsx scripts/tour-build.ts 2>&1 | tee tour-output.txt || echo '관광공사 자료 받기 시간 초과 → 지난 자료 유지'
       - name: 관광빅데이터 받기 (요즘 뜨는 곳·한적한 곳·연관 관광지·붐빔 · 실패하면 지난 자료)
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}

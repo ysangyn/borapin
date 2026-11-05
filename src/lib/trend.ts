@@ -33,7 +33,8 @@ export interface TrendData {
 }
 
 /** 관광공사 관광지(이름·자리·사진)와 무장애 관광지 수 */
-export interface TourCell { s: [string, number, number, string][]; easy: number }
+/** 관광지 s · 음식점 f · 쇼핑 b: [이름, 위도, 경도, 사진] (f·b는 11-05부터, 옛 자료엔 없음) */
+export interface TourCell { s: [string, number, number, string][]; f?: [string, number, number, string][]; b?: [string, number, number, string][]; easy: number }
 export interface TourData { updated: string; cells: Record<string, TourCell> }
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);

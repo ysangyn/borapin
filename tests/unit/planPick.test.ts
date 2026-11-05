@@ -22,3 +22,14 @@ test('해외: 세계 도시 자료의 볼거리·먹거리', () => {
   const p = pickables({ t: 'country', id: 'JPN', city: '도쿄' }, { tour: null, info: null, festivals: null, world });
   assert.deepEqual(p.map((x) => [x.kind, x.name]), [['see', '메이지 신궁'], ['eat', '스시']]);
 });
+
+test('국내: 관광공사 음식점·쇼핑(사진·자리)이 먹을 것·살 것 칸에 가게로 들어간다', () => {
+  const t2 = { updated: '', cells: { '51150': { s: [], f: [['초당할머니순두부', 37.79, 128.91, 'https://x/f.jpg']], b: [['강릉중앙시장', 37.75, 128.9, 'https://x/b.jpg']], easy: 0 } } } as never;
+  const p = pickables({ t: 'kr', code: '51150' }, { tour: t2, info, festivals: null, world: null });
+  const f = p.find((x) => x.name === '초당할머니순두부')!;
+  assert.equal(f.kind, 'eat');
+  assert.equal(f.img, 'https://x/f.jpg');
+  const b = p.find((x) => x.name === '강릉중앙시장')!;
+  assert.equal(b.kind, 'buy');
+  assert.equal(b.lat, 37.75);
+});

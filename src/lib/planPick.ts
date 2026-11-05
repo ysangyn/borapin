@@ -38,6 +38,9 @@ export function pickables(place: Place, d: { tour: TourData | null; info: Travel
     for (const f of cell?.main.foods ?? []) add({ key: `eat:${f}`, name: f, kind: 'eat', line: '이 고장 먹거리' });
     for (const sub of cell?.subs ?? []) for (const f of sub.foods) add({ key: `eat:${f}`, name: f, kind: 'eat', area: sub.name });
     for (const g of cell?.main.goods ?? []) add({ key: `buy:${g}`, name: g, kind: 'buy', line: '특산물·기념품' });
+    // 관광공사 음식점·쇼핑: 이름만 있던 먹거리·특산물 옆에 실제 가게·시장 (사진·자리 있어 동선에 그대로)
+    for (const [n, lat, lng, img] of d.tour?.cells[place.code]?.f ?? []) add({ key: `eat:${n}`, name: n, kind: 'eat', img: img || undefined, lat, lng, line: '관광공사 음식점' });
+    for (const [n, lat, lng, img] of d.tour?.cells[place.code]?.b ?? []) add({ key: `buy:${n}`, name: n, kind: 'buy', img: img || undefined, lat, lng, line: '시장·쇼핑' });
   } else {
     const w = cityFor(d.world, place);
     for (const s of w?.see ?? []) add({ key: `see:${s}`, name: s, kind: 'see', line: w?.line });
