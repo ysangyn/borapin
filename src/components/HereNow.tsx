@@ -1,3 +1,4 @@
+import { withJosa } from '../lib/ko';
 import { createPortal } from 'react-dom';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +45,7 @@ export default function HereNow({ trip }: { trip: Trip }) {
     try {
       const id = await createPlace({ name: name.slice(0, 80), kind, region: where, tripId: trip.id, reviews: {}, verdict: null, lat: pos.lat, lng: pos.lng, ...(addr ? { address: addr.slice(0, 200) } : {}) }, auth.user);
       setSt({ s: 'idle' });
-      toast(`${name} 남겼어요`, { label: '한 줄 쓰기', onClick: () => nav(`/places/${id}`) });
+      toast(`${withJosa(name, '을/를')} 남겼어요`, { label: '한 줄 쓰기', onClick: () => nav(`/places/${id}`) });
     } catch {
       toast('남기지 못했어요. 잠시 뒤 다시 해 주세요');
     } finally { setSaving(false); }

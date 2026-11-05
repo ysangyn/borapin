@@ -10,6 +10,7 @@ import NotesTab from '../components/NotesTab';
 import PrepTab from '../components/PrepTab';
 import ShareLinkCard, { useShareSync } from '../components/ShareLinkCard';
 import { dayLabel, tripDays, useNotes, usePlan } from '../lib/tripExtras';
+import { coverNoteOf } from '../lib/capsule';
 import { Icon, Spinner, TopBar, useToast } from '../components/ui';
 import MapView from '../components/LazyMap';
 import { computeStats, deleteTripAll, patchTrip, usePlaces, useTrips } from '../lib/data';
@@ -50,6 +51,7 @@ export default function TripDetail() {
   const [sp, setSp] = useSearchParams();
   const setTab = (t: string) => setSp(t === 'info' ? {} : { tab: t }, { replace: true });
   const notes = useNotes(id);
+  const coverNote = coverNoteOf(notes);
   const trip = trips?.find((t) => t.id === id);
   const placesKey = trip ? JSON.stringify(trip.places) : '';
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -125,10 +127,10 @@ export default function TripDetail() {
         )}
 
         {tab === 'info' && photos.length > 0 && (
-          <button className={'trip-cover pola' + (notes?.[0] ? ' with-line' : '')} onClick={() => openSlideshow(photos, 0, { placeOf: tripPlace, onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })} aria-label="표지 사진 크게 보기">
+          <button className={'trip-cover pola' + (coverNote ? ' with-line' : '')} onClick={() => openSlideshow(photos, 0, { placeOf: tripPlace, onDelete: (x) => deletePhoto(x).then(() => toast('사진을 지웠어요'), () => toast('지우지 못했어요')) })} aria-label="표지 사진 크게 보기">
             <span className="tape" aria-hidden="true" />
             <PhotoImg id={photos[0].id} size="l" />
-            {notes?.[0] && <span className={'pola-line hand ' + (toneOf(notes[0].by.name) === 1 ? 'blue' : 'pink')}>“{notes[0].text.split('\n')[0].slice(0, 36)}” — {notes[0].by.name}</span>}
+            {coverNote && <span className={'pola-line hand ' + (toneOf(coverNote.by.name) === 1 ? 'blue' : 'pink')}>“{coverNote.text.split('\n')[0].slice(0, 36)}” — {coverNote.by.name}</span>}
             {photos.length > 1 && <span className="pola-count">1 / {photos.length}</span>}
           </button>
         )}

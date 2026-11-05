@@ -67,7 +67,7 @@ export default function Planner() {
       const tripId = await createTrip({ title: `${placeLabel(fixed)} ${nights === 0 ? '나들이' : '여행'}`, kind: nights === 0 ? 'outing' : 'trip', status: 'planned', when: whenOf(conds), places: [fixed], companions: memberNames(), memo: '', tags: [], source: 'app' }, auth.user);
       if (wish) await updateWish(wish.id, { tripId }).catch(() => undefined);
       // 뼈대 대신 계획 이어가기 다섯 걸음으로 (담은 곳으로 일정을 채운다)
-      toast(`${placeLabel(fixed)} 여행을 만들었어요`);
+      toast(`${placeLabel(fixed)} ${nights === 0 ? '나들이를' : '여행을'} 만들었어요`);
       nav(`/trips/${tripId}/plan-next`, { replace: true });
     } catch (e) { console.warn(e); toast('만들지 못했어요. 다시 해 주세요'); setBusy(false); }
   };
@@ -102,7 +102,7 @@ export default function Planner() {
         <section className="planner-q">
           <div className="planner-label">며칠</div>
           <div className="chips">
-            {[0, 1, 2, 3, 5].map((n) => <button key={n} type="button" className={'chip' + (nights === n ? ' on' : '')} aria-pressed={nights === n} onClick={() => setNights(n)}>{n === 5 ? '4박 이상' : nightsLabel(n)}</button>)}
+            {[0, 1, 2, 3, 4].map((n) => <button key={n} type="button" className={'chip' + (nights === n ? ' on' : '')} aria-pressed={nights === n} onClick={() => setNights(n)}>{n === 4 ? '4박 이상' : nightsLabel(n)}</button>)}
           </div>
         </section>
         {!fixed && (
@@ -125,7 +125,7 @@ export default function Planner() {
         {fixed ? (
           <>
             <button className="btn block" onClick={make} disabled={busy || !data} data-testid="planner-make">{busy ? '만드는 중…' : '여행 만들기'}</button>
-            <div className="tiny muted" style={{ textAlign: 'center' }}>만들면 갈 예정 여행이 생기고, 날짜별 오전·점심·오후·저녁 뼈대와 준비 탭이 채워져요.</div>
+            <div className="tiny muted" style={{ textAlign: 'center' }}>만들면 갈 예정 여행이 생기고, 날짜·숙소·갈 곳·동선을 차례로 같이 정해요.</div>
           </>
         ) : (
           <button className="btn block" onClick={go} disabled={busy || !data} data-testid="planner-go">{busy ? '고르는 중…' : '후보 3곳 보기'}</button>
@@ -183,7 +183,8 @@ export function PlanPick() {
     try {
       const tripId = await createTrip({ title: `${placeLabel(c.place)} ${draft.conds.nights === 0 ? '나들이' : '여행'}`, kind: draft.conds.nights === 0 ? 'outing' : 'trip', status: 'planned', when: whenOf(draft.conds), places: [c.place], companions: memberNames(), memo: '', tags: [], source: 'app' }, auth.user);
       if (c.wishId) await updateWish(c.wishId, { tripId }).catch(() => undefined);
-      await markDecided(draft.id, tripId);
+      // 표시가 실패해도 여행은 이미 생겼으니 그대로 넘어간다 (다시 눌러 여행이 두 개 생기지 않게)
+      await markDecided(draft.id, tripId).catch(() => undefined);
       // 계획 이어가기가 켜져 있으면 정한 다음 바로 다섯 걸음으로
       toast(`${withRo(placeLabel(c.place))} 정했어요 · 이어서 계획해요`);
       nav(`/trips/${tripId}/plan-next`);
@@ -242,7 +243,7 @@ export function PlanPick() {
             <button className="btn ghost" onClick={reroll} data-testid="plan-reroll"><Icon name="dice" size={16} />다른 후보</button>
           </div>
         )}
-        <div className="tiny muted" style={{ textAlign: 'center' }}>둘 다 같은 곳을 고르면 '여기로 정해요'가 떠요. 정하면 갈 예정 여행이 생기고, 날짜별 오전·점심·오후·저녁 뼈대와 준비 탭이 채워져요.</div>
+        <div className="tiny muted" style={{ textAlign: 'center' }}>둘 다 같은 곳을 고르면 '여기로 정해요'가 떠요. 정하면 갈 예정 여행이 생기고, 날짜·숙소·갈 곳·동선을 차례로 같이 정해요.</div>
       </div>
     </>
   );

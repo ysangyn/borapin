@@ -1,5 +1,5 @@
+import { withJosa } from '../lib/ko';
 import { setThemePref, themePref } from '../lib/theme';
-import { josa } from 'es-hangul';
 import { times, withRo } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -36,6 +36,7 @@ export default function Space() {
   const [inviteName, setInviteName] = useState('');
   const [inviteRel, setInviteRel] = useState<Relation | ''>('');
   const [madeCode, setMadeCode] = useState<string | null>(null);
+  const [making, setMaking] = useState(false);
   const invites = useOpenInvites(auth.status === 'ready' && auth.isAdmin);
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   // '우리 집을 정하면…'에서 오면 그 칸으로
@@ -199,9 +200,12 @@ export default function Space() {
                       {(Object.keys(RELATION_LABEL) as Relation[]).map((r) => <option key={r} value={r}>{RELATION_LABEL[r]}</option>)}
                     </select>
                   </span>
-                  <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={async () => {
+                  <button className="btn sm" style={{ alignSelf: 'flex-start' }} disabled={making} onClick={async () => {
+                    if (making) return;
+                    setMaking(true);
                     try { const code = await createInvite(user, inviteName, inviteRel || null); setMadeCode(code); setInviteName(''); setInviteRel(''); toast('초대 링크를 만들었어요'); } catch (e) { console.warn(e); toast('만들지 못했어요. 다시 해 주세요'); }
-                  }} data-testid="invite-make"><Icon name="link" size={15} />초대 링크 만들기</button>
+                    setMaking(false);
+                  }} data-testid="invite-make"><Icon name="link" size={15} />{making ? '만드는 중…' : '초대 링크 만들기'}</button>
                 </span>
               </div>
               {(invites ?? []).map((inv) => (
@@ -214,10 +218,10 @@ export default function Space() {
                   </span>
                   <span style={{ display: 'flex', gap: 6 }}>
                     <button className="btn sm soft" onClick={async () => {
-                      const r = await shareAnyhow({ title: '보라핀에 초대해요', description: `${josa(nameOf(user.email), '이/가')} 함께 여행 기록을 남기자고 초대했어요. 링크를 눌러 로그인하면 들어와요.`, url: inviteUrl(inv.code), button: '들어가기' }, () => toast('링크를 복사했어요'));
+                      const r = await shareAnyhow({ title: '보라핀에 초대해요', description: `${withJosa(nameOf(user.email), '이/가')} 함께 여행 기록을 남기자고 초대했어요. 링크를 눌러 로그인하면 들어와요.`, url: inviteUrl(inv.code), button: '들어가기' }, () => toast('링크를 복사했어요'));
                       if (r === 'kakao') toast('카카오톡을 열었어요 · 보낼 사람을 골라 주세요');
                     }} data-testid="invite-share">보내기</button>
-                    <button className="btn sm line" onClick={() => deleteInvite(inv.code).then(() => toast('초대 링크를 지웠어요'), () => toast('지우지 못했어요'))} aria-label="초대 링크 지우기">지우기</button>
+                    <button className="btn sm line" onClick={() => { if (window.confirm('이 초대 링크를 지울까요? 받은 사람은 더 들어올 수 없어요.')) deleteInvite(inv.code).then(() => toast('초대 링크를 지웠어요'), () => toast('지우지 못했어요')); }} aria-label="초대 링크 지우기">지우기</button>
                   </span>
                 </div>
               ))}

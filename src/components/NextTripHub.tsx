@@ -5,10 +5,10 @@ import { Icon, useBusy, useToast } from './ui';
 import { Hearts, wishTitle } from './WishCard';
 import WishRolling from './WishRolling';
 import { useAuth } from '../lib/auth';
-import { updateWish, type Stats } from '../lib/data';
+import { updateWish, usePlaces, type Stats } from '../lib/data';
 import { placeLabel, placeLong, placeParam, REGION_BY_CODE } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
-import { bothWant, samePlace, sortWishes, wishState } from '../lib/wishes';
+import { bothWant, recNames, samePlace, sortWishes, wishState } from '../lib/wishes';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useFestivals, upcomingFestivals, festivalPeriod, isOngoing } from '../lib/festivals';
 import { flightLinks } from '../lib/flights';
@@ -46,11 +46,12 @@ export default function NextTripHub({ wishes, trips, stats, excludeTripId = null
   const upcoming = useMemo(() => upcomingTrips(trips).filter((t) => t.id !== excludeTripId), [trips, excludeTripId]);
   const nextTrip = upcoming[0] ?? null;
   // 영어 카드는 다음 예정 여행(홈 위 카드가 맡은 여행 포함)이 해외일 때만
+  const { places: recs } = usePlaces();
   const abroadNext = useMemo(() => !!nextAbroadTrip(trips), [trips]);
   const active = useMemo(() => {
-    const list = sortWishes(wishes.filter((w) => wishState(w, trips).kind === 'wish'));
+    const list = sortWishes(wishes.filter((w) => wishState(w, trips, recNames(recs, w.place)).kind === 'wish'));
     return [...list.filter(bothWant), ...list.filter((w) => !bothWant(w))];
-  }, [wishes, trips]);
+  }, [wishes, trips, recs]);
   const firstWish = active[0] ?? null;
   const anchor: { place: Place; wish: Wish | null } | null = nextTrip?.places[0]
     ? { place: nextTrip.places[0], wish: wishes.find((w) => w.tripId === nextTrip.id) ?? null }

@@ -123,7 +123,7 @@ export default function Home() {
         {overdue[0] && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
             <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
-            <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'))}>다녀왔어요</button>
+            <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
           </div>
         )}
 

@@ -1,3 +1,4 @@
+import { withJosa } from '../lib/ko';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { hideReview, useBlind } from '../lib/blind';
@@ -138,6 +139,8 @@ export default function PlaceEdit() {
         const ti = quickTripInput(where, memberNames());
         news = trips ? whatsNew(trips, [...trips, { ...ti, id: 'new', v: 1 }]) : null;
         linkTrip = await createTrip(ti, auth.user);
+        // 장소 저장이 실패해 다시 눌러도 핀이 하나 더 생기지 않게 (이미 꽂은 핀에 잇는다)
+        setTripId(linkTrip);
       } catch (e) {
         console.warn(e);
         toast('핀을 꽂지 못했어요. 다시 해 주세요.');
@@ -211,7 +214,7 @@ export default function PlaceEdit() {
 
   return (
     <>
-      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '장소 남기기'} right={editing ? <button className="btn sm ghost" onClick={() => { setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
+      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '장소 남기기'} right={editing ? <button className="btn sm ghost" onClick={() => { if (dirty && !window.confirm('고친 내용이 사라져요. 그만 고칠까요?')) return; setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         <div className="field">
           <span className="label">네이버지도 <span className="muted small">(선택)</span></span>
@@ -230,7 +233,7 @@ export default function PlaceEdit() {
                     <>
                       <b>{link.info?.name || name}</b>
                       {link.info?.category && <span className="tiny muted">{link.info.category}</span>}
-                      <span className="tiny" style={{ color: 'var(--violet)' }}>{[photoUrl && '사진', coords && '자리', link.info?.address && '주소'].filter(Boolean).join('·') || '이름'}을 가져왔어요</span>
+                      <span className="tiny" style={{ color: 'var(--violet)' }}>{withJosa([photoUrl && '사진', coords && '자리', link.info?.address && '주소'].filter(Boolean).join('·') || '이름', '을/를')} 가져왔어요</span>
                     </>
                   )}
                 </span>

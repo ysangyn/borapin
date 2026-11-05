@@ -114,20 +114,20 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
                   </div>
                   {isOpen && (
                     <div className="plan-more">
-                      <input className="input" style={{ gridColumn: '1 / -1' }} aria-label="이름 고치기" defaultValue={it.name} maxLength={80} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== it.name) updatePlan(it.id, { name: v }); }} />
+                      <input className="input" style={{ gridColumn: '1 / -1' }} aria-label="이름 고치기" defaultValue={it.name} maxLength={80} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== it.name) updatePlan(it.id, { name: v }).catch(() => toast('저장하지 못했어요')); }} />
                       {days.length > 0 && (
-                        <select className="select" aria-label="날짜" value={it.day ?? ''} onChange={(e) => updatePlan(it.id, { day: e.target.value || null })}>
+                        <select className="select" aria-label="날짜" value={it.day ?? ''} onChange={(e) => updatePlan(it.id, { day: e.target.value || null }).catch(() => toast('저장하지 못했어요'))}>
                           <option value="">날짜 없이</option>
                           {days.map((d) => <option key={d} value={d}>{dayLabel(d, days)}</option>)}
                         </select>
                       )}
                       {/* 24시간 표기로 고르기 (기기 설정과 상관없이 같은 모양) */}
-                      <select className="select" aria-label="시간" value={it.time ?? ''} onChange={(e) => updatePlan(it.id, { time: e.target.value || null })}>
+                      <select className="select" aria-label="시간" value={it.time ?? ''} onChange={(e) => updatePlan(it.id, { time: e.target.value || null }).catch(() => toast('저장하지 못했어요'))}>
                         <option value="">시간 없이</option>
                         {TIMES.map((t) => <option key={t} value={t}>{t}</option>)}
                         {it.time && !TIMES.includes(it.time) && <option value={it.time}>{it.time}</option>}
                       </select>
-                      <input className="input" aria-label="예약·메모" placeholder="예약번호, 메모" defaultValue={it.info} onBlur={(e) => e.target.value !== it.info && updatePlan(it.id, { info: e.target.value.trim() })} maxLength={200} />
+                      <input className="input" aria-label="예약·메모" placeholder="예약번호, 메모" defaultValue={it.info} onBlur={(e) => { if (e.target.value !== it.info) updatePlan(it.id, { info: e.target.value.trim() }).catch(() => toast('저장하지 못했어요')); }} maxLength={200} />
                       <button className="btn sm line" onClick={() => { const copy = it; setOpen(null); deletePlan(copy.id).catch(() => toast('빼지 못했어요')); toast(`'${copy.name}'${josa.pick(copy.name, '을/를')} 일정에서 뺐어요`, { label: '되돌리기', onClick: () => void restorePlan(copy) }); }}><Icon name="trash" size={15} />일정에서 빼기</button>
                     </div>
                   )}

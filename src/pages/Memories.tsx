@@ -82,7 +82,7 @@ export default function Memories() {
               <li><b>몇 년 전 오늘</b> 그날의 여행을 다시 꺼내 줘요</li>
               <li><b>지도 다시 보기</b> 해마다 지도가 채워진 순서</li>
               <li><b>한 해 결산</b> 처음 가본 곳, 가장 많이 간 곳</li>
-              <li><b>도전 배지</b> 핀 10개, 섬 탐험가, 사계절 여행</li>
+              <li><b>캐리어 스티커</b> 핀 10개, 섬 탐험가, 사계절 여행</li>
             </ul>
             <Link to="/record" className="btn sm">기록 남기기</Link>
           </div>
@@ -190,7 +190,7 @@ export default function Memories() {
               <span className="small muted">{ourLines.length}줄</span>
             </div>
             <div className="list" style={{ gap: 8 }}>
-              {ourLines.slice(0, allLines ? 30 : 4).map((l) => (
+              {ourLines.slice(0, allLines ? ourLines.length : 4).map((l) => (
                 <Link key={l.key} to={`/places/${l.placeId}`} className="card line-card">
                   <span className={'avatar t' + Math.max(0, toneOf(l.who))} aria-hidden="true">{[...l.who][0]}</span>
                   <span style={{ flex: 1, minWidth: 0 }}>

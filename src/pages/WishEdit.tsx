@@ -8,8 +8,8 @@ import PlaceHint from '../components/PlaceHint';
 import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
-import { parsePlaceParam } from '../lib/geo';
-import { itemMarks, lines, recNames, sameName, wishState } from '../lib/wishes';
+import { parsePlaceParam, placeLabel } from '../lib/geo';
+import { itemMarks, lines, recNames, sameName, samePlace, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
 
@@ -65,7 +65,7 @@ export default function WishEdit() {
 
   const place = places[places.length - 1] ?? null;
   const auto = place ? seasonFor(seasons, place) : null;
-  const state = existing && trips ? wishState(existing, trips) : null;
+  const state = existing && trips ? wishState(existing, trips, recNames(recs, existing.place)) : null;
 
   const save = async () => {
     if (!place || auth.status !== 'ready' || saving) return;
@@ -89,6 +89,15 @@ export default function WishEdit() {
         toast('고쳤어요');
         goBack('/wishes');
       } else {
+        // 같은 지역 카드가 이미 있으면(여행으로 만들기 전) 두 장 만들지 않고 거기에 이어 담는다
+        const dup = (wishes ?? []).find((w) => !w.tripId && samePlace(w.place, place));
+        if (dup) {
+          const join = (a: string[], b: string[]) => [...a, ...b.filter((x) => !a.some((y) => sameName(x, y)))];
+          await updateWish(dup.id, { spots: join(dup.spots, input.spots), foods: join(dup.foods, input.foods), todos: join(dup.todos, input.todos), links: join(dup.links ?? [], input.links ?? []), wantedBy: [...new Set([...(dup.wantedBy ?? []), ...(input.wantedBy ?? [])])], priority: input.priority ?? dup.priority ?? null, ...(input.note && !dup.note ? { note: input.note } : {}) });
+          toast(`이미 담긴 ${placeLabel(place)}에 이어 담았어요`);
+          nav('/wishes', { replace: true });
+          return;
+        }
         await createWish(input, auth.user);
         toast('가고 싶은 곳에 담았어요');
         nav('/wishes', { replace: true });

@@ -24,3 +24,5 @@ export const markOpened = (id: string) => { try { const s = openedHere(); s.add(
 export function arrived(notes: Pick<Note, 'id' | 'openAt'>[], opened: Set<string>, now = new Date()) {
   return notes.filter((n) => n.openAt && !isSealed(n, now) && !opened.has(n.id)).sort((a, b) => a.openAt!.localeCompare(b.openAt!))[0] ?? null;
 }
+/** 여행 표지 사진 위 한 줄: 봉한 타임캡슐은 건너뛴다 (글은 최근 순) */
+export const coverNoteOf = <T extends Pick<Note, 'openAt'>>(notes: T[] | null | undefined, now = new Date()): T | null => (notes ?? []).find((n) => !isSealed(n, now)) ?? null;

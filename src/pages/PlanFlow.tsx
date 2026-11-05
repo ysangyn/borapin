@@ -20,7 +20,7 @@ import { aboutTime, directWays, useRoutes, wayName } from '../lib/transit';
 import { useFind, FIND_SOURCE } from '../lib/find';
 import { aiAvailable } from '../lib/ask/url';
 import { cityFor } from '../lib/world';
-import { daysOf, festsIn, monthCells } from '../lib/planCal';
+import { dateOf, daysOf, festsIn, monthCells } from '../lib/planCal';
 export { daysOf };
 import { accessFor } from '../lib/transport';
 import { lookupLink } from '../lib/placeLookup';
@@ -49,7 +49,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const md = (s: string) => `${+s.slice(5, 7)}월 ${+s.slice(8, 10)}일`;
 const WEEK = ['일', '월', '화', '수', '목', '금', '토'];
-const dow = (s: string) => WEEK[new Date(s).getDay()];
+const dow = (s: string) => WEEK[dateOf(s).getDay()];
 
 const me = (auth: ReturnType<typeof useAuth>) => (auth.status === 'ready' ? displayName(auth.user) : '');
 
@@ -99,12 +99,12 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const init = w.p === 'day' && w.y && w.m && w.d ? `${w.y}-${pad(w.m)}-${pad(w.d)}` : '';
   const [start, setStart] = useState(init);
   const [nights, setNights] = useState(() => Math.max(0, daysOf(w).length - 1 || (trip.kind === 'outing' ? 0 : 1)));
-  const [ym, setYm] = useState(() => { const b = init ? new Date(init) : w.y && w.m ? new Date(w.y, w.m - 1, 1) : today; return { y: b.getFullYear(), m: b.getMonth() + 1 }; });
+  const [ym, setYm] = useState(() => { const b = init ? dateOf(init) : w.y && w.m ? new Date(w.y, w.m - 1, 1) : today; return { y: b.getFullYear(), m: b.getMonth() + 1 }; });
   const seasons = useSeasons(), festivals = useFestivals(), trend = useTrend();
   const place = trip.places[0];
   const season = seasonFor(seasons, place);
   const fests = place.t === 'kr' ? festivals?.cells[place.code] ?? [] : [];
-  const end = start ? (() => { const e = new Date(start); e.setDate(e.getDate() + nights); return ymd(e); })() : '';
+  const end = start ? (() => { const e = dateOf(start); e.setDate(e.getDate() + nights); return ymd(e); })() : '';
   const goodMonth = !!season?.m.includes(ym.m);
   // 좋은 때는 달 단위 자료라 날마다 점을 찍으면 한 달이 다 초록 — 제목 옆 꼬리표로, 점은 축제만
   const cells = monthCells(ym.y, ym.m, { today, goodMonths: [], fests, start: start || null, nights });
@@ -117,7 +117,7 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const move = (k: number) => setYm(({ y, m }) => { const d = new Date(y, m - 1 + k, 1); return { y: d.getFullYear(), m: d.getMonth() + 1 }; });
   const save = async () => {
     if (!start) return toast('떠나는 날을 달력에서 골라 주세요');
-    const s = new Date(start), e = new Date(end);
+    const s = dateOf(start), e = dateOf(end);
     const when: When = { p: 'day', y: s.getFullYear(), m: s.getMonth() + 1, d: s.getDate(), ...(nights ? { y2: e.getFullYear(), m2: e.getMonth() + 1, d2: e.getDate() } : {}) };
     await patchTrip(trip.id, { when, kind: nights ? 'trip' : 'outing' }).then(() => toast('날짜를 정했어요'), () => toast('저장하지 못했어요'));
     onNext();
@@ -133,7 +133,7 @@ function WhenStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
           ) : <span key={`e${k}`} />)}
         </div>
       </div>
-      <div className="flow-stepper"><span>몇 박</span><button className="icon-btn" onClick={() => setNights(Math.max(0, nights - 1))} aria-label="하루 줄이기">−</button><b className="jua" data-testid="flow-nights">{nights ? `${nights}박 ${nights + 1}일` : '당일'}</b><button className="icon-btn" onClick={() => setNights(Math.min(14, nights + 1))} aria-label="하루 늘리기">+</button></div>
+      <div className="flow-stepper"><span>몇 박</span><button className="icon-btn" onClick={() => setNights(Math.max(0, nights - 1))} aria-label="하루 줄이기">−</button><b className="jua" data-testid="flow-nights">{nights ? `${nights}박 ${nights + 1}일` : '당일'}</b><button className="icon-btn" onClick={() => setNights(Math.min(30, nights + 1))} aria-label="하루 늘리기">+</button></div>
       <div className="flow-strip">
         <div><span className="k">가기 좋은 때</span><b>{season ? monthsLabel(season.m) : '자료 없음'}</b>{season && start ? (season.m.includes(+start.slice(5, 7)) ? '고른 때가 좋은 때예요' : season.why) : season?.why}</div>
         <div><span className="k">그때 축제</span><b>{f ? (f.during[0]?.t ?? '없어요') : '날짜를 고르면'}</b>{f?.near ? `${+f.near.s.slice(4, 6)}월 ${+f.near.s.slice(6, 8)}일엔 ${f.near.t}` : f?.during.length ? '여행 중에 열려요' : ''}</div>
@@ -209,7 +209,7 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const plan = usePlan(trip.id);
   const days = daysOf(trip.when);
   const place = trip.places[0];
-  const base = useMemo(() => pickables(place, { tour, info, festivals, world }, days.length ? { start: new Date(days[0]), days: days.length } : null), [place, tour, info, festivals, world, days.length]);
+  const base = useMemo(() => pickables(place, { tour, info, festivals, world }, days.length ? { start: dateOf(days[0]), days: days.length } : null), [place, tour, info, festivals, world, days.length]);
   const [tab, setTab] = useState<PickKind>('see');
   // 해외: 지금 연 칸(볼 것·할 것·먹을 것·살 것)만 위키보이지에서 함께 찾아 보탠다 (A3)
   const abroadCity = place.t === 'country' ? cityFor(world, place) : null;
@@ -246,12 +246,17 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
     const t = own.trim();
     if (!t || !name) return;
     setOwn('');
-    if (/^https?:\/\//i.test(t)) {
-      const l = await lookupLink(t).catch(() => null);
-      if (!l?.name) return toast('링크에서 장소를 못 읽었어요 · 이름을 적어 주세요');
-      await addPlan(trip.id, l.name, (plan?.length ?? 0) + 1, null, { by: [name], kind: tab === 'fest' ? 'see' : tab, lat: l.lat, lng: l.lng, img: l.image, info: (l.address ?? '').slice(0, 200) });
-    } else await addPlan(trip.id, t.slice(0, 80), (plan?.length ?? 0) + 1, null, { by: [name], kind: tab === 'fest' ? 'see' : tab });
-    toast('담았어요');
+    try {
+      if (/^https?:\/\//i.test(t)) {
+        const l = await lookupLink(t).catch(() => null);
+        if (!l?.name) { setOwn(t); return toast('링크에서 장소를 못 읽었어요 · 이름을 적어 주세요'); }
+        await addPlan(trip.id, l.name, (plan?.length ?? 0) + 1, null, { by: [name], kind: tab === 'fest' ? 'see' : tab, lat: l.lat, lng: l.lng, img: l.image, info: (l.address ?? '').slice(0, 200) });
+      } else await addPlan(trip.id, t.slice(0, 80), (plan?.length ?? 0) + 1, null, { by: [name], kind: tab === 'fest' ? 'see' : tab });
+      toast('담았어요');
+    } catch {
+      setOwn(t); // 쓴 글은 돌려놓는다
+      toast('담지 못했어요. 다시 해 주세요');
+    }
   };
   // 여러 카드에 똑같이 붙는 한 줄(그 고장 소개 등)은 빼서 카드마다 다른 말만 남긴다
   const lineCount = new Map<string, number>();

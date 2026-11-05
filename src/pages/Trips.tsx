@@ -1,11 +1,12 @@
+import { SEASON_LABEL } from '../lib/dates';
+import { withJosa } from '../lib/ko';
 import { useMemo, useState } from 'react';
-import { josa } from 'es-hangul';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Avatars, Icon, TopBar } from '../components/ui';
 import TripRow from '../components/TripRow';
 import WishCard from '../components/WishCard';
 import { useSeasons } from '../lib/seasons';
-import { sortWishes, wishState } from '../lib/wishes';
+import { recNames, sortWishes, wishState } from '../lib/wishes';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
@@ -27,7 +28,7 @@ export default function Trips() {
   const seasons = useSeasons();
   const { places: recs } = usePlaces();
   const activeWishes = useMemo(
-    () => (wishes && trips ? sortWishes(wishes).map((w) => ({ w, s: wishState(w, trips) })).filter((x) => x.s.kind !== 'done') : []),
+    () => (wishes && trips ? sortWishes(wishes).map((w) => ({ w, s: wishState(w, trips, recNames(recs, w.place)) })).filter((x) => x.s.kind !== 'done') : []),
     [wishes, trips],
   );
 
@@ -58,7 +59,9 @@ export default function Trips() {
   // 해·계절로 묶는다: '2026년 가을 · 세 번'. 달을 모르면 해만, 해도 모르면 '날짜 모름'
   const byYear = new Map<string, Trip[]>();
   for (const t of done) {
-    const k = t.when.y ? `${t.when.y}년${t.when.m ? ' ' + seasonLabel(t.when.m) : ''}` : '날짜 모름';
+    // 달로 적었든 계절로 적었든 같은 해·같은 계절은 한 묶음으로
+    const ss = t.when.m ? seasonLabel(t.when.m) : t.when.s ? SEASON_LABEL[t.when.s] : '';
+    const k = t.when.y ? `${t.when.y}년${ss ? ' ' + ss : ''}` : '날짜 모름';
     byYear.set(k, [...(byYear.get(k) ?? []), t]);
   }
   const counts = {
@@ -80,7 +83,7 @@ export default function Trips() {
           <button className={'chip' + (filter === 'kr' ? ' on' : '')} aria-pressed={filter === 'kr'} onClick={() => setFilter('kr')}>국내 {counts.kr}</button>
           <button className={'chip' + (filter === 'abroad' ? ' on' : '')} aria-pressed={filter === 'abroad'} onClick={() => setFilter('abroad')}>해외 {counts.abroad}</button>
           {people.map((p) => (
-            <button key={p} className={'chip' + (who === p ? ' soft-on' : '')} aria-pressed={who === p} onClick={() => setWho(who === p ? '' : p)}>{josa(p, '와/과')}</button>
+            <button key={p} className={'chip' + (who === p ? ' soft-on' : '')} aria-pressed={who === p} onClick={() => setWho(who === p ? '' : p)}>{withJosa(p, '과/와')}</button>
           ))}
         </div>
 

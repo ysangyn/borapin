@@ -19,6 +19,7 @@ import { photoForPlace } from '../lib/media';
 import { heartKey, toggleHeart, useHearts, type Heart } from '../lib/hearts';
 import { asksForFeed, useRecentAsks } from '../lib/asks';
 import { memberNames } from '../lib/members';
+import { localDate } from '../lib/dates';
 
 /** 피드: 둘이 최근에 남긴 사진·글·장소·핀·가고 싶은 곳을 시간순으로. 둘의 소식만 (여행 소식은 홈 묶음·지역 창에) */
 export default function Feed() {
@@ -105,8 +106,8 @@ function HeartBtn({ heart, uid, onHeart }: { heart?: Heart; uid: string; onHeart
 
 function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string; heart?: Heart; uid: string; onHeart?: () => void }) {
   const when = <span className="tiny muted feed-when">{ago(item.at)}</span>;
-  const foot = (link: string, label: string) => (
-    <div className="feed-foot"><Link to={link} className="tiny feed-link">{label}</Link><HeartBtn heart={heart} uid={uid} onHeart={onHeart} /></div>
+  const foot = (link: string | null, label: string) => (
+    <div className="feed-foot">{link ? <Link to={link} className="tiny feed-link">{label}</Link> : <span />}<HeartBtn heart={heart} uid={uid} onHeart={onHeart} /></div>
   );
   if (item.kind === 'photos') {
     const shown = item.photos.slice(0, 4);
@@ -158,8 +159,9 @@ function FeedRow({ item, me, heart, uid, onHeart }: { item: FeedItem; me: string
     return (
       <article className="feed-item" data-testid="feed-item" data-kind="ask">
         <header><Who name={item.by} me={me} /><span className="small">오늘의 질문에 답함</span>{when}</header>
-        <p className="feed-text"><span className="muted small" style={{ display: 'block' }}>{item.question}</span>{item.opened || item.by === me ? <b>{item.text}</b> : <span className="muted">내가 답하면 열려요 🔒</span>}</p>
-        {foot('/', item.opened || item.by === me ? '홈에서 보기' : '나도 답하기')}
+        {/* 홈은 오늘 질문만 받는다: 지난 날 질문은 '나도 답하기'로 보내지 않는다 */}
+        <p className="feed-text"><span className="muted small" style={{ display: 'block' }}>{item.question}</span>{item.opened || item.by === me ? <b>{item.text}</b> : item.day === localDate() ? <span className="muted">내가 답하면 열려요 🔒</span> : <span className="muted">지난 질문이라 답은 닫혀 있어요 🔒</span>}</p>
+        {(item.opened || item.by === me) ? foot('/', '홈에서 보기') : foot(item.day === localDate() ? '/' : null, '나도 답하기')}
       </article>
     );
   }

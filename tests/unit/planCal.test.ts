@@ -28,3 +28,10 @@ test('고른 기간의 축제, 없으면 그달 가까운 것', () => {
   assert.equal(r.during.length, 0);
   assert.equal(r.near?.t, '커피축제');
 });
+
+test('YYYY-MM-DD는 그 기기 날짜로 읽는다 (미주 같은 마이너스 시간대에서 하루 당겨지지 않게)', async () => {
+  const { dateOf } = await import('../../src/lib/planCal');
+  const d = dateOf('2026-11-07');
+  assert.equal(d.getDate(), 7);
+  assert.equal(d.getDay(), 6); // 토
+});

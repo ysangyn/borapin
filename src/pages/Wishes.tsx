@@ -157,7 +157,7 @@ export default function Wishes() {
               {done.map(({ w }) => (
                 <div key={w.id} className="wish-card done">
                   <span className="t" style={{ flex: 1 }}>{wishTitle(w)}</span>
-                  <button className="btn sm ghost" onClick={() => reviveWish(w.id).then(() => toast('가고 싶은 곳에 담았어요'), () => toast('담지 못했어요. 다시 해 주세요'))}>다시 가고 싶어요</button>
+                  <button className="btn sm ghost" onClick={() => reviveWish(w.id).then(() => toast('가고 싶은 곳에 다시 담았어요'), () => toast('담지 못했어요. 다시 해 주세요'))}>다시 담기</button>
                   <button className="btn sm line" onClick={() => { deleteWish(w.id).catch(() => toast('지우지 못했어요')); toast('목록에서 지웠어요', { label: '되돌리기', onClick: () => void restoreWish(w) }); }}>지우기</button>
                 </div>
               ))}

@@ -45,6 +45,7 @@ export default function Record() {
   const [kind, setKind] = useState<TripKind>('trip');
   const [status, setStatus] = useState<TripStatus>(sp.get('status') === 'planned' ? 'planned' : 'done');
   const [places, setPlaces] = useState<Place[]>(() => parsePlaceParam(sp.get('place')));
+  const initialPlaces = useRef<Place[]>(places);
   const [when, setWhen] = useState<When>({ p: 'day' });
   const [companions, setCompanions] = useState<string[]>(() => memberNames());
   // 새 기록은 함께 쓰는 사람 모두(부부·연인이면 둘 다)가 기본. 이름이 늦게 실려도 채운다
@@ -84,7 +85,11 @@ export default function Record() {
   const endBeforeStart = when.p === 'day' && !!when.d2 && toInputDate(when.y2 ?? when.y, when.m2 ?? when.m, when.d2) < toInputDate(when.y, when.m, when.d);
   const canSave = places.length > 0 && whenOk && !endBeforeStart && !saving;
   // 쓰던 내용이 있는지 (나갈 때 묻기): 연 때 모습과 견준다
-  const dirty = !saving && (editing ? loaded && !!opened && (title !== opened.title || memo !== opened.memo || JSON.stringify(places) !== JSON.stringify(opened.places) || JSON.stringify(when) !== JSON.stringify(opened.when)) : !!memo.trim() || !!title.trim());
+  // 새 기록: 글·사진·날짜를 넣었거나 처음 받은 장소(?place=)와 달라졌으면 / 고치기: 연 때와 한 칸이라도 다르면
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  const dirty = !saving && (editing
+    ? loaded && !!opened && (title !== opened.title || memo !== opened.memo || !same(places, opened.places) || !same(when, opened.when) || !same(companions, opened.companions) || kind !== opened.kind || status !== opened.status || pending.length > 0)
+    : !!memo.trim() || !!title.trim() || pending.length > 0 || !!when.y || !same(places, initialPlaces.current));
   useLeaveGuard(dirty);
 
   const setP = (p: Precision) => setWhen((w) => ({ p, y: w.y ?? (p === 'unknown' ? undefined : thisYear), m: p === 'day' || p === 'month' ? w.m : undefined, d: p === 'day' ? w.d : undefined, d2: p === 'day' ? w.d2 : undefined, m2: p === 'day' ? w.m2 : undefined, y2: p === 'day' ? w.y2 : undefined, s: p === 'season' ? w.s : undefined }));

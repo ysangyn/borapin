@@ -22,3 +22,11 @@ test('홈 봉투: 날이 지났고 안 연 것 중 가장 오래 기다린 것',
   assert.equal(arrived(ns, new Set(['b']), now)?.id, 'a');
   assert.equal(arrived(ns, new Set(['a', 'b']), now), null);
 });
+
+test('여행 표지 한 줄: 봉한 타임캡슐은 건너뛰고 열린 글 중 가장 최근 것', async () => {
+  const { coverNoteOf } = await import('../../src/lib/capsule');
+  const now = new Date(2026, 10, 5);
+  const notes = [{ id: 'a', text: '1년 뒤 우리에게 비밀', openAt: '2027-11-05' }, { id: 'b', text: '바다 좋았다', openAt: undefined }];
+  assert.equal(coverNoteOf(notes, now)?.id, 'b');
+  assert.equal(coverNoteOf([notes[0]], now), null);
+});
