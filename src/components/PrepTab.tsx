@@ -2,6 +2,7 @@ import DirectWays from './DirectWays';
 import WayPicker from './WayPicker';
 import { Link } from 'react-router-dom';
 import PackingCard from './PackingCard';
+import BookingsCard from './BookingsCard';
 import CityInfo from './CityInfo';
 import { Icon } from './ui';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
@@ -29,6 +30,7 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
     : { to: '/study', title: '오늘의 영어', line: '떠나기 전 하루 3문장씩 · 공항·호텔·식당 표현부터' };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="prep-tab">
+      <BookingsCard trip={trip} />
       <PackingCard trip={trip} trips={trips} />
 
       <section className="card white prep-card" data-testid="prep-way">

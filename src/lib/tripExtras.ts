@@ -79,8 +79,8 @@ export function useNotes(tripId: string | undefined) {
   const items = useByTrip<Note>(notesCol, tripId);
   return useMemo(() => (items ? [...items].sort((a, b) => (b.createdAt?.toMillis?.() ?? Date.now()) - (a.createdAt?.toMillis?.() ?? Date.now())) : null), [items]);
 }
-export const addNote = (tripId: string, text: string, user: User, openAt?: string) =>
-  queued(setDoc(doc(notesCol()), { tripId, text: text.trim(), by: { uid: user.uid, name: displayName(user) }, ...(openAt ? { openAt } : {}), createdAt: serverTimestamp(), v: 1 }));
+export const addNote = (tripId: string, text: string, user: User, openAt?: string, day?: string | null) =>
+  queued(setDoc(doc(notesCol()), { tripId, text: text.trim(), by: { uid: user.uid, name: displayName(user) }, ...(openAt ? { openAt } : {}), ...(day ? { day } : {}), createdAt: serverTimestamp(), v: 1 }));
 /** 열리는 날이 된 타임캡슐 글만 한 번 읽는다 (홈 봉투: 열리는 날이 없는 글은 오지 않는다) */
 export const readArrivedCapsules = async (today: string): Promise<Note[]> =>
   (await getDocs(query(notesCol(), where('openAt', '<=', today)))).docs.map((d) => ({ id: d.id, ...d.data() }) as Note);

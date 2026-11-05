@@ -148,6 +148,10 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertFails(setDoc(T(db, 'bad2'), trip({ kind: 'party' })));
     await assertFails(setDoc(T(db, 'bad3'), trip({ places: [] })));
     await assertFails(setDoc(T(db, 'bad4'), { title: '장소 없음', v: 1 }));
+    // 예약: 목록(30개까지)만
+    await assertSucceeds(setDoc(T(db, 'bk1'), trip({ bookings: [{ id: 'a', kind: 'flight', title: 'KE723 인천→간사이', date: '2026-12-10', time: '09:20', code: 'ABC123', memo: '' }] })));
+    await assertFails(setDoc(T(db, 'bk2'), trip({ bookings: 'KE723' })));
+    await assertFails(setDoc(T(db, 'bk3'), trip({ bookings: Array.from({ length: 31 }, (_, i) => ({ id: `b${i}`, kind: 'etc', title: '', date: null, time: null, code: '', memo: '' })) })));
   });
   test('우리 공간(main) 말고 다른 공간은 만들거나 읽지 못한다', async () => {
     const db = as.bora();
@@ -182,6 +186,10 @@ describe('함께 쓰는 사람 (보라)', () => {
     // 타임캡슐: 열리는 날은 날짜 꼴만
     await assertSucceeds(setDoc(doc(db, 'spaces/main/notes/n-cap'), { tripId: 't1', text: '1년 뒤 우리에게', by: { uid: 'bora', name: '보라' }, openAt: '2027-10-28', v: 1 }));
     await assertFails(setDoc(doc(db, 'spaces/main/notes/n-cap2'), { tripId: 't1', text: '이상한 날', by: { uid: 'bora', name: '보라' }, openAt: 'tomorrow', v: 1 }));
+    // 며칠째 이야기: 날짜 꼴이나 비움만
+    await assertSucceeds(setDoc(doc(db, 'spaces/main/notes/n-day'), { tripId: 't1', text: '첫날', by: { uid: 'bora', name: '보라' }, day: '2026-11-07', v: 1 }));
+    await assertSucceeds(setDoc(doc(db, 'spaces/main/notes/n-day0'), { tripId: 't1', text: '날짜 없이', by: { uid: 'bora', name: '보라' }, day: null, v: 1 }));
+    await assertFails(setDoc(doc(db, 'spaces/main/notes/n-day2'), { tripId: 't1', text: '이상한 날', by: { uid: 'bora', name: '보라' }, day: '첫날', v: 1 }));
     await assertSucceeds(deleteDoc(doc(db, 'spaces/main/notes/n-bora')));
   });
   test('장소 한 줄 평: 이름별 점 경로(reviews.이름)로 고쳐도 되고, 상대 칸은 그대로 남는다', async () => {

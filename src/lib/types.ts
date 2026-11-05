@@ -51,6 +51,8 @@ export interface Trip {
   planDone?: string[];
   /** 가는 길·돌아오는 길 (계획하기 '동선'에서 고름, 준비 탭·홈 카드·가이드북이 씀) */
   way?: { go?: WayPick | null; back?: WayPick | null };
+  /** 예약: 비행기·숙소·기차·표 (편명·체크인 시각·예약번호를 메일함 대신 여기서) */
+  bookings?: Booking[];
   source: 'app' | 'v22';
   createdBy?: { uid: string; email: string; name: string };
   createdAt?: Timestamp | null;
@@ -177,6 +179,8 @@ export interface Note {
   by: { uid: string; name: string };
   /** 타임캡슐: 이 날(YYYY-MM-DD)이 되기 전엔 봉투로만 보인다 */
   openAt?: string;
+  /** 여행의 며칠째 이야기인지 'YYYY-MM-DD' (선택, 한 권에서 날마다 묶음) */
+  day?: string | null;
   createdAt?: Timestamp | null;
   v: 1;
 }
@@ -210,6 +214,20 @@ export interface Access {
 export type Relation = 'spouse' | 'partner' | 'family' | 'friend' | 'relative' | 'other';
 
 /** 고른 교통편 한 가지 (src/lib/way.ts) */
+export type BookingKind = 'flight' | 'stay' | 'train' | 'bus' | 'car' | 'ticket' | 'etc';
+export interface Booking {
+  id: string;
+  kind: BookingKind;
+  /** '편명·구간'(KE723 인천→간사이) · 숙소 이름 · 표 이름 */
+  title: string;
+  /** 출발·체크인·이용 날짜 'YYYY-MM-DD' (모르면 null) */
+  date: string | null;
+  time: string | null;
+  /** 예약번호 */
+  code: string;
+  memo: string;
+}
+
 export interface WayPick {
   mode: 'car' | 'transit';
   /** 대중교통: 바로 가기 · 가장 빠른 길 · 들러 가기 · 1박 */

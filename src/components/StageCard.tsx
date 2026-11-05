@@ -11,6 +11,7 @@ import { localDate } from '../lib/dates';
 import HereNow from './HereNow';
 import { nextPlanStep, PLAN_STEP_LABEL } from '../lib/planPick';
 import { departLine } from '../lib/way';
+import { bookingLine, nextBooking } from '../lib/booking';
 
 /**
  * 여행 전·중·후에 따라 바뀌는 홈 맨 위 카드.
@@ -40,11 +41,13 @@ export default function StageCard({ stage }: { stage: Stage }) {
     ? (stage.days === 0 ? '오늘 떠나요!' : `${stage.label} · ${where}`)
     : stage.kind === 'during' ? `${stage.label} · ${where}` : `${stage.label} · ${where}`;
   // 떠나기 일주일 안: 고른 교통편 첫 차를 한 줄로 (예매 잊지 않게)
-  const depart = stage.kind === 'before' && stage.days <= 7 ? departLine(t.way?.go) : null;
+  // 떠나기 일주일 안·여행 중: 적어 둔 예약이 있으면 다음 예약 한 줄(편명·체크인·예약번호), 없으면 고른 교통편 첫 차
+  const nb = (stage.kind === 'during' || (stage.kind === 'before' && stage.days <= 7)) ? nextBooking(t.bookings) : null;
+  const depart = nb ? bookingLine(nb) : stage.kind === 'before' && stage.days <= 7 ? departLine(t.way?.go) : null;
   const sub = stage.kind === 'before'
-    ? (depart ? `${depart} · 예매하셨어요?` : planNext ? `계획 ${t.planDone?.length ?? 0}/5 · 다음은 '${PLAN_STEP_LABEL[planNext]}'` : pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
+    ? (nb ? depart : depart ? `${depart} · 예매하셨어요?` : planNext ? `계획 ${t.planDone?.length ?? 0}/5 · 다음은 '${PLAN_STEP_LABEL[planNext]}'` : pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
     : stage.kind === 'during'
-      ? (today ? (today.left ? `오늘 ${today.left}곳 남았어요${today.next ? ` · 다음 ${today.next}` : ''}` : `오늘 일정 ${today.total}곳 다 다녀왔어요`) : nPhotos ? `사진 ${nPhotos}장 올렸어요` : '오늘 찍은 사진을 바로 올려 두세요')
+      ? (nb && nb.date === localDate(now) ? `${depart}` : today ? (today.left ? `오늘 ${today.left}곳 남았어요${today.next ? ` · 다음 ${today.next}` : ''}` : `오늘 일정 ${today.total}곳 다 다녀왔어요`) : nPhotos ? `사진 ${nPhotos}장 올렸어요` : '오늘 찍은 사진을 바로 올려 두세요')
       : nPhotos && nNotes ? `사진 ${nPhotos}장 · 글 ${nNotes}개 남겼어요`
         : nPhotos ? `사진 ${nPhotos}장 올렸어요 · 한 줄만 남겨 볼까요?`
           : nNotes ? `글 ${nNotes}개 · 사진도 올려 둘까요?`

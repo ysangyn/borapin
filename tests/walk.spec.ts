@@ -193,6 +193,14 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'k29-trip-after-plan', async () => { await me.goto(`/trips/${krTrip}`); }, true);
   await step(me, 'k30-trip-plan-tab', async () => { await me.getByRole('tab', { name: /일정/ }).click(); }, true);
   await step(me, 'k31-trip-prep-tab', async () => { await me.getByRole('tab', { name: /준비/ }).click(); }, true);
+  await step(me, 'k31b-booking', async () => {
+    await me.getByTestId('booking-add').click();
+    await me.getByRole('button', { name: '숙소', exact: true }).click();
+    await me.getByLabel('예약 이름').fill('하회마을 한옥스테이');
+    await me.getByLabel('체크인 시각').fill('15:00');
+    await me.getByLabel('예약번호').fill('HN-2026');
+  }, true);
+  await step(me, 'k31c-booking-saved', async () => { await me.getByTestId('booking-save').click(); log(`  · 알림: ${await toastText(me)}`); }, true);
   await step(me, 'k32-home-before', async () => { await me.goto('/'); });
   await step(bora, 'k33-bora-hope', async () => { await bora.goto(`/trips/${krTrip}/plan-next?step=hope`); await bora.getByLabel('기대 한 줄').fill('노을 보면서 산책'); await bora.getByTestId('flow-hope-save').click(); });
 
@@ -233,6 +241,7 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'k46-note', async () => {
     await me.getByRole('tab', { name: /글/ }).click();
     await me.getByLabel('글 쓰기').fill('첫날 노을이 정말 예뻤다. 다음엔 겨울에 오자');
+    await me.getByTestId('note-day').getByRole('button', { name: '1일째' }).click().catch(() => undefined);
     await me.getByTestId('note-save').click();
     log(`  · 알림: ${await toastText(me)}`);
   }, true);
@@ -278,6 +287,16 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'w15-flow-hope', async () => { await me.getByTestId('flow-route-save').click(); await me.getByLabel('기대 한 줄').fill('도톤보리 야경'); await me.getByTestId('flow-hope-save').click(); });
   await step(me, 'w16-trip-info', async () => { await me.goto(`/trips/${abTrip}`); }, true);
   await step(me, 'w17-trip-prep', async () => { await me.getByRole('tab', { name: /준비/ }).click(); }, true);
+  await step(me, 'w17b-flight', async () => {
+    await me.getByTestId('booking-add').click();
+    await me.getByLabel('예약 이름').fill('KE723 인천→간사이');
+    await me.getByLabel('날짜').fill(ymdStr(kst(40)));
+    await me.getByLabel('시각').fill('09:20');
+    await me.getByLabel('예약번호').fill('ABC123');
+    await me.getByLabel('예약 메모').fill('제2터미널');
+    await me.getByTestId('booking-save').click();
+    log(`  · 알림: ${await toastText(me)}`);
+  }, true);
   await step(me, 'w18-phrases', async () => { const l = me.getByTestId('prep-speak'); if (await l.count()) await l.click(); else await me.goto('/phrases/ja'); }, true);
   await step(me, 'w19-home-before-abroad', async () => { await me.goto('/'); }, true);
   log('\n---- 오사카 다녀와서 ----');

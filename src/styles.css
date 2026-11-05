@@ -1555,3 +1555,10 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .ps-hopes { display: flex; flex-direction: column; gap: 4px; }
 .ps-hope { font-size: 18px; line-height: 1.35; }
 .ps-hope.pink { color: var(--pink-ink); } .ps-hope.blue { color: var(--blue-ink); }
+.booking-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.booking-row:first-of-type { border-top: none; }
+.booking-ico { font-size: 20px; flex: none; width: 28px; text-align: center; }
+.booking-main { flex: 1; min-width: 0; border: none; background: none; padding: 0; text-align: left; display: flex; flex-direction: column; gap: 2px; font: inherit; color: var(--ink); cursor: pointer; }
+.booking-main b { font-weight: 600; overflow-wrap: anywhere; }
+.booking-code { flex: none; font-variant-numeric: tabular-nums; }
+.booking-form { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }

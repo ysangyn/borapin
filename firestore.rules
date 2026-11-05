@@ -60,6 +60,7 @@ service cloud.firestore {
         && (!('hopes' in d) || (d.hopes is map && d.hopes.size() <= 10))
         && optList(d, 'planDone', 10)
         && (!('way' in d) || (d.way is map && d.way.keys().hasOnly(['go', 'back'])))
+        && optList(d, 'bookings', 30)
         && d.v == 1;
     }
 
@@ -113,6 +114,8 @@ service cloud.firestore {
         && d.by.uid == request.auth.uid
         // 타임캡슐: 열리는 날 'YYYY-MM-DD' (선택)
         && (!('openAt' in d) || (d.openAt is string && d.openAt.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+        // 며칠째 이야기 (선택)
+        && (!('day' in d) || d.day == null || (d.day is string && d.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
         && d.v == 1;
     }
 

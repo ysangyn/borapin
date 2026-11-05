@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
-import { addNote, deleteNote, useNotes } from '../lib/tripExtras';
+import { addNote, dayLabel, deleteNote, tripDays, useNotes } from '../lib/tripExtras';
+import { localDate } from '../lib/dates';
 import { useBusy, useToast } from './ui';
 import type { Trip } from '../lib/types';
 import { toneOf } from '../lib/members';
@@ -21,10 +22,15 @@ export default function NotesTab({ trip }: { trip: Trip }) {
   const [who, setWho] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [capsule, setCapsule] = useState(false);
+  // 며칠째 이야기인지: 여행 날짜가 있으면 고를 수 있게 (여행 중이면 오늘로 미리)
+  const days = tripDays(trip.when);
+  const [day, setDay] = useState<string | null>(() => (days.includes(localDate()) ? localDate() : null));
+  const [dayFilter, setDayFilter] = useState<string | null>(null);
   // 글을 쓰는 중(또는 남기는 중)에는 새 버전 자동 새로 고침이 기다린다 (쓰던 글이 날아가지 않게)
   useBusy(!!text.trim() || busy);
   const writers = [...new Set((notes ?? []).map((n) => n.by.name))];
-  const shown = (notes ?? []).filter((n) => !who || n.by.name === who);
+  const shown = (notes ?? []).filter((n) => (!who || n.by.name === who) && (!dayFilter || n.day === dayFilter));
+  const usedDays = days.filter((d) => (notes ?? []).some((n) => n.day === d));
 
   const save = async () => {
     if (!text.trim() || auth.status !== 'ready' || busy) return;
@@ -33,7 +39,7 @@ export default function NotesTab({ trip }: { trip: Trip }) {
     setText('');
     try {
       const openAt = capsule ? yearLater() : undefined;
-      await addNote(trip.id, t, auth.user, openAt);
+      await addNote(trip.id, t, auth.user, openAt, capsule ? null : day);
       if (openAt) { toast(`봉했어요 · ${openLabel(openAt)}에 열려요`); setCapsule(false); }
     } catch (e) {
       console.warn(e);
@@ -48,6 +54,11 @@ export default function NotesTab({ trip }: { trip: Trip }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="notes-tab">
       <div className="card white" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <textarea className="textarea" aria-label="글 쓰기" rows={3} placeholder="그날 있었던 일, 기억하고 싶은 말…" value={text} onChange={(e) => setText(e.target.value)} maxLength={5000} />
+        {days.length > 1 && !capsule && (
+          <div className="chips" role="group" aria-label="며칠째 이야기" data-testid="note-day">
+            {days.map((d, i) => <button key={d} type="button" className={'chip' + (day === d ? ' on' : '')} aria-pressed={day === d} onClick={() => setDay(day === d ? null : d)}>{i + 1}일째</button>)}
+          </div>
+        )}
         <div className="row-between" style={{ alignItems: 'center', gap: 8 }}>
           <button type="button" className={'chip' + (capsule ? ' on' : '')} aria-pressed={capsule} onClick={() => setCapsule(!capsule)} data-testid="capsule-toggle">✉ 1년 뒤 우리에게</button>
           <button className="btn sm" disabled={!text.trim() || busy} onClick={save} data-testid="note-save">{capsule ? '봉하기' : '남기기'}</button>
@@ -60,11 +71,17 @@ export default function NotesTab({ trip }: { trip: Trip }) {
           {writers.map((w) => <button key={w} className={'chip' + (who === w ? ' on' : '')} onClick={() => setWho(w)}>{w}만</button>)}
         </div>
       )}
+      {usedDays.length > 0 && (
+        <div className="chips" role="group" aria-label="날짜로 보기">
+          <button className={'chip' + (dayFilter === null ? ' on' : '')} onClick={() => setDayFilter(null)}>모든 날</button>
+          {usedDays.map((d) => <button key={d} className={'chip' + (dayFilter === d ? ' on' : '')} onClick={() => setDayFilter(d)}>{dayLabel(d, days).split(' · ')[0]}</button>)}
+        </div>
+      )}
       {notes && notes.length === 0 && <div className="small muted">아직 남긴 글이 없어요.</div>}
       {shown.map((n) => (
         <div key={n.id} className="note" data-testid="note">
           <div className="row-between" style={{ alignItems: 'center' }}>
-            <span className={'note-by t' + Math.max(0, toneOf(n.by.name))}>{n.by.name}</span>
+            <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className={'note-by t' + Math.max(0, toneOf(n.by.name))}>{n.by.name}</span>{n.day && days.includes(n.day) && <span className="tag">{dayLabel(n.day, days)}</span>}</span>
             <span className="tiny muted">{n.createdAt?.toDate ? noteDate(n.createdAt.toDate()) : '방금'}</span>
           </div>
           {isSealed(n) ? (
