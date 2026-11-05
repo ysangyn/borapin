@@ -57,8 +57,8 @@ export default function Home() {
   const pick = useMonthPick(stats, wishes ?? []);
   // 최근 핀(국내)이 있으면 그 시·군이 보이게 가까이, 없으면(기록 없음·최근이 해외) 추천 둘레를 도 단위로만
   const { near, nearZoom } = useMemo(() => {
-    // 떠나기 전·여행 중·막 다녀온 여행이 있으면 그 여행지를 먼저 비춘다
-    const fromStage = (stage?.trip.places ?? []).filter((p) => p.t === 'kr');
+    // 여행 중이면 그 여행지를 먼저 (그 밖엔 방금 남긴 핀 둘레 — 핀을 꽂자마자 지도에서 보이게)
+    const fromStage = stage?.kind === 'during' ? stage.trip.places.filter((p) => p.t === 'kr') : [];
     if (fromStage.length) return { near: fromStage, nearZoom: 7.3 };
     const fromTrips = (recent[0]?.places ?? []).filter((p) => p.t === 'kr');
     if (fromTrips.length) return { near: fromTrips, nearZoom: 7.3 };

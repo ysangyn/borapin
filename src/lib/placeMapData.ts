@@ -9,6 +9,7 @@ import { placeLong } from './geo';
 import { spaceTitle } from './members';
 import { samePlace } from './wishes';
 import type { MapShare, Place, PlaceMap, PlaceRec } from './types';
+import { ASK_URL } from './ask/url';
 
 /**
  * 내 지도 저장·공개 (lib/placeMaps.ts가 순수 계산, 여기는 Firestore).
@@ -83,8 +84,12 @@ export async function loadMapShare(token: string): Promise<MapShare | null> {
   const s = await getDoc(shareDoc(token));
   return s.exists() ? (s.data() as MapShare) : null;
 }
-/** 공유 주소: 카톡 미리보기(제목·그림)를 넣어 주는 뒷단이 있으면 그 주소로, 없으면 앱 주소로 */
-export const mapShareUrl = (token: string) => `${location.origin}/m/${token}`;
+/** 공유 주소: 카톡 미리보기(제목·그림)를 넣어 주는 뒷단(Worker /m/토큰)이 있으면 그 주소로, 없으면 앱 주소로. 시험용 프로젝트면 ?p= */
+export function mapShareUrl(token: string): string {
+  if (!ASK_URL || location.hostname === 'localhost' || /^127\./.test(location.hostname)) return `${location.origin}/m/${token}`;
+  const p = location.hostname.startsWith('borapin-test') ? '?p=borapin-test' : '';
+  return `${ASK_URL}/m/${token}${p}`;
+}
 
 /** 장소를 고친 뒤: 그 지역·주제 지도가 공개 중이면 사본을 다시 쓴다 (기다리지 않아도 됨, 실패해도 조용히) */
 let chain: Promise<void> = Promise.resolve();

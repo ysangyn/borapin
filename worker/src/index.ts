@@ -12,6 +12,7 @@
  * - 사람당 분당 20번(/news는 따로 메모리로 분당 20번), 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
  */
+import { parseShareDoc, previewHtml } from './mapPreview';
 import { find } from './find';
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { nearby, spot } from './nearby';
@@ -277,6 +278,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, model: env.MODEL });
+    // 받은 내 지도 미리보기(/m/토큰): 로그인 없이. 공개 사본(누구나 읽음)을 읽어 og 태그를 끼우고 사람은 앱으로 넘긴다
+    if (req.method === 'GET' && /^\/m\/[A-Za-z0-9_-]{6,40}$/.test(url.pathname)) return mapPreview(url, env);
     const isNews = req.method === 'GET' && url.pathname === '/news';
     const isPlace = req.method === 'GET' && url.pathname === '/place';
     const isGeo = req.method === 'GET' && url.pathname === '/geo';
@@ -410,3 +413,26 @@ async function handle(req: Request, env: Env): Promise<Response> {
   }
 }
 
+
+/** /m/토큰 → og 태그 HTML (10분 캐시). ?p=borapin-test 면 시험용 프로젝트·주소 */
+async function mapPreview(url: URL, env: Env): Promise<Response> {
+  const token = url.pathname.slice(3);
+  const projects = env.FIREBASE_PROJECTS.split(',').map((s) => s.trim());
+  const project = projects.includes(url.searchParams.get('p') ?? '') ? (url.searchParams.get('p') as string) : projects[0];
+  const appUrl = `https://${project}.web.app/m/${token}`;
+  const cache = caches.default;
+  const key = new Request(url.toString().split('?')[0] + `?p=${project}`);
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  let html: string;
+  try {
+    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(project)}/databases/(default)/documents/mapShares/${encodeURIComponent(token)}`, { signal: AbortSignal.timeout(5000) });
+    const p = r.ok ? parseShareDoc(await r.json()) : null;
+    html = p ? previewHtml(p, appUrl) : previewHtml({ title: '보라핀 지도', intro: '', by: '보라핀', regionLabel: '', count: 0, image: null, top: [] }, appUrl);
+  } catch {
+    html = `<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${appUrl}"><a href="${appUrl}">지도 열기</a>`;
+  }
+  const res = new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=600' } });
+  await cache.put(key, res.clone()).catch(() => undefined);
+  return res;
+}

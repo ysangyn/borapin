@@ -4,6 +4,7 @@
  */
 import { USE_EMULATOR } from '../firebase';
 
-export const ASK_URL: string = (import.meta.env.VITE_ASK_URL as string | undefined)?.replace(/\/$/, '') ?? '';
+// node 시험에서는 import.meta.env가 없다 → 빈 값
+export const ASK_URL: string = ((import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_ASK_URL)?.replace(/\/$/, '') ?? '';
 /** 시험(에뮬레이터)에서는 AI를 부르지 않는다 (결과가 늘 같아야 하고, 한도를 아낀다) */
 export const aiAvailable = () => !!ASK_URL && !USE_EMULATOR && typeof navigator !== 'undefined' && navigator.onLine !== false;
