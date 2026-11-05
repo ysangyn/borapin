@@ -7,8 +7,13 @@
 import { test, type Browser, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const OWNER = 'ysangyn@gmail.com';
+const BORA = 'bora.test@gmail.com';
+const db = getFirestore(getApps()[0] ?? initializeApp({ projectId: 'demo-borapin' }));
+const tripsCol = db.collection('spaces').doc('main').collection('trips');
 const OUT = 'test-results/walk';
 fs.mkdirSync(OUT, { recursive: true });
 test.describe.configure({ mode: 'serial' });
@@ -25,10 +30,10 @@ async function phone(browser: Browser) {
   return page;
 }
 
-async function signIn(page: Page) {
+async function signIn(page: Page, email = OWNER, nm = '영상') {
   await page.goto('/');
   await page.waitForFunction(() => typeof (window as unknown as { __testSignIn?: unknown }).__testSignIn === 'function');
-  await page.evaluate(([e, nm]) => (window as unknown as { __testSignIn: (e: string, n: string) => Promise<void> }).__testSignIn(e, nm), [OWNER, '영상']);
+  await page.evaluate(([e, x]) => (window as unknown as { __testSignIn: (e: string, n: string) => Promise<void> }).__testSignIn(e, x), [email, nm]);
   await page.getByRole('navigation', { name: '주 메뉴' }).waitFor({ timeout: 20_000 });
 }
 
@@ -86,6 +91,211 @@ async function step(page: Page, label: string, fn: () => Promise<void>, full = f
   }
 }
 const toastText = async (page: Page) => (await page.getByRole('status').first().textContent({ timeout: 4000 }).catch(() => ''))?.trim() ?? '';
+
+// ───────────────────────── 여행 이야기: 계획 → 떠나기 → 다녀와서 기록 ─────────────────────────
+const kst = (offsetDays: number) => { const d = new Date(Date.now() + 9 * 3600_000 + offsetDays * 86400_000); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
+const ymdStr = (o: { y: number; m: number; d: number }) => `${o.y}-${String(o.m).padStart(2, '0')}-${String(o.d).padStart(2, '0')}`;
+/** 시간이 흐른 셈 치기: 여행 날짜를 오늘 기준으로 옮긴다 (from~to: 오늘부터 며칠) */
+async function moveTrip(id: string, from: number, to: number) {
+  const a = kst(from), b = kst(to);
+  await tripsCol.doc(id).update({ when: { p: 'day', y: a.y, m: a.m, d: a.d, y2: b.y, m2: b.m, d2: b.d } });
+}
+/** 폰 사진첩에서 고른 것처럼: 색 다른 jpg 몇 장 */
+async function photos(page: Page, k: number) {
+  const urls = await page.evaluate((count) => Array.from({ length: count }, (_, i) => {
+    const c = document.createElement('canvas'); c.width = 1200; c.height = 900;
+    const g = c.getContext('2d')!; const gr = g.createLinearGradient(0, 0, 1200, 900);
+    gr.addColorStop(0, `hsl(${(i * 67) % 360},70%,70%)`); gr.addColorStop(1, `hsl(${(i * 67 + 140) % 360},60%,40%)`);
+    g.fillStyle = gr; g.fillRect(0, 0, 1200, 900); g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.arc(300 + i * 90, 300, 110, 0, 7); g.fill();
+    return c.toDataURL('image/jpeg', 0.85);
+  }), k);
+  return urls.map((u, i) => ({ name: `IMG_${2000 + i}.jpg`, mimeType: 'image/jpeg', buffer: Buffer.from(u.split(',')[1], 'base64') }));
+}
+const say = (page: Page, s: string) => page.getByText(s).first().isVisible().catch(() => false);
+
+test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도시에서 — 계획하고 다녀와서 기록까지', async ({ browser }) => {
+  test.setTimeout(25 * 60_000);
+  const me = await phone(browser);
+  const bora = await phone(browser);
+  await signIn(me);
+  await signIn(bora, BORA, '보라');
+  const both = [me, bora];
+  void both;
+
+  // ━━ 국내: 다음 달 1박 2일, 어디 갈지 모름 ━━
+  log('\n==== 국내 여행: 다음 달 1박 2일, 어디 갈지 모르는 상태에서 ====');
+  await step(me, 'k01-home-start', async () => { await me.goto('/'); });
+  await step(me, 'k02-ask-where', async () => {
+    await me.goto('/ask');
+    await me.getByLabel('질문').fill('다음 달에 1박 2일로 어디 갈까');
+    await me.getByRole('button', { name: '묻기' }).click();
+    await me.getByTestId('answer').last().waitFor({ timeout: 15_000 });
+    log(`  · 물어보기 답: ${(await me.getByTestId('answer').last().innerText()).replace(/\s+/g, ' ').slice(0, 260)}`);
+  });
+  await step(me, 'k03-plus', async () => { await me.goto('/'); await me.getByRole('button', { name: '남기기' }).click(); });
+  await step(me, 'k04-planner', async () => { await me.goto('/plan'); });
+  await step(me, 'k05-planner-conds', async () => {
+    await me.getByRole('button', { name: '다음 달', exact: true }).click().catch(() => undefined);
+    await me.getByRole('button', { name: /^1박 2일$/ }).click().catch(() => undefined);
+    await me.getByRole('button', { name: '국내', exact: true }).click().catch(() => undefined);
+  }, true);
+  await step(me, 'k06-cands', async () => { await me.getByTestId('planner-go').click(); await me.getByTestId('plan-cand').first().waitFor(); }, true);
+  const draftUrl = me.url();
+  const candNames = await me.getByTestId('plan-cand').locator('.plan-cand-name').allInnerTexts().catch(() => []);
+  log(`  · 후보: ${candNames.join(' / ')}`);
+  await step(me, 'k07-my-heart', async () => { await me.getByTestId('plan-heart').first().click(); });
+  await step(me, 'k08-share-hint', async () => { await me.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); });
+  await step(bora, 'k09-bora-home', async () => { await bora.goto('/'); });
+  await step(bora, 'k10-bora-feed', async () => { await bora.goto('/feed'); });
+  await step(bora, 'k11-bora-draft', async () => { await bora.goto(draftUrl); await bora.getByTestId('plan-cand').first().waitFor(); }, true);
+  await step(bora, 'k12-bora-heart', async () => { await bora.getByTestId('plan-heart').first().click(); });
+  await step(me, 'k13-me-sees-match', async () => { await me.reload(); await me.getByTestId('plan-decide').first().waitFor({ timeout: 15_000 }); });
+  await step(me, 'k14-decided', async () => { await me.getByTestId('plan-decide').first().click(); await me.waitForURL(/plan-next/, { timeout: 15_000 }); log(`  · 알림: ${await toastText(me)}`); });
+  const krTrip = /\/trips\/([^/?]+)/.exec(me.url())?.[1] ?? '';
+  log(`  · 만든 여행: ${krTrip}`);
+
+  // 다섯 걸음
+  await step(me, 'k15-flow-when', async () => { await me.getByTestId('flow-cal').waitFor(); }, true);
+  await step(me, 'k16-flow-stay', async () => { await me.getByTestId('flow-when-save').click(); await me.getByTestId('plan-flow').and(me.locator('[data-step="stay"]')).waitFor(); });
+  await step(me, 'k17-flow-stay-hood', async () => {
+    const hood = me.getByTestId('flow-hood').first();
+    if (await hood.count()) await hood.click(); else await me.getByLabel('숙소').fill('바다 보이는 숙소');
+  });
+  await step(me, 'k18-flow-pick', async () => {
+    const save = me.getByTestId('flow-stay-save');
+    if (await save.isVisible().catch(() => false)) await save.click(); else await me.getByTestId('flow-skip').click();
+    await me.getByTestId('pick-card').first().waitFor();
+  }, true);
+  await step(me, 'k19-flow-pick-hearts', async () => { for (let i = 0; i < 3; i++) await me.getByTestId('pick-card').nth(i).locator('.pick-hit').click(); });
+  await step(me, 'k20-flow-pick-eat', async () => { await me.getByRole('tab', { name: /먹을 것/ }).click(); await me.getByTestId('pick-card').first().locator('.pick-hit').click(); });
+  await step(bora, 'k21-bora-pick', async () => {
+    await bora.goto(`/trips/${krTrip}/plan-next?step=pick`);
+    await bora.getByTestId('pick-card').first().waitFor();
+    await bora.getByTestId('pick-card').nth(0).locator('.pick-hit').click();
+    await bora.getByTestId('pick-card').nth(3).locator('.pick-hit').click();
+  }, true);
+  await step(bora, 'k22-bora-trip-home', async () => { await bora.goto('/'); });
+  await step(me, 'k23-flow-route', async () => { await me.reload(); await me.getByTestId('flow-pick-next').click(); await me.getByTestId('flow-day').first().waitFor(); }, true);
+  await step(me, 'k24-flow-way', async () => { const o = me.getByTestId('way-go-open'); if (await o.count()) { await o.click(); await me.getByTestId('way-sheet').waitFor(); } });
+  await step(me, 'k25-flow-way-picked', async () => {
+    const pick = me.getByTestId('transit-pick').first();
+    if (await pick.count()) await pick.click(); else if (await me.getByTestId('way-car').count()) await me.getByTestId('way-car').click();
+    log(`  · 알림: ${await toastText(me)}`);
+  });
+  await step(me, 'k26-flow-hope', async () => { await me.getByTestId('flow-route-save').click(); await me.getByLabel('기대 한 줄').waitFor(); }, true);
+  await step(me, 'k27-flow-hope-write', async () => { await me.getByLabel('기대 한 줄').fill('바다 보면서 아침 먹기'); });
+  await step(me, 'k28-flow-done', async () => { await me.getByTestId('flow-hope-save').click(); log(`  · 알림: ${await toastText(me)}`); });
+  await step(me, 'k29-trip-after-plan', async () => { await me.goto(`/trips/${krTrip}`); }, true);
+  await step(me, 'k30-trip-plan-tab', async () => { await me.getByRole('tab', { name: /일정/ }).click(); }, true);
+  await step(me, 'k31-trip-prep-tab', async () => { await me.getByRole('tab', { name: /준비/ }).click(); }, true);
+  await step(me, 'k32-home-before', async () => { await me.goto('/'); });
+  await step(bora, 'k33-bora-hope', async () => { await bora.goto(`/trips/${krTrip}/plan-next?step=hope`); await bora.getByLabel('기대 한 줄').fill('노을 보면서 산책'); await bora.getByTestId('flow-hope-save').click(); });
+
+  // 떠나기 하루 전 → 여행 중
+  log('\n---- 시간이 흘러: 내일 떠나요 ----');
+  await moveTrip(krTrip, 1, 2);
+  await step(me, 'k34-home-dday1', async () => { await me.goto('/'); });
+  await step(me, 'k35-prep-dday1', async () => { await me.goto(`/trips/${krTrip}?tab=prep`); }, true);
+  log('\n---- 여행 중 (첫날) ----');
+  await moveTrip(krTrip, 0, 1);
+  await me.context().grantPermissions(['geolocation']);
+  await me.context().setGeolocation({ latitude: 34.74, longitude: 127.74 });
+  await step(me, 'k36-home-during', async () => { await me.goto('/'); });
+  await step(me, 'k37-during-here', async () => { await me.getByTestId('here-now').click(); await me.getByTestId('here-sheet').waitFor({ timeout: 10_000 }); });
+  await step(me, 'k38-during-here-save', async () => { const b = me.getByTestId('here-fallback').first(); if (await b.count()) await b.click(); log(`  · 알림: ${await toastText(me)}`); });
+  await step(me, 'k39-during-quick-photos', async () => {
+    await me.goto('/');
+    const inp = me.getByTestId('quick-upload-input');
+    if (await inp.count()) await inp.setInputFiles(await photos(me, 4)); else await me.getByTestId('stage-action').click();
+    await me.waitForTimeout(4000);
+    log(`  · 알림: ${await toastText(me)}`);
+  });
+  await step(me, 'k40-during-plan-check', async () => { await me.goto(`/trips/${krTrip}?tab=plan`); const c = me.locator('.plan-row input[type=checkbox]'); if (await c.count()) await c.first().check(); }, true);
+
+  // 다녀와서
+  log('\n---- 다녀와서 (사흘 뒤) ----');
+  await moveTrip(krTrip, -3, -2);
+  await step(me, 'k41-home-after', async () => { await me.goto('/'); }, true);
+  await step(me, 'k42-mark-done', async () => { const b = me.getByRole('button', { name: '다녀왔어요' }).first(); if (await b.count()) { await b.click(); log(`  · 알림: ${await toastText(me)}`); } });
+  await step(me, 'k43-home-after-done', async () => { await me.goto('/'); }, true);
+  await step(me, 'k44-trip-done', async () => { await me.goto(`/trips/${krTrip}`); }, true);
+  await step(me, 'k45-photos-add', async () => {
+    await me.getByRole('tab', { name: /사진/ }).click();
+    await me.getByTestId('photo-input').setInputFiles(await photos(me, 6));
+    await me.waitForTimeout(6000);
+    log(`  · 알림: ${await toastText(me)}`);
+  }, true);
+  await step(me, 'k46-note', async () => {
+    await me.getByRole('tab', { name: /글/ }).click();
+    await me.getByLabel('글 쓰기').fill('첫날 노을이 정말 예뻤다. 다음엔 겨울에 오자');
+    await me.getByTestId('note-save').click();
+    log(`  · 알림: ${await toastText(me)}`);
+  }, true);
+  await step(me, 'k47-place-new', async () => { await me.goto(`/places/new?trip=${krTrip}`); }, true);
+  await step(me, 'k48-place-fill', async () => {
+    await me.getByLabel('장소 이름').fill('바다식당');
+    await me.getByRole('button', { name: '맛집', exact: true }).click().catch(() => undefined);
+    await me.getByRole('button', { name: /또 갈래요/ }).first().click().catch(() => undefined);
+    await me.getByPlaceholder('어땠어요?').first().fill('갈치조림 최고');
+  }, true);
+  await step(me, 'k49-place-saved', async () => { await me.getByTestId('place-save').click(); log(`  · 알림: ${await toastText(me)}`); });
+  await step(me, 'k50-trip-info-after', async () => { await me.goto(`/trips/${krTrip}`); }, true);
+  await step(bora, 'k51-bora-feed-after', async () => { await bora.goto('/feed'); }, true);
+  await step(bora, 'k52-bora-trip', async () => { await bora.goto(`/trips/${krTrip}`); }, true);
+  await step(bora, 'k53-bora-review', async () => {
+    await bora.getByRole('tab', { name: /들른 곳/ }).click().catch(() => undefined);
+    await bora.getByText('바다식당').first().click();
+  }, true);
+  await step(me, 'k54-map-after', async () => { await me.goto('/map'); });
+  await step(me, 'k55-memories-after', async () => { await me.goto('/memories'); }, true);
+
+  // ━━ 해외: 가고 싶은 도시에서 시작 (오사카 3박 4일) ━━
+  log('\n==== 해외 여행: 오사카 3박 4일 ====');
+  await step(me, 'w01-wishes', async () => { await me.goto('/wishes'); });
+  await step(me, 'w02-world', async () => { await me.goto('/wishes?find=world'); await me.getByTestId('world-picker').waitFor(); }, true);
+  await step(me, 'w03-world-osaka', async () => { const row = me.getByTestId('world-city').filter({ hasText: '오사카' }).first(); await row.scrollIntoViewIfNeeded(); });
+  await step(me, 'w04-world-add', async () => { await me.getByTestId('world-city').filter({ hasText: '오사카' }).first().getByTestId('world-add').click(); log(`  · 알림: ${await toastText(me)}`); });
+  await step(me, 'w05-wish-card', async () => { await me.goto('/wishes'); await me.getByRole('link', { name: /오사카.*가고 싶은 곳 보기/ }).first().click(); }, true);
+  await step(me, 'w06-make-trip', async () => { await me.getByTestId('wish-edit-plan').click(); await me.getByTestId('planner-dest').waitFor(); }, true);
+  await step(me, 'w07-planner-fixed', async () => {
+    await me.getByRole('button', { name: '날짜 고르기' }).click();
+    await me.getByLabel('떠날 날').fill(ymdStr(kst(40)));
+    await me.getByRole('button', { name: /^3박 4일$/ }).click();
+  }, true);
+  await step(me, 'w08-made', async () => { await me.getByTestId('planner-make').click(); await me.waitForURL(/plan-next/); log(`  · 알림: ${await toastText(me)}`); });
+  const abTrip = /\/trips\/([^/?]+)/.exec(me.url())?.[1] ?? '';
+  await step(me, 'w09-flow-when', async () => { await me.getByTestId('flow-cal').waitFor(); }, true);
+  await step(me, 'w10-flow-stay', async () => { await me.getByTestId('flow-when-save').click(); });
+  await step(me, 'w11-flow-stay-link', async () => { await me.getByLabel('숙소').fill('난바 근처 호텔'); });
+  await step(me, 'w12-flow-pick', async () => { await me.getByTestId('flow-stay-save').click(); await me.getByTestId('pick-card').first().waitFor({ timeout: 10_000 }); }, true);
+  await step(me, 'w13-flow-pick-tabs', async () => { for (let i = 0; i < 2; i++) await me.getByTestId('pick-card').nth(i).locator('.pick-hit').click(); await me.getByRole('tab', { name: /먹을 것/ }).click(); }, true);
+  await step(me, 'w14-flow-route', async () => { await me.getByTestId('flow-pick-next').click(); await me.getByTestId('flow-day').first().waitFor(); }, true);
+  await step(me, 'w15-flow-hope', async () => { await me.getByTestId('flow-route-save').click(); await me.getByLabel('기대 한 줄').fill('도톤보리 야경'); await me.getByTestId('flow-hope-save').click(); });
+  await step(me, 'w16-trip-info', async () => { await me.goto(`/trips/${abTrip}`); }, true);
+  await step(me, 'w17-trip-prep', async () => { await me.getByRole('tab', { name: /준비/ }).click(); }, true);
+  await step(me, 'w18-phrases', async () => { const l = me.getByTestId('prep-speak'); if (await l.count()) await l.click(); else await me.goto('/phrases/ja'); }, true);
+  await step(me, 'w19-home-before-abroad', async () => { await me.goto('/'); }, true);
+  log('\n---- 오사카 다녀와서 ----');
+  await moveTrip(abTrip, -6, -3);
+  await tripsCol.doc(abTrip).update({ status: 'done' });
+  await step(me, 'w20-home-after', async () => { await me.goto('/'); }, true);
+  await step(me, 'w21-photos', async () => { await me.goto(`/trips/${abTrip}?tab=photos`); await me.getByTestId('photo-input').setInputFiles(await photos(me, 5)); await me.waitForTimeout(6000); }, true);
+  await step(me, 'w22-place', async () => {
+    await me.goto(`/places/new?trip=${abTrip}`);
+    await me.getByLabel('장소 이름').fill('쿠로몬 시장');
+    await me.getByRole('button', { name: '볼거리', exact: true }).click().catch(() => undefined);
+    await me.getByPlaceholder('어땠어요?').first().fill('참치 초밥 줄 서서 먹음');
+    await me.getByTestId('place-save').click();
+    log(`  · 알림: ${await toastText(me)}`);
+  });
+  await step(me, 'w23-trip-done', async () => { await me.goto(`/trips/${abTrip}`); }, true);
+  await step(me, 'w24-map-world', async () => { await me.goto('/map'); await me.getByRole('tab', { name: '세계' }).first().click(); });
+  await step(me, 'w25-trips-list', async () => { await me.goto('/trips'); }, true);
+
+  fs.writeFileSync(path.join(OUT, 'report.txt'), lines.join('\n') + '\n');
+  await me.context().close();
+  await bora.context().close();
+});
 
 test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
   test.setTimeout(15 * 60_000);
