@@ -55,12 +55,8 @@ export default function Feed() {
 
   return (
     <>
-      <TopBar title="피드" right={<Link to="/memories" className="btn sm soft" data-testid="to-memories">추억 돌아보기</Link>} />
+      <TopBar title="여행 일기장" right={<Link to="/memories" className="btn sm soft" data-testid="to-memories">추억 돌아보기</Link>} />
       <div className="page feed" style={{ paddingTop: 4 }} data-testid="feed">
-        <div className="diary-head">
-          <span className="tiny muted">{spaceTitle()}의</span>
-          <span className="jua diary-title">여행 일기장</span>
-        </div>
         {trips && trips.length > 0 && <QuickUpload trips={trips} />}
         {week && (
           <div className="card white diary-week" data-testid="feed-week">
@@ -111,32 +107,39 @@ export default function Feed() {
 function MonthStrip({ items, onDay }: { items: FeedItem[]; onDay: (id: string) => void }) {
   const now = new Date();
   const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() });
+  const [open, setOpen] = useState(false);
   const oldest = items.length ? new Date(items[items.length - 1].at) : now;
   const canPrev = ym.y * 12 + ym.m > oldest.getFullYear() * 12 + oldest.getMonth();
   const canNext = ym.y * 12 + ym.m < now.getFullYear() * 12 + now.getMonth();
   const step = (d: number) => setYm(({ y, m }) => { const t = y * 12 + m + d; return { y: Math.floor(t / 12), m: t % 12 }; });
   const { lead, days } = monthCells(items, ym.y, ym.m);
   const today = dayId(Date.now());
-  const active = days.filter((d) => d.n > 0).length;
+  const active = days.filter((d) => d.n > 0);
+  // 접었을 때는 한 주만: 이번 달이면 오늘이 든 주, 지난달이면 마지막으로 남긴 날이 든 주
+  const focus = ym.y === now.getFullYear() && ym.m === now.getMonth() ? now.getDate() : active[active.length - 1]?.day ?? 1;
+  const row = Math.floor((lead + focus - 1) / 7);
+  const cells: ({ day: number; id: string; n: number; photoId?: string } | null)[] = [...Array.from({ length: lead }, () => null), ...days];
+  const shown = open ? cells : cells.slice(row * 7, row * 7 + 7);
   return (
     <div className="card white diary-month" data-testid="feed-month">
       <div className="row-between" style={{ alignItems: 'center' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <button type="button" className="icon-btn sm" onClick={() => step(-1)} disabled={!canPrev} aria-label="지난달">‹</button>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <button type="button" className="diary-nav" onClick={() => step(-1)} disabled={!canPrev} aria-label="지난달">‹</button>
           <b className="jua" style={{ fontSize: 17 }}>{ym.y !== now.getFullYear() ? `${ym.y}년 ` : ''}{ym.m + 1}월</b>
-          <button type="button" className="icon-btn sm" onClick={() => step(1)} disabled={!canNext} aria-label="다음 달">›</button>
+          <button type="button" className="diary-nav" onClick={() => step(1)} disabled={!canNext} aria-label="다음 달">›</button>
         </span>
-        <span className="tiny muted">{active ? `남긴 날 ${active}` : '이달엔 아직 없어요'}</span>
+        <button type="button" className="link-btn tiny" onClick={() => setOpen((v) => !v)} aria-expanded={open} data-testid="feed-month-toggle">
+          {active.length ? `남긴 날 ${active.length} · ` : ''}{open ? '접기' : '한 달 보기'}
+        </button>
       </div>
       <div className="diary-grid">
         {['일', '월', '화', '수', '목', '금', '토'].map((w) => <span key={w} className="diary-wd">{w}</span>)}
-        {Array.from({ length: lead }, (_, i) => <span key={'b' + i} />)}
-        {days.map((d) => (
+        {shown.map((d, i) => d ? (
           <button key={d.id} type="button" className={'diary-cell' + (d.n ? ' has' : '') + (d.photoId ? ' photo' : '') + (d.id === today ? ' today' : '')} disabled={!d.n} onClick={() => onDay(d.id)} aria-label={`${ym.m + 1}월 ${d.day}일${d.n ? ` 소식 ${d.n}` : ''}`} data-testid={d.n ? 'feed-month-day' : undefined}>
             {d.photoId && <PhotoImg id={d.photoId} />}
             <span>{d.day}</span>
           </button>
-        ))}
+        ) : <span key={'b' + i} />)}
       </div>
     </div>
   );

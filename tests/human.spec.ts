@@ -656,7 +656,9 @@ test.describe('사람처럼 쓰기', () => {
     await expect(page.getByRole('status')).toContainText('사진 2장을 올렸어요', { timeout: 60_000 });
     const first = page.getByTestId('feed-item').first();
     await expect(first).toHaveAttribute('data-kind', 'photos');
-    await expect(first).toContainText('여수 밤바다 사진에 사진 3장');
+    // 일기장 모양: 여행 이름은 제목으로, '사진 3장'은 머리 줄에
+    await expect(first).toContainText('사진 3장');
+    await expect(first).toContainText('여수 밤바다 사진');
     await page.context().close();
   });
 

@@ -1704,3 +1704,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .sprout-in i:last-child { right: 1px; transform: scaleX(-1) rotate(-10deg); }
 @keyframes sprout-up { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sprout-in, .next-cell-say { animation: none; } }
+.diary-nav { width: 32px; height: 32px; border: none; background: none; padding: 0; color: var(--ink2); font: inherit; font-size: 22px; line-height: 1; border-radius: 50%; }
+.diary-nav:disabled { opacity: .25; }
+.diary-nav:not(:disabled):active { background: var(--mist); }
+.diary-cell { max-height: 46px; aspect-ratio: auto; height: 42px; }
