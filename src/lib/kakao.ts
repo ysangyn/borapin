@@ -6,6 +6,8 @@
  */
 const JS_KEY = '3fa4657079c863251f5d20d044c88f65';
 const SDK = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
+/** SDK 파일 무결성 (sha384). CI(scripts/kakao-sri.ts)가 받아서 계산·대조한다. 비어 있으면 검사 없이 받는다 */
+export const SDK_SRI = '';
 
 interface KakaoSdk {
   isInitialized(): boolean;
@@ -27,6 +29,7 @@ function loadSdk(): Promise<KakaoSdk> {
   loading = new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = SDK;
+    if (SDK_SRI) s.integrity = SDK_SRI;
     s.crossOrigin = 'anonymous';
     s.onload = () => (window.Kakao ? resolve(window.Kakao) : reject(new Error('Kakao SDK missing')));
     s.onerror = () => { loading = null; reject(new Error('Kakao SDK load failed')); };

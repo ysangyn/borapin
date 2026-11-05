@@ -156,3 +156,6 @@ export function parsePlaceParam(v: string | null): Place[] {
   if (t === 'country' && id) return [city ? { t: 'country', id, city: decodeURIComponent(city) } : { t: 'country', id }];
   return [];
 }
+
+/** 여행 지도의 갈래: 해외가 한 곳이라도 있으면 세계(우리나라는 나라 칸으로 함께 칠한다), 아니면 국내 */
+export const tripMapMode = (places: Place[]): 'kr' | 'world' => (places.some((p) => p.t === 'country') ? 'world' : 'kr');

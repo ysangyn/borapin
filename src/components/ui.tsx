@@ -1,6 +1,7 @@
 import { onSpeechNote } from '../lib/speech';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useBlocker, useLocation, useNavigate } from 'react-router-dom';
+import { leaveFreely, shouldAskLeave } from '../lib/leave';
 import { members, memberNames } from '../lib/members';
 import { asksForFeed, useRecentAsks } from '../lib/asks';
 import { useStore } from '../lib/store';
@@ -135,6 +136,7 @@ export function useGoBack() {
   const nav = useNavigate();
   const loc = useLocation();
   return useCallback((fallback = '/') => {
+    leaveFreely(); // 앱 안 '뒤로'·저장 뒤 돌아가기는 묻지 않는다 (폰 뒤로 가기만 useLeaveGuard가 묻는다)
     if (loc.key !== 'default') nav(-1);
     else nav(fallback, { replace: true });
   }, [nav, loc.key]);
@@ -158,9 +160,16 @@ export function useBusy(active: boolean) {
   }, [active]);
 }
 
-/** 쓰던 내용이 있으면 작업 중으로 세고, 새로고침·창 닫기 전에 묻는다 */
+
+/** 쓰던 내용이 있으면 작업 중으로 세고, 새로고침·창 닫기·폰 뒤로 가기 전에 묻는다 */
 export function useLeaveGuard(dirty: boolean) {
   useBusy(dirty);
+  const blocker = useBlocker(({ historyAction, currentLocation, nextLocation }) => currentLocation.pathname !== nextLocation.pathname && shouldAskLeave(dirty, historyAction));
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    if (window.confirm('저장하지 않은 내용이 있어요. 그래도 나갈까요?')) blocker.proceed();
+    else blocker.reset();
+  }, [blocker]);
   useEffect(() => {
     if (!dirty) return;
     const h = (e: BeforeUnloadEvent) => {
@@ -178,7 +187,7 @@ export function TopBar({ title, back, right, backTo = '/', confirmLeave }: { tit
     <div className="topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {back && (
-          <button className="back" aria-label="뒤로" onClick={() => { if (!confirmLeave || window.confirm('저장하지 않은 내용이 있어요. 그래도 나갈까요?')) goBack(backTo); }}>
+          <button className="back" aria-label="뒤로" onClick={() => { if (!confirmLeave || window.confirm('저장하지 않은 내용이 있어요. 그래도 나갈까요?')) goBack(backTo); }} data-testid="topbar-back">
             <Icon name="back" size={22} stroke={2.2} />
           </button>
         )}

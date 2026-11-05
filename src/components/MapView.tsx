@@ -361,7 +361,8 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
     if (mode === 'world') {
       for (const [id, n] of stats.countryVisits) if (!focusSet || focusSet.has(id)) map.setFeatureState({ source: 'world', id }, { visits: n });
       for (const id of stats.countryPlanned) if (!focusSet || focusSet.has(id)) map.setFeatureState({ source: 'world', id }, { planned: true });
-      if (!focusSet && (stats.cellVisits.size || stats.cellPlanned.size)) map.setFeatureState({ source: 'world', id: 'KOR' }, { visits: 1 });
+      // 우리나라는 세계 지도에서 나라 칸 하나로 (전체 보기면 국내 기록이 있을 때, 여행 하나면 그 여행에 국내 곳이 있을 때)
+      if (focus ? focus.some((p) => p.t === 'kr') : stats.cellVisits.size || stats.cellPlanned.size) map.setFeatureState({ source: 'world', id: 'KOR' }, { visits: 1 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats, ready, focusKey, mode]);

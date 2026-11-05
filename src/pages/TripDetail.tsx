@@ -25,7 +25,7 @@ import PlaceRecRow from '../components/PlaceRecRow';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
-import { placeLabel, placeLong, placeParam } from '../lib/geo';
+import { placeLabel, placeLong, placeParam, tripMapMode } from '../lib/geo';
 import { tripTabs, type TripTab } from '../lib/stage';
 import type { PlaceRec, Trip } from '../lib/types';
 
@@ -83,7 +83,6 @@ export default function TripDetail() {
   const sugPlaces = suggestPlaces(trip, photos);
   const nd = nightsDays(trip.when);
   const coverScene = trip.places.map(photoForPlace).find(Boolean) ?? null;
-  const abroad = trip.places.every((p) => p.t === 'country');
   const label: Record<TripTab, string> = {
     info: '개요',
     plan: trip.status === 'done' ? '들른 곳' : '일정',
@@ -158,7 +157,7 @@ export default function TripDetail() {
         {tab === 'notes' && <NotesTab trip={trip} />}
 
         {tab === 'info' && <>
-        <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} interactive={false} />
+        <MapView mode={tripMapMode(trip.places)} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} interactive={false} />
 
         {trip.status === 'planned' ? <PackingSummary trip={trip} onOpen={() => setTab('prep')} /> : <PlacesSummary trip={trip} recs={tripRecs} onOpen={() => setTab('plan')} />}
         {trip.status === 'planned' && <TripPlanSummary trip={trip} />}

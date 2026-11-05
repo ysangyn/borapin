@@ -102,6 +102,8 @@ jobs:
         run: npm run test:unit 2>&1 | tee unit-output.txt
       - name: 여행정보 DB 검사
         run: npx tsx scripts/travelinfo.ts --check
+      - name: 카카오 SDK 무결성 (고정값과 다르면 멈춤)
+        run: npx tsx scripts/kakao-sri.ts 2>&1 | tee kakao-sri.txt
       - name: 찾아보기 채점 (95% 미만이면 멈춤)
         run: npx tsx scripts/ask-test.ts 2>&1 | tee ask-output.txt
       - name: 지역 축제 자료 받기 (한국관광공사 TourAPI, 실패하면 기존 자료 그대로)
@@ -146,7 +148,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt festivals-output.txt trend-output.txt
+        run: scripts/push-report.sh check unit-output.txt ask-output.txt build-output.txt festivals-output.txt trend-output.txt kakao-sri.txt
 
   emulator:
     name: 2. 에뮬레이터 시험 (보안 규칙 + 화면)

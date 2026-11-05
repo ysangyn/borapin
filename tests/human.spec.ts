@@ -365,6 +365,35 @@ test.describe('사람처럼 쓰기', () => {
     await page.context().close();
   });
 
+  test('폰 뒤로 가기: 쓰던 게 있으면 묻고, 취소하면 그대로, 앱의 뒤로·저장 뒤에는 묻지 않는다', async ({ browser }) => {
+    const page = await phone(browser);
+    await signIn(page);
+    await page.goto('/places');
+    await page.getByTestId('place-new').click();
+    await expect(page).toHaveURL(/\/places\/new/);
+    const asked: string[] = [];
+    let accept = false;
+    page.on('dialog', (d) => { asked.push(d.message()); void (accept ? d.accept() : d.dismiss()); });
+    // 아무것도 안 썼으면 묻지 않고 나간다
+    await page.goBack();
+    await expect(page).toHaveURL(/\/places$/);
+    expect(asked).toEqual([]);
+    // 쓰던 게 있으면 폰 뒤로 가기에 묻는다 → 취소하면 그대로, 쓴 글도 그대로
+    await page.getByTestId('place-new').click();
+    await page.getByLabel('장소 이름').fill('뒤로 가기 시험 가게');
+    await page.goBack();
+    await expect.poll(() => asked.length).toBe(1);
+    expect(asked[0]).toContain('저장하지 않은 내용');
+    await expect(page).toHaveURL(/\/places\/new/);
+    await expect(page.getByLabel('장소 이름')).toHaveValue('뒤로 가기 시험 가게');
+    // 나가겠다고 하면 나간다
+    accept = true;
+    await page.goBack();
+    await expect(page).toHaveURL(/\/places$/);
+    expect(asked.length).toBe(2);
+    await page.context().close();
+  });
+
   test('장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄', async ({ browser }) => {
     const page = await phone(browser);
     await signIn(page);

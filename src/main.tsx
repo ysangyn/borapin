@@ -1,6 +1,6 @@
 import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './styles.css';
 // 둥근 제목 글꼴(주아)과 손글씨(개구): 구글식 글자 조각이라 쓰는 글자만 받는다. 짧은 글(제목·D-day·한 줄 평)에만
 import '@fontsource/jua/400.css';
@@ -43,30 +43,28 @@ function PrefetchMap() {
   return null;
 }
 
+/**
+ * 길 안내: 데이터 라우터(createBrowserRouter) 하나에 화면 전체를 '*' 길로 둔다 (안쪽 <Routes>는 그대로).
+ * 데이터 라우터여야 폰 뒤로 가기를 막고 물을 수 있다 (ui.tsx useLeaveGuard → useBlocker).
+ */
+const router = createBrowserRouter([{
+  path: '*',
+  element: (
+    <AuthProvider>
+      <PrefetchMap />
+      <ToastProvider>
+        {/* 맨 바깥 오류 경계: 화면 안쪽 경계가 못 잡는 오류(App 자체·새 버전 감시)도 흰 화면 대신 안내로 */}
+        <ErrorBoundary>
+          <UpdateWatcher />
+          <App />
+        </ErrorBoundary>
+      </ToastProvider>
+    </AuthProvider>
+  ),
+}]);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <PrefetchMap />
-        <ToastProvider>
-          {/* 맨 바깥 오류 경계: 화면 안쪽 경계가 못 잡는 오류(App 자체·새 버전 감시)도 흰 화면 대신 안내로 */}
-          <ErrorBoundary>
-            <UpdateWatcher />
-            <App />
-          </ErrorBoundary>
-        </ToastProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </StrictMode>,
 );
-
-// 하트를 누르면 톡 튀기 (모든 하트 단추 공통, 목록이 처음 그려질 땐 가만히): 누른 순간에만 'pop'을 붙였다 뗀다
-const HEARTS = '.my-heart, .feed-heart, .tour-heart, .heart-chip';
-document.addEventListener('click', (e) => {
-  const el = (e.target as Element | null)?.closest?.(HEARTS) as HTMLElement | null;
-  if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  el.classList.remove('pop');
-  void el.offsetWidth; // 다시 누르면 처음부터
-  el.classList.add('pop');
-  el.addEventListener('animationend', () => el.classList.remove('pop'), { once: true });
-});
