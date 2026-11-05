@@ -45,6 +45,7 @@ test('가는 길과 겹치는 일정: 첫날 닿기 전 시각, 마지막 날 �
     { name: '아침 산책', day: '2026-11-08', time: '08:00' },
     { name: '점심', day: '2026-11-08', time: '12:00' },
     { name: '시간 없음', day: '2026-11-07', time: null },
+    { name: '이미 다녀옴', day: '2026-11-07', time: '10:00', done: true },
   ];
   const c = wayClash({ go, back }, days, items);
   assert.deepEqual(c.go, { at: '14:28', place: '남원', names: ['광한루'] });

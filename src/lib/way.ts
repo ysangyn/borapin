@@ -43,13 +43,13 @@ const AUTO = /들르기$|하룻밤$/;
 export interface Clash { at: string; place: string; names: string[] }
 /**
  * 고른 대중교통 시각과 맞지 않는 일정: 가는 길이 닿기 전(첫날부터, 1박이면 다음 날까지), 돌아오는 길이 떠난 뒤(마지막 날).
- * 시각이 없는 일정·가는 길이 넣은 '들르기·하룻밤' 줄은 보지 않는다. 자동차는 언제든 되니 비워 둔다.
+ * 체크한(다녀온) 일정·시각이 없는 일정·가는 길이 넣은 '들르기·하룻밤' 줄은 보지 않는다. 자동차는 언제든 되니 비워 둔다.
  */
-export function wayClash(way: { go?: WayPick | null; back?: WayPick | null } | undefined, days: string[], items: { name: string; day?: string | null; time?: string | null }[]): { go?: Clash; back?: Clash } {
+export function wayClash(way: { go?: WayPick | null; back?: WayPick | null } | undefined, days: string[], items: { name: string; day?: string | null; time?: string | null; done?: boolean }[]): { go?: Clash; back?: Clash } {
   const out: { go?: Clash; back?: Clash } = {};
   if (!days.length) return out;
   const timed = items
-    .filter((p) => p.day && p.time && !AUTO.test(p.name) && days.includes(p.day))
+    .filter((p) => !p.done && p.day && p.time && !AUTO.test(p.name) && days.includes(p.day))
     .map((p) => ({ name: p.name, at: days.indexOf(p.day!) * 1440 + mins(p.time!)! }))
     .filter((p) => !Number.isNaN(p.at))
     .sort((a, b) => a.at - b.at);
