@@ -12,428 +12,428 @@
 [32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
 [36m[1mi [22m[39m Running script: [1mnode --import tsx --test tests/rules/*.test.ts[22m
 TAP version 13
-# [2026-11-05T02:36:13.036Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b12a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:27.694Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815894 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
 # Subtest: 로그인 안 한 사람
     # Subtest: 여행을 읽지도 쓰지도 못한다
     ok 1 - 여행을 읽지도 쓰지도 못한다
       ---
-      duration_ms: 815.438263
+      duration_ms: 869.969136
       type: 'test'
       ...
     # Subtest: 함께 쓰는 사람 목록을 볼 수 없다
     ok 2 - 함께 쓰는 사람 목록을 볼 수 없다
       ---
-      duration_ms: 144.132587
+      duration_ms: 148.512809
       type: 'test'
       ...
-# [2026-11-05T02:36:13.366Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b130 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.029Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081589a error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L188, false for 'create' @ L353, false for 'update' @ L188, false for 'update' @ L353
     # Subtest: 공개 링크는 토큰을 알면 하나씩 읽고, 목록으로는 못 본다
     ok 3 - 공개 링크는 토큰을 알면 하나씩 읽고, 목록으로는 못 본다
       ---
-      duration_ms: 184.51693
+      duration_ms: 184.589942
       type: 'test'
       ...
     # Subtest: 공개된 사진 파일만 읽고, 비공개 사진은 못 본다
     ok 4 - 공개된 사진 파일만 읽고, 비공개 사진은 못 본다
       ---
-      duration_ms: 215.337146
+      duration_ms: 229.192101
       type: 'test'
       ...
     1..4
 ok 1 - 로그인 안 한 사람
   ---
-  duration_ms: 3371.249591
+  duration_ms: 3804.874011
   type: 'suite'
   ...
-# [2026-11-05T02:36:13.809Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b138 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.475Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158a2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L218:34 for 'create' @ L218, false for 'create' @ L353, evaluation error at L218:34 for 'update' @ L218, false for 'update' @ L353, false for 'create' @ L218, false for 'create' @ L353
-# [2026-11-05T02:36:13.854Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b139 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.537Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158a3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L218:34 for 'update' @ L218, false for 'update' @ L353, false for 'update' @ L218, false for 'update' @ L353
-# [2026-11-05T02:36:13.896Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b13a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.576Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158a4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L219:26 for 'delete' @ L219, false for 'delete' @ L353, false for 'delete' @ L219, false for 'delete' @ L353
 # Subtest: 초대 안 된 계정 (다른 사람)
     # Subtest: 우리 여행을 읽거나 쓸 수 없다
     ok 1 - 우리 여행을 읽거나 쓸 수 없다
       ---
-      duration_ms: 313.540852
+      duration_ms: 317.028349
       type: 'test'
       ...
-# [2026-11-05T02:36:14.014Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b13c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.695Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158a6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, Property via is undefined on object. for 'update' @ L140, false for 'update' @ L353
     # Subtest: 자기를 함께 쓰는 사람에 넣을 수 없다
     ok 2 - 자기를 함께 쓰는 사람에 넣을 수 없다
       ---
-      duration_ms: 118.419946
+      duration_ms: 118.890933
       type: 'test'
       ...
-# [2026-11-05T02:36:14.208Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b140 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.885Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158aa error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L176:24 for 'create' @ L176, false for 'create' @ L353, false for 'update' @ L181, false for 'update' @ L353, false for 'create' @ L176, false for 'create' @ L353
     # Subtest: 비공개 사진·글·문제 신고에 닿지 못한다
     ok 3 - 비공개 사진·글·문제 신고에 닿지 못한다
       ---
-      duration_ms: 193.693733
+      duration_ms: 189.413531
       type: 'test'
       ...
     1..3
 ok 2 - 초대 안 된 계정 (다른 사람)
   ---
-  duration_ms: 626.366864
+  duration_ms: 626.130995
   type: 'suite'
   ...
-# [2026-11-05T02:36:14.326Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b143 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:28.997Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ad error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
 # Subtest: 메일 인증을 안 한 초대 계정
     # Subtest: 인증 전에는 초대된 메일이라도 못 들어온다
     ok 1 - 인증 전에는 초대된 메일이라도 못 들어온다
       ---
-      duration_ms: 117.971059
+      duration_ms: 111.683612
       type: 'test'
       ...
     1..1
 ok 3 - 메일 인증을 안 한 초대 계정
   ---
-  duration_ms: 118.340225
+  duration_ms: 112.164467
   type: 'suite'
   ...
 # Subtest: 함께 쓰는 사람 (보라)
     # Subtest: 여행을 읽고 만들고 고치고 지운다
     ok 1 - 여행을 읽고 만들고 고치고 지운다
       ---
-      duration_ms: 190.633154
+      duration_ms: 186.587021
       type: 'test'
       ...
-# [2026-11-05T02:36:14.655Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b148 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.316Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L224, false for 'create' @ L353, false for 'update' @ L224, false for 'update' @ L353
-# [2026-11-05T02:36:14.675Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b149 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.337Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L224, false for 'create' @ L353, false for 'update' @ L224, false for 'update' @ L353
-# [2026-11-05T02:36:14.693Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b14a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.355Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L224, false for 'create' @ L353, false for 'update' @ L224, false for 'update' @ L353
-# [2026-11-05T02:36:14.711Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b14b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.375Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L224, false for 'create' @ L353, false for 'update' @ L224, false for 'update' @ L353
     # Subtest: 장소: 사진 주소는 https만, 좌표는 범위 안만
     ok 2 - 장소: 사진 주소는 https만, 좌표는 범위 안만
       ---
-      duration_ms: 193.484808
+      duration_ms: 190.662231
       type: 'test'
       ...
-# [2026-11-05T02:36:14.827Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b14d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.502Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L202:32 for 'create' @ L202, false for 'create' @ L353, evaluation error at L202:32 for 'update' @ L202, false for 'update' @ L353, false for 'update' @ L202, false for 'update' @ L353
-# [2026-11-05T02:36:14.853Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b14e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.527Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L202:32 for 'create' @ L202, false for 'create' @ L353, evaluation error at L202:32 for 'update' @ L202, false for 'update' @ L353, false for 'update' @ L202, false for 'update' @ L353
-# [2026-11-05T02:36:14.906Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b14f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.570Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158b9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L202:32 for 'create' @ L202, false for 'create' @ L353, evaluation error at L202:32 for 'update' @ L202, false for 'update' @ L353, false for 'update' @ L202, false for 'update' @ L353
     # Subtest: 우리 집: 국내 위경도와 정해진 칸만 저장된다
     ok 3 - 우리 집: 국내 위경도와 정해진 칸만 저장된다
       ---
-      duration_ms: 194.823804
+      duration_ms: 195.093137
       type: 'test'
       ...
     # Subtest: 메일 대소문자가 달라도 같은 사람으로 본다
     ok 4 - 메일 대소문자가 달라도 같은 사람으로 본다
       ---
-      duration_ms: 129.071127
+      duration_ms: 124.991255
       type: 'test'
       ...
-# [2026-11-05T02:36:15.126Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b153 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.787Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158bd error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
-# [2026-11-05T02:36:15.141Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b154 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.800Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158be error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
-# [2026-11-05T02:36:15.157Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b155 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.813Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158bf error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
-# [2026-11-05T02:36:15.174Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b156 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.836Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158c0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
     # Subtest: 규칙에 맞지 않는 여행은 저장되지 않는다
     ok 5 - 규칙에 맞지 않는 여행은 저장되지 않는다
       ---
-      duration_ms: 138.30149
+      duration_ms: 140.089946
       type: 'test'
       ...
-# [2026-11-05T02:36:15.256Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b158 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.922Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158c2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L218, false for 'create' @ L353, false for 'update' @ L218, false for 'update' @ L353
-# [2026-11-05T02:36:15.276Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b15a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:29.940Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158c4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L202, false for 'create' @ L353, false for 'update' @ L202, false for 'update' @ L353
     # Subtest: 우리 공간(main) 말고 다른 공간은 만들거나 읽지 못한다
     ok 6 - 우리 공간(main) 말고 다른 공간은 만들거나 읽지 못한다
       ---
-      duration_ms: 102.44477
+      duration_ms: 103.530926
       type: 'test'
       ...
-# [2026-11-05T02:36:15.349Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b15c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.019Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158c6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L353, false for 'update' @ L353
     # Subtest: 규칙에 없는 곳에는 쓰지 못한다
     ok 7 - 규칙에 없는 곳에는 쓰지 못한다
       ---
-      duration_ms: 72.910345
+      duration_ms: 79.218215
       type: 'test'
       ...
-# [2026-11-05T02:36:15.436Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b15f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.106Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158c9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:15.462Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b160 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.131Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ca error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L172:23 for 'create' @ L172, false for 'create' @ L353, evaluation error at L172:23 for 'update' @ L172, false for 'update' @ L353, false for 'update' @ L172, false for 'update' @ L353
     # Subtest: 관리자가 아니면 함께 쓰는 사람·앱 스위치를 바꾸지 못한다 (보기는 된다)
     ok 8 - 관리자가 아니면 함께 쓰는 사람·앱 스위치를 바꾸지 못한다 (보기는 된다)
       ---
-      duration_ms: 112.862886
+      duration_ms: 111.711073
       type: 'test'
       ...
-# [2026-11-05T02:36:15.555Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b162 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.236Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158cc error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:15.573Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b163 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.253Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158cd error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:15.594Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b164 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.273Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ce error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
     # Subtest: 멤버는 앱에서 쓸 자기 이름만 바꾼다 (남의 이름·허용 목록은 못 바꿈, 10자 넘으면 안 됨)
     ok 9 - 멤버는 앱에서 쓸 자기 이름만 바꾼다 (남의 이름·허용 목록은 못 바꿈, 10자 넘으면 안 됨)
       ---
-      duration_ms: 131.337132
+      duration_ms: 142.127851
       type: 'test'
       ...
-# [2026-11-05T02:36:15.685Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b166 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.383Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158d0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L265, false for 'create' @ L353, false for 'update' @ L266, false for 'update' @ L353
-# [2026-11-05T02:36:15.698Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b167 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.394Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158d1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L269:26 for 'delete' @ L269, false for 'delete' @ L353, false for 'delete' @ L269, false for 'delete' @ L353
-# [2026-11-05T02:36:15.708Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b168 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.403Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158d2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'update' @ L266, false for 'update' @ L353
-# [2026-11-05T02:36:15.729Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b169 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.426Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158d3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L265, false for 'create' @ L353, false for 'update' @ L266, false for 'update' @ L353
     # Subtest: 글은 자기 이름으로만 쓰고, 자기 글만 지운다
     ok 10 - 글은 자기 이름으로만 쓰고, 자기 글만 지운다
       ---
-      duration_ms: 147.44953
+      duration_ms: 168.521573
       type: 'test'
       ...
-# [2026-11-05T02:36:15.895Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b16c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.629Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158d6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L224:34 for 'update' @ L224, false for 'update' @ L353, false for 'update' @ L224, false for 'update' @ L353
     # Subtest: 장소 한 줄 평: 이름별 점 경로(reviews.이름)로 고쳐도 되고, 상대 칸은 그대로 남는다
     ok 11 - 장소 한 줄 평: 이름별 점 경로(reviews.이름)로 고쳐도 되고, 상대 칸은 그대로 남는다
       ---
-      duration_ms: 153.869737
+      duration_ms: 187.471919
       type: 'test'
       ...
-# [2026-11-05T02:36:15.984Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b16f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.726Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158d9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L337, false for 'create' @ L353, evaluation error at L342:26 for 'update' @ L342, false for 'update' @ L353, false for 'create' @ L337, false for 'create' @ L353
-# [2026-11-05T02:36:15.999Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b170 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.741Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158da error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L337, false for 'create' @ L353, evaluation error at L342:26 for 'update' @ L342, false for 'update' @ L353, false for 'create' @ L337, false for 'create' @ L353
-# [2026-11-05T02:36:16.045Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b171 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.784Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158db error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L342:26 for 'update' @ L342, false for 'update' @ L353, false for 'update' @ L342, false for 'update' @ L353
-# [2026-11-05T02:36:16.084Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b173 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.828Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158dd error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L337:26 for 'create' @ L337, false for 'create' @ L353, evaluation error at L342:26 for 'update' @ L342, false for 'update' @ L353, false for 'create' @ L337, false for 'create' @ L353
     # Subtest: 피드 하트: 자기 이름으로만 누르고 뗀다, 남의 하트는 못 건드린다
     ok 12 - 피드 하트: 자기 이름으로만 누르고 뗀다, 남의 하트는 못 건드린다
       ---
-      duration_ms: 188.366591
+      duration_ms: 199.052759
       type: 'test'
       ...
-# [2026-11-05T02:36:16.158Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b175 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.911Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158df error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L282, false for 'create' @ L353, false for 'update' @ L282, false for 'update' @ L353
-# [2026-11-05T02:36:16.203Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b177 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:30.961Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158e1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L282:31 for 'create' @ L282, false for 'create' @ L353, evaluation error at L282:31 for 'update' @ L282, false for 'update' @ L353, false for 'create' @ L282, false for 'create' @ L353
     # Subtest: 영어 공부 진도: 자기 문서만 읽고 쓴다
     ok 13 - 영어 공부 진도: 자기 문서만 읽고 쓴다
       ---
-      duration_ms: 118.834393
+      duration_ms: 133.043934
       type: 'test'
       ...
-# [2026-11-05T02:36:16.298Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b179 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.075Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158e3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L319, false for 'create' @ L353, evaluation error at L325:26 for 'update' @ L325, false for 'update' @ L353, false for 'create' @ L319, false for 'create' @ L353
-# [2026-11-05T02:36:16.339Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b17a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.115Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158e4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L325:26 for 'update' @ L325, false for 'update' @ L353, false for 'update' @ L325, false for 'update' @ L353
     # Subtest: 오늘의 한 질문: 답은 자기 uid 칸에만, 남의 답은 못 고친다
     ok 14 - 오늘의 한 질문: 답은 자기 uid 칸에만, 남의 답은 못 고친다
       ---
-      duration_ms: 182.337935
+      duration_ms: 195.898056
       type: 'test'
       ...
-# [2026-11-05T02:36:16.488Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b17e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.242Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158e8 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L238, false for 'create' @ L353, evaluation error at L251:26 for 'update' @ L251, false for 'update' @ L353, false for 'create' @ L238, false for 'create' @ L353
-# [2026-11-05T02:36:16.499Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b17f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.253Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158e9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L238, false for 'create' @ L353, evaluation error at L251:26 for 'update' @ L251, false for 'update' @ L353, false for 'create' @ L238, false for 'create' @ L353
-# [2026-11-05T02:36:16.517Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b180 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.271Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ea error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L251:26 for 'update' @ L251, false for 'update' @ L353, false for 'update' @ L251, false for 'update' @ L353
     # Subtest: 사진 파일은 올리고, 공개 여부만 바꿀 수 있다
     ok 15 - 사진 파일은 올리고, 공개 여부만 바꿀 수 있다
       ---
-      duration_ms: 131.968467
+      duration_ms: 113.586619
       type: 'test'
       ...
-# [2026-11-05T02:36:16.597Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b182 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.346Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ec error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L188, false for 'create' @ L353, false for 'update' @ L188, false for 'update' @ L353
-# [2026-11-05T02:36:16.605Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b183 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.356Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ed error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L188, false for 'create' @ L353, false for 'update' @ L188, false for 'update' @ L353
     # Subtest: 공유 사본에는 메모·같이 간 사람을 넣을 수 없다
     ok 16 - 공유 사본에는 메모·같이 간 사람을 넣을 수 없다
       ---
-      duration_ms: 88.264633
+      duration_ms: 84.740181
       type: 'test'
       ...
-# [2026-11-05T02:36:16.684Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b185 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.443Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158ef error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L176, false for 'create' @ L353, false for 'update' @ L181, false for 'update' @ L353
     # Subtest: 문제 신고는 남기지만 남의 신고는 못 본다
     ok 17 - 문제 신고는 남기지만 남의 신고는 못 본다
       ---
-      duration_ms: 78.855374
+      duration_ms: 86.782199
       type: 'test'
       ...
     1..17
 ok 4 - 함께 쓰는 사람 (보라)
   ---
-  duration_ms: 2357.562086
+  duration_ms: 2445.050162
   type: 'suite'
   ...
 # Subtest: 주인 (관리자)
     # Subtest: 함께 쓰는 사람을 넣고 뺄 수 있다
     ok 1 - 함께 쓰는 사람을 넣고 뺄 수 있다
       ---
-      duration_ms: 86.645367
+      duration_ms: 81.167784
       type: 'test'
       ...
-# [2026-11-05T02:36:16.835Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b18a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.604Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158f4 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:16.849Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b18b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.615Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158f5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:16.857Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b18c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.623Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158f6 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'delete' @ L146, false for 'delete' @ L353
     # Subtest: 주인 자신은 목록에서 빠질 수 없다
     ok 2 - 주인 자신은 목록에서 빠질 수 없다
       ---
-      duration_ms: 85.056527
+      duration_ms: 98.647087
       type: 'test'
       ...
     # Subtest: 목록에서 뺀 사람은 바로 못 들어온다
     ok 3 - 목록에서 뺀 사람은 바로 못 들어온다
       ---
-      duration_ms: 89.045036
+      duration_ms: 93.864506
       type: 'test'
       ...
-# [2026-11-05T02:36:17.033Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b192 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.808Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158fc error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L238:26 for 'create' @ L238, false for 'create' @ L353, evaluation error at L251:26 for 'update' @ L251, false for 'update' @ L353, false for 'create' @ L238, false for 'create' @ L353
-# [2026-11-05T02:36:17.059Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b193 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:31.838Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x508158fd error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L238:26 for 'create' @ L238, false for 'create' @ L353, evaluation error at L251:26 for 'update' @ L251, false for 'update' @ L353, false for 'create' @ L238, false for 'create' @ L353
     # Subtest: 사진 올리기를 멈추면 아무도 사진 파일을 새로 올리지 못한다
     ok 4 - 사진 올리기를 멈추면 아무도 사진 파일을 새로 올리지 못한다
       ---
-      duration_ms: 113.035072
+      duration_ms: 121.420564
       type: 'test'
       ...
     # Subtest: 문제 신고를 보고 지운다
     ok 5 - 문제 신고를 보고 지운다
       ---
-      duration_ms: 106.085592
+      duration_ms: 122.782135
       type: 'test'
       ...
     1..5
 ok 5 - 주인 (관리자)
   ---
-  duration_ms: 480.400104
+  duration_ms: 518.491603
   type: 'suite'
   ...
-# [2026-11-05T02:36:17.260Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b19a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.063Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815904 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L153, false for 'create' @ L353, evaluation error at L161:24 for 'update' @ L161, false for 'update' @ L353, false for 'create' @ L153, false for 'create' @ L353
-# [2026-11-05T02:36:17.293Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b19b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.105Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815905 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L153:24 for 'create' @ L153, false for 'create' @ L353, evaluation error at L161:24 for 'update' @ L161, false for 'update' @ L353, false for 'create' @ L153, false for 'create' @ L353
-# [2026-11-05T02:36:17.332Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b19c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.140Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815906 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L153:24 for 'create' @ L153, false for 'create' @ L353, evaluation error at L161:24 for 'update' @ L161, false for 'update' @ L353, false for 'create' @ L153, false for 'create' @ L353
 # Subtest: 초대 링크
     # Subtest: 관리자만 초대 코드를 만들고(7일 안), 보라는 못 만든다
     ok 1 - 관리자만 초대 코드를 만들고(7일 안), 보라는 못 만든다
       ---
-      duration_ms: 166.348915
+      duration_ms: 178.518067
       type: 'test'
       ...
-# [2026-11-05T02:36:17.444Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1a0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.265Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081590a error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, Property usedBy is undefined on object. for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:17.464Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1a1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.284Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081590b error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:17.481Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1a2 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.299Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081590c error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:17.493Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1a3 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.310Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081590d error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
-# [2026-11-05T02:36:17.576Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1a7 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.390Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815911 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L161:24 for 'update' @ L161, false for 'update' @ L353, false for 'update' @ L161, false for 'update' @ L353
     # Subtest: 링크로 온 사람: 코드에 자기 메일로 표시하고 → 자기 메일만 허용 목록에 넣는다 (한 번만)
     ok 2 - 링크로 온 사람: 코드에 자기 메일로 표시하고 → 자기 메일만 허용 목록에 넣는다 (한 번만)
       ---
-      duration_ms: 244.37589
+      duration_ms: 249.875037
       type: 'test'
       ...
-# [2026-11-05T02:36:17.655Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1aa error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.480Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815914 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L161:24 for 'update' @ L161, false for 'update' @ L353, false for 'update' @ L161, false for 'update' @ L353
-# [2026-11-05T02:36:17.683Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1ab error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.507Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815915 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L140:24 for 'update' @ L140, false for 'update' @ L353, false for 'update' @ L140, false for 'update' @ L353
     # Subtest: 만료된 코드·없는 코드로는 못 들어온다
     ok 3 - 만료된 코드·없는 코드로는 못 들어온다
       ---
-      duration_ms: 106.643448
+      duration_ms: 117.076182
       type: 'test'
       ...
     # Subtest: 관리자가 고칠 때 via 칸이 있어도 된다 (초대로 들어온 뒤에도 이름 바꾸기·빼기 가능)
     ok 4 - 관리자가 고칠 때 via 칸이 있어도 된다 (초대로 들어온 뒤에도 이름 바꾸기·빼기 가능)
       ---
-      duration_ms: 76.951479
+      duration_ms: 83.268269
       type: 'test'
       ...
     1..4
 ok 6 - 초대 링크
   ---
-  duration_ms: 594.775177
+  duration_ms: 629.276787
   type: 'suite'
   ...
-# [2026-11-05T02:36:17.819Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1b0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.655Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081591a error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L269:26 for 'delete' @ L269, false for 'delete' @ L353, false for 'delete' @ L269, false for 'delete' @ L353
-# [2026-11-05T02:36:17.843Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1b1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
-# evaluation error at L219:26 for 'delete' @ L219, false for 'delete' @ L353, evaluation error at L269:26 for 'delete' @ L269, false for 'delete' @ L353, false for 'delete' @ L219, false for 'delete' @ L353, false for 'delete' @ L269, false for 'delete' @ L353
+# [2026-11-05T02:49:32.677Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081591b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# evaluation error at L219:26 for 'delete' @ L219, false for 'delete' @ L353, evaluation error at L269:26 for 'delete' @ L269, false for 'delete' @ L353, false for 'delete' @ L269, false for 'delete' @ L353
 # Subtest: 여행 지우기 (deleteTripAll: 여행 문서를 첫 묶음에 넣고 글·사진을 뒤따라 지운다)
     # Subtest: 여행이 살아 있을 땐 남의 글은 못 지운다 (다른 여행을 지우는 묶음에 끼워도)
     ok 1 - 여행이 살아 있을 땐 남의 글은 못 지운다 (다른 여행을 지우는 묶음에 끼워도)
       ---
-      duration_ms: 104.470667
+      duration_ms: 107.576433
       type: 'test'
       ...
     # Subtest: 여행을 지우는 묶음에서는 상대 글도 함께 지워지고, 여행이 먼저 사라진 뒤 남은 글도 지워진다
     ok 2 - 여행을 지우는 묶음에서는 상대 글도 함께 지워지고, 여행이 먼저 사라진 뒤 남은 글도 지워진다
       ---
-      duration_ms: 107.43234
+      duration_ms: 118.570119
       type: 'test'
       ...
-# [2026-11-05T02:36:18.056Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1b9 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:32.941Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815923 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L269:26 for 'delete' @ L269, false for 'delete' @ L353, false for 'delete' @ L269, false for 'delete' @ L353
     # Subtest: 초대 안 된 계정은 여행이 없어진 뒤에도 글을 못 지운다
     ok 3 - 초대 안 된 계정은 여행이 없어진 뒤에도 글을 못 지운다
       ---
-      duration_ms: 83.391967
+      duration_ms: 123.721951
       type: 'test'
       ...
     1..3
 ok 7 - 여행 지우기 (deleteTripAll: 여행 문서를 첫 묶음에 넣고 글·사진을 뒤따라 지운다)
   ---
-  duration_ms: 295.67536
+  duration_ms: 350.281996
   type: 'suite'
   ...
-# [2026-11-05T02:36:18.143Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1bc error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:33.035Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815926 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # false for 'create' @ L293, false for 'create' @ L353, evaluation error at L298:26 for 'update' @ L298, false for 'update' @ L353, false for 'create' @ L293, false for 'create' @ L353
-# [2026-11-05T02:36:18.167Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1bd error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:33.066Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815927 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L293:26 for 'create' @ L293, false for 'create' @ L353, evaluation error at L298:26 for 'update' @ L298, false for 'update' @ L353, false for 'create' @ L293, false for 'create' @ L353
-# [2026-11-05T02:36:18.221Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1bf error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:33.121Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x50815929 error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L298:26 for 'update' @ L298, false for 'update' @ L353, false for 'update' @ L298, false for 'update' @ L353
-# [2026-11-05T02:36:18.252Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1c0 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:33.146Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081592a error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L298:26 for 'update' @ L298, false for 'update' @ L353, false for 'update' @ L298, false for 'update' @ L353
-# [2026-11-05T02:36:18.289Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1c1 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:33.178Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081592b error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L298:26 for 'update' @ L298, false for 'update' @ L353, false for 'update' @ L298, false for 'update' @ L353
-# [2026-11-05T02:36:18.399Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x1583b1c5 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+# [2026-11-05T02:49:33.306Z]  @firebase/firestore: Firestore (13.0.0): GrpcConnection RPC 'Write' stream 0x5081592f error. Code: 7 Message: 7 PERMISSION_DENIED: 
 # evaluation error at L313:26 for 'delete' @ L313, false for 'delete' @ L353, false for 'delete' @ L313, false for 'delete' @ L353
 # Subtest: 여행 계획하기 초안
     # Subtest: 멤버가 만들고, 상대는 자기 하트만 누른다 (남의 하트·만든 사람은 못 바꾼다)
     ok 1 - 멤버가 만들고, 상대는 자기 하트만 누른다 (남의 하트·만든 사람은 못 바꾼다)
       ---
-      duration_ms: 366.216124
+      duration_ms: 388.47012
       type: 'test'
       ...
     1..1
 ok 8 - 여행 계획하기 초안
   ---
-  duration_ms: 366.469365
+  duration_ms: 388.749039
   type: 'suite'
   ...
 1..8
@@ -444,7 +444,7 @@ ok 8 - 여행 계획하기 초안
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 8855.235068
+# duration_ms 9548.99454
 [32m[1m✔ [22m[39m Script exited successfully (code 0)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
