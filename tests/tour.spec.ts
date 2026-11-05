@@ -314,10 +314,10 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await expect(page.getByTestId('mymap-list').getByTestId('place-rec').first()).toContainText('안목 커피거리 2호점');
   // 보내기: 공개 사본이 생기고 토큰으로 열린다
   await page.getByTestId('mymap-share').click();
-  await expect(page.getByRole('status')).toContainText(/복사했어요|열었어요/);
-  const mapDoc = await sp.collection('placeMaps').doc('kr:51150|cafe').get();
-  const token = (mapDoc.data() as { share?: { token: string } }).share?.token;
-  expect(token).toBeTruthy();
+  // 기기 공유 창이 열리면 알림이 없을 수 있으니, 공개 토큰이 생기는 것으로 확인한다
+  let token: string | undefined;
+  await expect.poll(async () => { const d = await sp.collection('placeMaps').doc('kr:51150|cafe').get(); token = (d.data() as { share?: { token: string } } | undefined)?.share?.token; return token ?? ''; }, { timeout: 15_000 }).toMatch(/.{6,}/);
+  await expect(page.getByTestId('mymap-share')).toBeVisible();
   const anon = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
   const guest = await anon.newPage();
   await guest.goto(`/m/${token}`);

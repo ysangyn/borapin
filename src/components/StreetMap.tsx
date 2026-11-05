@@ -50,7 +50,16 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
     };
     map.on('error', (e) => { if (/style|Failed to fetch|NetworkError/i.test(String((e as unknown as { error?: { message?: string } }).error?.message ?? ''))) fallback(); });
     const t = window.setTimeout(fallback, 6000);
-    map.once('style.load', () => window.clearTimeout(t));
+    map.once('style.load', () => {
+      window.clearTimeout(t);
+      // 지명은 한글만 (타일 스타일은 '영문\n한글'로 둘 다 적는다): 한글 이름이 있으면 그것, 없으면 원래 이름
+      try {
+        for (const l of map.getStyle().layers ?? []) {
+          if (l.type !== 'symbol' || !map.getLayoutProperty(l.id, 'text-field')) continue;
+          map.setLayoutProperty(l.id, 'text-field', ['coalesce', ['get', 'name:ko'], ['get', 'name']]);
+        }
+      } catch { /* 스타일 모양이 다르면 그대로 둔다 */ }
+    });
     return () => { window.clearTimeout(t); markers.current.forEach((m) => m.remove()); markers.current.clear(); map.remove(); mapRef.current = null; };
   }, []);
 

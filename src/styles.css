@@ -1566,7 +1566,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 /* ---------- 거리 지도 (내 지도) ---------- */
 .street-map { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--edge); background: var(--mist); }
 .street-map .maplibregl-map { font-family: inherit; }
-.street-wash { position: absolute; inset: 0; pointer-events: none; background: #EFEBFF; mix-blend-mode: multiply; opacity: .55; }
+.street-wash { position: absolute; inset: 0; pointer-events: none; background: #EEE9FF; mix-blend-mode: multiply; opacity: .4; }
 :root[data-theme="dark"] .street-wash { background: #3A2E7A; mix-blend-mode: screen; opacity: .25; }
 .street-map.plain .street-wash { display: none; }
 .street-plain-note { position: absolute; left: 10px; top: 10px; font-size: 11.5px; color: var(--ink3); background: var(--card); padding: 3px 8px; border-radius: 99px; border: 1px solid var(--edge); }
