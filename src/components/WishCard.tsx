@@ -9,7 +9,6 @@ import { everyoneLabel, memberNames } from '../lib/members';
 import type { Wish } from '../lib/types';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
 import { photoForPlace } from '../lib/media';
-import { flightLinks } from '../lib/flights';
 import { useAuth, displayName } from '../lib/auth';
 import { updateWish } from '../lib/data';
 import { accessLine } from '../lib/transport';
@@ -110,7 +109,6 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
   const auth = useAuth();
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const both = bothWant(wish);
-  const flights = !compact && wish.place.t === 'country' ? flightLinks(wish.place, season?.m[0] ?? null) : null;
   const planLink = <Link to={`/plan?wish=${wish.id}`} className={hero && !compact ? 'btn sm' : 'btn sm soft'} data-testid="wish-plan">여행 만들기</Link>;
   // 오른쪽 단추: 둘 다 원하면 여행 만들기 → 내 하트가 없으면 하트 → (작은 줄에서는) 상대 마음 기다리는 중
   // (상대만 원하고 나는 아직이면 기다릴 사람은 없어도 '여행 만들기'가 아니라 내 하트)
@@ -141,7 +139,6 @@ export default function WishCard({ wish, state, seasons, compact, hero }: {
             <SeasonLine season={season} fest={fest} />
             {wish.place.t === 'kr' && accessLine(wish.place) && <span className="tiny muted ellipsis">가는 길 {accessLine(wish.place)}</span>}
             {memo.length > 0 && <span className="tiny muted ellipsis">{memo.join(' · ')}</span>}
-            {flights && <span className="wish-flights row" data-testid="wish-flights"><a href={flights.skyscanner} target="_blank" rel="noreferrer">항공권</a><a href={flights.google} target="_blank" rel="noreferrer" title="구글 항공권에서 가격 알림을 켤 수 있어요">가격 알림</a></span>}
           </span>
           {state.kind === 'wish' && action}
           {state.kind === 'planned' && <Link to={`/trips/${state.trip.id}`} className="tag violet">예정 · {formatWhen(state.trip.when)}</Link>}

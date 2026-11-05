@@ -27,6 +27,15 @@ export function mapChoiceLinks(t: MapTarget) {
   };
 }
 
+/** 앱 밖으로 나가는 단 하나의 길: 설정한 지도 앱(우리 공간 '장소를 누르면 열 지도')으로 길찾기. naverUrl이 있으면 네이버는 그 주소로 */
+export function MapAppButton({ t, naverUrl, label = '길찾기', className = 'btn block line' }: { t: MapTarget; naverUrl?: string; label?: string; className?: string }) {
+  const [open, el] = useMapChoice();
+  const p = mapPref();
+  if (p === 'ask') return <><button type="button" className={className} onClick={() => open(t)} data-testid="map-app">{label}</button>{el}</>;
+  const href = p === 'kakao' ? mapChoiceLinks(t).kakao : naverUrl || mapChoiceLinks(t).naver;
+  return <a className={className} href={href} target="_blank" rel="noreferrer" data-testid="map-app"><span className={'app-badge ' + (p === 'kakao' ? 'k' : 'n')} aria-hidden="true">{p === 'kakao' ? 'K' : 'N'}</span>{label}</a>;
+}
+
 /** '가고 싶어요' 담기: [담겼는지, 담기]. 창과 관광지 카드 하트가 함께 쓴다 */
 export function useWishItem() {
   const auth = useAuth();
@@ -106,7 +115,6 @@ export function useMapChoice(): [(t: MapTarget) => void, ReactNode] {
             {wished ? (trip ? '♥ 일정에 있어요' : '♥ 담겨 있어요') : saving ? '담는 중…' : trip ? `♡ ${trip.title} 일정에 담기` : '♡ 가고 싶어요'}
           </button>
         )}
-        {t.search && <a className="btn soft block" href={mapChoiceLinks(t).web} target="_blank" rel="noreferrer" onClick={close}>네이버에서 자세히 보기</a>}
         <button className="link-btn" style={{ alignSelf: 'center' }} onClick={close}>그대로 두기</button>
       </div>
     </div>,

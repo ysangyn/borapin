@@ -4,7 +4,7 @@ import { useAuth } from '../lib/auth';
 import { useHome } from '../lib/home';
 import { fetchSpot, type SpotInfo } from '../lib/nearby';
 import { straightKm } from '../lib/placeApps';
-import { mapChoiceLinks, useWishItem } from './MapChoice';
+import { MapAppButton, useWishItem } from './MapChoice';
 import type { Place } from '../lib/types';
 
 /**
@@ -26,7 +26,6 @@ export default function SpotDetail({ spot, onClose }: { spot: SpotTarget; onClos
     return () => { on = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spot.name]);
-  const links = mapChoiceLinks({ name: spot.name, area: spot.area, lat: spot.lat, lng: spot.lng });
   const km = home && spot.lat != null && spot.lng != null ? Math.round(straightKm(home, { lat: spot.lat, lng: spot.lng })) : null;
   const wished = wi.has(spot.place, spot.name, 'spot');
   const img = spot.img || info?.img;
@@ -55,10 +54,7 @@ export default function SpotDetail({ spot, onClose }: { spot: SpotTarget; onClos
           </dl>
         )}
         {info && <span className="tiny muted">한국관광공사 · 시간은 바뀔 수 있어요, 가기 전에 확인</span>}
-        <div className="map-choice-row">
-          <a className="btn" href={links.naver} target="_blank" rel="noreferrer"><span className="app-badge n" aria-hidden="true">N</span>네이버지도</a>
-          <a className="btn line" href={links.kakao} target="_blank" rel="noreferrer"><span className="app-badge k" aria-hidden="true">K</span>카카오맵</a>
-        </div>
+        <MapAppButton t={{ name: spot.name, area: spot.area, lat: spot.lat, lng: spot.lng }} label="지도 앱으로 길찾기" />
         <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} disabled={wished || !!wi.saving} onClick={() => void wi.add(spot.place, spot.name, 'spot')} data-testid="spot-wish">{wished ? '♥ 담겨 있어요' : '♡ 가고 싶어요'}</button>
         <button className="link-btn" style={{ alignSelf: 'center' }} onClick={onClose}>닫기</button>
       </div>

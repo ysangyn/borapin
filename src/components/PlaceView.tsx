@@ -6,9 +6,9 @@ import HomeRoute from './HomeRoute';
 import { useAuth, displayName } from '../lib/auth';
 import { hideReview, useBlind } from '../lib/blind';
 import { formatWhen } from '../lib/dates';
-import { placeLabel, placeLong } from '../lib/geo';
+import { placeLong } from '../lib/geo';
 import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
-import { mapApps } from '../lib/placeApps';
+import { MapAppButton } from './MapChoice';
 import { lookupLink } from '../lib/placeLookup';
 import { memberNames, toneOf } from '../lib/members';
 import type { PlaceRec, Trip } from '../lib/types';
@@ -47,7 +47,6 @@ export default function PlaceView({ rec, trip, onEdit, onRemove, onEnrich }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rec.id]);
 
-  const apps = mapApps(rec.name, rec.region.t === 'kr' ? placeLabel(rec.region) : placeLong(rec.region), rec.lat, rec.lng, rec.naverUrl);
   const writers = [...new Set([...memberNames(), ...Object.keys(rec.reviews ?? {})])].filter((w) => rec.reviews?.[w]);
   const photo = rec.photoUrl && photoOk ? rec.photoUrl : '';
 
@@ -80,12 +79,7 @@ export default function PlaceView({ rec, trip, onEdit, onRemove, onEnrich }: {
           )}
         </header>
 
-        <nav className="pv-apps" aria-label="지도 앱으로 열기">
-          <a href={apps.naver} target="_blank" rel="noreferrer" className="pv-app"><span className="app-badge n" aria-hidden="true">N</span>네이버</a>
-          <a href={apps.kakao} target="_blank" rel="noreferrer" className="pv-app"><span className="app-badge k" aria-hidden="true">K</span>카카오</a>
-          <a href={apps.google} target="_blank" rel="noreferrer" className="pv-app"><span className="app-badge g" aria-hidden="true">G</span>구글</a>
-          {apps.route && <a href={apps.route} target="_blank" rel="noreferrer" className="pv-app route"><Icon name="flag" size={15} />길찾기</a>}
-        </nav>
+        <MapAppButton t={{ name: rec.name, area: placeLong(rec.region), lat: rec.lat, lng: rec.lng }} naverUrl={rec.naverUrl} label="지도 앱으로 길찾기" />
 
         {rec.lat != null && rec.lng != null && <HomeRoute to={{ name: rec.name, lat: rec.lat, lng: rec.lng }} />}
 

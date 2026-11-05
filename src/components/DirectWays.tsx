@@ -1,5 +1,5 @@
 import { useHome } from '../lib/home';
-import { BOOK, basisLabel, directWays, useRoutes, wayName, aboutTime } from '../lib/transit';
+import { basisLabel, directWays, useRoutes, wayName, aboutTime } from '../lib/transit';
 import { Icon } from './ui';
 
 /**
@@ -18,13 +18,13 @@ export default function DirectWays({ code, max = 2 }: { code: string; max?: numb
   return (
     <>
       {pick.map((w) => (
-        <a key={w.svc} className="hub-way-row" href={BOOK[w.svc].url} target="_blank" rel="noreferrer" data-testid="direct-way">
+        <div key={w.svc} className="hub-way-row static" data-testid="direct-way">
           <Icon name="train" size={16} />
           <span>
             한 번에 <b>{wayName(w)} {w.from}→{w.to}</b> {aboutTime(w.min)} · 하루 {w.n}편
-            <span className="tiny muted"> · {BOOK[w.svc].name}에서 예매{w === pick[pick.length - 1] && basisLabel(d) ? ` · ${basisLabel(d)}` : ''}</span>
+            {w === pick[pick.length - 1] && basisLabel(d) ? <span className="tiny muted"> · {basisLabel(d)}</span> : null}
           </span>
-        </a>
+        </div>
       ))}
     </>
   );

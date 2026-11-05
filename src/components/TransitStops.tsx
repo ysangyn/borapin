@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Icon, useToast } from './ui';
+import { useToast } from './ui';
 import { addPlans } from '../lib/tripExtras';
-import { BOOK, basisLabel, SVC_LABEL, useRoutes } from '../lib/transit';
+import { basisLabel, SVC_LABEL, useRoutes } from '../lib/transit';
 import { clock, span, transitPlans, type Leg, type Mode, type TransitPlan } from '../lib/transitStop';
 import { useTravelInfo } from '../lib/travelinfo';
 import { placeParam, REGION_BY_CODE } from '../lib/geo';
@@ -49,7 +49,6 @@ export default function TransitStops({ from, to, visited, onWish, trip, onPick, 
   };
   if (d === undefined) return <div className="skeleton-text" aria-busy="true" />;
   if (!d) return null;
-  const svcs = [...new Set(plans.flatMap((p) => p.legs.map((l) => l.svc)))];
   return (
     <div className="transit-stops" data-testid="transit-stops">
       <div className="transit-segs">
@@ -97,8 +96,7 @@ export default function TransitStops({ from, to, visited, onWish, trip, onPick, 
       ))}
       {plans.length > 0 && (
         <span className="tiny muted">
-          {basisLabel(d)} {day === 'sat' ? '토요일' : day === 'sun' ? '일요일' : '평일'} 시각표 · 공휴일은 다를 수 있어요 · 떠나기 전 확인:{' '}
-          {svcs.map((s, i) => <span key={s}>{i ? ' · ' : ''}<a href={BOOK[s].url} target="_blank" rel="noreferrer">{BOOK[s].name}<Icon name="external" size={11} /></a></span>)}
+          {basisLabel(d)} {day === 'sat' ? '토요일' : day === 'sun' ? '일요일' : '평일'} 시각표 · 공휴일은 다를 수 있어요 · 예매 단추는 고른 뒤에 하나만 보여요
         </span>
       )}
     </div>

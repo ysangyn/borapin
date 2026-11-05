@@ -49,7 +49,6 @@ export default function PrepTab({ trip, trips }: { trip: Trip; trips: Trip[] }) 
                 ) : p.t === 'kr' ? <DirectWays code={p.code} /> : null}
                 {line && <div className="hub-way-row static"><Icon name="pin" size={16} /><span>{p.t === 'kr' ? '가까운 역·공항' : '공항'} <b>{line}</b></span></div>}
                 {f && <a className="hub-way-row" href={f.skyscanner} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>항공권 보기 · {f.label}{m ? ` · ${m}월` : ''}</span></a>}
-                {f && <a className="hub-way-row" href={f.google} target="_blank" rel="noreferrer"><Icon name="external" size={16} /><span>가격 알림 켜기 (구글 항공권)</span></a>}
                 {s && <div className="hub-way-row static"><Icon name="sun" size={16} /><span>가기 좋은 때 <b>{monthsLabel(s.m)}</b> · {s.why}</span></div>}
                 {fs && <Link className="hub-way-row" to={`/map?sel=${placeParam(p)}`}><Icon name="flag" size={16} /><span>{isOngoing(fs) ? '지금 열리는 축제' : '축제'} <b>{fs.t}</b> · {festivalPeriod(fs)}</span></Link>}
                 <Link className="hub-way-row" to={`/map?sel=${placeParam(p)}`}><Icon name="map" size={16} /><span>{placeLabel(p)} 지도·볼거리·우리 기록 보기</span></Link>

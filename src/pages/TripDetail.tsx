@@ -24,20 +24,9 @@ import PlaceRecRow from '../components/PlaceRecRow';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
-import { COUNTRY_BY_ID, placeLabel, placeLong, REGION_BY_CODE } from '../lib/geo';
+import { placeLabel, placeLong } from '../lib/geo';
 import { tripTabs, type TripTab } from '../lib/stage';
-import type { Place, PlaceRec, Trip } from '../lib/types';
-
-function mapLinks(p: Place) {
-  let q = '';
-  if (p.t === 'kr') q = REGION_BY_CODE.get(p.code)?.sido + ' ' + (REGION_BY_CODE.get(p.code)?.name ?? '');
-  else q = [COUNTRY_BY_ID.get(p.id)?.name, p.city].filter(Boolean).join(' ');
-  const enc = encodeURIComponent(q.trim());
-  return {
-    naver: `https://map.naver.com/p/search/${enc}`,
-    google: `https://www.google.com/maps/search/?api=1&query=${enc}`,
-  };
-}
+import type { PlaceRec, Trip } from '../lib/types';
 
 export default function TripDetail() {
   const { id } = useParams();
@@ -177,12 +166,9 @@ export default function TripDetail() {
           <div className="kv"><span className="k">어디</span>
             <span style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
               {trip.places.map((p, i) => {
-                const l = mapLinks(p);
                 return (
                   <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <b style={{ flex: 1 }}>{placeLong(p)}</b>
-                    <a className="map-ico naver" href={l.naver} target="_blank" rel="noreferrer" aria-label={`${placeLabel(p)} 네이버지도`} title="네이버지도">N</a>
-                    <a className="map-ico google" href={l.google} target="_blank" rel="noreferrer" aria-label={`${placeLabel(p)} 구글지도`} title="구글지도">G</a>
                   </span>
                 );
               })}

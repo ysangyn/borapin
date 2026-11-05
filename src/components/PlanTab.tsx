@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { josa } from 'es-hangul';
 import { Icon, useToast } from './ui';
 import { addPlan, dayLabel, deletePlan, restorePlan, tripDays, updatePlan, usePlan } from '../lib/tripExtras';
-import { placeRecLinks, recsAt } from '../lib/placeRecs';
+import { recsAt } from '../lib/placeRecs';
+import SpotDetail, { type SpotTarget } from './SpotDetail';
+import { placeLabel } from '../lib/geo';
 import type { PlaceRec, PlanItem, Trip } from '../lib/types';
 import { useTravelInfo } from '../lib/travelinfo';
 
@@ -20,6 +22,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
   const toast = useToast();
   const [name, setName] = useState('');
   const [open, setOpen] = useState<string | null>(null);
+  const [spot, setSpot] = useState<SpotTarget | null>(null);
   const days = tripDays(trip.when);
   const ours = trip.places.flatMap((p) => recsAt(recs, p)).filter((r) => !items?.some((i) => i.recId === r.id));
   const info = useTravelInfo();
@@ -96,7 +99,6 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
           <div className="year-head">{g.title}</div>
           <div className="list">
             {g.list.map((it) => {
-              const links = region ? placeRecLinks({ name: it.name, region, naverUrl: recs.find((r) => r.id === it.recId)?.naverUrl }) : null;
               const isOpen = open === it.id;
               return (
                 <div key={it.id} className={'plan-row' + (it.done ? ' done' : '')} data-testid="plan-item">
@@ -110,7 +112,8 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
                         {it.info && <span className="tiny muted plan-sub">{it.info}</span>}
                       </span>
                     </button>
-                    {links && <a href={links.naver} target="_blank" rel="noreferrer" className="btn sm ghost" aria-label={`${it.name} 네이버지도`}>지도</a>}
+                    {/* 밖으로 바로 나가지 않고 앱 안에서 사진·소개·시간을 먼저 (길찾기는 그 안에 하나) */}
+                    {region && <button type="button" className="btn sm ghost" onClick={() => setSpot({ name: it.name, area: placeLabel(region), lat: it.lat, lng: it.lng, img: it.img, place: region })} aria-label={`${it.name} 자세히`}>자세히</button>}
                   </div>
                   {isOpen && (
                     <div className="plan-more">
@@ -137,6 +140,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
           </div>
         </section>
       ))}
+      {spot && <SpotDetail spot={spot} onClose={() => setSpot(null)} />}
     </div>
   );
 }

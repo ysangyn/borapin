@@ -8,7 +8,7 @@ import { displayName, useAuth } from '../lib/auth';
 import { useMapChoice } from './MapChoice';
 import { memberNames } from '../lib/members';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
-import { COUNTRY_BY_ID, placeLabel, REGION_BY_CODE, regionLong } from '../lib/geo';
+import { COUNTRY_BY_ID, placeLabel, regionLong } from '../lib/geo';
 import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
 import PlaceRecRow from './PlaceRecRow';
 import { recsAt } from '../lib/placeRecs';
@@ -26,14 +26,6 @@ import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../l
 import { quickTripInput } from '../lib/tripActions';
 import NewsStrip from './NewsStrip';
 import CountryCities from './CountryCities';
-
-function mapLinks(p: Place) {
-  const q = p.t === 'kr'
-    ? `${REGION_BY_CODE.get(p.code)?.sido ?? ''} ${REGION_BY_CODE.get(p.code)?.name ?? ''}`
-    : COUNTRY_BY_ID.get(p.id)?.name ?? '';
-  const enc = encodeURIComponent(q.trim());
-  return { naver: `https://map.naver.com/p/search/${enc}`, google: `https://www.google.com/maps/search/?api=1&query=${enc}` };
-}
 
 const recsHere = (recs: PlaceRec[], p: Place) => recsAt(recs, p);
 
@@ -69,7 +61,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const name = place.t === 'kr' ? regionLong(place.code) : COUNTRY_BY_ID.get(place.id)?.name ?? place.id;
   const visits = (place.t === 'kr' ? stats?.cellVisits.get(place.code) : stats?.countryVisits.get(place.id)) ?? 0;
   const placeParam = place.t === 'kr' ? `kr:${place.code}` : `country:${place.id}`;
-  const links = mapLinks(place);
 
   // 시트가 열려 있으면 알림을 위로 올려 버튼을 가리지 않게
   useEffect(() => {
@@ -192,8 +183,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
 
       <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
         <span style={{ flex: 1 }}>'핀 꽂기'는 날짜 없이 다녀온 표시만 해요</span>
-        <a href={links.naver} target="_blank" rel="noreferrer" style={{ fontWeight: 500 }}>네이버지도</a>
-        <a href={links.google} target="_blank" rel="noreferrer" style={{ fontWeight: 500 }}>구글지도</a>
       </div>
       </div>
       {/* 가장 많이 쓰는 버튼은 창 아래에 늘 보이게 (내용이 길어도 스크롤 밖) */}
