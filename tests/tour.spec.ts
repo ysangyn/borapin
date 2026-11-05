@@ -396,11 +396,10 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   // 지역 창이 뜨면 바로 (못 뜨면 전처럼 그냥 찍는다: 이 파일은 디자인 검수용 사진이 목적)
   await page.getByTestId('region-sheet').waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
   await snap(page, 'm22-sheet', false);
-  // 경유지: 홈 다음 여행 카드와 준비 탭에 '가는 길에 들를 곳 찾기'가 늘 보이고, 누르면 들러 가기가 펼쳐진다
-  await page.goto('/');
-  await expect(page.getByTestId('stopover-find').first()).toBeVisible({ timeout: 15_000 });
+  // 경유지: 준비 탭 '가는 길' 밑에 '가는 길에 들를 곳 찾기'가 늘 보이고, 누르면 들러 가기가 펼쳐진다
+  // (홈 다음 여행 칸에도 같은 줄: 집에서 60km 넘는 국내일 때 — 이 시험 자료의 다음 여행은 해당 없음)
   await page.goto('/trips/t11?tab=prep');
-  await page.getByTestId('stopover-find').first().click();
+  await page.getByTestId('stopover-find').first().click({ timeout: 15_000 });
   await expect(page.getByTestId('stopovers')).toBeVisible();
   await page.getByTestId('stopovers').scrollIntoViewIfNeeded();
   await snap(page, 'm23-stopover-find', false);
