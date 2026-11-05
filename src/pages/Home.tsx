@@ -230,9 +230,14 @@ function SafetyLine({ trips, wishes }: { trips: Trip[]; wishes: Wish[] }) {
 function NextCellLine({ stats, onOpen }: { stats: Stats; onOpen: (code: string) => void }) {
   const home = useHome();
   const n = useMemo(() => nextCell(home, stats.cellVisits, stats.cellPlanned), [home, stats]);
+  // 핀이가 말로 권하는 건 한 달에 한 번만 (그 외엔 조용히 한 줄)
+  const month = new Date().toISOString().slice(0, 7);
+  const [say] = useState(() => { try { return localStorage.getItem('borapin:next-cell-said') !== month; } catch { return false; } });
+  useEffect(() => { if (say && n) try { localStorage.setItem('borapin:next-cell-said', month); } catch { /* */ } }, [say, n, month]);
   if (!n) return null;
   return (
     <button type="button" className="next-cell" onClick={() => onOpen(n.code)} data-testid="next-cell">
+      {say && <span className="next-cell-say" data-testid="next-cell-say"><img src="/art/pini.svg" alt="" width={26} height={26} />이번 달엔 {n.name} 어때요?</span>}
       <span className="next-cell-seed" aria-hidden="true" />
       <span>집에서 가장 가까운 빈 칸은 <b>{withIeyo(n.name)}</b> <span className="muted">· 차로 {aboutMin(n.min)}</span></span>
     </button>

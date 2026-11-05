@@ -102,13 +102,15 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
 
   // 핀을 꽂아 횟수가 늘면 도장이 '쾅' 찍힌다
   const [stamped, setStamped] = useState(false);
+  // 처음 꽂은 칸이면 도장 뒤에 새싹이 돋는다 (창을 닫을 때까지 그대로)
+  const [sprouted, setSprouted] = useState(false);
   const [openMap, mapChoice] = useMapChoice();
   const prevVisits = useRef(visits);
   // 아래로 끌어서 닫기
   const sheetRef = useRef<HTMLDivElement>(null), scrollRef = useRef<HTMLDivElement>(null);
   useSwipeDown(sheetRef, scrollRef, onClose);
   useEffect(() => {
-    if (visits > prevVisits.current) { setStamped(true); const t = setTimeout(() => setStamped(false), 600); prevVisits.current = visits; return () => clearTimeout(t); }
+    if (visits > prevVisits.current) { if (prevVisits.current === 0) setSprouted(true); setStamped(true); const t = setTimeout(() => setStamped(false), 600); prevVisits.current = visits; return () => clearTimeout(t); }
     prevVisits.current = visits;
   }, [visits]);
   return (
@@ -157,6 +159,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 'none' }}>
           {visits > 0 && <span className={'stamp hand' + (stamped ? ' stamp-in' : '')} aria-hidden="true"><span style={{ fontSize: 20 }}>{visits}</span><span style={{ fontSize: 9 }}>번째 핀</span></span>}
+          {sprouted && <span className="sprout-in" aria-hidden="true" data-testid="sprout"><i /><i /></span>}
           <button className="icon-btn" aria-label="닫기" onClick={onClose}><Icon name="x" size={18} stroke={2.2} /></button>
         </div>
       </div>

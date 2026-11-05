@@ -480,6 +480,11 @@ test.describe('사람처럼 쓰기', () => {
     const next = page.getByTestId('next-cell');
     await expect(next).toContainText('집에서 가장 가까운 빈 칸은');
     await expect(next).toContainText(/차로 약 \d/);
+    // 핀이 말풍선은 한 달에 한 번만: 처음엔 보이고, 다시 열면 한 줄만
+    await expect(page.getByTestId('next-cell-say')).toContainText('이번 달엔');
+    await page.reload();
+    await expect(next).toBeVisible();
+    await expect(page.getByTestId('next-cell-say')).toHaveCount(0);
     await next.click();
     await expect(page.getByTestId('region-sheet')).toBeVisible();
     await page.context().close();

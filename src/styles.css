@@ -1694,3 +1694,13 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .story-card { max-height: 92dvh; overflow: auto; }
 .story-preview { width: 100%; max-width: 260px; align-self: center; aspect-ratio: 9 / 16; border-radius: 14px; box-shadow: 0 6px 18px rgba(30,22,64,.2); display: block; }
 .story-preview.wait { background: var(--mist); }
+.next-cell { position: relative; }
+.next-cell-say { position: absolute; right: 8px; top: -30px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px 3px 4px; border-radius: 99px; background: var(--card); border: 1.5px solid var(--line2); font-size: 12.5px; font-weight: 600; color: var(--violet); box-shadow: 0 2px 8px rgba(30,22,64,.12); animation: bubble-in .4s ease-out both; white-space: nowrap; }
+.next-cell-say img { width: 22px; height: 22px; }
+.sprout-in { display: inline-flex; align-items: flex-end; gap: 1px; width: 22px; height: 22px; margin-left: 4px; position: relative; vertical-align: bottom; animation: sprout-up .5s .45s cubic-bezier(.2, 1.4, .4, 1) both; transform-origin: bottom center; }
+.sprout-in::before { content: ''; position: absolute; left: 10px; bottom: 0; width: 2px; height: 10px; background: #5BAE5A; border-radius: 2px; }
+.sprout-in i { position: absolute; bottom: 8px; width: 10px; height: 7px; background: #8BC97A; border: 1.5px solid #4C9A4B; border-radius: 100% 0; }
+.sprout-in i:first-child { left: 1px; transform: rotate(-10deg); }
+.sprout-in i:last-child { right: 1px; transform: scaleX(-1) rotate(-10deg); }
+@keyframes sprout-up { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sprout-in, .next-cell-say { animation: none; } }
