@@ -3,13 +3,14 @@ import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import type { Map as MLMap } from 'maplibre-gl';
 import { isDark } from '../lib/theme';
+import { clusterScreen } from '../lib/placeMaps';
 
 maplibregl.setWorkerUrl(workerUrl);
 
 /**
  * 거리 지도 (내 지도 · 공개 지도): 골목이 보이는 무료 타일(OpenFreeMap, 키·횟수 제한 없음, OSM 자료) 위에 보라 수채를 얇게 입힌다.
  * 타일 서버는 예고 없이 멈출 수 있다고 하니, 스타일을 못 받으면 우리 바탕색에 점만 그린다 (화면이 비지 않게).
- * 핀: 1~3등은 사진 동그라미로 크게, 나머지는 점. 가까이 겹치면 MapLibre가 겹친 채 두므로 확대하면 풀린다.
+ * 핀: 1~3등은 사진 동그라미로 크게, 나머지는 점. 점끼리 겹치면 숫자 하나로 묶고, 누르면 그 둘레로 확대한다.
  */
 export interface StreetPin { id: string; name: string; lat: number; lng: number; img?: string; rank?: number; /** 종류 색 (없으면 보라) */ color?: string }
 const STYLE = 'https://tiles.openfreemap.org/styles/positron';
@@ -20,6 +21,8 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
   const mapRef = useRef<MLMap | null>(null);
   const markers = useRef<Map<string, maplibregl.Marker>>(new Map());
   const hereMarker = useRef<maplibregl.Marker | null>(null);
+  const groupMarkers = useRef<maplibregl.Marker[]>([]);
+  const reclusterRef = useRef<() => void>(() => {});
   const [plain, setPlain] = useState(false);
   const onPickRef = useRef(onPick);
   onPickRef.current = onPick;
@@ -50,6 +53,7 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
     };
     map.on('error', (e) => { if (/style|Failed to fetch|NetworkError/i.test(String((e as unknown as { error?: { message?: string } }).error?.message ?? ''))) fallback(); });
     const t = window.setTimeout(fallback, 6000);
+    map.on('moveend', () => reclusterRef.current());
     map.once('style.load', () => {
       window.clearTimeout(t);
       // 지명은 한글만 (타일 스타일은 '영문\n한글'로 둘 다 적는다): 한글 이름이 있으면 그것, 없으면 원래 이름
@@ -60,8 +64,40 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
         }
       } catch { /* 스타일 모양이 다르면 그대로 둔다 */ }
     });
-    return () => { window.clearTimeout(t); markers.current.forEach((m) => m.remove()); markers.current.clear(); map.remove(); mapRef.current = null; };
+    return () => { window.clearTimeout(t); markers.current.forEach((m) => m.remove()); markers.current.clear(); groupMarkers.current.forEach((m) => m.remove()); groupMarkers.current = []; map.remove(); mapRef.current = null; };
   }, []);
+
+  // 겹치는 점 묶기: 큰 핀(1~3등)과 고른 핀은 늘 그대로, 나머지 점만 화면에서 28px 안이면 숫자 하나로
+  reclusterRef.current = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    groupMarkers.current.forEach((m) => m.remove());
+    groupMarkers.current = [];
+    const dots = pins.filter((p) => !(p.rank && p.rank <= 3) && p.id !== picked);
+    const pts = dots.map((p) => { const q = map.project([p.lng, p.lat]); return { id: p.id, x: q.x, y: q.y }; });
+    const groups = clusterScreen(pts, 28);
+    const hidden = new Set<string>();
+    for (const g of groups) {
+      if (g.ids.length < 2) continue;
+      g.ids.forEach((id) => hidden.add(id));
+      const node = document.createElement('button');
+      node.type = 'button';
+      node.className = 'street-group';
+      node.textContent = String(g.ids.length);
+      node.setAttribute('aria-label', `${g.ids.length}곳이 모여 있어요. 눌러서 크게 보기`);
+      node.setAttribute('data-testid', 'street-group');
+      const members = pins.filter((p) => g.ids.includes(p.id));
+      node.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const b = new maplibregl.LngLatBounds([members[0].lng, members[0].lat], [members[0].lng, members[0].lat]);
+        members.forEach((p) => b.extend([p.lng, p.lat]));
+        if (map.getZoom() >= 17.5) onPickRef.current?.(members[0].id);
+        else map.fitBounds(b, { padding: 60, maxZoom: 18, duration: 300 });
+      });
+      groupMarkers.current.push(new maplibregl.Marker({ element: node, anchor: 'center' }).setLngLat(map.unproject([g.x, g.y])).addTo(map));
+    }
+    for (const [id, m] of markers.current) m.getElement().style.display = hidden.has(id) ? 'none' : '';
+  };
 
   // 핀
   useEffect(() => {
@@ -91,6 +127,7 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
       if (here) b.extend([here.lng, here.lat]);
       map.fitBounds(b, { padding: { top: 48, bottom: 36, left: 40, right: 40 }, maxZoom: 16, duration: 0 });
     }
+    reclusterRef.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pins, picked]);
 

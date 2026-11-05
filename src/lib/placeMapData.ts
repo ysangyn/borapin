@@ -3,7 +3,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, serverT
 import { db, SPACE_ID } from './firebase';
 import { queued } from './writes';
 import { useStore } from './store';
-import { ALL, mapKey, mapsOf, rankedRecs, themeLabel, themeOf, themesOrder, type Theme } from './placeMaps';
+import { ALL, mapKey, mapsOf, publicPlaces, rankedRecs, themeLabel, themeOf, themesOrder, type Theme } from './placeMaps';
 import { placeLong } from './geo';
 import { spaceTitle } from './members';
 import { samePlace } from './wishes';
@@ -67,7 +67,9 @@ export function buildMapShare(view: { region: Place; theme: Theme; ranked: Place
     themeLabel: themeLabel(view.theme),
     by: spaceTitle(),
     regionLabel: placeLong(view.region),
-    places: view.ranked.slice(0, 300).map((r) => ({
+    region: view.region,
+    // '별로'는 공개하지 않는다 (추천하는 지도라서). 내 화면엔 그대로
+    places: publicPlaces(view.ranked).slice(0, 300).map((r) => ({
       id: r.id, name: r.name, kind: r.kind, ...(r.tag?.trim() ? { tag: r.tag.trim() } : {}),
       ...(r.lat != null && r.lng != null ? { lat: r.lat, lng: r.lng } : {}),
       ...(r.photoUrl ? { photoUrl: r.photoUrl } : {}),

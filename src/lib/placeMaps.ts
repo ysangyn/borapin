@@ -78,3 +78,31 @@ export function nearby(recs: PlaceRec[], here: { lat: number; lng: number }, rad
 }
 /** '240m' · '1.3km' */
 export const meters = (m: number) => (m < 1000 ? `${m}m` : `${(m / 1000).toFixed(1)}km`);
+
+// ---------- 공개·핀 묶음·스토리 카드 ----------
+/** 공개 지도엔 '별로'를 싣지 않는다 (추천하는 지도라서). 내 화면엔 그대로 */
+export const publicPlaces = <T extends { verdict?: string | null }>(recs: T[]): T[] => recs.filter((r) => r.verdict !== 'meh');
+
+/** 화면 위 점들을 r픽셀 안에서 겹치는 것끼리 묶는다 (먼저 온 점 둘레로, 묶음 자리는 가운데) */
+export function clusterScreen(points: { id: string; x: number; y: number }[], r = 34): { ids: string[]; x: number; y: number }[] {
+  const groups: { ids: string[]; xs: number[]; ys: number[]; x: number; y: number }[] = [];
+  for (const p of points) {
+    const g = groups.find((q) => Math.hypot(q.x - p.x, q.y - p.y) <= r);
+    if (g) { g.ids.push(p.id); g.xs.push(p.x); g.ys.push(p.y); g.x = g.xs.reduce((a, b) => a + b, 0) / g.xs.length; g.y = g.ys.reduce((a, b) => a + b, 0) / g.ys.length; }
+    else groups.push({ ids: [p.id], xs: [p.x], ys: [p.y], x: p.x, y: p.y });
+  }
+  return groups.map(({ ids, x, y }) => ({ ids, x, y }));
+}
+
+/** 좌표를 상자 안에 비율 그대로 (북쪽 위·동쪽 오른쪽, 경도는 위도에 맞춰 줄임). 하나뿐이면 가운데 */
+export function fitPins(pins: { lat: number; lng: number }[], box: { x: number; y: number; w: number; h: number }, pad = 40): { x: number; y: number }[] {
+  if (!pins.length) return [];
+  const k = Math.cos(((pins.reduce((a, p) => a + p.lat, 0) / pins.length) * Math.PI) / 180);
+  const xs = pins.map((p) => p.lng * k), ys = pins.map((p) => p.lat);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const w = box.w - pad * 2, h = box.h - pad * 2;
+  const s = Math.min(x1 > x0 ? w / (x1 - x0) : Infinity, y1 > y0 ? h / (y1 - y0) : Infinity);
+  const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+  if (!Number.isFinite(s)) return pins.map(() => ({ x: cx, y: cy }));
+  return pins.map((_, i) => ({ x: Math.round(cx + (xs[i] - (x0 + x1) / 2) * s), y: Math.round(cy - (ys[i] - (y0 + y1) / 2) * s) }));
+}

@@ -337,6 +337,11 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await expect(guest.getByTestId('shared-map-cta')).toBeVisible();
   await guest.waitForTimeout(2500);
   await guest.screenshot({ path: path.join(OUT, 'm15d-shared-map.jpg'), fullPage: true, type: 'jpeg', quality: 82 });
+  // 로그인 없이 ♡ 전부 → 이 폰에 적어 두고 '보라핀 가고 싶은 곳에 넣기'
+  await guest.getByTestId('shared-heart-all').click();
+  await expect(guest.getByTestId('shared-heart').first()).toHaveText('♥ 담아 뒀어요');
+  await expect(guest.getByTestId('shared-take')).toContainText('4곳');
+  await guest.screenshot({ path: path.join(OUT, 'm15d2-shared-hearts.jpg'), type: 'jpeg', quality: 82 });
   await anon.close();
   // 한눈에: 맛집·카페·소품샵(내 꼬리표)이 색만 다르게 한 지도에
   await page.goto('/maps?m=kr:51150|all');
@@ -344,6 +349,23 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await expect(page.getByTestId('mymaps-themes')).toContainText('한눈에');
   await page.waitForTimeout(2000);
   await snap(page, 'm15e-mymaps-all');
+  // 스토리 카드: 1080×1920 그림을 만들어 보여 준다 (그림 원본도 남긴다)
+  await page.getByTestId('mymap-story').click();
+  await expect(page.getByTestId('story-img')).toBeVisible({ timeout: 15_000 });
+  await snap(page, 'm15g-story', false);
+  const png = await page.getByTestId('story-img').evaluate(async (img) => { const b = await (await fetch((img as HTMLImageElement).src)).blob(); const r = new FileReader(); return await new Promise<string>((ok) => { r.onload = () => ok(String(r.result).split(',')[1]); r.readAsDataURL(b); }); });
+  fs.writeFileSync(path.join(OUT, 'm15g-story-card.png'), Buffer.from(png, 'base64'));
+  await page.keyboard.press('Escape');
+  await page.getByTestId('story-card').click({ position: { x: 5, y: 5 } });
+  // 받은 지도에서 ♡한 곳 → 홈 카드에서 가고 싶은 곳으로 한꺼번에
+  await page.goto(`/m/${token}`);
+  await page.getByTestId('shared-heart-all').click();
+  await page.getByTestId('shared-take').getByRole('link').click();
+  await expect(page.getByTestId('pending-wishes')).toBeVisible({ timeout: 15_000 });
+  await snap(page, 'm15h-pending-wishes', false);
+  await page.getByTestId('pending-take').click();
+  await expect(page.getByRole('status')).toContainText(/담았어요|담겨 있어요/);
+  await expect(page.getByTestId('pending-wishes')).toHaveCount(0);
   await page.goto('/places/r1');
   await snap(page, 'm16-place-edit');
   await page.goto('/memories');

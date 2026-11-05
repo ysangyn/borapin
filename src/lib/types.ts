@@ -217,6 +217,8 @@ export interface MapShare {
   /** '보라 & 영상' */
   by: string;
   regionLabel: string;
+  /** 받은 사람이 '전부 담기'할 때 그 지역 (예전 사본엔 없다) */
+  region?: Place;
   places: { id: string; name: string; kind: PlaceKind; tag?: string; lat?: number | null; lng?: number | null; photoUrl?: string; address?: string; naverUrl?: string; verdict: Verdict | null; lines: { who: string; text: string }[] }[];
   updatedAt?: Timestamp | null;
   v: 1;

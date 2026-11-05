@@ -5,7 +5,9 @@ import StreetMap, { type StreetPin } from '../components/StreetMap';
 import PlaceRecRow from '../components/PlaceRecRow';
 import { usePlaces } from '../lib/data';
 import { disableMapShare, enableMapShare, mapShareUrl, savePlaceMap, useMyMaps, type MyMapView } from '../lib/placeMapData';
-import { ALL, KIND_COLOR, themeLabel, themeOf, themesOrder, type Theme } from '../lib/placeMaps';
+import { ALL, KIND_COLOR, publicPlaces, themeLabel, themeOf, themesOrder, type Theme } from '../lib/placeMaps';
+import StoryCard from '../components/StoryCard';
+import { spaceTitle } from '../lib/members';
 import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { shareAnyhow } from '../lib/kakao';
 import { samePlace } from '../lib/wishes';
@@ -63,6 +65,7 @@ export default function MyMaps() {
   const noPos = view ? view.ranked.length - pins.length : 0;
   const legend = useMemo(() => (view?.theme === ALL ? themesOrder(view.recs.map(themeOf)).map((t) => ({ t, color: KIND_COLOR[view.recs.find((r) => themeOf(r) === t)!.kind], n: view.recs.filter((r) => themeOf(r) === t).length })) : []), [view]);
 
+  const [story, setStory] = useState(false);
   const share = async () => {
     if (!view) return;
     try {
@@ -127,8 +130,10 @@ export default function MyMaps() {
 
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn" style={{ flex: 1 }} onClick={() => void share()} data-testid="mymap-share"><Icon name="link" size={16} />이 지도 보내기</button>
+              <button className="btn line" onClick={() => setStory(true)} data-testid="mymap-story">스토리 카드</button>
               {view.doc?.share?.token && <button className="btn line" onClick={() => { if (window.confirm('공개를 끌까요? 받은 사람은 더 볼 수 없어요.')) void disableMapShare(view).then(() => toast('공개를 껐어요'), () => toast('끄지 못했어요')); }} aria-label="공개 끄기">공개 중</button>}
             </div>
+            {story && <StoryCard input={{ title: view.title, intro: view.doc?.intro ?? '', by: spaceTitle(), region: placeLong(view.region), places: publicPlaces(view.ranked) }} onClose={() => setStory(false)} />}
 
             {/* 순위 목록 (한눈에는 주제마다) */}
             <div className="row-between" style={{ alignItems: 'baseline' }}>

@@ -8,6 +8,7 @@ import { VERDICT_LABEL } from '../lib/placeRecs';
 import { KIND_COLOR, themeLabel, themeOf } from '../lib/placeMaps';
 import { AppLink, mapPref } from '../components/MapChoice';
 import type { MapShare } from '../lib/types';
+import { loadPending, mergePending, savePending, togglePending, type PendingMap } from '../lib/pendingWishes';
 
 /**
  * 링크로 받은 내 지도 (/m/토큰): 앱·로그인 없이 보는 한 쪽.
@@ -20,6 +21,8 @@ export default function SharedMapPage() {
   const [here, setHere] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingMap[]>(loadPending);
+  const setP = (l: PendingMap[]) => { setPending(l); savePending(l); };
   useEffect(() => { loadMapShare(token).then(setData, () => setData(null)); }, [token]);
   useEffect(() => { if (data) document.title = `${data.title} · 보라핀`; }, [data]);
 
@@ -31,6 +34,10 @@ export default function SharedMapPage() {
   }, [data, here]);
   const pins = useMemo<StreetPin[]>(() => (data?.places ?? []).map((p, i) => ({ id: p.id, name: p.name, lat: p.lat as number, lng: p.lng as number, img: p.photoUrl, rank: data?.theme === 'all' ? undefined : i + 1, color: KIND_COLOR[p.kind] })).filter((p) => p.lat != null && p.lng != null), [data]);
   const covers = (data?.places ?? []).filter((p) => p.photoUrl).slice(0, 4);
+  // ♡: 이 폰에 적어 두고 앱 홈에서 가고 싶은 곳으로 옮긴다 (지역이 적힌 사본만)
+  const head = data?.region ? { token, title: data.title, by: data.by, region: data.region } : null;
+  const mine = pending.find((m) => m.token === token)?.items ?? [];
+  const hearted = (name: string) => mine.some((x) => x.name.trim() === name.trim());
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -72,6 +79,9 @@ export default function SharedMapPage() {
           <b className="jua" style={{ fontSize: 18 }}>{here ? '가까운 순' : '만든 사람의 순위'}</b>
           <button type="button" className={'chip' + (here ? ' on' : '')} onClick={() => (here ? setHere(null) : locate())} disabled={locating} data-testid="shared-near">{locating ? '찾는 중…' : here ? '순위로 보기' : '지금 가까운 순'}</button>
         </div>
+        {head && mine.length < data.places.length && (
+          <button type="button" className="btn soft block" onClick={() => setP(mergePending(pending, head, data.places.map((p) => ({ name: p.name, kind: p.kind }))))} data-testid="shared-heart-all">♡ {data.places.length}곳 전부 가고 싶어요</button>
+        )}
 
         <div className="list" style={{ gap: 10 }}>
           {places.map((p, i) => {
@@ -85,7 +95,9 @@ export default function SharedMapPage() {
                   <span className="tiny muted">{[p.address, m != null && Number.isFinite(m) ? `여기서 ${meters(m)}` : null].filter(Boolean).join(' · ')}</span>
                   <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
                     <span onClick={(e) => e.stopPropagation()} style={{ display: 'contents' }}><AppLink app={mapPref() === 'kakao' ? 'kakao' : 'naver'} t={{ name: p.name, area: data.regionLabel, lat: p.lat, lng: p.lng }} naverUrl={p.naverUrl} className="btn sm line">길찾기</AppLink></span>
-                    <Link className="btn sm soft" to={`/places/new?from=${encodeURIComponent(p.name)}`} onClick={(e) => e.stopPropagation()}>♡ 내 지도에 담기</Link>
+                    {head ? (
+                      <button type="button" className={'btn sm ' + (hearted(p.name) ? 'coral-soft' : 'soft')} aria-pressed={hearted(p.name)} onClick={(e) => { e.stopPropagation(); setP(togglePending(pending, head, { name: p.name, kind: p.kind })); }} data-testid="shared-heart">{hearted(p.name) ? '♥ 담아 뒀어요' : '♡ 가고 싶어요'}</button>
+                    ) : <Link className="btn sm soft" to={`/places/new?from=${encodeURIComponent(p.name)}`} onClick={(e) => e.stopPropagation()}>♡ 내 지도에 담기</Link>}
                   </div>
                 </div>
               </article>
@@ -93,6 +105,12 @@ export default function SharedMapPage() {
           })}
         </div>
 
+        {mine.length > 0 && (
+          <div className="shared-take" data-testid="shared-take">
+            <span className="small" style={{ flex: 1 }}>♥ {mine.length}곳을 담아 뒀어요</span>
+            <Link to="/?take=1" className="btn sm">보라핀 가고 싶은 곳에 넣기</Link>
+          </div>
+        )}
         <div className="card shared-map-cta" data-testid="shared-map-cta">
           <span className="jua" style={{ fontSize: 20, lineHeight: 1.25 }}>나도 우리 동네 {data.theme === 'all' ? '' : `${data.themeLabel ?? themeLabel(data.theme)} `}지도 만들어 볼까요?</span>
           <span className="small" style={{ color: 'var(--v1)' }}>네이버·카카오 지도의 '공유' 글을 붙여 넣기만 하면 돼요. 무료, 광고 없음.</span>

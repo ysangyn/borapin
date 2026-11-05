@@ -101,6 +101,28 @@ export function planWishItem(existing: Wish[], place: Place, name: string, kind:
   return { action: list.includes(name) ? 'already' : 'append', id: w.id };
 }
 
+/**
+ * 받은 지도를 한꺼번에 담을 때 할 일: 맛집·카페는 먹거리, 나머지는 볼거리 칸으로.
+ * 그 지역 가고 싶은 곳(여행에 안 묶인 것)이 있으면 거기 이어(id), 없으면 새로(id: null). 이미 있는 이름은 건너뛴다
+ */
+export function wishBatch(existing: Wish[], place: Place, items: { name: string; kind: string }[], limit = 50): { id: string | null; foods: string[]; spots: string[]; skipped: number; over?: number } {
+  const w = existing.find((x) => samePlace(x.place, place) && !x.tripId) ?? null;
+  const have = [...(w?.foods ?? []), ...(w?.spots ?? [])];
+  const foods: string[] = [], spots: string[] = [];
+  let skipped = 0;
+  for (const it of items) {
+    const name = it.name.trim();
+    if (!name) continue;
+    if ([...have, ...foods, ...spots].some((h) => sameName(h, name))) { skipped++; continue; }
+    (it.kind === 'food' || it.kind === 'cafe' ? foods : spots).push(name);
+  }
+  // 칸마다 50개까지 (규칙 한도): 넘치는 것은 담지 않고 수만 알려 준다
+  const roomF = Math.max(0, limit - (w?.foods?.length ?? 0)), roomS = Math.max(0, limit - (w?.spots?.length ?? 0));
+  const over = Math.max(0, foods.length - roomF) + Math.max(0, spots.length - roomS);
+  const out = { id: w?.id ?? null, foods: foods.slice(0, roomF), spots: spots.slice(0, roomS), skipped };
+  return over ? { ...out, over } : out;
+}
+
 /** 이미 담겨 있는지 (창의 하트 모양) */
 export const hasWishItem = (existing: Wish[], place: Place, name: string, kind: WishItemKind) => planWishItem(existing, place, name, kind).action === 'already';
 

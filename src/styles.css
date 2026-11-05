@@ -1687,3 +1687,10 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .mini-street-wait { background: repeating-linear-gradient(135deg, var(--page) 0 12px, var(--mist) 12px 24px); opacity: .5; }
 .pv-map .mini-street { border-radius: 12px; align-self: stretch; }
 .mini-street { width: 100%; }
+.street-group { min-width: 30px; height: 30px; padding: 0 8px; border-radius: 99px; border: 2.5px solid #fff; background: var(--violet); color: #fff; font: inherit; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px rgba(30,22,64,.3); cursor: pointer; z-index: 2; }
+.shared-take { position: sticky; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 5; display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; border-radius: 99px; background: var(--ink); color: var(--card); box-shadow: 0 6px 18px rgba(30,22,64,.3); }
+.shared-take .btn.sm { background: var(--card); color: var(--ink); }
+.pending-wishes { display: flex; flex-direction: column; gap: 6px; border: 1.5px dashed var(--v3, #9B82F6); }
+.story-card { max-height: 92dvh; overflow: auto; }
+.story-preview { width: 100%; max-width: 260px; align-self: center; aspect-ratio: 9 / 16; border-radius: 14px; box-shadow: 0 6px 18px rgba(30,22,64,.2); display: block; }
+.story-preview.wait { background: var(--mist); }

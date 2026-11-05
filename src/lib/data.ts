@@ -207,6 +207,13 @@ export async function createWish(input: WishInput, user: User): Promise<string> 
 }
 
 /** 가고 싶은 곳의 볼거리·먹거리 메모에 이름 하나 보태기 (동시에 눌러도 겹치지 않게 arrayUnion) */
+/** 여러 개를 한 번에 (받은 지도 담기) */
+export async function addWishItems(id: string, fields: { spots?: string[]; foods?: string[] }) {
+  const up: Record<string, unknown> = { updatedAt: serverTimestamp() };
+  if (fields.spots?.length) up.spots = arrayUnion(...fields.spots);
+  if (fields.foods?.length) up.foods = arrayUnion(...fields.foods);
+  await queued(updateDoc(doc(wishesCol(), id), up));
+}
 export async function addWishItem(id: string, field: 'spots' | 'foods', name: string) {
   await queued(updateDoc(doc(wishesCol(), id), { [field]: arrayUnion(name), updatedAt: serverTimestamp() }));
 }

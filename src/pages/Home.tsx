@@ -26,6 +26,7 @@ import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
 import NearbyCard from '../components/NearbyCard';
 import { DraftNudge } from '../components/NextTripHub';
+import PendingWishesCard from '../components/PendingWishesCard';
 import { formatWhen } from '../lib/dates';
 import { COUNTRY_BY_ID, placeLabel } from '../lib/geo';
 import { spaceTitle, toneOf } from '../lib/members';
@@ -92,6 +93,7 @@ export default function Home() {
           </div>
         )}
         {/* 상대가 여행 후보를 골라 두었으면 내 차례: 맨 위에 */}
+        <PendingWishesCard />
         <DraftNudge top />
 
         <div className="card map-card" style={{ padding: 12 }}>
