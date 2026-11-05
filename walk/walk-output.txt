@@ -1,0 +1,308 @@
+
+> borapin@0.1.0 test:walk
+> WALK=1 firebase emulators:exec --only auth,firestore --project demo-borapin "playwright test tests/tour.spec.ts tests/walk.spec.ts --project=chromium"
+
+[36m[1mi  emulators:[22m[39m Starting emulators: auth, firestore
+[36m[1mi  emulators:[22m[39m Detected demo project ID "demo-borapin", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+[33m[1m⚠ [22m[39m It appears you are running in a CI environment. You can avoid downloading the Firestore Emulator repeatedly by caching the /home/runner/.cache/firebase/emulators directory.
+[36m[1mi  firestore:[22m[39m downloading cloud-firestore-emulator-v1.22.0.jar...
+
+[36m[1mi  firestore:[22m[39m Firestore Emulator logging to [1mfirestore-debug.log[22m
+[32m[1m✔  firestore:[22m[39m Firestore Emulator was started in standard edition.
+[32m[1m✔  firestore:[22m[39m Firestore Emulator UI websocket is running on 9150.
+[36m[1mi [22m[39m Running script: [1mplaywright test tests/tour.spec.ts tests/walk.spec.ts --project=chromium[22m
+
+Running 6 tests using 1 worker
+
+  ✓  1 [chromium] › tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (19.8s)
+  ✓  2 [chromium] › tests/tour.spec.ts:210:1 › 가득 찬 화면 · 휴대폰 (1.0m)
+  ✓  3 [chromium] › tests/tour.spec.ts:338:1 › 가득 찬 화면 · PC (38.1s)
+  ✓  4 [chromium] › tests/tour.spec.ts:363:1 › 화면 오류 없음 (1ms)
+
+==== 국내 여행: 다음 달 1박 2일, 어디 갈지 모르는 상태에서 ====
+[01-k01-home-start.jpg] /
+  · 물어보기 답: 12월에 가 볼 만한 곳 3곳 12월이 딱 좋은 때로 꼽힌 곳이 적어서 앞뒤 달이 좋은 곳까지 골랐어요. 전남 함평군 나비의 날갯짓과 황금박쥐의 전설 · 좋은 때 5·6, 9~11월 경남 남해군 죽방렴이 지키는 은빛 바다의 보물 · 좋은 때 4~6, 10·11월 전남 무안군 붉은 황토와 연꽃 향기 가득한 바다 · 좋은 때 5·6, 9~11월 보라핀 여행정보 · 2026년 10월 기준 · 날씨: NASA POWER 월평균 다른 곳
+[02-k02-ask-where.jpg] /ask
+[03-k03-plus.jpg] /
+[04-k04-planner.jpg] /plan
+[05-k05-planner-conds.jpg] /plan
+[06-k06-cands.jpg] /plan/nQCpj8Q6hyAMGtrUROy7
+  · 후보: 경북 안동시 / 강원 춘천시 / 충남 태안군
+[07-k07-my-heart.jpg] /plan/nQCpj8Q6hyAMGtrUROy7
+[08-k08-share-hint.jpg] /plan/nQCpj8Q6hyAMGtrUROy7
+[09-k09-bora-home.jpg] /
+[10-k10-bora-feed.jpg] /feed
+[11-k11-bora-draft.jpg] /plan/nQCpj8Q6hyAMGtrUROy7
+[12-k12-bora-heart.jpg] /plan/nQCpj8Q6hyAMGtrUROy7
+[13-k13-me-sees-match.jpg] /plan/nQCpj8Q6hyAMGtrUROy7
+  · 알림: 안동시로 정했어요 · 이어서 계획해요
+[14-k14-decided.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+  · 만든 여행: 7MoITxiJoB5gcb7m4Hrh
+[15-k15-flow-when.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[16-k16-flow-stay.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=stay
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[17-k17-flow-stay-hood.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9 / 하회마을 자세히 48×20 / 월영교 자세히 48×20 / 안동 하회마을 겸암정사 자세히 48×20 / 도산서원 자세히 48×20 / 유교랜드 자세히 48×20 / 산수정 자세히 48×20
+[18-k18-flow-pick.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9 / 하회마을 자세히 48×20 / 월영교 자세히 48×20 / 안동 하회마을 겸암정사 자세히 48×20 / 도산서원 자세히 48×20 / 유교랜드 자세히 48×20 / 산수정 자세히 48×20
+[19-k19-flow-pick-hearts.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9 / 하회마을 자세히 48×20 / 월영교 자세히 48×20 / 안동 하회마을 겸암정사 자세히 48×20 / 도산서원 자세히 48×20 / 유교랜드 자세히 48×20 / 산수정 자세히 48×20
+[20-k20-flow-pick-eat.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[21-k21-bora-pick.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9 / 하회마을 자세히 48×20 / 월영교 자세히 48×20 / 안동 하회마을 겸암정사 자세히 48×20 / 도산서원 자세히 48×20 / 유교랜드 자세히 48×20 / 산수정 자세히 48×20
+[22-k22-bora-trip-home.jpg] /
+[23-k23-flow-route.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=route
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[24-k24-flow-way.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=route
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9 / 자동차로 가요 313×22 / 이 길로 33×17
+  · 알림: 
+[25-k25-flow-way-picked.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=route
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[26-k26-flow-hope.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=hope
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[27-k27-flow-hope-write.jpg] /trips/7MoITxiJoB5gcb7m4Hrh/plan-next?step=hope
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+  · 알림: 동선을 정했어요
+[28-k28-flow-done.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+[29-k29-trip-after-plan.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+[30-k30-trip-plan-tab.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=plan
+  - 작은 누를 곳(<30px): 안동 하회마을 겸암정사 227×22 / 도산서원 227×22
+[31-k31-trip-prep-tab.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=prep
+[32-k31b-booking.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=prep
+  · 알림: 
+[33-k31c-booking-saved.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=prep
+[34-k32-home-before.jpg] /
+[35-k33-bora-hope.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+
+---- 시간이 흘러: 내일 떠나요 ----
+[36-k34-home-dday1.jpg] /
+[37-k35-prep-dday1.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=prep
+
+---- 여행 중 (첫날) ----
+[38-k36-home-during.jpg] /
+[39-k37-during-here.jpg] /
+  · 알림: 
+[40-k38-during-here-save.jpg] /
+  · 알림: 
+[41-k39-during-quick-photos.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=photos
+[42-k40-during-plan-check.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=plan
+  - 작은 누를 곳(<30px): 안동 하회마을 겸암정사 227×22 / 도산서원 227×22
+
+---- 다녀와서 (사흘 뒤) ----
+[43-k41-home-after.jpg] /
+  · 알림: 
+[44-k42-mark-done.jpg] /
+[45-k43-home-after-done.jpg] /
+[46-k44-trip-done.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+  · 알림: 
+[47-k45-photos-add.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=photos
+  · 알림: 사진 6장을 올렸어요
+[48-k46-note.jpg] /trips/7MoITxiJoB5gcb7m4Hrh?tab=notes
+[49-k47-place-new.jpg] /places/new?trip=7MoITxiJoB5gcb7m4Hrh
+[50-k48-place-fill.jpg] /places/new?trip=7MoITxiJoB5gcb7m4Hrh
+  · 알림: 
+[51-k49-place-saved.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+[52-k50-trip-info-after.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+[53-k51-bora-feed-after.jpg] /feed
+[54-k52-bora-trip.jpg] /trips/7MoITxiJoB5gcb7m4Hrh
+[55-k53-bora-review.jpg] /places/6xOWzLBRMqpM3m6UW5vw
+[56-k54-map-after.jpg] /map
+[57-k55-memories-after.jpg] /memories
+  - 작은 누를 곳(<30px): 다시 보기 연도 281×16
+
+==== 해외 여행: 오사카 3박 4일 ====
+[58-w01-wishes.jpg] /wishes
+[59-w02-world.jpg] /wishes?find=world
+[60-w03-world-osaka.jpg] /wishes?find=world
+  · 알림: 
+[61-w04-world-add.jpg] /wishes?find=world
+[62-w05-wish-card.jpg] /wishes/ydgfCBzUcRSsnUw86X8s
+[63-w06-make-trip.jpg] /plan?wish=ydgfCBzUcRSsnUw86X8s
+[64-w07-planner-fixed.jpg] /plan?wish=ydgfCBzUcRSsnUw86X8s
+  - 작은 누를 곳(<30px): 떠날 날 335×27
+  · 알림: 오사카 여행을 만들었어요
+[65-w08-made.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[66-w09-flow-when.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[67-w10-flow-stay.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next?step=stay
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[68-w11-flow-stay-link.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next?step=stay
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[69-w12-flow-pick.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[70-w13-flow-pick-tabs.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next?step=pick
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[71-w14-flow-route.jpg] /trips/Yi0eS6NDO6fFneqmysBS/plan-next?step=route
+  - 작은 누를 곳(<30px): 1. 언제 가요? 63×9 / 2. 어디서 자요? 63×9 / 3. 같이 찾아 담아요 63×9 / 4. 이렇게 다니면 어때요? 63×9 / 5. 제일 기대되는 건? 63×9
+[72-w15-flow-hope.jpg] /trips/Yi0eS6NDO6fFneqmysBS
+[73-w16-trip-info.jpg] /trips/Yi0eS6NDO6fFneqmysBS
+[74-w17-trip-prep.jpg] /trips/Yi0eS6NDO6fFneqmysBS?tab=prep
+  · 알림: 
+[75-w17b-flight.jpg] /trips/Yi0eS6NDO6fFneqmysBS?tab=prep
+[76-w18-phrases.jpg] /phrases/ja?city=%EC%98%A4%EC%82%AC%EC%B9%B4
+[77-w19-home-before-abroad.jpg] /
+
+---- 오사카 다녀와서 ----
+[78-w20-home-after.jpg] /
+[79-w21-photos.jpg] /trips/Yi0eS6NDO6fFneqmysBS?tab=photos
+  · 알림: 
+[80-w22-place.jpg] /trips/Yi0eS6NDO6fFneqmysBS
+[81-w23-trip-done.jpg] /trips/Yi0eS6NDO6fFneqmysBS
+[82-w24-map-world.jpg] /map
+[83-w25-trips-list.jpg] /trips
+  ✓  5 [chromium] › tests/walk.spec.ts:121:1 › 여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도시에서 — 계획하고 다녀와서 기록까지 (2.0m)
+
+== 홈 ==
+[84-home-top.jpg] /
+[85-home-scroll1.jpg] /
+  - 작은 누를 곳(<30px): 물어보기 277×25
+[86-home-scroll2.jpg] /
+[87-home-bottom.jpg] /
+[88-home-stage-card.jpg] /trips/t11?tab=prep
+
+== 남기기 (+) ==
+[89-plus-open.jpg] /
+[90-record-new.jpg] /record
+[91-record-search.jpg] /record
+[92-record-picked.jpg] /record
+[93-record-dates.jpg] /record
+[94-record-memo.jpg] /record
+  · 알림: 기록했어요
+[95-record-saved.jpg] /trips/ehaGmIOxTS9VgWOqJoR1
+
+== 여행 상세 (방금 만든 속초) ==
+[96-trip-tabs.jpg] /trips/ehaGmIOxTS9VgWOqJoR1
+[97-trip-tab-들른 곳.jpg] /trips/ehaGmIOxTS9VgWOqJoR1?tab=plan
+[98-trip-tab-사진.jpg] /trips/ehaGmIOxTS9VgWOqJoR1?tab=photos
+[99-trip-tab-글.jpg] /trips/ehaGmIOxTS9VgWOqJoR1?tab=notes
+  · 알림: 
+[100-trip-note-write.jpg] /trips/ehaGmIOxTS9VgWOqJoR1?tab=notes
+[101-trip-edit.jpg] /trips/ehaGmIOxTS9VgWOqJoR1/edit
+
+== 예정 여행 (통영) ==
+[102-planned-info.jpg] /trips/t11
+[103-planned-plan.jpg] /trips/t11?tab=plan
+  - 작은 누를 곳(<30px): 10:00 통영 케이블카 227×22 / 14:00 동피랑 벽화마을 227×22 / 17:30 다랭이마을 일몰 227×22 / 남해 독일마을 227×22 / 서피랑 227×22
+  · 알림: 
+[104-planned-plan-add.jpg] /trips/t11?tab=plan
+  - 작은 누를 곳(<30px): 10:00 통영 케이블카 227×22 / 14:00 동피랑 벽화마을 227×22 / 17:30 다랭이마을 일몰 227×22 / 남해 독일마을 227×22 / 서피랑 227×22
+[105-planned-plan-open.jpg] /trips/t11?tab=plan
+  - 작은 누를 곳(<30px): 10:00 통영 케이블카 227×22 / 14:00 동피랑 벽화마을 227×22 / 17:30 다랭이마을 일몰 227×22 / 남해 독일마을 227×22 / 서피랑 227×22 / 멸치쌈밥 맛집 찾기 227×22 / 서피랑 99계단 227×22
+[106-planned-plan-time.jpg] /trips/t11?tab=plan
+  - 작은 누를 곳(<30px): 10:00 통영 케이블카 227×22 / 14:00 동피랑 벽화마을 227×22 / 17:30 다랭이마을 일몰 227×22 / 남해 독일마을 227×22 / 서피랑 227×22 / 01:00 서피랑 99계단 227×22
+[107-planned-prep.jpg] /trips/t11?tab=prep
+[108-planned-prep-pack.jpg] /trips/t11?tab=prep
+[109-planned-prep-back-way.jpg] /trips/t11?tab=prep
+  - 작은 누를 곳(<30px): 닫기 24×36
+  · 알림: 
+[110-planned-prep-back-way-car.jpg] /trips/t11?tab=prep
+[111-planned-photos.jpg] /trips/t11?tab=photos
+[막힘] planned-continue: locator.click: Timeout 8000ms exceeded.
+[112-planned-continue-막힘.jpg] /trips/t11
+
+== 여행 목록 ==
+[113-trips.jpg] /trips
+[114-trips-search.jpg] /trips
+[115-trips-search-none.jpg] /trips
+[116-trips-filter-abroad.jpg] /trips
+
+== 지도 ==
+[117-map.jpg] /map
+[118-map-sheet-visited.jpg] /map?sel=kr:51150
+  - 화면 밖 단추: 주문진항 / 주문진항 가고 싶어요 / 사천해변 / 사천해변 가고 싶어요 / 금진항 / 금진항 가고 싶어요 / 경포 아쿠아리움 / 경포 아쿠아리움 가고 싶어요 / 소돌항 / 소돌항 가고 싶어요
+  - 작은 누를 곳(<30px): 안목 커피거리 69×23 / 오죽헌 33×23 / 선교장 33×23 / 경포대 33×23 / 하슬라아트월드 77×23 / 초당 순두부 58×23 / 강릉 장칼국수 69×23 / 꼬막비빔밥 55×23
+[119-map-sheet-visited-scroll.jpg] /map?sel=kr:51150
+  - 화면 밖 단추: 주문진항 / 주문진항 가고 싶어요 / 사천해변 / 사천해변 가고 싶어요 / 금진항 / 금진항 가고 싶어요 / 경포 아쿠아리움 / 경포 아쿠아리움 가고 싶어요 / 소돌항 / 소돌항 가고 싶어요
+  - 작은 누를 곳(<30px): 안목 커피거리 69×23 / 오죽헌 33×23 / 선교장 33×23 / 경포대 33×23 / 하슬라아트월드 77×23 / 초당 순두부 58×23 / 강릉 장칼국수 69×23 / 꼬막비빔밥 55×23
+[120-map-sheet-new.jpg] /map?sel=kr:46910
+  - 화면 밖 단추: 신안튤립공원 / 신안튤립공원 가고 싶어요 / 1004섬 분재공원 / 1004섬 분재공원 가고 싶어요 / 원평해수욕장 / 원평해수욕장 가고 싶어요 / 우전해수욕장 / 우전해수욕장 가고 싶어요 / 문준경전도사순교기념관 / 문준경전도사순교기념관 가고 싶어요
+  - 작은 누를 곳(<30px): 퍼플섬(반월도·박지도) 110×23 / 증도 우전해변 69×23 / 천사대교 44×23 / 신안 짱뚱어탕 69×23 / 낙지볶음 44×23 / 민어회(임자도) 74×23
+  · 알림: 
+[121-map-sheet-wish.jpg] /map?sel=kr:46910
+  - 화면 밖 단추: 신안튤립공원 / 신안튤립공원 가고 싶어요 / 1004섬 분재공원 / 1004섬 분재공원 가고 싶어요 / 원평해수욕장 / 원평해수욕장 가고 싶어요 / 우전해수욕장 / 우전해수욕장 가고 싶어요 / 문준경전도사순교기념관 / 문준경전도사순교기념관 가고 싶어요
+  - 작은 누를 곳(<30px): 퍼플섬(반월도·박지도) 110×23 / 증도 우전해변 69×23 / 천사대교 44×23 / 신안 짱뚱어탕 69×23 / 낙지볶음 44×23 / 민어회(임자도) 74×23
+[122-map-world.jpg] /map
+[123-map-sheet-country.jpg] /map?sel=country:JPN
+
+== 가고 싶은 곳 ==
+[124-wishes.jpg] /wishes
+[125-wishes-dice.jpg] /wishes?find=dice
+[126-wishes-world.jpg] /wishes?find=world
+[127-wish-new.jpg] /wishes/new
+  · 알림: 
+[128-wish-new-saved.jpg] /wishes
+[129-wish-open.jpg] /wishes/w1
+[막힘] wish-make-trip: locator.click: Timeout 8000ms exceeded.
+[130-wish-make-trip-막힘.jpg] /wishes/w1
+
+== 계획하기 ==
+[131-plan.jpg] /plan
+[132-plan-go.jpg] /plan/3X51socC476M51t53yHB
+[133-plan-heart.jpg] /plan/3X51socC476M51t53yHB
+
+== 물어보기 ==
+[134-ask.jpg] /ask
+  · 물음 '이번 주말 어디 갈까' → 가 볼 만한 곳 3곳 충북 영동군 포도 향기 가득한 와인 터널 탐험 · 좋은 때 4·5, 9·10월 경북 문경시 문경새재 과거길과 레일바이크의 낭만 · 좋은 때 4·5, 9·10월 경남 양산시 통도사의 장엄함과 에덴벨리의 즐거움 · 좋은 때 4·5, 9·10월 보라핀 여행정보 · 2026년 10월 기준 · 날씨: NASA POWER 월평균 다른 곳
+[135-ask-이번_주말_어디_갈까.jpg] /ask
+  · 물음 '강릉 맛집' → 강원 강릉시 · 커피 향 짙은 바다와 선비의 기품 먹거리: 초당 순두부, 강릉 장칼국수, 꼬막비빔밥 우리가 남긴 곳: 초당할머니순두부(또 갈래요), 보헤미안 박이추 커피(또 갈래요) 가기 좋은 때: 4~6, 9·10월 · 선선하고 비가 적어요 보라핀 여행정보 · 2026년 10월 기준 가고 싶은 곳에 담기 지도에서 보기 여행 만들기 볼거리는? 네이버지도
+[136-ask-강릉_맛집.jpg] /ask
+  · 물음 '우리 여행 몇 번 했어' → 강원 강릉시에 한 번 다녀왔어요 2024.5.3–5 · 강릉 바다 여행 우리 기록 강릉 바다 여행
+[137-ask-우리_여행_몇_번_했어.jpg] /ask
+  · 물음 '제주 언제 갔지' → 제주에는 2023.10.12–15에 마지막으로 갔어요 2023.10.12–15 · 제주 한 바퀴 우리 기록 제주 한 바퀴
+[138-ask-제주_언제_갔지.jpg] /ask
+  · 물음 '비 오는 날 갈 만한 곳' → 가 볼 만한 곳 3곳 경기 수원시 달빛 아래 성곽 산책과 통닭거리의 활기 · 좋은 때 4~6, 9·10월 경남 진주시 남강 유등 축제와 진주성 공원의 야경 · 좋은 때 4~6, 10·11월 전남 진도군 세방낙조와 진돗개의 영특함 · 좋은 때 5·6, 9~11월 보라핀 여행정보 · 2026년 10월 기준 · 날씨: NASA POWER 월평균 다른 곳
+[139-ask-비_오는_날_갈_만한_곳.jpg] /ask
+  · 물음 '통영 가는 길' → 경남 통영시 · 예술가가 사랑한 동양의 나폴리 교통: 시외버스, 자차 권장 보라핀 여행정보 · 2026년 10월 기준 가고 싶은 곳에 담기 지도에서 보기 여행 만들기 맛집은? 네이버지도
+[140-ask-통영_가는_길.jpg] /ask
+  · 물음 '부모님이랑 가기 좋은 곳' → 경남 통영시는 4~6, 10·11월이 좋아요 덥지도 춥지도 않아요 날씨: NASA POWER 월평균으로 계산 가고 싶은 곳에 담기 지도에서 보기 여행 만들기 네이버지도
+[141-ask-부모님이랑_가기_좋은_곳.jpg] /ask
+  · 물음 '도쿄에서 산 거' → 도쿄 · 일본 동네마다 얼굴이 다른 큰 도시, 걷는 만큼 보여요 볼거리: 시부야 스크램블, 메이지 신궁, 츠키지 장외시장 먹거리: 스시, 라멘, 몬자야키 돈·말: JPY 엔 · 일본어 · 콘센트 A(110V) 입국: 무비자 90일 (떠나기 전 확인) 가기 좋은 때: 3·4, 10·11월 · 벚꽃·단풍, 선선해요 (도쿄 기준) 우리는 한 번 다녀왔어요 · 최근 2024.11.21–24 우리 장
+[142-ask-도쿄에서_산_거.jpg] /ask
+
+== 추억 · 피드 · 우리 장소 ==
+[143-memories.jpg] /memories
+  - 작은 누를 곳(<30px): 다시 보기 연도 281×16
+[144-memories-scroll.jpg] /memories
+[145-memories-scroll2.jpg] /memories
+[146-feed.jpg] /feed
+[147-feed-scroll.jpg] /feed
+[148-places.jpg] /places
+[149-place-new.jpg] /places/new
+[150-place-open.jpg] /places/r1
+
+== 오늘의 영어 · 현지어 ==
+[151-study.jpg] /study
+  - 작은 누를 곳(<30px): Are you tired? We can re 305×26
+[152-study-next.jpg] /study
+  - 작은 누를 곳(<30px): Are you tired? We can re 305×26 / Do you sell phone charge 305×26
+[153-phrases-ja.jpg] /phrases/ja
+
+== 우리 공간 ==
+[154-space.jpg] /space
+[155-space-home.jpg] /space#home
+[156-space-dark.jpg] /
+[157-dark-trip.jpg] /trips/t11
+[158-dark-wishes.jpg] /wishes
+[159-space-light.jpg] /
+
+== 인터넷 끊김 ==
+[160-offline-home.jpg] chrome-error://chromewebdata/
+[막힘] offline-plan-add: locator.fill: Timeout 8000ms exceeded.
+[161-offline-plan-add-막힘.jpg] chrome-error://chromewebdata/
+
+== 없는 주소 ==
+[162-not-found.jpg] /
+[163-trip-missing.jpg] /trips/%EC%97%86%EB%8A%94%EC%97%AC%ED%96%89
+  ✓  6 [chromium] › tests/walk.spec.ts:323:1 › 써 보기: 폰으로 메뉴를 하나씩 (2.0m)
+
+  6 passed (6.2m)
+[32m[1m✔ [22m[39m Script exited successfully (code 0)
+[36m[1mi  emulators:[22m[39m Shutting down emulators.
+[36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
+[36m[1mi  auth:[22m[39m Stopping Authentication Emulator
+[36m[1mi  hub:[22m[39m Stopping emulator hub
+[36m[1mi  logging:[22m[39m Stopping Logging Emulator
