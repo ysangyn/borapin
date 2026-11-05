@@ -82,3 +82,15 @@ test('자리에 두기: 자리표시·없는 파일에만 지난 자료를 쓰�
   assert.deepEqual(readJson(placeholder), { cells: {} });
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('여행정보 글에 작업용 꼬리표([요청] 같은)가 남아 있지 않다', async () => {
+  const t = (await import('../../src/data/travelinfo.json', { with: { type: 'json' } })).default as { cells: Record<string, unknown> };
+  const bad: string[] = [];
+  const walk = (o: unknown, p: string) => {
+    if (typeof o === 'string') { if (/\[[^\]]*(요청|확인|TODO|todo)[^\]]*\]/.test(o)) bad.push(`${p}: ${o}`); }
+    else if (Array.isArray(o)) o.forEach((x, i) => walk(x, `${p}[${i}]`));
+    else if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) walk(v, `${p}/${k}`);
+  };
+  walk(t.cells, '');
+  assert.deepEqual(bad, []);
+});

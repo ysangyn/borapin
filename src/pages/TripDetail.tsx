@@ -1,4 +1,5 @@
 import LeftoverCard from '../components/LeftoverCard';
+import { TripHopesLookback, TripPlanSummary } from '../components/TripPlanSummary';
 import { PLAN_STEPS, PLAN_STEP_LABEL, nextPlanStep } from '../lib/planPick';
 import { toneOf } from '../lib/members';
 import { useEffect, useMemo, useState } from 'react';
@@ -160,6 +161,8 @@ export default function TripDetail() {
         <MapView mode={abroad ? 'world' : 'kr'} stats={stats} focus={trip.places} height={photos.length ? 170 : 220} controls={false} interactive={false} />
 
         {trip.status === 'planned' ? <PackingSummary trip={trip} onOpen={() => setTab('prep')} /> : <PlacesSummary trip={trip} recs={tripRecs} onOpen={() => setTab('plan')} />}
+        {trip.status === 'planned' && <TripPlanSummary trip={trip} />}
+        {trip.status === 'done' && <TripHopesLookback trip={trip} />}
         {trip.status === 'done' && <LeftoverCard trip={trip} />}
 
         <div className="card white" style={{ padding: '4px 16px' }}>

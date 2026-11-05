@@ -226,7 +226,9 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const picks = useMemo(() => {
     const fromWish = wished.filter((w) => !base.some((b) => sameName(b.name, w.name)));
     const marked = base.map((b) => (wished.some((w) => sameName(w.name, b.name)) ? { ...b, wished: true } : b));
-    const all = [...fromWish, ...marked].sort((a, b) => Number(!!b.wished) - Number(!!a.wished));
+    const sorted = [...fromWish, ...marked].sort((a, b) => Number(!!b.wished) - Number(!!a.wished));
+    // 사진이 없는 카드(가고 싶은 곳에 이름만 적어 둔 것)는 이름이 같은 다른 카드의 사진을 빌린다 ('하회마을' ← '안동 하회마을 겸암정사')
+    const all = sorted.map((p) => { if (p.img) return p; const twin = sorted.find((x) => x !== p && x.img && sameName(x.name, p.name)); return twin ? { ...p, img: twin.img, lat: p.lat ?? twin.lat, lng: p.lng ?? twin.lng } : p; });
     if (!found?.length) return all;
     const have = new Set(all.map((p) => p.name.toLowerCase()));
     return [...all, ...found.filter((x) => !have.has(x.name.toLowerCase())).map((x): Pick => ({ key: `find:${x.kind}:${x.name}`, name: x.name, kind: x.kind, line: x.line, lat: x.lat, lng: x.lng, area: x.area }))];

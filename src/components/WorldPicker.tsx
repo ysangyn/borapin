@@ -28,8 +28,15 @@ export default function WorldPicker({ stats, wishes, unvisitedOnly }: { stats: S
   const [showAll, setShowAll] = useState(false);
   const [picked, setPicked] = useState<WorldCity | null>(null);
   const [moreTags, setMoreTags] = useState(false);
+  // 가고 싶은 도시를 이미 알면 이름으로 바로 (조건 고르기는 건너뜀)
+  const [q, setQ] = useState('');
 
-  const list = useMemo(() => pickCities(world, { month, cost, fly, with: withWho, tags, unvisitedOnly }, stats, wishes), [world, month, cost, fly, withWho, tags, unvisitedOnly, stats, wishes]);
+  const byName = useMemo(() => {
+    const k = q.replace(/\s/g, '').toLowerCase();
+    if (!world || !k) return null;
+    return world.cities.filter((w) => [w.city, w.en, countryName(w)].some((x) => x && x.replace(/\s/g, '').toLowerCase().includes(k)));
+  }, [world, q]);
+  const list = useMemo(() => byName ?? pickCities(world, { month, cost, fly, with: withWho, tags, unvisitedOnly }, stats, wishes), [byName, world, month, cost, fly, withWho, tags, unvisitedOnly, stats, wishes]);
   const shown = picked ? [picked] : showAll ? list : list.slice(0, 3);
 
   const add = async (w: WorldCity) => {
@@ -47,6 +54,8 @@ export default function WorldPicker({ stats, wishes, unvisitedOnly }: { stats: S
   const visibleTags = moreTags ? TAG_CHOICES : TAG_CHOICES.slice(0, 8);
   return (
     <div className="world-picker" data-testid="world-picker">
+      <input className="input" type="search" aria-label="도시 이름으로 찾기" placeholder="도시·나라 이름으로 찾기 (예: 오사카, 스페인)" value={q} onChange={(e) => { setPicked(null); setQ(e.target.value); }} data-testid="world-search" />
+      {!byName && <>
       <div className="wp-row">
         <span className="wp-label">언제</span>
         <select className="select wp-select" aria-label="떠날 달" value={month ?? ''} onChange={(e) => set(setMonth)(e.target.value ? Number(e.target.value) : null)}>
@@ -67,9 +76,10 @@ export default function WorldPicker({ stats, wishes, unvisitedOnly }: { stats: S
         {visibleTags.map((t) => <button key={t} type="button" className={'chip' + (tags.includes(t) ? ' soft-on' : '')} onClick={() => toggleTag(t)}>{t}</button>)}
         <button type="button" className="chip dashed" onClick={() => setMoreTags((v) => !v)}>{moreTags ? '접기' : `더 보기 +${TAG_CHOICES.length - 8}`}</button>
       </div></div>
+      </>}
 
       <div className="row-between" style={{ alignItems: 'center', marginTop: 4 }}>
-        <span className="small muted" data-testid="world-count">{list.length ? `${list.length}곳이 맞아요` : '조건에 맞는 곳이 없어요. 하나를 풀어 보세요.'}</span>
+        <span className="small muted" data-testid="world-count">{list.length ? `${list.length}곳이 맞아요` : byName ? '그 이름의 도시는 아직 없어요. 나라 이름으로도 찾아보세요.' : '조건에 맞는 곳이 없어요. 하나를 풀어 보세요.'}</span>
         <button className="btn sm soft" onClick={roll} disabled={!list.length} data-testid="world-roll"><Icon name="dice" size={16} />{picked ? '다시 뽑기' : '하나 뽑기'}</button>
       </div>
       <div className="list" data-testid="world-list">

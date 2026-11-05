@@ -101,8 +101,9 @@ const kst = (offsetDays: number) => { const d = new Date(Date.now() + 9 * 3600_0
 const ymdStr = (o: { y: number; m: number; d: number }) => `${o.y}-${String(o.m).padStart(2, '0')}-${String(o.d).padStart(2, '0')}`;
 /** 시간이 흐른 셈 치기: 여행 날짜를 오늘 기준으로 옮긴다 (from~to: 오늘부터 며칠) */
 async function moveTrip(id: string, from: number, to: number) {
+  if (!id) { log('  ! 여행이 만들어지지 않아 날짜를 옮기지 못했어요'); return; }
   const a = kst(from), b = kst(to);
-  await tripsCol.doc(id).update({ when: { p: 'day', y: a.y, m: a.m, d: a.d, y2: b.y, m2: b.m, d2: b.d } });
+  await tripsCol.doc(id).update({ when: { p: 'day', y: a.y, m: a.m, d: a.d, y2: b.y, m2: b.m, d2: b.d } }).catch((e) => log(`  ! 날짜 옮기기 실패: ${(e as Error).message}`));
 }
 /** 폰 사진첩에서 고른 것처럼: 색 다른 jpg 몇 장 */
 async function photos(page: Page, k: number) {
@@ -257,7 +258,7 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   log('\n==== 해외 여행: 오사카 3박 4일 ====');
   await step(me, 'w01-wishes', async () => { await me.goto('/wishes'); });
   await step(me, 'w02-world', async () => { await me.goto('/wishes?find=world'); await me.getByTestId('world-picker').waitFor(); }, true);
-  await step(me, 'w03-world-osaka', async () => { const row = me.getByTestId('world-city').filter({ hasText: '오사카' }).first(); await row.scrollIntoViewIfNeeded(); });
+  await step(me, 'w03-world-osaka', async () => { await me.getByTestId('world-search').fill('오사카'); await me.getByTestId('world-city').filter({ hasText: '오사카' }).first().scrollIntoViewIfNeeded(); });
   await step(me, 'w04-world-add', async () => { await me.getByTestId('world-city').filter({ hasText: '오사카' }).first().getByTestId('world-add').click(); log(`  · 알림: ${await toastText(me)}`); });
   await step(me, 'w05-wish-card', async () => { await me.goto('/wishes'); await me.getByRole('link', { name: /오사카.*가고 싶은 곳 보기/ }).first().click(); }, true);
   await step(me, 'w06-make-trip', async () => { await me.getByTestId('wish-edit-plan').click(); await me.getByTestId('planner-dest').waitFor(); }, true);
@@ -281,7 +282,7 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'w19-home-before-abroad', async () => { await me.goto('/'); }, true);
   log('\n---- 오사카 다녀와서 ----');
   await moveTrip(abTrip, -6, -3);
-  await tripsCol.doc(abTrip).update({ status: 'done' });
+  if (abTrip) await tripsCol.doc(abTrip).update({ status: 'done' }).catch(() => undefined);
   await step(me, 'w20-home-after', async () => { await me.goto('/'); }, true);
   await step(me, 'w21-photos', async () => { await me.goto(`/trips/${abTrip}?tab=photos`); await me.getByTestId('photo-input').setInputFiles(await photos(me, 5)); await me.waitForTimeout(6000); }, true);
   await step(me, 'w22-place', async () => {

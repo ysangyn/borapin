@@ -56,10 +56,13 @@ export default function Home() {
   const pick = useMonthPick(stats, wishes ?? []);
   // 최근 핀(국내)이 있으면 그 시·군이 보이게 가까이, 없으면(기록 없음·최근이 해외) 추천 둘레를 도 단위로만
   const { near, nearZoom } = useMemo(() => {
+    // 떠나기 전·여행 중·막 다녀온 여행이 있으면 그 여행지를 먼저 비춘다
+    const fromStage = (stage?.trip.places ?? []).filter((p) => p.t === 'kr');
+    if (fromStage.length) return { near: fromStage, nearZoom: 7.3 };
     const fromTrips = (recent[0]?.places ?? []).filter((p) => p.t === 'kr');
     if (fromTrips.length) return { near: fromTrips, nearZoom: 7.3 };
     return { near: pick?.place ? [pick.place] : [], nearZoom: 6.3 };
-  }, [recent, pick]);
+  }, [recent, pick, stage]);
 
   return (
     <>
@@ -80,6 +83,13 @@ export default function Home() {
 
         {/* 단계 카드는 그 여행의 사진·글 개수만 서버에서 센다 (사진·글 전체 구독 없음) */}
         {stage && <StageCard key={stage.trip.id} stage={stage} />}
+        {/* 날짜가 지난 예정 여행: 다녀왔다고 바꾸는 게 지금 할 일이라 맨 위에 */}
+        {overdue[0] && (
+          <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
+            <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
+            <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
+          </div>
+        )}
         {/* 상대가 여행 후보를 골라 두었으면 내 차례: 맨 위에 */}
         <DraftNudge top />
 
@@ -123,12 +133,6 @@ export default function Home() {
         {/* 기록이 하나도 없으면 첫 핀으로 가는 길이 묶음보다 먼저 */}
         {noRecords && <EmptyRecords />}
 
-        {overdue[0] && (
-          <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
-            <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
-            <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
-          </div>
-        )}
 
         {trips && <CapsuleCard trips={trips} />}
         {trips && wishes && <SafetyLine trips={trips} wishes={wishes} />}

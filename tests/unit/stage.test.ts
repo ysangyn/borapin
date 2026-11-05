@@ -70,3 +70,17 @@ test('다음 예정 여행이 해외면 그 여행, 국내면 없음', () => {
   assert.equal(nextAbroadTrip([trip({ when: { p: 'day', y: 2026, m: 9, d: 1 }, places: [{ t: 'country', id: 'JP' }] })], now), null);
   assert.equal(nextAbroadTrip([], now), null);
 });
+
+test('여행 중 오늘 일정 한 줄: 오늘 할 것 수와 다음 것(지금 시각 뒤 첫 것, 시간 없으면 안 한 것 중 첫 것)', async () => {
+  const { todayPlanLine } = await import('../../src/lib/stage');
+  const items = [
+    { name: '하회마을', day: '2026-11-05', time: '10:00', done: true, order: 1 },
+    { name: '월영교 야경', day: '2026-11-05', time: '19:00', done: false, order: 3 },
+    { name: '안동찜닭', day: '2026-11-05', time: '13:00', done: false, order: 2 },
+    { name: '내일 할 것', day: '2026-11-06', time: '09:00', done: false, order: 4 },
+    { name: '시간 없는 곳', day: '2026-11-05', time: null, done: false, order: 5 },
+  ];
+  assert.deepEqual(todayPlanLine(items, '2026-11-05', 12 * 60), { left: 3, total: 4, next: '13:00 안동찜닭' });
+  assert.deepEqual(todayPlanLine(items, '2026-11-05', 20 * 60), { left: 3, total: 4, next: '시간 없는 곳' });
+  assert.equal(todayPlanLine(items, '2026-11-07', 600), null);
+});

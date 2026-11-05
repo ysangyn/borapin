@@ -67,3 +67,18 @@ export function nextAbroadTrip(trips: Trip[], now = new Date()): Trip | null {
   const next = upcomingTrips(trips, now)[0];
   return next && next.places.some((p) => p.t === 'country') ? next : null;
 }
+
+/**
+ * 여행 중 홈 카드의 오늘 일정 한 줄: 오늘 남은 것 수 · 다음 것.
+ * 다음 = 지금 시각 뒤에 잡힌 안 한 것 중 가장 이른 것 → 없으면 시간 없이 적은 안 한 것 중 순서가 앞인 것.
+ */
+export function todayPlanLine(items: { name: string; day?: string | null; time?: string | null; done: boolean; order?: number }[], today: string, nowMin: number): { left: number; total: number; next: string | null } | null {
+  const list = items.filter((p) => p.day === today);
+  if (!list.length) return null;
+  const mins = (t: string) => { const m = /^(\d{1,2}):(\d{2})/.exec(t); return m ? +m[1] * 60 + +m[2] : -1; };
+  const open = list.filter((p) => !p.done);
+  const timed = open.filter((p) => p.time && mins(p.time) >= nowMin).sort((a, b) => mins(a.time!) - mins(b.time!));
+  const untimed = open.filter((p) => !p.time).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const n = timed[0] ? `${timed[0].time} ${timed[0].name}` : untimed[0] ? untimed[0].name : null;
+  return { left: open.length, total: list.length, next: n };
+}

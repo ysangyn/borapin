@@ -659,7 +659,8 @@ test.describe.serial('보라핀 1단계', () => {
     // 장소를 열면 '보기' 화면: 이름·지도 앱·자리 그림·한 줄 평, 고치기를 누르면 고치는 칸
     await page.getByTestId('place-rec').click();
     await expect(page.getByRole('heading', { name: '초당할머니순두부' })).toBeVisible();
-    await expect(page.getByRole('navigation', { name: '지도 앱으로 열기' }).getByRole('link')).toHaveCount(3);
+    // 바깥으로 가는 단추는 설정한 지도 앱 길찾기 하나뿐 (11-05 바깥 링크 줄이기)
+    await expect(page.getByTestId('map-app')).toHaveCount(1);
     await expect(page.getByTestId('spot-map')).toBeVisible();
     await expect(page.getByText('아침으로 최고')).toBeVisible();
     await shot(page, '11c-place-view');

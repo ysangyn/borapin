@@ -5,7 +5,9 @@ import { Icon } from './ui';
 import { formatWhen } from '../lib/dates';
 import { placeLabel } from '../lib/geo';
 import { photoForPlace } from '../lib/media';
-import { stageAction, type Stage } from '../lib/stage';
+import { stageAction, todayPlanLine, type Stage } from '../lib/stage';
+import { usePlan } from '../lib/tripExtras';
+import { localDate } from '../lib/dates';
 import HereNow from './HereNow';
 import { nextPlanStep, PLAN_STEP_LABEL } from '../lib/planPick';
 import { departLine } from '../lib/way';
@@ -22,6 +24,10 @@ export default function StageCard({ stage }: { stage: Stage }) {
   const packed = pack.filter((x) => x.done).length;
   const nPhotos = useTripPhotoCount(t.id);
   const nNotes = useTripNoteCount(t.id) ?? 0;
+  // 여행 중이면 오늘 일정 (홈에서 가장 먼저 보고 싶은 것)
+  const plan = usePlan(stage.kind === 'during' ? t.id : undefined);
+  const now = new Date();
+  const today = stage.kind === 'during' && plan ? todayPlanLine(plan, localDate(now), now.getHours() * 60 + now.getMinutes()) : null;
   const photo = t.places.map(photoForPlace).find(Boolean) ?? null;
   const where = t.places.map(placeLabel).join(' · ');
   const art = stage.kind === 'before' ? '/art/bora-pack.webp' : stage.kind === 'during' ? '/art/bora-camera.webp' : '/art/bora-cheer.webp';
@@ -38,7 +44,7 @@ export default function StageCard({ stage }: { stage: Stage }) {
   const sub = stage.kind === 'before'
     ? (depart ? `${depart} · 예매하셨어요?` : planNext ? `계획 ${t.planDone?.length ?? 0}/5 · 다음은 '${PLAN_STEP_LABEL[planNext]}'` : pack.length ? `준비물 ${packed}/${pack.length} 챙김` : '준비물 목록을 아직 안 만들었어요')
     : stage.kind === 'during'
-      ? (nPhotos ? `사진 ${nPhotos}장 올렸어요` : '오늘 찍은 사진을 바로 올려 두세요')
+      ? (today ? (today.left ? `오늘 ${today.left}곳 남았어요${today.next ? ` · 다음 ${today.next}` : ''}` : `오늘 일정 ${today.total}곳 다 다녀왔어요`) : nPhotos ? `사진 ${nPhotos}장 올렸어요` : '오늘 찍은 사진을 바로 올려 두세요')
       : nPhotos && nNotes ? `사진 ${nPhotos}장 · 글 ${nNotes}개 남겼어요`
         : nPhotos ? `사진 ${nPhotos}장 올렸어요 · 한 줄만 남겨 볼까요?`
           : nNotes ? `글 ${nNotes}개 · 사진도 올려 둘까요?`
@@ -61,6 +67,7 @@ export default function StageCard({ stage }: { stage: Stage }) {
               {stage.kind === 'during' && <Icon name="image" size={15} stroke={2.2} />}{action.label}
             </Link>
           )}
+          {today && <Link to={`/trips/${t.id}?tab=plan`} className="btn sm glass" data-testid="stage-today">일정</Link>}
           {stage.kind === 'during' && <HereNow trip={t} />}
         </span>
       </span>
