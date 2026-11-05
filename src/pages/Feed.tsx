@@ -172,7 +172,8 @@ function HeartBtn({ heart, uid, onHeart }: { heart?: Heart; uid: string; onHeart
 }
 
 function FeedRow({ item, i, me, heart, uid, onHeart }: { item: FeedItem; i: number; me: string; heart?: Heart; uid: string; onHeart?: () => void }) {
-  const when = <span className="tiny muted feed-when">{ago(item.at)}</span>;
+  // 하루가 지난 소식은 날짜 띠가 이미 날짜를 말하므로 '얼마 전'을 빼 둔다
+  const when = Date.now() - item.at < 86400_000 ? <span className="tiny muted feed-when">{ago(item.at)}</span> : null;
   const foot = (link: string | null, label: string) => (
     <div className="feed-foot">{link ? <Link to={link} className="tiny feed-link">{label}</Link> : <span />}<HeartBtn heart={heart} uid={uid} onHeart={onHeart} /></div>
   );

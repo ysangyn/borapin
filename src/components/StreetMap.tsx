@@ -16,7 +16,7 @@ export interface StreetPin { id: string; name: string; lat: number; lng: number;
 const STYLE = 'https://tiles.openfreemap.org/styles/positron';
 const FALLBACK_BG = { light: '#EFEBFF', dark: '#231B4A' };
 
-export default function StreetMap({ pins, height = 300, onPick, picked, here }: { pins: StreetPin[]; height?: number; onPick?: (id: string) => void; picked?: string | null; here?: { lat: number; lng: number } | null }) {
+export default function StreetMap({ pins, height = 300, onPick, picked, here, maxZoom = 16 }: { pins: StreetPin[]; height?: number; onPick?: (id: string) => void; picked?: string | null; here?: { lat: number; lng: number } | null; /** 핀이 하나일 때 얼마나 가까이 (작은 지도는 동네가 보이게 덜) */ maxZoom?: number }) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markers = useRef<Map<string, maplibregl.Marker>>(new Map());
@@ -56,6 +56,8 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
     map.on('moveend', () => reclusterRef.current());
     map.once('style.load', () => {
       window.clearTimeout(t);
+      // 출처는 ⓘ 안에 접어 둔다 (작은 지도를 가리지 않게 · 누르면 펼쳐짐, /credits에도 있음)
+      el.current?.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show');
       // 지명은 한글만 (타일 스타일은 '영문\n한글'로 둘 다 적는다): 한글 이름이 있으면 그것, 없으면 원래 이름
       try {
         for (const l of map.getStyle().layers ?? []) {
@@ -125,7 +127,7 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
       const b = new maplibregl.LngLatBounds([pins[0].lng, pins[0].lat], [pins[0].lng, pins[0].lat]);
       pins.forEach((p) => b.extend([p.lng, p.lat]));
       if (here) b.extend([here.lng, here.lat]);
-      map.fitBounds(b, { padding: { top: 48, bottom: 36, left: 40, right: 40 }, maxZoom: 16, duration: 0 });
+      map.fitBounds(b, { padding: { top: 48, bottom: 36, left: 40, right: 40 }, maxZoom, duration: 0 });
     }
     reclusterRef.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps

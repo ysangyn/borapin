@@ -24,7 +24,7 @@ export default function HomeRoute({ to, note }: { to: { name: string; lat: numbe
   return (
     <div className="home-route" data-testid="home-route">
       <span className="tiny muted">우리 집에서 직선 {km}km{note ? ` · ${note}` : ''}</span>
-      <button type="button" className="pv-app" onClick={() => setOpen(true)} data-testid="home-route-open">길찾기</button>
+      <button type="button" className="pv-app" onClick={() => setOpen(true)} data-testid="home-route-open">집에서 가는 길</button>
       {open && createPortal(
         <div className="map-choice-backdrop" onClick={() => setOpen(false)} data-testid="route-choice">
           <div className="map-choice card" role="dialog" aria-label={`${to.name} 가는 길`} onClick={(e) => e.stopPropagation()}>

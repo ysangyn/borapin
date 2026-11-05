@@ -10,7 +10,7 @@ export default function MiniStreet({ name, lat, lng, height = 170, img }: { name
   return (
     <div className="mini-street" style={{ height }} data-testid="mini-street">
       <Suspense fallback={<div className="mini-street-wait" style={{ height }} aria-hidden="true" />}>
-        <StreetMap pins={[{ id: 'p', name, lat, lng, img, rank: img ? 1 : undefined }]} height={height} />
+        <StreetMap pins={[{ id: 'p', name, lat, lng, img, rank: img ? 1 : undefined }]} picked="p" height={height} maxZoom={14.5} />
       </Suspense>
     </div>
   );
