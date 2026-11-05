@@ -1,5 +1,6 @@
 import { withJosa } from '../lib/ko';
 import RankAsk from '../components/RankAsk';
+import { TAG_SUGGEST, themeOf } from '../lib/placeMaps';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { hideReview, useBlind } from '../lib/blind';
@@ -14,8 +15,8 @@ import PlaceView from '../components/PlaceView';
 import { quickTripInput } from '../lib/tripActions';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { formatWhen } from '../lib/dates';
-import { parsePlaceParam } from '../lib/geo';
-import { KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
+import { parsePlaceParam, placeLabel } from '../lib/geo';
+import { KIND_LABEL, KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
 import { memberNames, toneOf } from '../lib/members';
 import type { Place, PlaceKind, PlaceRec, PlaceRecInput, Verdict } from '../lib/types';
@@ -36,6 +37,9 @@ export default function PlaceEdit() {
 
   const [name, setName] = useState(() => (sp.get('from') ?? '').slice(0, 80)); // 받은 지도에서 '내 지도에 담기'로 온 이름
   const [kind, setKind] = useState<PlaceKind>(() => { const k = sp.get('kind'); return ['food', 'cafe', 'sight', 'stay', 'shop', 'etc'].includes(k ?? '') ? (k as PlaceKind) : 'food'; });
+  // 내 꼬리표(소품샵·옷가게·빵집…): 있으면 내 지도의 주제가 된다
+  const [tag, setTag] = useState<string>(() => (sp.get('tag') ?? '').slice(0, 20));
+  const [tagOpen, setTagOpen] = useState(false);
   const [region, setRegion] = useState<Place[]>(() => parsePlaceParam(sp.get('region')));
   const [tripId, setTripId] = useState<string>(tripParam ?? '');
   const [reviews, setReviews] = useState<Record<string, string>>({});
@@ -50,7 +54,7 @@ export default function PlaceEdit() {
   // (실시간 existing과 견주면 상대가 그사이 고친 칸이 내 옛 값으로 덮이고, 상대 한 줄 평이 지워진다)
   const [opened, setOpened] = useState<PlaceRec | null>(null);
   const [saving, setSaving] = useState(false);
-  const [rank, setRank] = useState<{ id: string; name: string; kind: PlaceKind; region: Place } | null>(null);
+  const [rank, setRank] = useState<{ id: string; name: string; kind: PlaceKind; tag?: string; region: Place } | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' ? 'view' : 'form');
   const [kindTouched, setKindTouched] = useState(false);
@@ -75,6 +79,7 @@ export default function PlaceEdit() {
     if (editing && existing && !loaded) {
       setName(existing.name);
       setKind(existing.kind);
+      setTag(existing.tag ?? '');
       setRegion([existing.region]);
       setTripId(existing.tripId ?? '');
       setReviews(existing.reviews ?? {});
@@ -153,6 +158,7 @@ export default function PlaceEdit() {
     const input: PlaceRecInput = {
       name: name.trim(),
       kind,
+      tag: tag.trim().slice(0, 20) || undefined,
       region: where,
       tripId: linkTrip,
       reviews: Object.fromEntries(Object.entries(reviews).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v)),
@@ -172,7 +178,7 @@ export default function PlaceEdit() {
       toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
       if (editing) { setSaving(false); setMode('view'); return; }
       // 새로 담은 곳: 같은 지역·주제에 이미 담은 곳이 있으면 한 번 견줘 내 지도 순위에 끼운다 (없으면 바로 돌아감)
-      if (newId && (places ?? []).some((r) => r.kind === input.kind && samePlace(r.region, input.region))) { setRank({ id: newId, name: input.name, kind: input.kind, region: input.region }); setSaving(false); return; }
+      if (newId && (places ?? []).some((r) => themeOf(r) === themeOf(input) && samePlace(r.region, input.region))) { setRank({ id: newId, name: input.name, kind: input.kind, tag: input.tag, region: input.region }); setSaving(false); return; }
       goBack(tripParam ? `/trips/${tripParam}` : '/places');
     } catch (e) {
       console.warn(e);
@@ -219,7 +225,7 @@ export default function PlaceEdit() {
 
   return (
     <>
-      {rank && <RankAsk rec={rank} all={places ?? []} onDone={() => { const k = `${rank.region.t === 'kr' ? 'kr:' + rank.region.code : 'country:' + rank.region.id}|${rank.kind}`; setRank(null); goBack(tripParam ? `/trips/${tripParam}` : `/maps?m=${encodeURIComponent(k)}`); }} />}
+      {rank && <RankAsk rec={rank} all={places ?? []} onDone={() => { const k = `${rank.region.t === 'kr' ? 'kr:' + rank.region.code : 'country:' + rank.region.id}|${themeOf(rank)}`; setRank(null); goBack(tripParam ? `/trips/${tripParam}` : `/maps?m=${encodeURIComponent(k)}`); }} />}
       <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '장소 남기기'} right={editing ? <button className="btn sm ghost" onClick={() => { if (dirty && !window.confirm('고친 내용이 사라져요. 그만 고칠까요?')) return; setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         <div className="field">
@@ -269,6 +275,18 @@ export default function PlaceEdit() {
               </button>
             ))}
           </div>
+          {/* 꼬리표: 종류 안의 작은 주제. 있으면 내 지도가 '성동구 소품샵 지도'처럼 따로 생긴다 */}
+          <div className="chips" style={{ marginTop: 8 }} data-testid="place-tags">
+            {[...new Set([...(TAG_SUGGEST[kind] ?? []), ...(places ?? []).filter((p) => p.kind === kind && p.tag?.trim()).map((p) => p.tag!.trim())])].slice(0, 8).map((t) => (
+              <button key={t} type="button" className={'chip' + (tag === t ? ' on' : '')} aria-pressed={tag === t} onClick={() => setTag(tag === t ? '' : t)}>{t}</button>
+            ))}
+            {tagOpen || (tag && !(TAG_SUGGEST[kind] ?? []).includes(tag) && !(places ?? []).some((p) => p.tag?.trim() === tag)) ? (
+              <input className="input" aria-label="내 꼬리표" placeholder="내 꼬리표 (예: 옷가게)" value={tag} onChange={(e) => setTag(e.target.value.slice(0, 20))} style={{ height: 36, width: 150 }} autoFocus={tagOpen} />
+            ) : (
+              <button type="button" className="chip dashed" onClick={() => setTagOpen(true)}>+ 내 꼬리표</button>
+            )}
+          </div>
+          <span className="tiny muted" style={{ display: 'block', marginTop: 4 }}>꼬리표를 붙이면 '{placeLabel(region[0] ?? { t: 'kr', code: '11' })} {tag.trim() || '소품샵'} 지도'처럼 내 지도가 따로 생겨요. 안 붙이면 {KIND_LABEL[kind]} 지도에 들어가요.</span>
         </div>
 
         <div className="field">

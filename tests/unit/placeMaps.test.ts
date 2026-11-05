@@ -1,16 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { applyAnswer, insertAt, mapKey, mapsOf, nearby, nextQuestion, rankedRecs, startInsert } from '../../src/lib/placeMaps';
+import { applyAnswer, insertAt, mapKey, mapsOf, nearby, nextQuestion, rankedRecs, startInsert, themeLabel, themeOf, themesOrder, ALL } from '../../src/lib/placeMaps';
 import type { PlaceRec } from '../../src/lib/types';
 
 const SD = { t: 'kr' as const, code: '11' };
 const GN = { t: 'kr' as const, code: '51150' };
 const r = (id: string, kind: PlaceRec['kind'], region = SD, extra: Partial<PlaceRec> = {}): PlaceRec => ({ id, name: id, kind, region, reviews: {}, verdict: null, v: 1, ...extra });
 
-test('내 지도는 지역×주제로 묶이고, 많은 순', () => {
-  const recs = [r('a', 'cafe'), r('b', 'cafe'), r('c', 'food'), r('d', 'cafe', GN), r('e', 'cafe')];
+test('내 지도는 지역×주제로 묶이고, 많은 순 · 꼬리표가 있으면 꼬리표가 주제', () => {
+  const recs = [r('a', 'cafe'), r('b', 'cafe'), r('c', 'food'), r('d', 'cafe', GN), r('e', 'cafe'), r('f', 'shop', SD, { tag: '옷가게' }), r('g', 'shop', SD, { tag: ' 옷가게 ' })];
   const maps = mapsOf(recs);
-  assert.deepEqual(maps.map((m) => [mapKey(m.region, m.theme), m.recs.length]), [['kr:11|cafe', 3], ['kr:11|food', 1], ['kr:51150|cafe', 1]]);
+  assert.deepEqual(maps.map((m) => [mapKey(m.region, m.theme), m.recs.length]), [['kr:11|cafe', 3], ['kr:11|t:옷가게', 2], ['kr:11|food', 1], ['kr:51150|cafe', 1]]);
+  assert.equal(themeOf(r('x', 'shop', SD, { tag: '소품샵' })), 't:소품샵');
+  assert.equal(themeOf(r('x', 'shop', SD, { tag: '  ' })), 'shop');
+  assert.equal(themeLabel('t:소품샵'), '소품샵');
+  assert.equal(themeLabel('food'), '맛집');
+  assert.equal(themeLabel(ALL), '한눈에');
+});
+
+test('주제 순서: 맛집·카페가 먼저, 그다음 내 꼬리표, 나머지 종류', () => {
+  assert.deepEqual(themesOrder(['stay', 't:옷가게', 'cafe', 'shop', 'food', 't:빵집']), ['food', 'cafe', 't:빵집', 't:옷가게', 'shop', 'stay']);
 });
 
 test('순위 끼워 넣기: 가운데와 비교해 최대 3번, 건너뛰면 지금 자리에', () => {

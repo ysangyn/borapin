@@ -1,5 +1,6 @@
 import { placeParam } from './geo';
 import { samePlace } from './wishes';
+import { KIND_LABEL } from './placeRecs';
 import type { Place, PlaceKind, PlaceRec } from './types';
 
 /**
@@ -7,18 +8,34 @@ import type { Place, PlaceKind, PlaceRec } from './types';
  * 순위는 별점 없이 비교로 만든다: 새로 담은 곳을 이미 있는 곳과 최대 3번 견줘 자리에 끼운다 (Beli 방식, 건너뛰어도 됨).
  * 순수 함수 (시험: tests/unit/placeMaps.test.ts). 저장 모양은 PlaceMap(types.ts), 공개 사본은 MapShare.
  */
-export type Theme = PlaceKind;
+/**
+ * 주제: 종류('food'·'cafe'…) 또는 내가 만든 꼬리표('t:옷가게'), 그리고 한눈에('all').
+ * 기본은 맛집·카페. 숙소 지도를 만들 사람은 드무니 종류는 뒤로, 내 꼬리표가 앞으로.
+ */
+export type Theme = string;
+export const ALL = 'all';
+export const themeOf = (r: Pick<PlaceRec, 'kind' | 'tag'>): Theme => (r.tag?.trim() ? `t:${r.tag.trim()}` : r.kind);
+export const themeLabel = (t: Theme): string => (t === ALL ? '한눈에' : t.startsWith('t:') ? t.slice(2) : (KIND_LABEL as Record<string, string>)[t] ?? t);
+const KIND_RANK: Record<string, number> = { food: 0, cafe: 1, shop: 10, sight: 11, etc: 12, stay: 13 };
+/** 맛집 → 카페 → 내 꼬리표(이름순) → 나머지 종류 */
+export const themesOrder = (themes: Theme[]): Theme[] => [...new Set(themes)].sort((a, b) => (a.startsWith('t:') ? 5 : KIND_RANK[a] ?? 9) - (b.startsWith('t:') ? 5 : KIND_RANK[b] ?? 9) || a.localeCompare(b, 'ko'));
+/** 핀·꼬리표 색: 종류마다 (꼬리표는 그 종류 색) */
+export const KIND_COLOR: Record<PlaceKind, string> = { food: '#F07A95', cafe: '#5B3FD1', shop: '#2E9467', sight: '#4D7FE0', stay: '#C9A227', etc: '#8A80A8' };
+/** 종류별로 자주 쓰는 꼬리표 (담을 때 고르기 쉽게 · 직접 써도 됨) */
+export const TAG_SUGGEST: Record<PlaceKind, string[]> = { food: ['빵집', '술집', '브런치', '디저트'], cafe: ['로스터리', '디저트', '북카페'], shop: ['소품샵', '옷가게', '서점', '시장', '편집샵'], sight: ['공원', '전시', '산책길'], stay: [], etc: ['놀거리', '목욕탕'] };
+
 export interface MyMap { region: Place; theme: Theme; recs: PlaceRec[] }
 
-/** 지도 문서 이름: 'kr:11|cafe' */
+/** 지도 문서 이름: 'kr:11|cafe' · 'kr:11|t:옷가게' · 'kr:11|all' */
 export const mapKey = (region: Place, theme: Theme) => `${placeParam(region)}|${theme}`;
 
-/** 우리 장소 → 지도 묶음 (곳이 많은 순, 같으면 먼저 담은 순) */
+/** 우리 장소 → 지도 묶음 (지역×주제, 곳이 많은 순). 한눈에(all)는 여기 없고 화면이 지역으로 모은다 */
 export function mapsOf(recs: PlaceRec[]): MyMap[] {
   const out: MyMap[] = [];
   for (const r of recs) {
-    const m = out.find((x) => x.theme === r.kind && samePlace(x.region, r.region));
-    if (m) m.recs.push(r); else out.push({ region: r.region, theme: r.kind, recs: [r] });
+    const t = themeOf(r);
+    const m = out.find((x) => x.theme === t && samePlace(x.region, r.region));
+    if (m) m.recs.push(r); else out.push({ region: r.region, theme: t, recs: [r] });
   }
   return out.sort((a, b) => b.recs.length - a.recs.length);
 }

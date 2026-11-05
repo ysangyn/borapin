@@ -11,7 +11,7 @@ maplibregl.setWorkerUrl(workerUrl);
  * 타일 서버는 예고 없이 멈출 수 있다고 하니, 스타일을 못 받으면 우리 바탕색에 점만 그린다 (화면이 비지 않게).
  * 핀: 1~3등은 사진 동그라미로 크게, 나머지는 점. 가까이 겹치면 MapLibre가 겹친 채 두므로 확대하면 풀린다.
  */
-export interface StreetPin { id: string; name: string; lat: number; lng: number; img?: string; rank?: number; tone?: 'violet' | 'pink' }
+export interface StreetPin { id: string; name: string; lat: number; lng: number; img?: string; rank?: number; /** 종류 색 (없으면 보라) */ color?: string }
 const STYLE = 'https://tiles.openfreemap.org/styles/positron';
 const FALLBACK_BG = { light: '#EFEBFF', dark: '#231B4A' };
 
@@ -109,10 +109,10 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here }: 
 
 function pinHtml(p: StreetPin, on: boolean) {
   const big = !!p.rank && p.rank <= 3;
-  const tone = p.tone === 'pink' ? 'pink' : 'violet';
+  const c = (p.color ?? '#5B3FD1').replace(/[^#0-9a-fA-F]/g, '');
   if (big) {
-    return `<span class="street-pin big ${tone}${on ? ' on' : ''}">${p.img ? `<img src="${p.img.replace(/"/g, '')}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<i></i>'}<b>${p.rank}</b></span><span class="street-pin-name">${escapeHtml(p.name)}</span>`;
+    return `<span class="street-pin big${on ? ' on' : ''}" style="--pc:${c}">${p.img ? `<img src="${p.img.replace(/"/g, '')}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<i></i>'}<b>${p.rank}</b></span><span class="street-pin-name">${escapeHtml(p.name)}</span>`;
   }
-  return `<span class="street-pin dot ${tone}${on ? ' on' : ''}"></span>${on ? `<span class="street-pin-name">${escapeHtml(p.name)}</span>` : ''}`;
+  return `<span class="street-pin dot${on ? ' on' : ''}" style="--pc:${c}"></span>${on ? `<span class="street-pin-name">${escapeHtml(p.name)}</span>` : ''}`;
 }
 const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);

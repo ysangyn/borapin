@@ -1573,14 +1573,13 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .street-map .maplibregl-ctrl-attrib { font-size: 10px; background: rgba(255,255,255,.75); border-radius: 8px 0 0 0; }
 .street-pin-btn { border: none; background: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; font: inherit; }
 .street-pin { display: inline-flex; align-items: center; justify-content: center; position: relative; }
-.street-pin.dot { width: 16px; height: 16px; border-radius: 50%; background: var(--v2); border: 2.5px solid #fff; box-shadow: 0 1px 4px rgba(30,22,64,.3); }
-.street-pin.dot.pink { background: var(--pink); }
-.street-pin.dot.on { width: 20px; height: 20px; background: var(--violet); }
+.street-pin.dot { width: 16px; height: 16px; border-radius: 50%; background: var(--pc, var(--v2)); border: 2.5px solid #fff; box-shadow: 0 1px 4px rgba(30,22,64,.3); }
+.street-pin.dot.on { width: 20px; height: 20px; box-shadow: 0 0 0 3px var(--pc, var(--violet)), 0 1px 4px rgba(30,22,64,.3); }
 .street-pin.big { width: 52px; height: 52px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(30,22,64,.28); overflow: visible; background: var(--mist); }
-.street-pin.big.on { width: 62px; height: 62px; border-color: var(--violet); }
+.street-pin.big.on { width: 62px; height: 62px; border-color: var(--pc, var(--violet)); }
 .street-pin.big img, .street-pin.big i { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
-.street-pin.big i { background: linear-gradient(135deg, var(--v1), var(--v2)); }
-.street-pin.big b { position: absolute; left: -4px; top: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--violet); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+.street-pin.big i { background: var(--pc, var(--v2)); opacity: .55; }
+.street-pin.big b { position: absolute; left: -4px; top: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--pc, var(--violet)); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
 .street-pin-name { font-size: 11.5px; font-weight: 600; background: var(--card); color: var(--ink); padding: 2px 7px; border-radius: 99px; white-space: nowrap; box-shadow: 0 1px 4px rgba(30,22,64,.15); max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .street-here { width: 16px; height: 16px; border-radius: 50%; background: var(--blue); border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(77,127,224,.25); display: block; }
 .mymaps { display: flex; flex-direction: column; gap: 12px; }
@@ -1609,3 +1608,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .nearby { display: flex; flex-direction: column; gap: 8px; }
 .nearby-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
 .nearby-row:first-child { border-top: none; }
+
+.mymap-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--ink2); }
+.mymap-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(30,22,64,.15); }
+.mymap-theme-head { display: flex; align-items: center; gap: 8px; padding: 10px 0 4px; font-size: 13px; font-weight: 600; color: var(--ink2); }
+.mymap-theme-head i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }

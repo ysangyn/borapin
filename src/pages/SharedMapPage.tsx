@@ -4,7 +4,8 @@ import { Logo } from '../components/ui';
 import StreetMap, { type StreetPin } from '../components/StreetMap';
 import { loadMapShare } from '../lib/placeMapData';
 import { meters } from '../lib/placeMaps';
-import { KIND_LABEL, VERDICT_LABEL } from '../lib/placeRecs';
+import { VERDICT_LABEL } from '../lib/placeRecs';
+import { KIND_COLOR, themeLabel, themeOf } from '../lib/placeMaps';
 import { mapApps } from '../lib/placeApps';
 import type { MapShare } from '../lib/types';
 
@@ -28,7 +29,7 @@ export default function SharedMapPage() {
     const d = (p: MapShare['places'][number]) => (p.lat != null && p.lng != null ? Math.round(Math.hypot((p.lat - here.lat) * 111, (p.lng - here.lng) * 88) * 1000) : Infinity);
     return [...data.places].sort((a, b) => d(a) - d(b)).map((p) => ({ ...p, m: d(p) }));
   }, [data, here]);
-  const pins = useMemo<StreetPin[]>(() => (data?.places ?? []).map((p, i) => ({ id: p.id, name: p.name, lat: p.lat as number, lng: p.lng as number, img: p.photoUrl, rank: i + 1 })).filter((p) => p.lat != null && p.lng != null), [data]);
+  const pins = useMemo<StreetPin[]>(() => (data?.places ?? []).map((p, i) => ({ id: p.id, name: p.name, lat: p.lat as number, lng: p.lng as number, img: p.photoUrl, rank: data?.theme === 'all' ? undefined : i + 1, color: KIND_COLOR[p.kind] })).filter((p) => p.lat != null && p.lng != null), [data]);
   const covers = (data?.places ?? []).filter((p) => p.photoUrl).slice(0, 4);
 
   const locate = () => {
@@ -59,7 +60,7 @@ export default function SharedMapPage() {
         <div className="shared-map-head">
           <span className="tiny" style={{ color: 'var(--v1)', fontWeight: 600 }}>{data.by}의 지도</span>
           <h1 className="jua" style={{ margin: '4px 0 0', fontSize: 34, lineHeight: 1.1 }}>{data.title}</h1>
-          <span className="small" style={{ color: '#E4DDFF' }}>{data.regionLabel} · {KIND_LABEL[data.theme]} {data.places.length}곳</span>
+          <span className="small" style={{ color: '#E4DDFF' }}>{data.regionLabel} · {data.theme === 'all' ? '' : `${data.themeLabel ?? themeLabel(data.theme)} `}{data.places.length}곳</span>
         </div>
       </header>
       {data.intro && <p className="hand shared-map-intro">“{data.intro}”</p>}
@@ -80,7 +81,7 @@ export default function SharedMapPage() {
               <article key={p.id} className={'card white shared-map-item' + (picked === p.id ? ' on' : '')} data-testid="shared-map-item" onClick={() => setPicked(p.id)}>
                 {p.photoUrl ? <img src={p.photoUrl} alt="" referrerPolicy="no-referrer" loading="lazy" className="shared-map-thumb" /> : <span className="shared-map-thumb blank" aria-hidden="true" />}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{!here && <span className="jua" style={{ color: 'var(--violet)', fontSize: 16 }}>{i + 1}</span>}<b style={{ fontSize: 16 }}>{p.name}</b>{p.verdict && <span className={'tag' + (p.verdict === 'again' ? ' coral' : '')}>{VERDICT_LABEL[p.verdict]}</span>}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{!here && <span className="jua" style={{ color: 'var(--violet)', fontSize: 16 }}>{i + 1}</span>}<b style={{ fontSize: 16 }}>{p.name}</b>{data.theme === 'all' && <span className="tag" style={{ borderColor: KIND_COLOR[p.kind], color: KIND_COLOR[p.kind] }}>{themeLabel(themeOf(p))}</span>}{p.verdict && <span className={'tag' + (p.verdict === 'again' ? ' coral' : '')}>{VERDICT_LABEL[p.verdict]}</span>}</span>
                   {p.lines.map((l) => <span key={l.who} className="hand" style={{ fontSize: 17, lineHeight: 1.2, color: 'var(--pink-ink)' }}>{l.who} · {l.text}</span>)}
                   <span className="tiny muted">{[p.address, m != null && Number.isFinite(m) ? `여기서 ${meters(m)}` : null].filter(Boolean).join(' · ')}</span>
                   <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
@@ -94,7 +95,7 @@ export default function SharedMapPage() {
         </div>
 
         <div className="card shared-map-cta" data-testid="shared-map-cta">
-          <span className="jua" style={{ fontSize: 20, lineHeight: 1.25 }}>나도 우리 동네 {KIND_LABEL[data.theme]} 지도 만들어 볼까요?</span>
+          <span className="jua" style={{ fontSize: 20, lineHeight: 1.25 }}>나도 우리 동네 {data.theme === 'all' ? '' : `${data.themeLabel ?? themeLabel(data.theme)} `}지도 만들어 볼까요?</span>
           <span className="small" style={{ color: 'var(--v1)' }}>네이버·카카오 지도의 '공유' 글을 붙여 넣기만 하면 돼요. 무료, 광고 없음.</span>
           <Link to="/" className="btn" style={{ alignSelf: 'flex-start', background: '#fff', color: 'var(--ink)' }}>보라핀 시작하기</Link>
         </div>

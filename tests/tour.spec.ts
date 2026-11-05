@@ -118,6 +118,7 @@ const RECS = [
   { id: 'r2', name: '보헤미안 박이추 커피', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '바다 뷰' }, verdict: 'again', lat: 37.8003, lng: 128.9059 },
   { id: 'r7', name: '테라로사 커피공장', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 영상: '공장 구경하다 한 시간' }, verdict: 'again', lat: 37.7008, lng: 128.8629 },
   { id: 'r8', name: '카페 툇마루', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '흑임자 라테' }, verdict: 'once', lat: 37.7676, lng: 128.8763 },
+  { id: 'r9', name: '강릉 월화거리 소품가게', kind: 'shop', tag: '소품샵', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '엽서 샀어' }, verdict: 'again', lat: 37.7519, lng: 128.8962 },
   { id: 'r3', name: '해녀의 집', kind: 'food', region: { t: 'kr', code: '50' }, tripId: 't2', reviews: { 영상: '전복죽' }, verdict: 'once' },
   { id: 'r4', name: '감천문화마을', kind: 'sight', region: { t: 'kr', code: '26' }, tripId: 't5', reviews: {}, verdict: 'once' },
   { id: 'r5', name: '이치란 시부야', kind: 'food', region: { t: 'country', id: 'JPN', city: '도쿄' }, tripId: 't8', reviews: { 영상: '줄이 길다' }, verdict: 'meh' },
@@ -326,6 +327,12 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await guest.waitForTimeout(2500);
   await guest.screenshot({ path: path.join(OUT, 'm15d-shared-map.jpg'), fullPage: true, type: 'jpeg', quality: 82 });
   await anon.close();
+  // 한눈에: 맛집·카페·소품샵(내 꼬리표)이 색만 다르게 한 지도에
+  await page.goto('/maps?m=kr:51150|all');
+  await expect(page.getByTestId('mymap-legend')).toContainText('소품샵');
+  await expect(page.getByTestId('mymaps-themes')).toContainText('한눈에');
+  await page.waitForTimeout(2000);
+  await snap(page, 'm15e-mymaps-all');
   await page.goto('/places/r1');
   await snap(page, 'm16-place-edit');
   await page.goto('/memories');

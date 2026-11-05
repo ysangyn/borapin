@@ -102,6 +102,8 @@ export interface PlaceRec {
   id: string;
   name: string;
   kind: PlaceKind;
+  /** 내가 만든 꼬리표 (소품샵·옷가게·빵집…): 있으면 내 지도의 주제가 된다, 없으면 종류가 주제 */
+  tag?: string;
   /** 어느 지역 (국내 시·군 / 해외 나라·도시) */
   region: Place;
   tripId?: string | null;
@@ -196,7 +198,8 @@ export interface PackItem {
 export interface PlaceMap {
   id: string;
   region: Place;
-  theme: PlaceKind;
+  /** 주제: 종류('food'·'cafe'…) · 꼬리표('t:옷가게') · 한눈에('all') — lib/placeMaps.ts */
+  theme: string;
   title?: string;
   intro?: string;
   order?: string[];
@@ -209,11 +212,12 @@ export interface PlaceMap {
 export interface MapShare {
   title: string;
   intro: string;
-  theme: PlaceKind;
+  theme: string;
+  themeLabel: string;
   /** '보라 & 영상' */
   by: string;
   regionLabel: string;
-  places: { id: string; name: string; kind: PlaceKind; lat?: number | null; lng?: number | null; photoUrl?: string; address?: string; naverUrl?: string; verdict: Verdict | null; lines: { who: string; text: string }[] }[];
+  places: { id: string; name: string; kind: PlaceKind; tag?: string; lat?: number | null; lng?: number | null; photoUrl?: string; address?: string; naverUrl?: string; verdict: Verdict | null; lines: { who: string; text: string }[] }[];
   updatedAt?: Timestamp | null;
   v: 1;
 }

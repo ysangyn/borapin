@@ -68,7 +68,7 @@ service cloud.firestore {
 
     function validPlaceMap(d) {
       return d.keys().hasAll(['region', 'theme', 'v'])
-        && d.region is map && d.theme is string && d.theme.size() <= 20
+        && d.region is map && d.theme is string && d.theme.size() <= 24
         && (!('title' in d) || (d.title is string && d.title.size() <= 60))
         && (!('intro' in d) || (d.intro is string && d.intro.size() <= 200))
         && optList(d, 'order', 300)
@@ -91,6 +91,8 @@ service cloud.firestore {
       return d.keys().hasAll(['name', 'kind', 'region', 'v'])
         && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
         && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
+        // 내가 만든 꼬리표 (소품샵·옷가게·빵집…): 종류 안의 작은 주제
+        && (!('tag' in d) || (d.tag is string && d.tag.size() <= 20))
         && d.region is map
         && (!('reviews' in d) || (d.reviews is map && d.reviews.size() <= 10))
         && (!('verdict' in d) || d.verdict == null || d.verdict in ['again', 'once', 'meh'])

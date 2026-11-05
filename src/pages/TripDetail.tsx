@@ -25,7 +25,7 @@ import PlaceRecRow from '../components/PlaceRecRow';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
-import { placeLabel, placeLong } from '../lib/geo';
+import { placeLabel, placeLong, placeParam } from '../lib/geo';
 import { tripTabs, type TripTab } from '../lib/stage';
 import type { PlaceRec, Trip } from '../lib/types';
 
@@ -315,7 +315,11 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
       <section>
         <div className="row-between" style={{ marginBottom: 2 }}>
           <h2 className="h2" style={{ fontSize: 17 }}>우리 장소{recs?.length ? ` · ${recs.length}` : ''}</h2>
-          <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500 }}>+ 장소 남기기</Link>
+          <span style={{ display: 'flex', gap: 12 }}>
+            {/* 이 여행에서 남긴 곳은 그 지역 '내 지도'에도 그대로 들어가 있다 (같은 기록) */}
+            {!!recs?.length && trip.places[0] && <Link to={`/maps?m=${encodeURIComponent(`${placeParam(trip.places[0])}|all`)}`} className="small" style={{ fontWeight: 500 }} data-testid="trip-mymap">{placeLabel(trip.places[0])} 내 지도</Link>}
+            <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500 }}>+ 장소 남기기</Link>
+          </span>
         </div>
         {recs && recs.length === 0 ? (
           <div className="small muted">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요. 또 가고 싶은 곳은 평가로 남겨요.</div>

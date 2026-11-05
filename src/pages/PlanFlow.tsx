@@ -13,6 +13,7 @@ import { useWorld } from '../lib/world';
 import { loadTour, trendTags, useTrend, type TourData } from '../lib/trend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { pickables, PICK_LABEL, PLAN_STEPS, type Pick, type PickKind } from '../lib/planPick';
+import { KIND_LABEL } from '../lib/placeRecs';
 import { arrange, dayDistance } from '../lib/route';
 import WayPicker from '../components/WayPicker';
 import { useHome } from '../lib/home';
@@ -223,16 +224,22 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
     const left = leftItems(wish, recNames(recs, wish.place));
     return left.map((n): Pick => ({ key: `wish:${n}`, name: n, kind: wish.foods.some((f) => sameName(f, n)) ? 'eat' : 'see', line: '가고 싶은 곳에 담아 둔 곳', wished: true }));
   }, [wish, recs]);
+  // 우리 지도(이 지역에 남긴 우리 장소): '또 갈래요'를 맨 앞에 — 지난 여행의 기록이 다음 계획의 첫 후보가 된다
+  const ours = useMemo<Pick[]>(() => (recs ?? []).filter((r) => samePlace(r.region, place) && r.verdict !== 'meh').sort((a, b) => Number(b.verdict === 'again') - Number(a.verdict === 'again')).map((r): Pick => ({
+    key: `ours:${r.id}`, name: r.name, kind: r.kind === 'food' || r.kind === 'cafe' ? 'eat' : r.kind === 'shop' ? 'buy' : 'see', img: r.photoUrl, lat: r.lat, lng: r.lng,
+    line: `우리 지도 · ${r.verdict === 'again' ? '또 갈래요' : KIND_LABEL[r.kind]}${Object.values(r.reviews ?? {})[0] ? ` · ${Object.values(r.reviews ?? {})[0]}` : ''}`, wished: true,
+  })), [recs, place]);
   const picks = useMemo(() => {
-    const fromWish = wished.filter((w) => !base.some((b) => sameName(b.name, w.name)));
-    const marked = base.map((b) => (wished.some((w) => sameName(w.name, b.name)) ? { ...b, wished: true } : b));
-    const sorted = [...fromWish, ...marked].sort((a, b) => Number(!!b.wished) - Number(!!a.wished));
+    const fromOurs = ours.filter((o) => !base.some((b) => sameName(b.name, o.name)));
+    const fromWish = wished.filter((w) => !base.some((b) => sameName(b.name, w.name)) && !ours.some((o) => sameName(o.name, w.name)));
+    const marked = base.map((b) => (wished.some((w) => sameName(w.name, b.name)) || ours.some((o) => sameName(o.name, b.name)) ? { ...b, wished: true } : b));
+    const sorted = [...fromOurs, ...fromWish, ...marked].sort((a, b) => Number(!!b.wished) - Number(!!a.wished));
     // 사진이 없는 카드(가고 싶은 곳에 이름만 적어 둔 것)는 이름이 같은 다른 카드의 사진을 빌린다 ('하회마을' ← '안동 하회마을 겸암정사')
     const all = sorted.map((p) => { if (p.img) return p; const twin = sorted.find((x) => x !== p && x.img && sameName(x.name, p.name)); return twin ? { ...p, img: twin.img, lat: p.lat ?? twin.lat, lng: p.lng ?? twin.lng } : p; });
     if (!found?.length) return all;
     const have = new Set(all.map((p) => p.name.toLowerCase()));
     return [...all, ...found.filter((x) => !have.has(x.name.toLowerCase())).map((x): Pick => ({ key: `find:${x.kind}:${x.name}`, name: x.name, kind: x.kind, line: x.line, lat: x.lat, lng: x.lng, area: x.area }))];
-  }, [base, found, wished]);
+  }, [base, found, wished, ours]);
   const [detail, setDetail] = useState<SpotTarget | null>(null);
   const [own, setOwn] = useState('');
   const toast = useToast();
@@ -278,7 +285,7 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
             <div key={p.key} className={'pick-card' + (by.includes(name) ? ' mine' : '')} data-testid="pick-card">
               <button type="button" className="pick-hit" onClick={() => void toggle(p)} aria-pressed={by.includes(name)} aria-label={`${p.name} ${by.includes(name) ? '하트 빼기' : '담기'}`}>
                 {p.img ? <img src={p.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className={'pick-noimg ' + p.kind} aria-hidden="true">{p.kind === 'eat' ? '🍲' : p.kind === 'buy' ? '🛍' : p.kind === 'fest' ? '🎪' : '📍'}</span>}
-                {members.length > 1 && members.every((n) => by.includes(n)) ? <span className="pick-star">★ 둘 다</span> : p.wished ? <span className="pick-star wish" data-testid="pick-wished">가고 싶던 곳</span> : null}
+                {members.length > 1 && members.every((n) => by.includes(n)) ? <span className="pick-star">★ 둘 다</span> : p.wished ? <span className="pick-star wish" data-testid="pick-wished">{p.key.startsWith('ours:') ? '우리 지도' : '가고 싶던 곳'}</span> : null}
                 <span className="pick-hearts">{members.map((n) => <i key={n} className={'t' + Math.max(0, toneOf(n)) + (by.includes(n) ? ' on' : '')}>{[...n][0]}</i>)}</span>
                 <b>{p.name}</b>
                 {(p.area || p.line) && <span className="tiny muted">{p.area ?? p.line}</span>}

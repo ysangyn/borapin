@@ -176,7 +176,10 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="sheet-recs">
         <div className="row-between" style={{ alignItems: 'center' }}>
           <span className="small" style={{ fontWeight: 600 }}>우리 장소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
-          <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-place-new">+ 장소 남기기</Link>
+          <span style={{ display: 'flex', gap: 12 }}>
+            {recsHere(recs, place).length > 0 && <Link to={`/maps?m=${encodeURIComponent(`${placeParam}|all`)}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-mymap">내 지도</Link>}
+            <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-place-new">+ 장소 남기기</Link>
+          </span>
         </div>
         {recsHere(recs, place).slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
       </div>
