@@ -400,7 +400,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.goto('/space');
   await page.getByTestId('theme-dark').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 15_000 });
-  for (const [route, name, full] of [['/', 'n01-home', true], ['/map', 'n02-map', false], ['/trips/t1', 'n03-trip', true], ['/trips/t11?tab=prep', 'n04-prep', true], ['/trips/t11/plan-next?step=pick', 'n05-plan-pick', true], ['/space', 'n06-space', true]] as const) {
+  for (const [route, name, full] of [['/', 'n01-home', true], ['/map', 'n02-map', false], ['/trips/t1', 'n03-trip', true], ['/trips/t11?tab=prep', 'n04-prep', true], ['/trips/t11/plan-next?step=pick', 'n05-plan-pick', true], ['/space', 'n06-space', true], ['/feed', 'n07-feed', true], ['/maps?m=kr:51150|all', 'n08-mymaps', true]] as const) {
     await page.goto(route);
     await snap(page, name, full);
   }
