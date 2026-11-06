@@ -315,7 +315,7 @@ b, strong { font-weight: 600; }
 .card .chip.on-coral, .sheet .chip.on-coral { background: var(--violet); }
 .chip.heart-chip.on-coral svg { color: #ffb39f; }
 .chip-check { display: inline-flex; margin-right: 2px; }
-.naver-linked { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 4px 0 12px; border: 1px solid var(--line2); border-radius: 14px; background: var(--card); }
+.naver-linked { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 8px 0 12px; border: 1px solid var(--line2); border-radius: 14px; background: var(--card); }
 .naver-linked a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .naver-badge { flex: none; width: 22px; height: 22px; border-radius: 6px; background: #03c75a; color: #fff; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .check-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--mist2); font-weight: 600; }
@@ -1782,3 +1782,18 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .plus-item.sm b { font-size: 12px; }
 .record-stops { gap: 8px; }
 .chip-x { border: none; background: none; color: inherit; font: inherit; font-size: 16px; line-height: 1; margin-left: 6px; padding: 0 2px; cursor: pointer; }
+
+/* 작은 지우기 단추(✕): 칸 안쪽에 들어앉게 그림자 없이 */
+.naver-linked .icon-btn, .link-preview .icon-btn { box-shadow: none; flex: none; }
+/* 지역 한 장 상태 거르기: 폰 폭에서도 한 줄 */
+.region-filter { display: flex; width: 100%; }
+.region-filter button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; padding: 0 10px; flex: 1 1 auto; min-width: 0; }
+.region-filter button:first-child { flex: 0 0 auto; padding: 0 14px; }
+.region-filter .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.region-filter .dot.hollow { background: var(--card); border: 2px solid var(--coral); box-sizing: border-box; }
+/* 가게 줄: 순위 칸(가고 싶어요는 빈 동그라미)을 같은 폭으로, 첫 줄(이름)에 맞춰 위로 */
+.rec-row-wrap { align-items: flex-start; }
+.rec-row-wrap .region-rank { padding-top: 12px; line-height: 24px; display: flex; justify-content: center; }
+.rec-row-wrap .region-rank .dot.hollow { width: 12px; height: 12px; margin-top: 6px; border-radius: 50%; border: 2.5px solid var(--coral); box-sizing: border-box; display: block; }
+.rec-row-wrap .region-check { align-self: center; }
+.rec-row .kind-badge { margin-top: 1px; }

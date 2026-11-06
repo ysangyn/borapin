@@ -37,6 +37,8 @@ const festivals: FestivalData = { updated: '2026-10-16', cells: { '51150': [{ t:
 const photos = [{ id: 'p1', tripId: 't1', w: 1, h: 1, taken: '2019-05-03T10:00', takenGuess: false, by: '영상', v: 1 }, { id: 'p2', tripId: 't1', w: 1, h: 1, taken: '2019-05-04T10:00', takenGuess: false, by: '보라', v: 1 }] as never;
 const data: AskData = { trips, wishes, recs, notes, photos, festivals, info: travelinfo as never, seasons: seasons as never, world: world as never, wear: (wear as unknown as { cities: never }).cities, abroad: abroad as never, now: new Date('2026-10-16T12:00:00+09:00') };
 
+// 한 질문만 보기: ASK_SHOW="질문" npx tsx scripts/ask-test.ts
+if (process.env.ASK_SHOW) { const a = ask(process.env.ASK_SHOW, {}, data); console.log(JSON.stringify({ intent: a.intent, text: a.text, lines: a.lines, buttons: a.buttons.map((b) => b.label) }, null, 1)); process.exit(0); }
 let ok = 0;
 const fails: string[] = [];
 for (const c of CASES) {

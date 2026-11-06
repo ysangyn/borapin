@@ -62,6 +62,12 @@ export default defineConfig({
             options: { cacheName: 'geo', expiration: { maxEntries: 4 } },
           },
           {
+            // 동네(구·동) 경계: 지역 한 장을 연 지역만 받아 둔다
+            urlPattern: ({ url }) => url.pathname.startsWith('/data/dong/'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'dong', expiration: { maxEntries: 30 } },
+          },
+          {
             // 미리 저장하지 않은 앱 조각(이름에 해시가 있어 바뀌지 않음)
             urlPattern: ({ url }) => url.pathname.startsWith('/assets/'),
             handler: 'CacheFirst',

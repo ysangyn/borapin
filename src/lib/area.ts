@@ -1,4 +1,5 @@
 import type { PlaceRec } from './types';
+import { dongAt, type DongData } from './dong';
 
 /**
  * 동네: 주소에서 구·군(그리고 동·읍·면)을 읽는다. 따로 고르지 않아도 '서울 성동구 성수동2가 …' → { gu: '성동구', dong: '성수동' }.
@@ -18,12 +19,28 @@ export function areaOf(address: string | undefined | null): Area {
   const dong = d ? d.replace(/\d+가$/, '').replace(/(동|읍|면)\d+$/, '$1') : null;
   return { gu, dong: dong && dong.length >= 2 ? dong : null };
 }
-/** 칩에 쓸 동네 이름: 구가 있으면 구, 아니면 동·읍·면 */
-export const areaLabel = (r: Pick<PlaceRec, 'address'>): string | null => { const a = areaOf(r.address); return a.gu ?? a.dong; };
-/** 지역 안의 동네 묶음 (많은 순) */
-export function areasOf(recs: Pick<PlaceRec, 'address'>[]): { name: string; n: number }[] {
+type AreaRec = Pick<PlaceRec, 'address'> & { lat?: number | null; lng?: number | null };
+/** 칩에 쓸 동네 이름: 구가 있으면 구, 아니면 동·읍·면. 가게 자리(좌표)와 동네 경계가 있으면 그게 먼저 (도로명 주소엔 구·동이 없을 때가 많다) */
+export const areaLabel = (r: AreaRec, dong?: DongData | null): string | null => {
+  const at = r.lat != null && r.lng != null ? dongAt(dong, r.lng, r.lat) : null;
+  if (at) return at.gu ?? at.dong;
+  const a = areaOf(r.address);
+  return a.gu ?? a.dong;
+};
+/** 동·읍·면만 (구 안에서 더 나눌 때) */
+export const dongLabel = (r: AreaRec, dong?: DongData | null): string | null => {
+  const at = r.lat != null && r.lng != null ? dongAt(dong, r.lng, r.lat) : null;
+  return at ? at.dong : areaOf(r.address).dong;
+};
+/** 지역 안의 동네 묶음 (많은 순). 구로 나눠 한 묶음뿐이면 동으로 한 번 더 (가게가 다 한 구에 있을 때) */
+export function areasOf(recs: AreaRec[], dong?: DongData | null): { name: string; n: number; level: 'gu' | 'dong' }[] {
+  const gu = groupBy(recs, (r) => areaLabel(r, dong));
+  if (gu.length >= 2) return gu.map((a) => ({ ...a, level: 'gu' as const }));
+  return groupBy(recs, (r) => dongLabel(r, dong)).map((a) => ({ ...a, level: 'dong' as const }));
+}
+function groupBy(recs: AreaRec[], key: (r: AreaRec) => string | null): { name: string; n: number }[] {
   const m = new Map<string, number>();
-  for (const r of recs) { const k = areaLabel(r); if (k) m.set(k, (m.get(k) ?? 0) + 1); }
+  for (const r of recs) { const k = key(r); if (k) m.set(k, (m.get(k) ?? 0) + 1); }
   return [...m.entries()].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ko'));
 }
 

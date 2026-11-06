@@ -12,7 +12,8 @@ import { guessKind } from '../lib/recordStops';
 import { withJosa } from '../lib/ko';
 import { parsePlaceParam, placeLabel, placeLong, placeParam } from '../lib/geo';
 import { defaultTab, emptyLine, statusChips, summarize, type RegionTab } from '../lib/region';
-import { areaLabel, areasOf } from '../lib/area';
+import { areaLabel, areasOf, dongLabel } from '../lib/area';
+import { useDong } from '../lib/dong';
 import { KIND_COLOR, themeLabel, themeOf, themesOrder } from '../lib/placeMaps';
 import { rankedRecs } from '../lib/placeMaps';
 import { usePlaceMaps } from '../lib/placeMapData';
@@ -197,8 +198,9 @@ function PlacesTab({ place, s }: { place: ReturnType<typeof parsePlaceParam>[num
   const auth = useAuth();
   const toast = useToast();
   const nav = useNavigate();
-  const areas = useMemo(() => areasOf(s.recs), [s.recs]);
-  const inArea = (r: PlaceRec) => !area || areaLabel(r) === area;
+  const dong = useDong(place);
+  const areas = useMemo(() => areasOf(s.recs, dong), [s.recs, dong]);
+  const inArea = (r: PlaceRec) => !area || (areas[0]?.level === 'dong' ? dongLabel(r, dong) : areaLabel(r, dong)) === area;
   const want = s.want.filter(inArea);
   const themes = themesOrder([...new Set(s.been.map(themeOf))]);
   const been = themes.flatMap((t) => rankedRecs(s.been.filter((r) => themeOf(r) === t), docs?.find((d) => d.id === mapKey(place, t))?.order)).filter(inArea);
@@ -233,7 +235,7 @@ function PlacesTab({ place, s }: { place: ReturnType<typeof parsePlaceParam>[num
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="region-places">
-      <div className="seg" role="group" aria-label="상태">
+      <div className="seg region-filter" role="group" aria-label="상태">
         <button className={filter === 'all' ? 'on' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>전체 {s.recs.length}</button>
         <button className={filter === 'been' ? 'on' : ''} aria-pressed={filter === 'been'} onClick={() => setFilter('been')} data-testid="region-filter-been"><i className="dot" style={{ background: 'var(--violet)' }} aria-hidden="true" />다녀왔어요 {s.been.length}</button>
         <button className={filter === 'want' ? 'on' : ''} aria-pressed={filter === 'want'} onClick={() => setFilter('want')} data-testid="region-filter-want"><i className="dot hollow" aria-hidden="true" />가고 싶어요 {s.want.length}</button>
@@ -250,6 +252,7 @@ function PlacesTab({ place, s }: { place: ReturnType<typeof parsePlaceParam>[num
           <div className="list">
             {want.map((r) => (
               <div key={r.id} className="rec-row-wrap" data-testid="region-want">
+                <span className="region-rank" aria-hidden="true"><i className="dot hollow" /></span>
                 <PlaceRecRow rec={r} />
                 <button type="button" className="icon-btn region-check" aria-label={`${r.name} 다녀왔어요로 바꾸기`} onClick={() => void markBeen(r)} data-testid="region-mark-been"><Icon name="check" size={18} stroke={2.4} /></button>
               </div>

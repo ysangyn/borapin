@@ -11,7 +11,7 @@ import { candidates, THEMES } from '../recommend';
 import topicsData from '../../data/topics.json';
 import faqData from '../../data/faq.json';
 import { regionLong } from '../geo';
-import { withRo } from '../ko';
+import { josaOnly, withRo } from '../ko';
 import { accessLine } from '../transport';
 import { straightKm } from '../placeApps';
 import { abroadNow, alarmFor, fxFor, loadAbroad, visaFor, type Abroad } from '../abroad';
@@ -191,6 +191,8 @@ function intentOf(q: string, places: Place[], hasPerson: boolean, hasTime: boole
   if ((topicOf(q) || trendTopicOf(q) || STAR_Q.test(q)) && !places.length && !hasTime && !has(q, /(간|갔|다녀온|다녀왔)\s*(곳|데|적)/)) return 'recommend';
   if (has(q, /다음\s*여행|예정(된|인)?\s*(여행|거)|언제\s*(떠나|출발)|디데이|d-?day/i)) return 'next';
   if (has(q, /어디였지|어디였더라|뭐였지|이름이\s*뭐|기억\s*안|찾아\s*줘|검색/) || has(q, /(마신|먹은|갔던|봤던|했던)\s*(날|곳|데)$/)) return 'find';
+  // '오션뷰 카페 어디 갔었지' · '루프탑 술집 어디 갔더라': 종류 말 + 갔었지/갔더라 (지명 없이)
+  if (!places.length && has(q, /(카페|커피|맛집|식당|밥집|술집|빵집|숙소|호텔)/) && has(q, /(어디|뭐)\s*(갔었|갔더|갔었지|갔지|였지|였더라)|갔던\s*(데|곳)/)) return 'find';
   // 우리 기록에서 조건으로 찾기: '우리가 간 카페 중에 바다 보이는 데', '성수동 카페 어디 갔었지'
   if (has(q, /우리(가|들이)?\s*(간|갔|다녀온|남긴|갔던)\s*.*(중에|중\s|가운데|어디|뭐)/) || (!places.length && has(q, /[가-힣]{1,4}(동|읍|면|리|가)\s*(카페|맛집|식당|어디|갔)/) && has(q, /갔|어디|있/))) return 'find';
   if (places.length && has(q, /가고\s*싶은\s*곳/) && has(q, /적어|적은|메모|뭐\s*(있|적|담)|보여|담은|담았/)) return 'wishList';
@@ -1008,13 +1010,18 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       // 오타 고치기로 붙은 지명(예: '보이는'→보령)은 거르기에 쓰지 않는다: 질문에 그 이름이 그대로 있을 때만
       const fp = p && mentions.some((m) => m.entry.places.length === 1 && samePlace(m.entry.places[0], p) && q.slice(m.start, m.end).includes(m.entry.label.slice(0, 2))) ? p : null;
       const PART = /(에서|으로|이랑|하고|에는|은|는|이|가|을|를|에|로|와|과|도|만|랑|였지|였더라)$/;
-      const words = q.replace(/[?!.,~]/g, ' ').split(/\s+/).map((w) => w.replace(PART, '')).filter((w) => w.length >= 2 && !STOP.test(w));
+      // 한 글자라도 뜻이 있는 말(산·강·뷰·숲·섬)은 남긴다
+      const words = q.replace(/[?!.,~]/g, ' ').split(/\s+/).map((w) => w.replace(PART, '')).filter((w) => (w.length >= 2 || /^(산|강|뷰|숲|섬|들|논|밭)$/.test(w)) && !STOP.test(w));
+      // 비슷한 말: 바다 = 오션·해변·바닷가 (한 줄 평에 '오션뷰'라고 적었어도)
+      const SAME: [RegExp, string[]][] = [[/^(바다|오션|오션뷰|해변|바닷가)$/, ['바다', '오션', '해변', '바닷가']], [/^(산|산뷰|마운틴)$/, ['산', '숲', '마운틴']], [/^(야경|밤)$/, ['야경', '밤']], [/^(루프탑|옥상)$/, ['루프탑', '옥상', '테라스']]];
+      const alts = (w: string) => SAME.find(([re]) => re.test(w))?.[1] ?? [w];
       // 종류 말(카페·맛집)은 거르는 조건으로, 나머지는 찾는 말로
       const kinds = words.filter((w) => /^(카페|커피|맛집|식당|밥집|술집|빵집|숙소|호텔)$/.test(w));
       const keys = words.filter((w) => !kinds.includes(w));
       const kindOk = (r: PlaceRec) => !kinds.length || kinds.some((k) => (/카페|커피/.test(k) ? r.kind === 'cafe' : /숙소|호텔/.test(k) ? r.kind === 'stay' : r.kind === 'food' || r.kind === 'cafe'));
-      const hit = (text: string) => (keys.length ? keys.some((w) => text.includes(w)) : true);
-      const recs = d.recs.filter((r) => kindOk(r) && (fp ? samePlace(r.region, fp) : true) && hit([r.name, r.address ?? '', r.memo ?? '', placeName(r.region), ...Object.values(r.reviews ?? {})].join(' ')));
+      const hit = (text: string) => (keys.length ? keys.some((w) => alts(w).some((x) => text.includes(x))) : true);
+      const beenOnly = /간|갔|다녀온|먹은|마신/.test(q);
+      const recs = d.recs.filter((r) => kindOk(r) && (!beenOnly || r.status !== 'want') && (fp ? samePlace(r.region, fp) : true) && hit([r.name, r.address ?? '', r.memo ?? '', placeName(r.region), ...Object.values(r.reviews ?? {})].join(' ')));
       const notes = keys.length ? (d.notes ?? []).filter((n) => hit(n.text)) : [];
       const trips = keys.length && !kinds.length ? d.trips.filter((t) => hit([t.title, t.memo, ...(t.tags ?? [])].join(' '))) : [];
       const lines = [
@@ -1023,8 +1030,24 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         ...trips.slice(0, 4).map((t) => `여행: ${t.title} · ${formatWhen(t.when)}`),
       ];
       a = lines.length
-        ? { intent, text: `'${[...kinds, ...keys].join(' ') || q}'로 찾은 기록 ${recs.length + notes.length + trips.length}건`, lines, buttons: [...recs.slice(0, 2).map((r) => ({ label: r.name, to: `/places/${r.id}` })), ...notes.slice(0, 2).map((n) => ({ label: '글 보기', to: `/trips/${n.tripId}` })), ...trips.slice(0, 2).map((t) => ({ label: t.title, to: `/trips/${t.id}` }))], source: '우리 기록' }
-        : { intent, text: `'${[...kinds, ...keys].join(' ') || q}'로는 우리 기록에서 못 찾았어요`, lines: ['장소 이름·주소·한 줄 평·글·여행 제목에서 찾아요.'], buttons: [{ label: '맛집·명소', to: '/places' }, ...search(q)] };
+        ? { intent, text: keys.length ? `'${keys.join(' ')}'${withRo(keys.join(' ')).slice(keys.join(' ').length)} 찾은 기록 ${recs.length + notes.length + trips.length}건` : `${kinds.join(' ')} 기록 ${recs.length}건`, lines, buttons: [...recs.slice(0, 2).map((r) => ({ label: r.name, to: `/places/${r.id}` })), ...notes.slice(0, 2).map((n) => ({ label: '글 보기', to: `/trips/${n.tripId}` })), ...trips.slice(0, 2).map((t) => ({ label: t.title, to: `/trips/${t.id}` }))], source: '우리 기록' }
+        : (() => {
+            // 못 찾았을 때: 무엇을 어디서 찾았는지 그대로 말하고, 그 종류의 가게를 몇 곳 보여 준다 (고르기 쉽게)
+            const pool = d.recs.filter((r) => kindOk(r) && (!beenOnly || r.status !== 'want') && (fp ? samePlace(r.region, fp) : true));
+            const kindWord = kinds.length ? (/카페|커피/.test(kinds[0]) ? '카페' : /숙소|호텔/.test(kinds[0]) ? '숙소' : '맛집') : '맛집·명소';
+            const keyWord = keys.length ? `'${keys.join(' ')}'${josaOnly(keys.join(' '), '이/가')}` : '';
+            const head = `${fp ? placeName(fp) + '에서 ' : ''}${beenOnly ? '다녀온' : '담아 둔'} ${kindWord} ${pool.length}곳`;
+            return {
+              intent,
+              text: pool.length ? `${head} 중 ${keyWord ? `${keyWord} 들어간 곳은 없어요` : '맞는 곳이 없어요'}` : `${fp ? placeName(fp) + '에 ' : ''}${beenOnly ? '다녀온' : '담아 둔'} ${kindWord}가 아직 없어요`,
+              lines: [
+                ...pool.slice(0, 4).map((r) => `${r.name} · ${placeName(r.region)}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`),
+                keys.length ? '가게 이름·주소·한 줄 평·메모에서 찾아요. 한 줄 평에 적어 두면 다음엔 찾아 드려요.' : '',
+              ].filter(Boolean),
+              buttons: [...pool.slice(0, 2).map((r) => ({ label: r.name, to: `/places/${r.id}` })), { label: '맛집·명소', to: '/places' }],
+              source: '우리 기록',
+            };
+          })();
       break;
     }
     case 'map': {

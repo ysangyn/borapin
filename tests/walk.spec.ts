@@ -24,7 +24,7 @@ const log = (s: string) => { lines.push(s); console.log(s); try { fs.appendFileS
 try { fs.writeFileSync(path.join(OUT, 'report.txt'), ''); } catch { /* */ }
 
 async function phone(browser: Browser) {
-  const ctx = await browser.newContext({ viewport: { width: 375, height: 760 }, deviceScaleFactor: 1.5, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 760 }, deviceScaleFactor: 1.5, isMobile: true, hasTouch: true, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
   const page = await ctx.newPage();
   // 없는 단추를 끝없이 기다리지 않게: 8초 안에 못 찾으면 그 걸음은 '막힘'
   page.setDefaultTimeout(8000);
@@ -48,7 +48,7 @@ async function audit(page: Page) {
     const nav = document.querySelector('nav[aria-label="주 메뉴"]')?.getBoundingClientRect();
     const name = (el: Element) => (el.getAttribute('aria-label') || (el as HTMLElement).innerText || el.getAttribute('placeholder') || el.tagName).replace(/\s+/g, ' ').trim().slice(0, 24);
     const vis = (el: Element) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && r.bottom > 0 && r.top < vh; };
-    const out = { overflow: Math.max(0, document.documentElement.scrollWidth - vw), small: [] as string[], clipped: [] as string[], offRight: [] as string[], under: [] as string[] };
+    const out = { overflow: Math.max(0, document.documentElement.scrollWidth - vw), small: [] as string[], clipped: [] as string[], offRight: [] as string[], under: [] as string[], wrapped: [] as string[] };
     for (const el of document.querySelectorAll('button, [role=button], [role=tab], select, input:not([type=checkbox]):not([type=file]):not([type=hidden]), a.btn, a.chip')) {
       if (!vis(el)) continue;
       const r = el.getBoundingClientRect();
@@ -57,13 +57,22 @@ async function audit(page: Page) {
       // 아래 메뉴 뒤에 깔린 단추 (스크롤해도 늘 가려지면 못 누름 — 화면 맨 아래 걸음에서 의미 있음)
       if (nav && !el.closest('nav') && r.top < nav.bottom && r.bottom > nav.top + 10 && r.left < nav.right && r.right > nav.left && document.documentElement.scrollHeight - window.scrollY - vh < 4) out.under.push(name(el));
     }
+    // 두 줄로 꺾인 단추·칩·탭·꼬리표 (짧은 이름표가 꺾이면 정렬이 무너져 보인다)
+    for (const el of document.querySelectorAll('button, [role=tab], a.btn, a.chip, .chip, .tag, .kind-badge, .seg button')) {
+      if (!vis(el)) continue;
+      const txt = (el as HTMLElement).innerText.trim();
+      if (!txt || txt.length > 24) continue;
+      const rg = document.createRange(); rg.selectNodeContents(el);
+      const tops = new Set([...rg.getClientRects()].filter((r) => r.width > 1).map((r) => Math.round(r.top / 4)));
+      if (tops.size > 1) out.wrapped.push(txt.replace(/\s+/g, ' ').slice(0, 20));
+    }
     for (const el of document.querySelectorAll('body *')) {
       const e = el as HTMLElement;
       if (e.childElementCount || !e.textContent?.trim() || !vis(e)) continue;
       const s = getComputedStyle(e);
       if (e.scrollWidth > e.clientWidth + 2 && s.overflowX !== 'visible' && s.textOverflow !== 'ellipsis') out.clipped.push(e.textContent.trim().slice(0, 28));
     }
-    for (const k of ['small', 'clipped', 'offRight', 'under'] as const) out[k] = [...new Set(out[k])].slice(0, 12);
+    for (const k of ['small', 'clipped', 'offRight', 'under', 'wrapped'] as const) out[k] = [...new Set(out[k])].slice(0, 12);
     return out;
   });
 }
@@ -81,6 +90,7 @@ async function shot(page: Page, label: string, full = false) {
     if (a.clipped.length) log(`  - 잘린 글: ${a.clipped.join(' / ')}`);
     if (a.small.length) log(`  - 작은 누를 곳(<30px): ${a.small.join(' / ')}`);
     if (a.under.length) log(`  - 아래 메뉴에 가려짐: ${a.under.join(' / ')}`);
+    if (a.wrapped.length) log(`  - 두 줄로 꺾인 이름표: ${a.wrapped.join(' / ')}`);
   }
 }
 
@@ -441,6 +451,15 @@ test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
   await step(page, 'places', async () => { await page.goto('/places'); });
   await step(page, 'place-new', async () => { await page.goto('/places/new'); });
   await step(page, 'place-open', async () => { await page.goto('/places/r1'); });
+  await step(page, 'place-new-want', async () => { await page.goto('/places/new?region=kr:51150&status=want'); });
+
+  // ── 10b. 지역 한 장 (세 탭 · 서울 동네 칩) ──
+  log('\n== 지역 한 장 ==');
+  await step(page, 'region-glance', async () => { await page.goto('/region/kr:51150'); await page.getByTestId('region-page').waitFor(); }, true);
+  await step(page, 'region-places', async () => { await page.getByTestId('region-tab-places').click(); }, true);
+  await step(page, 'region-trips', async () => { await page.getByTestId('region-tab-trips').click(); }, true);
+  await step(page, 'region-seoul', async () => { await page.goto('/region/kr:11?tab=places'); await page.getByTestId('region-page').waitFor(); }, true);
+  await step(page, 'region-empty', async () => { await page.goto('/region/kr:46910'); await page.getByTestId('region-page').waitFor(); }, true);
 
   // ── 11. 익히기 ──
   log('\n== 오늘의 영어 · 현지어 ==');
