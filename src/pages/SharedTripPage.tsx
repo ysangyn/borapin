@@ -20,7 +20,18 @@ export default function SharedTripPage() {
   useEffect(() => {
     if (!token) return;
     setFailed(false);
-    loadShared(token).then(setD, (e: { code?: string }) => (e?.code === 'permission-denied' ? setD(null) : setFailed(true)));
+    let on = true;
+    // 로그인 없이 처음 여는 링크라 연결이 늦을 때가 있다: 조용히 두 번 더 해 보고, 그래도 안 되면 '다시 불러오기'
+    const go = (left: number): void => {
+      loadShared(token).then((x) => { if (on) setD(x); }, (e: { code?: string }) => {
+        if (!on) return;
+        if (e?.code === 'permission-denied') setD(null);
+        else if (left > 0) window.setTimeout(() => go(left - 1), 1500 * (3 - left));
+        else setFailed(true);
+      });
+    };
+    go(2);
+    return () => { on = false; };
   }, [token, round]);
   const stats = useMemo(() => (d ? computeStats([{ id: 's', title: d.title, kind: 'trip', status: 'done', when: { p: 'unknown' }, places: d.places, companions: [], memo: '', tags: [], source: 'app', v: 1 } as Trip]) : null), [d]);
   const photos = useMemo(() => (d?.photos ?? []).filter((p) => p.id).map((p) => ({ ...p, tripId: null, takenGuess: false, bytes: 0, v: 1 }) as Photo), [d]);
