@@ -447,12 +447,12 @@ test.describe('사람처럼 쓰기', () => {
     await expect(spot).toContainText('1');
     // 핀은 아직 없다 (다녀왔다고 하지 않았으니)
     await expect(page.getByTestId('headline')).toHaveText(before);
-    // 장소를 하나 더 남기며 '여기 다녀왔어요'를 고르면 핀도 꽂힌다
+    // 장소를 하나 더 남기며 '여행 지도에도 핀 꽂기'를 켜면 핀도 꽂힌다
     await page.goto('/places/new');
     await page.getByLabel('장소 이름').fill('칠곡 가산수피아');
     await page.getByLabel('어디 검색').fill('칠곡');
     await page.getByRole('option', { name: /칠곡군/ }).first().click();
-    await page.getByLabel('여기 다녀왔어요 (지도에 핀도 꽂기)').check();
+    await page.getByTestId('place-pin-too').getByRole('checkbox').check();
     await page.getByTestId('place-save').click();
     await expect(page.getByRole('status')).toContainText('담고 핀도 꽂았어요');
     await page.goto('/');

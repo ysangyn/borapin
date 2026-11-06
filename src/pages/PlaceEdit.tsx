@@ -335,10 +335,11 @@ export default function PlaceEdit() {
           </div>
         )}
 
-        {!editing && !tripId && status === 'been' && (
-          <label className="check-row">
+        {/* 이 지역에 다녀온 여행이 하나도 없을 때만: 여행 가서 들른 곳이면 여행 지도에 핀도 꽂는다 (동네 가게는 끈 채로) */}
+        {!editing && !tripId && status === 'been' && tripOptions.length === 0 && (
+          <label className="check-row" data-testid="place-pin-too">
             <input type="checkbox" checked={visited} onChange={(e) => setVisited(e.target.checked)} />
-            <span>여기 다녀왔어요 (지도에 핀도 꽂기)</span>
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>여행 지도에도 핀 꽂기<span className="tiny muted" style={{ fontWeight: 500 }}>여행 가서 들른 곳이면 켜고, 동네 가게면 그냥 둬요</span></span>
           </label>
         )}
 
