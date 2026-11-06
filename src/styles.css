@@ -1724,7 +1724,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .wish-stop-tag.food { background: var(--pink-mist); color: var(--pink-ink); }
 .wish-stop-tag.sight { background: var(--mist); color: var(--violet-dark); }
 .wish-stop-tag.todo { background: var(--butter, #FFF2BF); color: var(--butter-ink, #7A5B00); }
-.record-to-place { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--pink-mist); color: var(--pink-ink); }
+.record-to-place { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--card); border: 1.5px solid var(--line); color: var(--ink); text-decoration: none; }
+.record-to-place > svg:first-child { color: var(--coral); flex: none; }
 .record-to-place > span { flex: 1; display: flex; flex-direction: column; gap: 1px; }
 .record-to-place b { font-size: 14px; }
 
