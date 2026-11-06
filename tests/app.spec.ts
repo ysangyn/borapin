@@ -998,10 +998,11 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page).toHaveURL(/\/desk$/);
     const FIX = new URL('./desk/fixtures/', import.meta.url).pathname;
     const nfs = await import('node:fs');
+    const pick = (name: string, from: string) => ({ name, mimeType: 'image/jpeg', buffer: nfs.readFileSync(`${FIX}${from}`) });
     await page.getByTestId('desk-files').setInputFiles([
-      `${FIX}exif-gangneung.jpg`, `${FIX}20190812_183000.jpg`, `${FIX}IMG_0421.JPG`,
-      { name: 'copy.jpg', mimeType: 'image/jpeg', buffer: nfs.readFileSync(`${FIX}exif-gangneung.jpg`) }, // 같은 사진 → 중복
-      { name: 'DSC_9999.JPG', mimeType: 'image/jpeg', buffer: nfs.readFileSync(`${FIX}20190812_183000.jpg`) }, // 촬영 정보도 파일명 날짜도 없음 → 모름
+      pick('exif-gangneung.jpg', 'exif-gangneung.jpg'), pick('20190812_183000.jpg', '20190812_183000.jpg'), pick('IMG_0421.JPG', 'IMG_0421.JPG'),
+      pick('copy.jpg', 'exif-gangneung.jpg'), // 같은 사진 → 중복
+      pick('DSC_9999.JPG', '20190812_183000.jpg'), // 촬영 정보도 파일명 날짜도 없음 → 모름
     ]);
     const nums = page.getByTestId('desk-nums');
     await expect(nums).toContainText('사진 3장', { timeout: 15_000 });
