@@ -21,6 +21,7 @@ import { shareAnyhow } from '../lib/kakao';
 import HomeSetting from '../components/HomeSetting';
 import { TourPrefSetting } from '../components/TourPick';
 import { MapPrefSetting } from '../components/MapChoice';
+import { tripsExport } from '../lib/tripsExport';
 
 export default function Space() {
   const auth = useAuth();
@@ -29,7 +30,7 @@ export default function Space() {
   const { wishes } = useWishes();
   const { places: recs } = usePlaces();
   const seasons = useSeasons();
-  const [busy, setBusy] = useState<'xlsx' | 'json' | null>(null);
+  const [busy, setBusy] = useState<'xlsx' | 'json' | 'trips' | null>(null);
   const [email, setEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
@@ -88,6 +89,14 @@ export default function Space() {
     } finally {
       setBusy(null);
     }
+  };
+
+  // PC 사진함(훑기)이 사진을 여행과 견주는 데 쓰는 여행 목록
+  const exportTrips = () => {
+    if (!trips || busy) return;
+    const j = tripsExport(trips);
+    saveBlob(new Blob([JSON.stringify(j, null, 1)], { type: 'application/json' }), `보라핀-여행목록_${localDate()}.json`);
+    toast(`여행 ${j.trips.length}번을 내려받았어요`);
   };
 
   // 사진 파일을 뺀 모든 기록 (여행·가고 싶은 곳·장소·사진 정보·일정·글)
@@ -241,6 +250,11 @@ export default function Space() {
             <button className="setting-row" onClick={exportExcel} disabled={!!busy} data-testid="xlsx">
               <span className="ico"><Icon name="download" size={17} /></span>
               <span style={{ flex: 1 }}>{busy === 'xlsx' ? '엑셀 만드는 중…' : '엑셀로 내려받기'}<div className="tiny muted">여행 · 맛집·명소 · 가고 싶은 곳 · 여행정보 (시트 4개)</div></span>
+              <Icon name="chev" size={16} />
+            </button>
+            <button className="setting-row" onClick={exportTrips} disabled={!!busy || !trips} data-testid="trips-json">
+              <span className="ico"><Icon name="download" size={17} /></span>
+              <span style={{ flex: 1 }}>여행 목록 내보내기<div className="tiny muted">PC 사진함이 사진을 여행별로 나눌 때 써요 (다녀온 여행만, JSON)</div></span>
               <Icon name="chev" size={16} />
             </button>
             <button className="setting-row" onClick={exportBackup} disabled={!!busy} data-testid="backup">

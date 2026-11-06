@@ -16,7 +16,7 @@
     "test:migrate": "firebase emulators:exec --only firestore --project demo-borapin \"GCLOUD_PROJECT=demo-borapin tsx scripts/migrate.ts tests/fixtures/v22-backup.json && GCLOUD_PROJECT=demo-borapin EXPECT_TRIPS=2 tsx scripts/migrate.ts tests/fixtures/v22-backup.json\"",
     "data:travelinfo": "tsx scripts/travelinfo.ts",
     "test:rules": "firebase emulators:exec --only firestore --project demo-borapin-rules \"node --import tsx --test tests/rules/*.test.ts\"",
-    "test:unit": "node --import tsx --test tests/unit/*.test.ts"
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts tests/desk/*.test.ts"
   },
   "dependencies": {
     "@fontsource/gaegu": "^5.3.0",

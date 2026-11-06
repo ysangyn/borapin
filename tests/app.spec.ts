@@ -984,8 +984,16 @@ test.describe.serial('보라핀 1단계', () => {
     await expect.poll(() => sc.getByTestId('card-img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
     await sc.getByTestId('card-img').screenshot({ path: `${SHOTS}/15c-card-quote.png` });
 
-    // 엑셀: 시트 4개짜리 .xlsx
+    // 사진함용 여행 목록: 다녀온 여행만 든 JSON
     await page.goto('/space');
+    const [tj] = await Promise.all([page.waitForEvent('download'), page.getByTestId('trips-json').click()]);
+    expect(tj.suggestedFilename()).toMatch(/^보라핀-여행목록_.*\.json$/);
+    const tjson = JSON.parse((await import('node:fs')).readFileSync((await tj.path())!, 'utf8'));
+    expect(tjson.v).toBe(1);
+    expect(tjson.trips.length).toBeGreaterThan(0);
+    expect(tjson.trips.every((t: { status: string }) => t.status === 'done')).toBe(true);
+
+    // 엑셀: 시트 4개짜리 .xlsx
     const [dl] = await Promise.all([page.waitForEvent('download'), page.getByTestId('xlsx').click()]);
     expect(dl.suggestedFilename()).toMatch(/^보라핀_.*\.xlsx$/);
     const fs = await import('node:fs');
