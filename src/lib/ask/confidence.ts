@@ -24,7 +24,8 @@ export function rulesConfident(q: string, a: Answer): boolean {
  */
 export function wantsAi(q: string, a: Answer, history: { q: string }[] = []): boolean {
   if (a.pending || a.setHome) return false;
-  if (a.intent === 'map' || a.intent === 'wishList' || a.intent === 'choose' || a.intent === 'wishAdd') return false;
+  // 길 안내·우리 기록·숫자가 있는 답(환율·거리·날씨)은 규칙형이 바로 — AI가 숫자를 지어내지 않게
+  if (['map', 'wishList', 'choose', 'wishAdd', 'plan', 'money', 'distance', 'media', 'weather', 'find', 'again', 'next'].includes(a.intent)) return false;
   if (a.intent === 'recommend' && (a.items?.some((i) => i.wish?.t === 'country') || /자료가 없어요$/.test(a.text))) return false;
   const t = q.trim().replace(/[?？!.~ ]+$/g, '');
   if (history.length > 0) return true; // 이어지는 말은 앞 대화를 아는 AI가

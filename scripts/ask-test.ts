@@ -5,6 +5,8 @@
 import travelinfo from '../src/data/travelinfo.json' with { type: 'json' };
 import seasons from '../src/data/seasons.json' with { type: 'json' };
 import world from '../src/data/world.json' with { type: 'json' };
+import wear from '../src/data/wear.json' with { type: 'json' };
+import abroad from '../src/data/abroad.json' with { type: 'json' };
 import { ask, type AskCtx, type AskData } from '../src/lib/ask/engine';
 import { placeParam } from '../src/lib/geo';
 import type { Note, PlaceRec, Trip, Wish } from '../src/lib/types';
@@ -26,11 +28,14 @@ const trips: Trip[] = [
 ];
 const recs: PlaceRec[] = [
   { id: 'r1', name: '초당할머니순두부', kind: 'food', region: { t: 'kr', code: '51150' }, reviews: { 영상: '최고' }, verdict: 'again', v: 1 } as PlaceRec,
+  { id: 'r2', name: '테라로사 커피공장', kind: 'cafe', region: { t: 'kr', code: '51150' }, reviews: { 보라: '바다 뷰, 공장 구경' }, verdict: 'again', v: 1 } as PlaceRec,
+  { id: 'r3', name: '어니언 성수', kind: 'cafe', region: { t: 'kr', code: '11' }, address: '서울 성동구 성수동2가 277-135', reviews: { 보라: '팡도르' }, verdict: 'once', v: 1 } as PlaceRec,
 ];
-const wishes: Wish[] = [{ id: 'w1', place: { t: 'kr', code: '50' }, priority: 1, spots: [], todos: [], foods: [], note: '', source: 'app', v: 1 } as Wish];
+const wishes: Wish[] = [{ id: 'w1', place: { t: 'kr', code: '50' }, priority: 1, wantedBy: ['보라'], spots: ['성산일출봉'], todos: [], foods: ['고기국수'], note: '', source: 'app', v: 1 } as Wish, { id: 'w2', place: { t: 'country', id: 'JPN', city: '오사카' }, priority: null, wantedBy: ['영상'], spots: [], todos: [], foods: [], note: '', source: 'app', v: 1 } as Wish];
 const notes: Note[] = [{ id: 'n1', tripId: 't1', text: '바다 보며 커피 마신 날', by: { uid: 'u', name: '영상' }, v: 1 }];
 const festivals: FestivalData = { updated: '2026-10-16', cells: { '51150': [{ t: '강릉커피축제', s: '20261023', e: '20261026', id: 'f1' }], '50': [{ t: '제주 올레걷기축제', s: '20261105', e: '20261107', id: 'f2' }], '26': [{ t: '부산불꽃축제', s: '20261017', e: '20261017', id: 'f3' }] } };
-const data: AskData = { trips, wishes, recs, notes, festivals, info: travelinfo as never, seasons: seasons as never, world: world as never, now: new Date('2026-10-16T12:00:00+09:00') };
+const photos = [{ id: 'p1', tripId: 't1', w: 1, h: 1, taken: '2019-05-03T10:00', takenGuess: false, by: '영상', v: 1 }, { id: 'p2', tripId: 't1', w: 1, h: 1, taken: '2019-05-04T10:00', takenGuess: false, by: '보라', v: 1 }] as never;
+const data: AskData = { trips, wishes, recs, notes, photos, festivals, info: travelinfo as never, seasons: seasons as never, world: world as never, wear: (wear as unknown as { cities: never }).cities, abroad: abroad as never, now: new Date('2026-10-16T12:00:00+09:00') };
 
 let ok = 0;
 const fails: string[] = [];
@@ -43,6 +48,7 @@ for (const c of CASES) {
   if (a.intent !== c.intent) problems.push(`틀: ${a.intent} (기대 ${c.intent})`);
   if (c.place && (!a.ctx.place || placeParam(a.ctx.place).split(':').slice(0, 2).join(':') !== c.place)) problems.push(`장소: ${a.ctx.place ? placeParam(a.ctx.place) : '없음'} (기대 ${c.place})`);
   if (c.has && !all.includes(c.has)) problems.push(`'${c.has}' 없음`);
+  if (c.link && !a.buttons.some((b) => (b.to ?? '').startsWith(c.link!))) problems.push(`단추 ${c.link} 없음`);
   if (problems.length) fails.push(`✗ "${c.q}" → ${problems.join(', ')}\n    답: ${all.slice(0, 160)}`);
   else ok++;
 }

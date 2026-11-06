@@ -16,6 +16,47 @@ export interface Case {
 }
 
 export const CASES: Case[] = [
+  // 11-06 2차: 이어 묻기·우리 기록·교통·거리·사람별
+  { q: '거기 야경 좋은 데', intent: 'spots', after: '부산 가서 뭐 먹지', place: 'kr:26', has: '야경' },
+  { q: '경주 말고', intent: 'recommend', after: '내년 봄에 벚꽃 보러 어디 갈까' },
+  { q: '올해 몇 번 여행했어', intent: 'stats', has: '올해' },
+  { q: '통영 KTX 있어?', intent: 'transport', place: 'kr:48220', has: '역' },
+  { q: '통영에서 남해까지 얼마나 걸려', intent: 'distance', has: 'km' },
+  { q: '일본 유심 어디서 사', intent: 'faq', has: '유심' },
+  { q: '교토 가을 단풍 언제', intent: 'season', place: 'country:JPN', has: '단풍' },
+  { q: '보라가 가고 싶다고 한 곳', intent: 'wishList', has: '보라' },
+  { q: '또 가고 싶다고 한 카페', intent: 'again', has: '테라로사' },
+  { q: '집 근처 드라이브', intent: 'recommend' },
+  { q: '서울에서 2시간 안에 갈 수 있는 바다', intent: 'recommend', has: '바다' },
+  { q: '괜찮은 온천', intent: 'recommend', has: '온천' },
+  { q: '눈 보러 갈 만한 곳', intent: 'recommend', has: '눈' },
+  { q: '사진 몇 장 있어', intent: 'media', has: '사진' },
+  { q: '글 뭐 썼지', intent: 'media', has: '글' },
+  // 11-06 테스터 되어 넣어 본 질문들 (틀렸던 것)
+  // 앞 질문의 장소가 엉뚱하게 이어지지 않게: 조건·달·테마가 새로 나오면 새 질문
+  { q: '아이랑 가기 좋은 곳', intent: 'recommend', after: '서울 근교 당일치기' },
+  { q: '단풍 아직 볼 수 있어?', intent: 'recommend', after: '서울 근교 당일치기', has: '단풍' },
+  { q: '11월 축제 뭐 있어', intent: 'festival', after: '서울 근교 당일치기', has: '11월 축제' },
+  { q: '가고 싶은 곳 목록 보여줘', intent: 'wishList', after: '제주 가고 싶다' },
+  { q: '이번 주말에 뭐하지', intent: 'recommend' },
+  { q: '비 오는 날 갈 만한 데', intent: 'recommend', has: '실내' },
+  // 날씨·옷차림: 예보는 못 보지만 평년 기후로 답한다 (해외는 달별 옷차림, 국내는 좋은 때)
+  { q: '교토 11월 춥나', intent: 'weather', place: 'country:JPN', has: '낮' },
+  { q: '통영 날씨 어때', intent: 'weather', place: 'kr:48220' },
+  { q: '오사카 12월에 뭐 입지', intent: 'weather', place: 'country:JPN', has: '코트' },
+  // 우리 기록에서 조건으로 찾기
+  { q: '우리가 간 카페 중에 바다 보이는 데', intent: 'find', has: '테라로사' },
+  { q: '성수동 카페 어디 갔었지', intent: 'find', has: '어니언' },
+  { q: '제주 가고 싶은 곳에 뭐 적어뒀지', intent: 'wishList', has: '성산일출봉' },
+  // 코스·일정을 짜 달라면 계획하기로
+  { q: '오사카 3박4일 코스 짜줘', intent: 'plan', place: 'country:JPN', link: '/plan?place=country:JPN' },
+  { q: '강릉 1박2일 일정 추천', intent: 'plan', place: 'kr:51150', link: '/plan?place=kr:51150' },
+  // 환율
+  { q: '엔화 환율', intent: 'money', has: '엔' },
+  { q: '일본 돈 얼마야', intent: 'money', place: 'country:JPN', has: '엔' },
+  // 자료에 없는 조건은 솔직하게
+  { q: '통영에서 케이블카 타려면', intent: 'spots', place: 'kr:48220', has: '케이블카' },
+  { q: 'ㅋㅋㅋ', intent: 'hello' },
   // 계획하는 사람이 처음 묻는 말 (써 보기 11-05: '조건에 맞는 곳을 찾지 못했어요'로 막혔던 것)
   { q: '12월에 어디 갈까', intent: 'recommend', has: '가 볼 만한 곳' },
   { q: '1월 여행지 추천', intent: 'recommend', has: '가 볼 만한 곳' },

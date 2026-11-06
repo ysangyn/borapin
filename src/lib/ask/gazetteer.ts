@@ -165,7 +165,9 @@ export function findMentions(q: string, info: TravelInfo, opts: { typo?: boolean
   }
   if (!out.length && opts.typo !== false) {
     // 오타: 낱말마다 장소 검색 (강능 → 강릉). 흔한 낱말은 건너뛰고, 정확히 같거나 한 글자 차이만 받는다.
-    const words = q.split(/\s+/).map((t) => t.replace(/[?!.,~]/g, '').replace(JOSA_END, '')).filter((t) => t.length >= 2 && !STOP.has(t));
+    // 테마·조건 낱말('온천'·'보이는'·'야경')이 지명으로 고쳐지지 않게 (온천→연천, 보이는→보령)
+    const NOT_PLACE = /^(온천|야경|바다|해변|계곡|동굴|시장|카페|맛집|섬|숲|공원|호수|폭포|해수욕장|스키|눈|비|보이는|보이|괜찮은|조용한|한적한|유명한|예쁜|좋은|가까운|근처|드라이브|나들이)$/;
+    const words = q.split(/\s+/).map((t) => t.replace(/[?!.,~]/g, '').replace(JOSA_END, '')).filter((t) => t.length >= 2 && !STOP.has(t) && !NOT_PLACE.test(t));
     for (const tok of words) {
       const hit = searchPlaces(tok, 1)[0];
       if (hit && (hit.score === 102 || hit.score === 100 || hit.score === 82 || hit.score === 80 || hit.score === 42 || hit.score === 40)) {

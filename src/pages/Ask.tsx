@@ -9,6 +9,7 @@ import { useAuth } from '../lib/auth';
 import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { useSeasons } from '../lib/seasons';
 import { useWorld } from '../lib/world';
+import type { CityClimate } from '../lib/wear';
 import { useFestivals } from '../lib/festivals';
 import { readNotesOnce, readPlansOnce } from '../lib/tripExtras';
 import { readPhotosOnce } from '../lib/photos';
@@ -73,9 +74,12 @@ export default function Ask() {
   const end = useRef<HTMLDivElement>(null);
   const ready = !!(trips && wishes && recs && (info || infoFailed));
   const world = useWorld();
+  // 평년 기후(옷차림)는 날씨 질문에만 쓰니 필요할 때 한 번 받는다
+  const [wear, setWear] = useState<Record<string, CityClimate> | null>(null);
+  useEffect(() => { let on = true; import('../data/wear.json').then((m) => { if (on) setWear((m.default as { cities: Record<string, CityClimate> }).cities); }, () => {}); return () => { on = false; }; }, []);
   const home = useHome();
   // 기록(여행·가고 싶은 곳·우리 장소)과 자료는 앱이 이미 들고 있는 것. 사진·글·일정은 질문할 때 붙인다
-  const base = useMemo<Omit<AskData, 'notes' | 'photos' | 'plans'> | null>(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info ?? EMPTY_TRAVEL_INFO, seasons, festivals, world, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, world, home]);
+  const base = useMemo<Omit<AskData, 'notes' | 'photos' | 'plans'> | null>(() => (ready ? { trips: trips!, wishes: wishes!, recs: recs!, info: info ?? EMPTY_TRAVEL_INFO, seasons, festivals, world, wear, home: home ?? null } : null), [ready, trips, wishes, recs, info, seasons, festivals, world, wear, home]);
   // 되묻기에서 알려 준 동네를 우리 집으로 저장 (둘이 같이 쓴다)
   const keepHome = (p?: Place) => {
     if (!p || p.t !== 'kr') return;
