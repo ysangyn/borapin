@@ -31,6 +31,7 @@ const WishEdit = lazy(() => import('./pages/WishEdit'));
 const Places = lazy(() => import('./pages/Places'));
 const MyMaps = lazy(() => import('./pages/MyMaps'));
 const RegionPage = lazy(() => import('./pages/RegionPage'));
+const DeskScan = lazy(() => import('./pages/DeskScan'));
 const SharedMapPage = lazy(() => import('./pages/SharedMapPage'));
 const PlaceEdit = lazy(() => import('./pages/PlaceEdit'));
 const Ask = lazy(() => import('./pages/Ask'));
@@ -94,7 +95,7 @@ export default function App() {
       </div>
     );
   // 떠 있는 보라: 목록 화면(홈·여행·피드·추억·가고 싶은 곳·우리 장소)에만. 상세·지도·입력 화면에서는 단추를 가리므로 뺀다
-  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/welcome') && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin') && !loc.pathname.startsWith('/plan') && !loc.pathname.startsWith('/phrases') && !loc.pathname.startsWith('/region/');
+  const showFab = !hideNavFor(loc.pathname) && !loc.pathname.startsWith('/welcome') && !loc.pathname.startsWith('/ask') && !loc.pathname.startsWith('/map') && !/^\/trips\/./.test(loc.pathname) && !loc.pathname.startsWith('/space') && !loc.pathname.startsWith('/admin') && !loc.pathname.startsWith('/plan') && !loc.pathname.startsWith('/phrases') && !loc.pathname.startsWith('/region/') && !loc.pathname.startsWith('/desk');
   const hideNav = hideNavFor(loc.pathname);
   return (
     <DataProvider>
@@ -127,6 +128,7 @@ export default function App() {
               <Route path="/places" element={<Places />} />
               <Route path="/maps" element={<MyMaps />} />
               <Route path="/region/:param" element={<RegionPage />} />
+              <Route path="/desk" element={<DeskScan />} />
               <Route path="/places/:id" element={<PlaceEdit />} />
               <Route path="/join/:code" element={<AlreadyIn />} />
               <Route path="*" element={<Navigate to="/" replace />} />

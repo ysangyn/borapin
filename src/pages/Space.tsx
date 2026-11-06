@@ -252,6 +252,11 @@ export default function Space() {
               <span style={{ flex: 1 }}>{busy === 'xlsx' ? '엑셀 만드는 중…' : '엑셀로 내려받기'}<div className="tiny muted">여행 · 맛집·명소 · 가고 싶은 곳 · 여행정보 (시트 4개)</div></span>
               <Icon name="chev" size={16} />
             </button>
+            <Link className="setting-row" to="/desk" data-testid="desk-link">
+              <span className="ico"><Icon name="camera" size={17} /></span>
+              <span style={{ flex: 1 }}>사진 훑어보기<div className="tiny muted">고른 사진을 폰 안에서만 읽어 사진·여행·중복·모르는 사진 수를 보여 줘요</div></span>
+              <Icon name="chev" size={16} />
+            </Link>
             <button className="setting-row" onClick={exportTrips} disabled={!!busy || !trips} data-testid="trips-json">
               <span className="ico"><Icon name="download" size={17} /></span>
               <span style={{ flex: 1 }}>여행 목록 내보내기<div className="tiny muted">PC 사진함이 사진을 여행별로 나눌 때 써요 (다녀온 여행만, JSON)</div></span>

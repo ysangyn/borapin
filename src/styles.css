@@ -1802,3 +1802,11 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 /* 피드 카드 아래 줄: '보기' 글과 하트를 같은 높이로 */
 .feed-foot .feed-link { align-self: center; }
 .ticket-stub.want { background: var(--card); color: var(--coral-ink); }
+/* 사진 훑어보기 (폰) */
+.desk-scan .bar { height: 8px; border-radius: 4px; background: var(--mist); overflow: hidden; margin-top: 8px; }
+.desk-scan .bar i { display: block; height: 100%; background: var(--violet); transition: width .2s; }
+.desk-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 8px; }
+.desk-nums .card { padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.desk-nums .jua { font-size: 17px; }
+.desk-nums .jua b { font-size: 24px; color: var(--violet); margin: 0 2px; }
+.desk-scan .label { padding: 0 2px 6px; }

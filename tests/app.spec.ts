@@ -993,6 +993,25 @@ test.describe.serial('보라핀 1단계', () => {
     expect(tjson.trips.length).toBeGreaterThan(0);
     expect(tjson.trips.every((t: { status: string }) => t.status === 'done')).toBe(true);
 
+    // 사진 훑어보기(폰): 고른 사진을 폰 안에서만 읽어 네 숫자 — 같은 사진 두 번 고르면 중복 1
+    await page.getByTestId('desk-link').click();
+    await expect(page).toHaveURL(/\/desk$/);
+    const FIX = new URL('./desk/fixtures/', import.meta.url).pathname;
+    const nfs = await import('node:fs');
+    await page.getByTestId('desk-files').setInputFiles([
+      `${FIX}exif-gangneung.jpg`, `${FIX}20190812_183000.jpg`, `${FIX}IMG_0421.JPG`,
+      { name: 'copy.jpg', mimeType: 'image/jpeg', buffer: nfs.readFileSync(`${FIX}exif-gangneung.jpg`) }, // 같은 사진 → 중복
+      { name: 'DSC_9999.JPG', mimeType: 'image/jpeg', buffer: nfs.readFileSync(`${FIX}20190812_183000.jpg`) }, // 촬영 정보도 파일명 날짜도 없음 → 모름
+    ]);
+    const nums = page.getByTestId('desk-nums');
+    await expect(nums).toContainText('사진 3장', { timeout: 15_000 });
+    await expect(nums).toContainText('파일 5개');
+    await expect(nums).toContainText('중복 2장');
+    await expect(page.getByTestId('desk-unknown')).toContainText('DSC_9999.JPG');
+    await expect(page.getByTestId('desk-unknown')).toContainText('수정 시각(추정)');
+    await shot(page, '15d-desk-scan');
+    await page.goto('/space');
+
     // 엑셀: 시트 4개짜리 .xlsx
     const [dl] = await Promise.all([page.waitForEvent('download'), page.getByTestId('xlsx').click()]);
     expect(dl.suggestedFilename()).toMatch(/^보라핀_.*\.xlsx$/);
