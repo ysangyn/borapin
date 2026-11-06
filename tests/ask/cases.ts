@@ -50,6 +50,7 @@ export const CASES: Case[] = [
   // 못 찾을 때: 무엇을 어디서 찾았는지 (어색한 '카페 바다로는' 대신) · 오션뷰도 바다로
   { q: '우리가 간 카페 중에 산 보이는 데', intent: 'find', has: "다녀온 카페" },
   { q: '오션뷰 카페 어디 갔었지', intent: 'find', has: '테라로사' },
+  { q: '다녀온 카페 중에 섬 보이는 데', intent: 'find', has: '카페' },
   { q: '제주 가고 싶은 곳에 뭐 적어뒀지', intent: 'wishList', has: '성산일출봉' },
   // 코스·일정을 짜 달라면 계획하기로
   { q: '오사카 3박4일 코스 짜줘', intent: 'plan', place: 'country:JPN', link: '/plan?place=country:JPN' },

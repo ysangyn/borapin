@@ -26,7 +26,8 @@ export interface Candidate {
   spots?: string[];
 }
 
-function cellText(info: TravelInfo, code: string) {
+/** 지역의 테마·볼거리·먹거리 글 (테마 판정용) */
+export function cellText(info: TravelInfo, code: string) {
   const c = info.cells[code];
   if (!c) return '';
   const all = [c.main, ...c.subs];
