@@ -337,10 +337,11 @@ test.describe.serial('보라핀 1단계', () => {
     // 창 제목은 '전북 순창'처럼 시·군을 뗀 이름: 앞 두 글자(지역 이름 첫머리)로 맞춰 본다
     await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText(pickName.split(' ').pop()!.slice(0, 2));
     await expect(page.getByTestId('region-sheet').getByRole('link', { name: '자세히 기록' })).toBeVisible();
-    // 오늘의 추천 사진 카드에도 자세히·기록하기
+    // 오늘의 추천 사진 카드에도 자세히·계획하기 (추천은 안 가 본 곳이라 기록 대신 계획)
     await page.goto('/');
     await expect(page.getByTestId('month-pick-detail')).toBeVisible();
-    await expect(page.getByTestId('month-pick-record')).toHaveAttribute('href', /\/record\?place=kr:\d+/);
+    await expect(page.getByTestId('month-pick-plan')).toHaveAttribute('href', /\/plan\?place=kr:\d+/);
+    await expect(page.getByTestId('month-pick-record')).toHaveCount(0);
     await expectMapDrawn(page);
 
     // 지도에서 제주를 눌러 하트로 담기 → 알림의 '메모 쓰기'

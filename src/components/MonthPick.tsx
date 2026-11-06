@@ -81,7 +81,8 @@ export default function MonthPick({ stats, wishes }: { stats: Stats | null; wish
             <button className="btn sm coral" onClick={add}><Icon name="pin" size={15} stroke={2.2} />담기</button>
           )}
           <Link to={`/map?sel=${placeParam(place)}`} className="btn sm glass" data-testid="month-pick-detail">자세히</Link>
-          <Link to={`/record?place=${placeParam(place)}`} className="btn sm glass" data-testid="month-pick-record">여기 기록</Link>
+          {/* 추천은 아직 안 가 본 곳: 기록이 아니라 계획으로 */}
+          <Link to={`/plan?place=${placeParam(place)}`} className="btn sm glass" data-testid="month-pick-plan">여기로 계획</Link>
         </div>
       </div>
     </section>
