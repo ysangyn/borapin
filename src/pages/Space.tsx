@@ -240,7 +240,7 @@ export default function Space() {
           <div className="setting-group">
             <button className="setting-row" onClick={exportExcel} disabled={!!busy} data-testid="xlsx">
               <span className="ico"><Icon name="download" size={17} /></span>
-              <span style={{ flex: 1 }}>{busy === 'xlsx' ? '엑셀 만드는 중…' : '엑셀로 내려받기'}<div className="tiny muted">여행 · 우리 장소 · 가고 싶은 곳 · 여행정보 (시트 4개)</div></span>
+              <span style={{ flex: 1 }}>{busy === 'xlsx' ? '엑셀 만드는 중…' : '엑셀로 내려받기'}<div className="tiny muted">여행 · 맛집·명소 · 가고 싶은 곳 · 여행정보 (시트 4개)</div></span>
               <Icon name="chev" size={16} />
             </button>
             <button className="setting-row" onClick={exportBackup} disabled={!!busy} data-testid="backup">

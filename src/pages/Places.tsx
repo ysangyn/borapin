@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon, TopBar } from '../components/ui';
 import PlaceRecRow from '../components/PlaceRecRow';
 import { usePlaces } from '../lib/data';
-import { normalizeQuery, placeLong } from '../lib/geo';
+import { normalizeQuery, placeLong, placeParam } from '../lib/geo';
 import { KINDS } from '../lib/placeRecs';
 import type { PlaceKind } from '../lib/types';
 
@@ -32,7 +32,7 @@ export default function Places() {
 
   return (
     <>
-      <TopBar back title="우리 장소" right={<Link to="/places/new" className="btn sm" data-testid="place-new"><Icon name="plus" size={16} stroke={2.4} />남기기</Link>} />
+      <TopBar back title="맛집·명소" right={<Link to="/places/new" className="btn sm" data-testid="place-new"><Icon name="plus" size={16} stroke={2.4} />남기기</Link>} />
       <div className="page" style={{ paddingTop: 4 }}>
         <input className="input" aria-label="장소 찾기" placeholder="이름, 지역, 한 줄 평 찾기" value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="chips">
@@ -55,7 +55,8 @@ export default function Places() {
         )}
         {groups.map(([region, recs]) => (
           <section key={region}>
-            <div className="year-head">{region} · {recs.length}</div>
+            {/* 지역 이름을 누르면 그 지역 한 장(맛집·명소 탭) */}
+            <Link to={`/region/${placeParam(recs[0].region)}?tab=places`} className="year-head" style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'inherit' }} data-testid="places-region">{region} · {recs.length}<Icon name="chev" size={14} /></Link>
             <div className="list">{recs.map((r) => <PlaceRecRow key={r.id} rec={r} />)}</div>
           </section>
         ))}

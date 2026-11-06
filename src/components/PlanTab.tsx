@@ -76,7 +76,7 @@ export default function PlanTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] }
       </div>
       {ours.length > 0 && (
         <div className="chips">
-          <span className="tiny muted" style={{ alignSelf: 'center' }}>우리 장소에서</span>
+          <span className="tiny muted" style={{ alignSelf: 'center' }}>우리 맛집·명소에서</span>
           {ours.slice(0, 6).map((r) => (
             <button key={r.id} className="chip" onClick={() => add(r.name, r.id)}><Icon name="plus" size={12} stroke={2.4} />{r.name}</button>
           ))}

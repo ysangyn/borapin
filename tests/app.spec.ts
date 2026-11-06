@@ -633,7 +633,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByTestId('place-save').click();
     // 개요엔 들른 곳 요약 한 줄만, 평가·한 줄 평은 '들른 곳' 탭에
     const tp = page.getByTestId('trip-places');
-    await expect(tp).toContainText('우리 장소 1곳');
+    await expect(tp).toContainText('맛집·명소 1곳');
     await expect(tp).toContainText('초당할머니순두부');
     await tp.getByTestId('places-summary').click();
     await expect(page.getByRole('tab', { name: '맛집·명소' })).toHaveAttribute('aria-selected', 'true');
@@ -648,7 +648,7 @@ test.describe.serial('보라핀 1단계', () => {
     await tapLngLat(page, 128.86, 37.73);
     const sheet = page.getByTestId('region-sheet');
     await expect(sheet.getByTestId('sheet-title')).toHaveText('강원 강릉시');
-    await expect(sheet).toContainText('우리 장소 · 1');
+    await expect(sheet).toContainText('맛집·명소 · 1');
     await expect(sheet.getByTestId('place-rec')).toContainText('초당할머니순두부');
 
     // 우리 장소 목록과 '또 갈래요' 거르기

@@ -144,7 +144,7 @@ export default function Trips() {
         <Link to="/places" className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'inherit' }} data-testid="trips-places">
           <span className="kind-badge k-food" style={{ width: 40, height: 40 }}><Icon name="pin" size={18} /></span>
           <span style={{ flex: 1 }}>
-            <b>우리 장소</b>
+            <b>맛집·명소</b>
             <span className="tiny muted" style={{ display: 'block' }}>
               {recs?.length ? `${recs.length}곳 · 또 갈래요 ${recs.filter((r) => r.verdict === 'again').length}곳` : '맛집·카페·볼거리를 둘의 한 줄 평과 함께'}
             </span>

@@ -459,7 +459,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       if (!at) continue;
       const el = document.createElement('div');
       el.className = 'place-spot-marker';
-      el.innerHTML = `<div class="place-spot" data-testid="place-spot" data-code="${s.place.t === 'kr' ? s.place.code : s.place.id}" aria-label="우리 장소 ${s.count}곳"><svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg><b>${s.count}</b></div>`;
+      el.innerHTML = `<div class="place-spot" data-testid="place-spot" data-code="${s.place.t === 'kr' ? s.place.code : s.place.id}" aria-label="맛집·명소 ${s.count}곳"><svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg><b>${s.count}</b></div>`;
       spotMarkers.current.push(new maplibregl.Marker({ element: el, anchor: 'top', offset: [-6, 4] }).setLngLat([at.lng, at.lat]).addTo(map));
     }
   }, [spots, mode, ready]);
@@ -551,7 +551,7 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
           )}
           <span><i style={{ background: COLORS.planned, border: '1.5px dashed #5B3FD1' }} />예정</span>
           {!!flags?.length && <span><i className="lg-flag" />가고 싶은 곳</span>}
-          {!!spots?.length && <span><i className="lg-star" />우리 장소</span>}
+          {!!spots?.length && <span><i className="lg-star" />맛집·명소</span>}
         </div>
       )}
     </div>

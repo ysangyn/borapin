@@ -267,7 +267,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
         // 해외: 도시 자료(world.json)가 있으면 그걸로, 없으면 가기 좋은 때 + 우리 기록
         const country = p.t === 'country' ? COUNTRY_BY_ID.get(p.id) : null;
         const w = cityFor(d.world ?? null, p);
-        const oursLines = ours.slice(0, 3).map((r) => `우리 장소: ${r.name}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`);
+        const oursLines = ours.slice(0, 3).map((r) => `우리 맛집·명소: ${r.name}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`);
         if (w) {
           const lines: string[] = [];
           if (intent === 'foods') lines.push(`먹거리: ${w.eat.join(', ')}`);
@@ -816,8 +816,8 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const kindQ = /카페|커피/.test(q) ? 'cafe' : /맛집|식당|밥집|음식/.test(q) ? 'food' : /숙소|호텔/.test(q) ? 'stay' : null;
       const list = d.recs.filter((r) => r.verdict === 'again' && (!p || samePlace(r.region, p)) && (!kindQ || r.kind === kindQ));
       a = list.length
-        ? { intent, text: `또 가자고 한 곳 ${list.length}곳`, lines: list.slice(0, 10).map((r) => `${r.name} · ${placeName(r.region)}`), buttons: list.slice(0, 4).map((r) => ({ label: r.name, to: `/places/${r.id}` })), source: '우리 장소' }
-        : { intent, text: '아직 "또 갈래요"로 남긴 장소가 없어요', lines: ['여행 상세에서 장소를 남기고 "또 갈래요"를 눌러 보세요.'], buttons: [{ label: '우리 장소', to: '/places' }] };
+        ? { intent, text: `또 가자고 한 곳 ${list.length}곳`, lines: list.slice(0, 10).map((r) => `${r.name} · ${placeName(r.region)}`), buttons: list.slice(0, 4).map((r) => ({ label: r.name, to: `/places/${r.id}` })), source: '우리 맛집·명소' }
+        : { intent, text: '아직 "또 갈래요"로 남긴 장소가 없어요', lines: ['여행 상세에서 장소를 남기고 "또 갈래요"를 눌러 보세요.'], buttons: [{ label: '맛집·명소', to: '/places' }] };
       break;
     }
     case 'wishList': {
@@ -1018,13 +1018,13 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const notes = keys.length ? (d.notes ?? []).filter((n) => hit(n.text)) : [];
       const trips = keys.length && !kinds.length ? d.trips.filter((t) => hit([t.title, t.memo, ...(t.tags ?? [])].join(' '))) : [];
       const lines = [
-        ...recs.slice(0, 5).map((r) => `우리 장소: ${r.name} · ${placeName(r.region)}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`),
+        ...recs.slice(0, 5).map((r) => `우리 맛집·명소: ${r.name} · ${placeName(r.region)}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`),
         ...notes.slice(0, 4).map((n) => { const t = d.trips.find((x) => x.id === n.tripId); return `글: "${n.text.slice(0, 40)}"${t ? ` · ${t.title}` : ''}`; }),
         ...trips.slice(0, 4).map((t) => `여행: ${t.title} · ${formatWhen(t.when)}`),
       ];
       a = lines.length
         ? { intent, text: `'${[...kinds, ...keys].join(' ') || q}'로 찾은 기록 ${recs.length + notes.length + trips.length}건`, lines, buttons: [...recs.slice(0, 2).map((r) => ({ label: r.name, to: `/places/${r.id}` })), ...notes.slice(0, 2).map((n) => ({ label: '글 보기', to: `/trips/${n.tripId}` })), ...trips.slice(0, 2).map((t) => ({ label: t.title, to: `/trips/${t.id}` }))], source: '우리 기록' }
-        : { intent, text: `'${[...kinds, ...keys].join(' ') || q}'로는 우리 기록에서 못 찾았어요`, lines: ['장소 이름·주소·한 줄 평·글·여행 제목에서 찾아요.'], buttons: [{ label: '우리 장소', to: '/places' }, ...search(q)] };
+        : { intent, text: `'${[...kinds, ...keys].join(' ') || q}'로는 우리 기록에서 못 찾았어요`, lines: ['장소 이름·주소·한 줄 평·글·여행 제목에서 찾아요.'], buttons: [{ label: '맛집·명소', to: '/places' }, ...search(q)] };
       break;
     }
     case 'map': {

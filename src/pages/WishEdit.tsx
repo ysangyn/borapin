@@ -10,7 +10,7 @@ import PlaceHint from '../components/PlaceHint';
 import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
-import { parsePlaceParam, placeLabel } from '../lib/geo';
+import { parsePlaceParam, placeLabel, placeParam } from '../lib/geo';
 import { itemMarks, lines, recNames, sameName, samePlace, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
@@ -165,6 +165,7 @@ export default function WishEdit() {
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
           <PlacePicker value={place ? [place] : []} onChange={(v) => setPlaces(v.slice(-1))} />
+          {editing && place && <Link to={`/region/${placeParam(place)}`} className="small" style={{ fontWeight: 600, marginTop: 4 }} data-testid="wish-region">{placeLabel(place)} 한 장 보기 · 맛집·명소·여행 모두</Link>}
           <span className="tiny muted" style={{ marginTop: 4 }}>딱 한 곳이면 그 이름 (선택)</span>
           <input className="input" aria-label="특정 장소 이름" placeholder="예: 성산일출봉, 단골 카페" value={spotName} onChange={(e) => setSpotName(e.target.value)} maxLength={60} />
         </div>

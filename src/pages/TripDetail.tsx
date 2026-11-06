@@ -291,7 +291,7 @@ function PlacesSummary({ trip, recs, onOpen }: { trip: Trip; recs: PlaceRec[] | 
         <span style={{ flex: 1, minWidth: 0 }}>
           <b>맛집·명소</b>
           <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {names.length ? `우리 장소 ${names.length}곳 · ${names.slice(0, 3).join(', ')}${names.length > 3 ? ` 외 ${names.length - 3}` : ''}` : '맛집·카페·명소를 둘의 한 줄 평과 함께'}
+            {names.length ? `맛집·명소 ${names.length}곳 · ${names.slice(0, 3).join(', ')}${names.length > 3 ? ` 외 ${names.length - 3}` : ''}` : '맛집·카페·명소를 둘의 한 줄 평과 함께'}
           </div>
         </span>
       </button>
@@ -314,7 +314,7 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-testid="trip-visited">
       <section>
         <div className="row-between" style={{ marginBottom: 2 }}>
-          <h2 className="h2" style={{ fontSize: 17 }}>우리 장소{recs?.length ? ` · ${recs.length}` : ''}</h2>
+          <h2 className="h2" style={{ fontSize: 17 }}>맛집·명소{recs?.length ? ` · ${recs.length}` : ''}</h2>
           <span style={{ display: 'flex', gap: 12 }}>
             {/* 이 여행에서 남긴 곳은 그 지역 '내 지도'에도 그대로 들어가 있다 (같은 기록) */}
             {!!recs?.length && trip.places[0] && <Link to={`/maps?m=${encodeURIComponent(`${placeParam(trip.places[0])}|all`)}`} className="small" style={{ fontWeight: 500 }} data-testid="trip-mymap">{placeLabel(trip.places[0])} 내 지도</Link>}
