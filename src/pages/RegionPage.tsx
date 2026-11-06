@@ -129,7 +129,7 @@ function Glance({ place, s, onTab }: { place: ReturnType<typeof parsePlaceParam>
       {(pins.length > 0 || s.recs.length > 0) && (
         <div className="card white" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div className="row-between"><button type="button" className="link-btn jua" style={{ fontSize: 18, color: 'inherit' }} onClick={() => onTab('places')}>내 지도</button><span className="tiny muted">채운 핀 다녀옴 {s.been.length} · 빈 핀 가고 싶어요 {s.want.length}</span></div>
-          {pins.length > 0 ? <StreetMap pins={pins} height={220} onPick={(id) => nav(`/places/${id}`)} /> : <div className="small muted" style={{ padding: 8 }}>자리를 아는 곳이 아직 없어요. 지도 앱 공유 글을 붙여 넣으면 지도에 찍혀요.</div>}
+          {pins.length > 0 ? <StreetMap pins={pins} height={220} compact onPick={(id) => nav(`/places/${id}`)} /> : <div className="small muted" style={{ padding: 8 }}>자리를 아는 곳이 아직 없어요. 지도 앱 공유 글을 붙여 넣으면 지도에 찍혀요.</div>}
           <div className="chips" style={{ gap: 6 }}>
             {kinds.map((x) => <button key={x.k} type="button" className="chip sm" onClick={() => onTab('places')}><i className="dot" style={{ background: x.color }} aria-hidden="true" />{themeLabel(x.k)} {x.n}</button>)}
           </div>

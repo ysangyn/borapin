@@ -16,7 +16,7 @@ export interface StreetPin { id: string; name: string; lat: number; lng: number;
 const STYLE = 'https://tiles.openfreemap.org/styles/positron';
 const FALLBACK_BG = { light: '#EFEBFF', dark: '#231B4A' };
 
-export default function StreetMap({ pins, height = 300, onPick, picked, here, maxZoom = 16 }: { pins: StreetPin[]; height?: number; onPick?: (id: string) => void; picked?: string | null; here?: { lat: number; lng: number } | null; /** 핀이 하나일 때 얼마나 가까이 (작은 지도는 동네가 보이게 덜) */ maxZoom?: number }) {
+export default function StreetMap({ pins, height = 300, onPick, picked, here, maxZoom = 16, compact = false }: { pins: StreetPin[]; height?: number; onPick?: (id: string) => void; picked?: string | null; here?: { lat: number; lng: number } | null; /** 핀이 하나일 때 얼마나 가까이 (작은 지도는 동네가 보이게 덜) */ maxZoom?: number; /** 작은 지도: 큰 핀을 줄이고 이름은 1등·고른 핀만 (이름표끼리 겹치지 않게) */ compact?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markers = useRef<Map<string, maplibregl.Marker>>(new Map());
@@ -109,7 +109,7 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here, ma
     for (const [id, m] of markers.current) if (!keep.has(id)) { m.remove(); markers.current.delete(id); }
     for (const p of pins) {
       let m = markers.current.get(p.id);
-      const html = pinHtml(p, picked === p.id);
+      const html = pinHtml(p, picked === p.id, compact);
       if (!m) {
         const node = document.createElement('button');
         node.type = 'button';
@@ -147,7 +147,7 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here, ma
   }, [here]);
 
   return (
-    <div className={'street-map' + (plain ? ' plain' : '')} style={{ height }} data-testid="street-map" data-plain={plain ? '1' : '0'}>
+    <div className={'street-map' + (plain ? ' plain' : '') + (compact ? ' compact' : '')} style={{ height }} data-testid="street-map" data-plain={plain ? '1' : '0'}>
       <div ref={el} style={{ position: 'absolute', inset: 0 }} />
       <div className="street-wash" aria-hidden="true" />
       {plain && <span className="street-plain-note">거리 지도를 지금 못 받아 자리만 보여요</span>}
@@ -155,11 +155,12 @@ export default function StreetMap({ pins, height = 300, onPick, picked, here, ma
   );
 }
 
-function pinHtml(p: StreetPin, on: boolean) {
+function pinHtml(p: StreetPin, on: boolean, compact = false) {
   const big = !!p.rank && p.rank <= 3;
   const c = (p.color ?? '#5B3FD1').replace(/[^#0-9a-fA-F]/g, '');
   if (big) {
-    return `<span class="street-pin big${on ? ' on' : ''}" style="--pc:${c}">${p.img ? `<img src="${p.img.replace(/"/g, '')}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<i></i>'}<b>${p.rank}</b></span><span class="street-pin-name">${escapeHtml(p.name)}</span>`;
+    const named = on || !compact || p.rank === 1;
+    return `<span class="street-pin big${on ? ' on' : ''}" style="--pc:${c}">${p.img ? `<img src="${p.img.replace(/"/g, '')}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<i></i>'}<b>${p.rank}</b></span>${named ? `<span class="street-pin-name">${escapeHtml(p.name)}</span>` : ''}`;
   }
   return `<span class="street-pin dot${on ? ' on' : ''}${p.hollow ? ' hollow' : ''}" style="--pc:${c}"></span>${on ? `<span class="street-pin-name">${escapeHtml(p.name)}</span>` : ''}`;
 }
