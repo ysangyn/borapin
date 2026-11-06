@@ -14,7 +14,8 @@ import { badges } from '../lib/achievements';
 /** 스티커마다 아이콘 (ui.tsx Icon 이름) */
 const BADGE_ICON: Record<string, string> = { first: 'pin', pins10: 'pin', pins30: 'pin', cells50: 'map', cells100: 'map', cells160: 'flag', groups: 'map', islands: 'wave', abroad: 'plane', countries10: 'globe', continents: 'globe', seasons: 'sun', family: 'heart', photos100: 'camera', again5: 'heart' };
 import { monthGrid, yearReview } from '../lib/yearReview';
-import { placeLong } from '../lib/geo';
+import { albumsByRegion } from '../lib/photoAlbums';
+import { placeLong, placeParam } from '../lib/geo';
 import type { Photo } from '../lib/types';
 import { Art } from '../components/Scene';
 import PhotoImg from '../components/PhotoImg';
@@ -49,6 +50,9 @@ export default function Memories() {
     for (const p of photos) if (p.tripId) by.set(p.tripId, [...(by.get(p.tripId) ?? []), p]);
     return trips.filter((t) => by.has(t.id)).map((t) => ({ trip: t, photos: by.get(t.id)! }));
   }, [photos, trips]);
+  // 사진첩을 지역별로도: 같은 곳을 여러 번 갔으면 한 앨범으로 (누르면 지역 한 장)
+  const [albumBy, setAlbumBy] = useState<'trip' | 'region'>('trip');
+  const regionAlbums = useMemo(() => (photos && trips ? albumsByRegion(trips, photos) : []), [photos, trips]);
   const earned = list.filter((b) => b.have >= b.need);
   const doneCount = (trips ?? []).filter((t) => t.status === 'done').length;
   const [allBadges, setAllBadges] = useState(false);
@@ -168,7 +172,13 @@ export default function Memories() {
             )}
           </div>
           {albums.length === 0 && <div className="small muted">여행 상세의 '사진'에서 올린 사진이 여기 여행별로 모여요.</div>}
-          {albums.length > 0 && (
+          {albums.length > 1 && regionAlbums.length > 0 && (
+            <div className="seg tabs" role="tablist" aria-label="사진첩 묶음" style={{ marginBottom: 8 }} data-testid="album-by">
+              <button role="tab" aria-selected={albumBy === 'trip'} className={albumBy === 'trip' ? 'on' : ''} onClick={() => setAlbumBy('trip')}>여행별 {albums.length}</button>
+              <button role="tab" aria-selected={albumBy === 'region'} className={albumBy === 'region' ? 'on' : ''} onClick={() => setAlbumBy('region')} data-testid="album-by-region">지역별 {regionAlbums.length}</button>
+            </div>
+          )}
+          {albums.length > 0 && albumBy === 'trip' && (
             <div className="mem-albums">
               {albums.map(({ trip, photos: ps }) => (
                 <Link key={trip.id} to={`/trips/${trip.id}?tab=photos`} className="mem-album">
@@ -177,6 +187,19 @@ export default function Memories() {
                   </span>
                   <span className="mem-album-title">{trip.title} · {ps.length}장</span>
                   <span className="tiny muted">{formatWhen(trip.when)}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+          {albums.length > 0 && albumBy === 'region' && (
+            <div className="mem-albums" data-testid="region-albums">
+              {regionAlbums.map((a) => (
+                <Link key={placeParam(a.place)} to={`/region/${placeParam(a.place)}`} className="mem-album">
+                  <span className={'mem-album-grid n' + Math.min(a.photos.length, 4)}>
+                    {a.photos.slice(0, 4).map((p) => <PhotoImg key={p.id} id={p.id} />)}
+                  </span>
+                  <span className="mem-album-title">{placeLong(a.place)} · {a.photos.length}장</span>
+                  <span className="tiny muted">{a.trips === 1 ? '여행 한 번' : `여행 ${a.trips}번`}</span>
                 </Link>
               ))}
             </div>

@@ -67,11 +67,13 @@ export function MyHeart({ wish, size = 'md' }: { wish: Wish; size?: 'sm' | 'md' 
   );
 }
 
-function useWishMeta(wish: Wish, seasons: SeasonData | null) {
+function useWishMeta(wish: Wish, seasons: SeasonData | null, wantShops = 0) {
   const season = seasonFor(seasons, wish.place, wish.months);
   const festData = useFestivals();
   const fest = wish.place.t === 'kr' ? upcomingFestivals(festData, wish.place.code, new Date(), 45)[0] : undefined;
   const memo = [
+    // 지역 한 장에 '가고 싶어요'로 담아 둔 가게 (글 줄이 아니라 가게 기록)
+    wantShops ? `담은 가게 ${wantShops}곳` : '',
     wish.spots.length ? `볼거리 ${wish.spots[0]}${wish.spots.length > 1 ? ` 외 ${wish.spots.length - 1}` : ''}` : '',
     wish.foods.length ? `먹거리 ${wish.foods[0]}` : '',
     wish.todos.length ? `해볼 것 ${wish.todos[0]}` : '',
@@ -98,14 +100,16 @@ const waitingNames = (wish: Wish, me: string) => memberNames().filter((n) => n !
  * - row(기본): 한 명만 원하거나 예정인 곳 — 한 줄, 오른쪽에 내 하트(나도 원해요) 또는 예정 꼬리표
  * - compact: 홈·여행 탭의 작은 줄 — 내 하트가 없으면 하트, 내가 보냈으면 '○○ 마음 기다리는 중'
  */
-export default function WishCard({ wish, state, seasons, compact, hero }: {
+export default function WishCard({ wish, state, seasons, compact, hero, wantShops }: {
   wish: Wish;
   state: WishState;
   seasons: SeasonData | null;
   compact?: boolean;
   hero?: boolean;
+  /** 그 지역에 '가고 싶어요'로 담아 둔 가게 수 */
+  wantShops?: number;
 }) {
-  const { season, fest, memo, photo } = useWishMeta(wish, seasons);
+  const { season, fest, memo, photo } = useWishMeta(wish, seasons, wantShops);
   const auth = useAuth();
   const me = auth.status === 'ready' ? displayName(auth.user) : '';
   const both = bothWant(wish);

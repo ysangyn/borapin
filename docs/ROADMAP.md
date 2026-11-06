@@ -51,7 +51,8 @@
 - 11-06 보안: CSP 실제 적용(img-src https:, 지도 타일 connect-src), 카카오 SDK 무결성 고정(SDK_SRI, CI scripts/kakao-sri.ts가 매번 대조 · 다르면 배포 멈춤)
 - 11-06 맛집 지도 입구(사용자: 여행 아니어도 동네 맛집 지도를 쉽게): + 메뉴 첫 줄 '맛집·카페 담기'(/places/new), 홈 '내 지도' 카드(MyMapsCard: 동네별 칩·담기, 없으면 첫 지도 권유), 장소 담기 지역 기본은 우리 집 동네(regionAuto, 붙여 넣은 링크 자리·손 고름이 이김). 경유지: 준비 탭·홈 가는 길 밑 '가는 길에 들를 곳 찾기'(StopoverFind) 늘 보이게
 - 11-06 지역 한 장(사용자: 메뉴 혼선 → 한 지역의 모든 것을 한 곳에, 시안 claude.ai/artifact/W2TtuySiJUg1e8kewJt5GX): `/region/:param?tab=` 세 탭 한눈에·맛집·명소·여행(pages/RegionPage.tsx, lib/region.ts). 가게에 `status: want|been`(규칙·types, 내 지도·공개 지도는 been만 mapsOf). 주소에서 동네 칩(lib/area.ts areaOf·areasOf·regionFromAddress). + 단추 = '어디?'(components/WhereSheet.tsx: 검색·우리 집·자주 가는 곳·요즘·공유 글 붙여 넣기→/places/new?paste=·바로 가기 세 줄). 담고 나면 그 지역 한 장으로. 지도 창 제목·홈 내 지도 칩·목록 화면 지역 머리·가고 싶은 곳 상세에서 진입. 여행 기록에 '들른 맛집·명소'(lib/recordStops.ts: 가고 싶어요 가게·글 줄 체크 + 새로 적기 → 저장 때 가게 생성·markPlaceBeen). 이름 통일 '맛집·명소'.
-- 지역 한 장 다음 할 일: 가고 싶은 곳의 글 줄을 누르면 가게로 바꾸기(지역 한 장 '적어 둔 곳' 칩은 담기 화면으로 감), 가게 담기의 '여기 다녀왔어요' 체크 정리, /wishes·/places 목록을 지역 묶음으로, 사진 탭에 지역별 모으기
+- 11-06 지역 한 장 마무리: 지역 화면에선 물어봐요 단추 숨김(아래 단추 줄과 겹침), 작은 지도 compact(큰 핀 38px·이름표 1등만), 가게 담기 체크 '여행 지도에도 핀 꽂기'(그 지역 여행 없을 때만·동네 가게는 끈 채), 가고 싶은 곳 카드에 '담은 가게 n곳', 추억 사진첩 여행별|지역별(lib/photoAlbums.ts albumsByRegion → 지역 한 장)
+- 지역 한 장 남은 것: 가고 싶은 곳의 글 줄을 누르면 가게로 바꾸기(지역 한 장 '적어 둔 곳' 칩은 담기 화면으로 감) · /places 옛 목록은 지역 머리로 지역 한 장에 넘기는 중(나중에 /region 목록으로 바꿀지)
 - 다음 할 일: 가이드북·후기북(한 권) — 첫 쪽 '가는 길'은 Trip.way를 그대로 (빈칸: 돈 기록, 날씨 예보 Open-Meteo, 해외 시내 교통)
 - 사용자 기준: 이 기능만으로 따로 앱이 될 만큼 정교하고 쓰기 쉽게
 

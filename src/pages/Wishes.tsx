@@ -11,7 +11,7 @@ import type { Wish } from '../lib/types';
 import { monthlyPicks } from '../lib/recommend';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { useTravelInfo } from '../lib/travelinfo';
-import { bothWant, recNames, sortWishes, wishState, type WishState } from '../lib/wishes';
+import { bothWant, recNames, samePlace, sortWishes, wishState, type WishState } from '../lib/wishes';
 import { everyoneLabel } from '../lib/members';
 import NewsDigest from '../components/NewsDigest';
 import { quickWish } from '../lib/wishActions';
@@ -70,7 +70,7 @@ export default function Wishes() {
     <section className="wish-group" data-testid={`wish-group-${hero ? 'both' : title}`}>
       <div className="wish-group-head"><h2 className="h2">{title}</h2><span className="tiny muted">{items.length}곳{hint ? ` · ${hint}` : ''}</span></div>
       <div className={hero ? 'wish-heroes' : 'list card white wish-rows'}>
-        {items.map(({ w, s }) => <WishCard key={w.id} wish={w} state={s} seasons={seasons} hero={hero} />)}
+        {items.map(({ w, s }) => <WishCard key={w.id} wish={w} state={s} seasons={seasons} hero={hero} wantShops={(recs ?? []).filter((r) => r.status === 'want' && samePlace(r.region, w.place)).length} />)}
       </div>
     </section>
   );
