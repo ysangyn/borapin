@@ -16,20 +16,14 @@ KV id: b261294de63e4cc9986690421c61ef29
 ───────────────────────────────────────────────
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
-Total Upload: 46.08 KiB / gzip: 14.71 KiB
-Worker Startup Time: 1 ms
-Your Worker has access to the following bindings:
-Binding                                                                 Resource                  
-env.QUOTA (b261294de63e4cc9986690421c61ef29)                            KV Namespace              
-env.AI                                                                  AI                        
-env.PER_USER (20 requests/60s)                                          Rate Limit                
-env.FIREBASE_PROJECTS ("borapin,borapin-test")                          Environment Variable      
-env.MODEL ("@cf/meta/llama-3.3-70b-instruct-fp8-f...")                  Environment Variable      
-env.DAILY_LIMIT ("80")                                                  Environment Variable      
 
-Uploaded borapin-ask (2.01 sec)
-Deployed borapin-ask triggers (0.43 sec)
-  https://borapin-ask.ysangyn.workers.dev
-Current Version ID: cd2c664c-0aa0-4541-8fe9-54a7e29162bf
-관광공사 키: 넣음
-{"ok":true,"model":"@cf/meta/llama-3.3-70b-instruct-fp8-fast"}
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mReceived a malformed response from the API[0m
+
+  no healthy upstream
+  GET /accounts/6a524c87edafc6c27dcf934b95d27316/workers/services/borapin-ask -> 503 Service Unavailable
+  Cloudflare Ray ID: a56313613a0dc4d5-LAX
+  
+  If you think this is a bug, please open an issue at: [4mhttps://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+
+
+🪵  Logs were written to "/home/runner/.config/.wrangler/logs/wrangler-2026-11-06_09-29-46_012.log"
