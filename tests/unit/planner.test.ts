@@ -73,3 +73,10 @@ test('후보: 다녀왔지만 담아 둔 곳이 남은 가고 싶은 곳은 "다
   const recs = [{ name: '미륵산 케이블카', region: { t: 'kr', code: '48220' } }, { name: '동피랑 벽화마을', region: { t: 'kr', code: '48220' } }] as PlaceRec[];
   assert.ok(!planCandidates(C({ nights: 2 }), { ...base, wishes: [w], trips: [trip], recs }, now, [], 20).some((x) => x.wishId === 'w3'));
 });
+
+test('버그(써 보기 360px 캡처): 이유 글 조사 — "영상가 가고 싶다고 한 곳" → "영상이", "보라가"는 그대로', () => {
+  const d = { ...base, wishes: [wish('w1', '48840', ['영상']), wish('w3', '51150', ['보라'])] };
+  const reasons = planCandidates(C({}), d, now).flatMap((c) => c.reasons);
+  assert.ok(reasons.includes('영상이 가고 싶다고 한 곳'), reasons.join(' / '));
+  assert.ok(reasons.includes('보라가 가고 싶다고 한 곳'), reasons.join(' / '));
+});

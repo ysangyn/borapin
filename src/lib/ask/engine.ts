@@ -11,7 +11,7 @@ import { candidates, THEMES } from '../recommend';
 import topicsData from '../../data/topics.json';
 import faqData from '../../data/faq.json';
 import { regionLong } from '../geo';
-import { josaOnly, withRo } from '../ko';
+import { josaOnly, withJosa, withRo } from '../ko';
 import { accessLine } from '../transport';
 import { straightKm } from '../placeApps';
 import { abroadNow, alarmFor, fxFor, loadAbroad, visaFor, type Abroad } from '../abroad';
@@ -348,7 +348,7 @@ function answerFor(intent: Intent, p: Place | null, q: string, d: AskData, now: 
         const w = cityFor(d.world ?? null, p);
         const label = q.match(/단풍|벚꽃|눈꽃|해돋이|유채|억새/)?.[0] ?? '그때';
         const when = label === '단풍' ? '보통 10월 말~11월 (북쪽·산은 이르고 남쪽·도시는 늦어요)' : label === '벚꽃' ? '보통 3월 말~4월 초 (남쪽이 먼저)' : `${sightQ.month}월 앞뒤`;
-        return { intent, text: `${w?.city ?? placeName(p)} ${label}은 ${when}`, lines: [seasonLine(d, p) ?? '', '해마다 1~2주 차이가 나요. 떠나기 한 달 전쯤 현지 예보(개화·단풍 예상)를 한 번 봐 주세요.'].filter(Boolean), buttons: placeButtons(p), source: '보라핀 좋은 때 자료 · 일반 시기' };
+        return { intent, text: `${w?.city ?? placeName(p)} ${withJosa(label, '은/는')} ${when}`, lines: [seasonLine(d, p) ?? '', '해마다 1~2주 차이가 나요. 떠나기 한 달 전쯤 현지 예보(개화·단풍 예상)를 한 번 봐 주세요.'].filter(Boolean), buttons: placeButtons(p), source: '보라핀 좋은 때 자료 · 일반 시기' };
       }
       if (!p) {
         const month = readMonth(q) ?? now.getMonth() + 1;
@@ -834,8 +834,8 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
       const who = memberNamesIn(q);
       const ws = who ? d.wishes.filter((w) => (w.wantedBy ?? []).includes(who)) : d.wishes;
       a = ws.length
-        ? { intent, text: `${who ? `${who}가 가고 싶다고 한 곳` : '가고 싶은 곳'} ${ws.length}곳`, lines: ws.slice(0, 8).map((w) => `${placeName(w.place)}${!who && w.wantedBy?.length ? ` · ${w.wantedBy.join('·')}` : ''}`), buttons: [{ label: '모두 보기', to: '/wishes' }], source: '우리 기록' }
-        : who ? { intent, text: `${who}가 원한다고 표시한 곳이 아직 없어요`, lines: ['가고 싶은 곳 카드의 하트(누가 원해요)를 누르면 여기서 보여요.'], buttons: [{ label: '가고 싶은 곳', to: '/wishes' }] }
+        ? { intent, text: `${who ? `${withJosa(who, '이/가')} 가고 싶다고 한 곳` : '가고 싶은 곳'} ${ws.length}곳`, lines: ws.slice(0, 8).map((w) => `${placeName(w.place)}${!who && w.wantedBy?.length ? ` · ${w.wantedBy.join('·')}` : ''}`), buttons: [{ label: '모두 보기', to: '/wishes' }], source: '우리 기록' }
+        : who ? { intent, text: `${withJosa(who, '이/가')} 원한다고 표시한 곳이 아직 없어요`, lines: ['가고 싶은 곳 카드의 하트(누가 원해요)를 누르면 여기서 보여요.'], buttons: [{ label: '가고 싶은 곳', to: '/wishes' }] }
         : { intent, text: '아직 담은 곳이 없어요', buttons: [{ label: '안 가본 곳 추천', ask: '안 가본 곳 추천' }, { label: '여행지 뽑기', to: '/wishes' }] };
       break;
     }
@@ -847,7 +847,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
         const road = Math.round(km * 1.3), min = Math.round((road / 70) * 60);
         const h = Math.floor(min / 60), mm = min % 60;
         a = { intent, text: `${placeLabel(x)}에서 ${placeLabel(y)}까지 직선 ${km}km`, lines: [`길로는 ${road}km쯤 · 차로 ${h ? `${h}시간 ` : ''}${mm ? `${mm}분` : ''} 안팎 (시·군 가운데 기준 어림)`, '정확한 시간은 길찾기 앱으로 봐 주세요.'], buttons: [{ label: '여행 상세의 가는 길', to: `/plan?place=${placeParam(x)}` }, { label: '네이버지도 길찾기', url: `https://map.naver.com/p/directions/-/-/-/car?c=15.00,0,0,0,dh` }], source: '직선거리 어림' };
-      } else a = { intent, text: '국내 시·군끼리만 거리를 어림해요', lines: [p ? `${placeLabel(p)}는 해외라 비행시간을 물어보세요 (예: "오사카 몇 시간 걸려")` : ''].filter(Boolean), buttons: [] };
+      } else a = { intent, text: '국내 시·군끼리만 거리를 어림해요', lines: [p ? `${withJosa(placeLabel(p), '은/는')} 해외라 비행시간을 물어보세요 (예: "오사카 몇 시간 걸려")` : ''].filter(Boolean), buttons: [] };
       break;
     }
     case 'media': {
@@ -1039,7 +1039,7 @@ export function ask(question: string, ctx: AskCtx, d: AskData, forced?: Place): 
             const head = `${fp ? placeName(fp) + '에서 ' : ''}${beenOnly ? '다녀온' : '담아 둔'} ${kindWord} ${pool.length}곳`;
             return {
               intent,
-              text: pool.length ? `${head} 중 ${keyWord ? `${keyWord} 들어간 곳은 없어요` : '맞는 곳이 없어요'}` : `${fp ? placeName(fp) + '에 ' : ''}${beenOnly ? '다녀온' : '담아 둔'} ${kindWord}가 아직 없어요`,
+              text: pool.length ? `${head} 중 ${keyWord ? `${keyWord} 들어간 곳은 없어요` : '맞는 곳이 없어요'}` : `${fp ? placeName(fp) + '에 ' : ''}${beenOnly ? '다녀온' : '담아 둔'} ${withJosa(kindWord, '이/가')} 아직 없어요`,
               lines: [
                 ...pool.slice(0, 4).map((r) => `${r.name} · ${placeName(r.region)}${r.verdict === 'again' ? ' (또 갈래요)' : ''}`),
                 keys.length ? '가게 이름·주소·한 줄 평·메모에서 찾아요. 한 줄 평에 적어 두면 다음엔 찾아 드려요.' : '',

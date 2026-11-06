@@ -62,9 +62,16 @@ async function audit(page: Page) {
       if (!vis(el)) continue;
       const txt = (el as HTMLElement).innerText.trim();
       if (!txt || txt.length > 24) continue;
-      const rg = document.createRange(); rg.selectNodeContents(el);
-      const tops = new Set([...rg.getClientRects()].filter((r) => r.width > 1).map((r) => Math.round(r.top / 4)));
-      if (tops.size > 1) out.wrapped.push(txt.replace(/\s+/g, ' ').slice(0, 20));
+      // 글자 조각(텍스트 노드)만 보고, 줄 높이의 0.9배 넘게 위아래로 벌어지면 꺾인 것 (아이콘·작은 숫자는 같은 줄)
+      const fs = parseFloat(getComputedStyle(el).fontSize) || 14;
+      const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const mids: number[] = [];
+      for (let t = tw.nextNode(); t; t = tw.nextNode()) {
+        if (!t.textContent?.trim()) continue;
+        const rg = document.createRange(); rg.selectNodeContents(t);
+        for (const r of rg.getClientRects()) if (r.width > 1) mids.push(r.top + r.height / 2);
+      }
+      if (mids.length > 1 && Math.max(...mids) - Math.min(...mids) > fs * 0.9) out.wrapped.push(txt.replace(/\s+/g, ' ').slice(0, 20));
     }
     for (const el of document.querySelectorAll('body *')) {
       const e = el as HTMLElement;

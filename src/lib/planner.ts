@@ -10,6 +10,7 @@ import { pickCities, cityFor, cityPlace, type WorldData } from './world';
 import { candidates as krCandidates } from './recommend';
 import { dailyShuffle, samePlace, bothWant, recNames, wishState } from './wishes';
 import { accessLine } from './transport';
+import { withIGa } from './ko';
 import type { Stats } from './stats';
 import type { TravelInfo } from './travelinfo';
 import type { Place, PlaceRec, Trip, Wish, When } from './types';
@@ -107,7 +108,7 @@ export function planCandidates(c: PlanConds, d: PlannerData, now = new Date(), s
     if (st.kind === 'again') { add(w.place, placeLabel(w.place), 4, `다시 가고 싶은 곳 · 못 가 본 곳 ${st.left.length}`, w.id); continue; }
     if (st.kind !== 'wish') continue;
     const both = bothWant(w);
-    add(w.place, placeLabel(w.place), both ? 10 : 5, both ? '둘 다 가고 싶다고 한 곳' : `${(w.wantedBy ?? []).join('·') || '누군가'}가 가고 싶다고 한 곳`, w.id);
+    add(w.place, placeLabel(w.place), both ? 10 : 5, both ? '둘 다 가고 싶다고 한 곳' : `${withIGa((w.wantedBy ?? []).join('·') || '누군가')} 가고 싶다고 한 곳`, w.id);
     if (w.priority) add(w.place, '', 4 - w.priority, `${w.priority}순위`);
   }
   // 2. 그 달에 좋은 국내 (안 가본 곳 먼저), 축제가 겹치면 더

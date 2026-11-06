@@ -1,3 +1,4 @@
+import { withIGa } from '../lib/ko';
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useToast } from './ui';
@@ -49,7 +50,7 @@ export default function RankAsk({ rec, all, onDone }: { rec: Pick<PlaceRec, 'id'
         <b className="jua" style={{ fontSize: 20, lineHeight: 1.3 }}>‘{rec.name}’은 ‘{pivot.name}’보다 좋았어요?</b>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" style={{ flex: 1 }} disabled={busy} onClick={() => answer('better')} data-testid="rank-better">더 좋았어요</button>
-          <button className="btn line" style={{ flex: 1 }} disabled={busy} onClick={() => answer('worse')} data-testid="rank-worse">{pivot.name.length > 6 ? '아니요' : `${pivot.name}가 더`}</button>
+          <button className="btn line" style={{ flex: 1 }} disabled={busy} onClick={() => answer('worse')} data-testid="rank-worse">{pivot.name.length > 6 ? '아니요' : `${withIGa(pivot.name)} 더`}</button>
         </div>
         <button className="link-btn" style={{ alignSelf: 'center' }} disabled={busy} onClick={() => void finish(state, state.asked === 0)} data-testid="rank-skip">{state.asked ? '여기까지만' : '모르겠어요 · 건너뛰기'}</button>
       </div>

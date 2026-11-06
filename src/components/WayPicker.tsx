@@ -13,6 +13,7 @@ import { daysOf } from '../lib/planCal';
 import { REGION_BY_CODE } from '../lib/geo';
 import { straightKm } from '../lib/placeApps';
 import type { Trip, WayPick } from '../lib/types';
+import { withJosa } from '../lib/ko';
 
 const hhmm = (m: number) => clock(m).padStart(5, '0');
 
@@ -50,7 +51,7 @@ export default function WayPicker({ trip, dir }: { trip: Trip; dir: 'go' | 'back
         const m = REGION_BY_CODE.get(p.mid)?.name ?? '';
         await addPlans(trip.id, [{ day, time: hhmm(p.legs[0].arr), name: p.kind === 'overnight' ? `${m}에서 하룻밤` : `${m} 들르기`, info: (w.legs ?? []).map(legLine).join(' · ').slice(0, 200) }]);
       }
-      toast(`${label}을 정했어요`);
+      toast(`${withJosa(label, '을/를')} 정했어요`);
       setOpen(false);
     } catch { toast('저장하지 못했어요. 다시 해 주세요'); }
   };

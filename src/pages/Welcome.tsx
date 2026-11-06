@@ -6,7 +6,7 @@ import KoreaMosaic from '../components/KoreaMosaic';
 import { displayName, useAuth } from '../lib/auth';
 import { renameSelf } from '../lib/invites';
 import { memberNames, spaceTitle, toneOf } from '../lib/members';
-import { withRo } from '../lib/ko';
+import { withIGa, withRo } from '../lib/ko';
 import { computeStats, useTrips } from '../lib/data';
 
 const KEY = 'borapin:welcomed';
@@ -47,7 +47,7 @@ export default function Welcome() {
       {step === 0 && (
         <>
           <h1 className="jua welcome-title">어서 와요{me ? `, ${me}` : ''}!</h1>
-          <p className="welcome-sub">{others.length && stats?.pins ? <>{others.join('·')}이 먼저 꽂아 둔 핀이 <b>{stats.pins}개</b> 있어요.<br />이제 {spaceTitle()}의 지도가 됐어요.</> : <>다녀온 곳마다 핀을 꽂는, 우리만의 지도예요.</>}</p>
+          <p className="welcome-sub">{others.length && stats?.pins ? <>{withIGa(others.join('·'))} 먼저 꽂아 둔 핀이 <b>{stats.pins}개</b> 있어요.<br />이제 {spaceTitle()}의 지도가 됐어요.</> : <>다녀온 곳마다 핀을 꽂는, 우리만의 지도예요.</>}</p>
           <div className="welcome-art">
             <KoreaMosaic fill={stats && stats.cellVisits.size ? Math.min(0.6, stats.cellVisits.size / 160 + 0.08) : 0.12} className="welcome-map" />
             <img src="/art/bora-cheer.webp" alt="" width={120} height={165} />

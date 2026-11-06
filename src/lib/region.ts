@@ -1,5 +1,6 @@
 import type { PlaceRec, Trip, Wish, Place } from './types';
 import { samePlace } from './wishes';
+import { withJosa } from './ko';
 
 /**
  * 지역 한 장: 한 지역의 가게(가고 싶어요·다녀왔어요)·여행·바람을 한데 모으는 계산 (화면: pages/RegionPage.tsx).
@@ -51,5 +52,5 @@ export function defaultTab(param: string | null, s: RegionSummary): RegionTab {
 export function emptyLine(tab: RegionTab, name: string): { title: string; sub: string } {
   if (tab === 'places') return { title: `${name}의 첫 가게를 담아 볼까요?`, sub: '가 본 곳도, 가 보고 싶은 곳도 돼요. 지도 앱 공유 글을 붙여 넣으면 이름·자리가 채워져요.' };
   if (tab === 'trips') return { title: `${name} 여행은 아직 없어요`, sub: '다녀왔으면 기록을, 갈 거면 다섯 걸음 계획을 시작해요.' };
-  return { title: `${name}은 아직 비어 있어요`, sub: '가게 하나, 여행 하나가 쌓이면 여기에 한눈에 보여요.' };
+  return { title: `${withJosa(name, '은/는')} 아직 비어 있어요`, sub: '가게 하나, 여행 하나가 쌓이면 여기에 한눈에 보여요.' };
 }
