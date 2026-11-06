@@ -1,10 +1,55 @@
 
 Running 5 tests using 1 worker
 
-  ✓  1 tests/preview.spec.ts:43:1 › 시험용 표시가 보이고, 이번 커밋이 올라가 있다 (1.7s)
-  ✓  2 tests/preview.spec.ts:52:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 (25.5s)
-  ✓  3 tests/preview.spec.ts:106:1 › 함께 쓰는 사람(보라)도 같은 기록을 본다 (4.9s)
-  ✓  4 tests/preview.spec.ts:115:1 › 초대 안 된 계정은 메일·비밀번호가 맞아도 막힌다 (3.8s)
-  ✓  5 tests/preview.spec.ts:122:1 › 화면 오류 없음 (2ms)
+  ✓  1 tests/preview.spec.ts:43:1 › 시험용 표시가 보이고, 이번 커밋이 올라가 있다 (1.1s)
+  ✘  2 tests/preview.spec.ts:52:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 (53.1s)
+  -  3 tests/preview.spec.ts:106:1 › 함께 쓰는 사람(보라)도 같은 기록을 본다
+  -  4 tests/preview.spec.ts:115:1 › 초대 안 된 계정은 메일·비밀번호가 맞아도 막힌다
+  -  5 tests/preview.spec.ts:122:1 › 화면 오류 없음
 
-  5 passed (36.8s)
+
+  1) tests/preview.spec.ts:52:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 ──────────────────────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('shared-trip')
+    Expected substring: "미리보기 시험 여행 2ee8408"
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByTestId('shared-trip') with timeout 30000ms
+      - waiting for getByTestId('shared-trip')
+
+
+      93 |   const anon = await newPage(browser);
+      94 |   await anon.goto(url);
+    > 95 |   await expect(anon.getByTestId('shared-trip')).toContainText(TITLE, { timeout: 30_000 });
+         |                                                 ^
+      96 |   await expect(anon.getByTestId('shared-trip')).toContainText('초당할머니순두부');
+      97 |   // 공개를 끄면 닫힌다
+      98 |   await card.getByRole('button', { name: '공개 끄기' }).click();
+        at /home/runner/work/borapin/borapin/tests/preview.spec.ts:95:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/preview-메일로-로그인-→-기록-→-새로-고침-→-장소-→-사진-→-공유-→-공개-끄기/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/preview.spec.ts:52:1 › 메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 → 공유 → 공개 끄기 ───────────────────────
+  3 did not run
+  1 passed (56.0s)
