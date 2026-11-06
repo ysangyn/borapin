@@ -257,7 +257,7 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(bora, 'k51-bora-feed-after', async () => { await bora.goto('/feed'); }, true);
   await step(bora, 'k52-bora-trip', async () => { await bora.goto(`/trips/${krTrip}`); }, true);
   await step(bora, 'k53-bora-review', async () => {
-    await bora.getByRole('tab', { name: /들른 곳/ }).click().catch(() => undefined);
+    await bora.getByRole('tab', { name: /맛집·명소/ }).click().catch(() => undefined);
     await bora.getByText('바다식당').first().click();
   }, true);
   await step(me, 'k54-map-after', async () => { await me.goto('/map'); });
@@ -351,7 +351,7 @@ test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
   // ── 3. 방금 만든 여행 ──
   log('\n== 여행 상세 (방금 만든 속초) ==');
   await step(page, 'trip-tabs', async () => { await page.goto(newTrip); });
-  for (const t of ['들른 곳', '사진', '글']) await step(page, `trip-tab-${t}`, async () => { await page.getByRole('tab', { name: new RegExp(t) }).first().click(); });
+  for (const t of ['맛집·명소', '사진', '글']) await step(page, `trip-tab-${t}`, async () => { await page.getByRole('tab', { name: new RegExp(t) }).first().click(); });
   await step(page, 'trip-note-write', async () => {
     await page.getByRole('tab', { name: /글/ }).first().click();
     const ta = page.locator('textarea').first();

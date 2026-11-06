@@ -19,6 +19,7 @@ import { parsePlaceParam, placeLabel } from '../lib/geo';
 import { KIND_LABEL, KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
 import { useHome } from '../lib/home';
+import { updatePlan } from '../lib/tripExtras';
 import { memberNames, toneOf } from '../lib/members';
 import type { Place, PlaceKind, PlaceRec, PlaceRecInput, Verdict } from '../lib/types';
 
@@ -63,7 +64,9 @@ export default function PlaceEdit() {
   const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' ? 'view' : 'form');
   const [kindTouched, setKindTouched] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  // 일정에서 '다녀왔어요'로 오면 그 자리(?lat&lng)와 그 일정 줄(?plan)을 가져온다
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(() => { const la = Number(sp.get('lat')), ln = Number(sp.get('lng')); return sp.get('lat') && Number.isFinite(la) && Number.isFinite(ln) ? { lat: la, lng: ln } : null; });
+  const planParam = sp.get('plan');
   const [link, setLink] = useState<{ state: 'idle' | 'loading' | 'done' | 'none'; info?: LinkInfo }>({ state: 'idle' });
 
   // 안드로이드 공유(네이버지도 → 보라핀)로 들어온 글
@@ -182,6 +185,8 @@ export default function PlaceEdit() {
       let newId: string | null = null;
       if (editing && id && opened) await updatePlace(id, opened, input, me);
       else newId = await createPlace(input, auth.user);
+      // 일정 줄과 잇는다: 그 줄은 '들른 곳'의 우리 장소로 올라가고 일정에선 다녀온 것으로
+      if (!editing && newId && planParam) await updatePlan(planParam, { recId: newId, done: true }).catch((e) => console.warn(e));
       if (news) celebrate();
       toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
       if (editing) { setSaving(false); setMode('view'); return; }

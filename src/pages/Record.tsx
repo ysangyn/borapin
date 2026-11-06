@@ -6,7 +6,7 @@ import PlaceHint from '../components/PlaceHint';
 import { useAuth } from '../lib/auth';
 import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } from '../lib/data';
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
-import { parsePlaceParam, placeLabel } from '../lib/geo';
+import { parsePlaceParam, placeLabel, placeParam } from '../lib/geo';
 import type { Place, Precision, Season, Trip, TripInput, TripKind, TripStatus, When } from '../lib/types';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { memberNames } from '../lib/members';
@@ -139,7 +139,8 @@ export default function Record() {
           nav(`/trips/${newId}?tab=photos`, { replace: true });
           return;
         }
-        toast(`${did}${news ? ` · ${news}` : ''}`);
+        // 다녀온 여행이면 다음 할 일로 '들른 맛집·카페'를 바로 권한다 (그 여행·지역이 채워진 채로)
+        toast(`${did}${news ? ` · ${news}` : ''}`, status === 'done' ? { label: '들른 맛집·카페 남기기', onClick: () => nav(`/places/new?trip=${newId}`) } : undefined);
         nav(`/trips/${newId}`, { replace: true });
       }
     } catch (e) {
@@ -187,6 +188,13 @@ export default function Record() {
             <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 거예요</button>
           </div></div>
         </div>
+
+        {/* 여기는 '여행 한 번'을 남기는 곳: 식당·카페 한 곳만이면 그쪽으로 (헷갈리지 않게 맨 위에) */}
+        {!editing && (
+          <Link to={`/places/new${places.length ? `?region=${placeParam(places[places.length - 1])}` : ''}`} className="record-to-place" data-testid="record-to-place">
+            <Icon name="heart" size={16} /><span><b>맛집·카페 한 곳만 남기나요?</b><span className="tiny muted">여기는 여행 기록이에요. 가게 하나는 '맛집·카페 담기'에서 한 줄 평·순위와 함께 남겨요</span></span><Icon name="chev" size={14} />
+          </Link>
+        )}
 
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>

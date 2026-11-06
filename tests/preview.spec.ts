@@ -71,7 +71,7 @@ test('메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 →
   await expect(page.getByTestId('trip-title')).toHaveText(TITLE, { timeout: 30_000 });
 
   // 우리 장소
-  await page.getByTestId('trip-places').getByRole('link', { name: '+ 장소 남기기' }).click();
+  await page.getByTestId('trip-places').getByRole('link', { name: '+ 맛집·카페 남기기' }).click();
   await page.getByLabel('네이버지도 공유 글').fill('[네이버지도]\n초당할머니순두부\n강원 강릉시 초당순두부길 77\nhttps://naver.me/xYz12');
   await expect(page.getByLabel('장소 이름')).toHaveValue('초당할머니순두부');
   await page.getByTestId('place-save').click();

@@ -614,7 +614,7 @@ test.describe.serial('보라핀 1단계', () => {
     await signIn(page, OWNER);
     await page.goto('/trips');
     await page.getByText('강릉시 여행', { exact: true }).click();
-    await page.getByTestId('trip-places').getByRole('link', { name: '+ 장소 남기기' }).click();
+    await page.getByTestId('trip-places').getByRole('link', { name: '+ 맛집·카페 남기기' }).click();
     await expect(page.getByRole('button', { name: /강릉시 빼기/ })).toBeVisible();
     await page.getByLabel('네이버지도 공유 글').fill('[네이버지도]\n초당할머니순두부\n강원 강릉시 초당순두부길 77\nhttps://naver.me/xYz12');
     await expect(page.getByLabel('장소 이름')).toHaveValue('초당할머니순두부');
@@ -636,7 +636,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(tp).toContainText('우리 장소 1곳');
     await expect(tp).toContainText('초당할머니순두부');
     await tp.getByTestId('places-summary').click();
-    await expect(page.getByRole('tab', { name: '들른 곳' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: '맛집·명소' })).toHaveAttribute('aria-selected', 'true');
     const visited = page.getByTestId('trip-visited');
     await expect(visited.getByTestId('place-rec')).toContainText('초당할머니순두부');
     await expect(visited).toContainText('또 갈래요');
@@ -782,7 +782,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.setViewportSize({ width: 375, height: 760 });
     await page.goto('/trips');
     await page.getByText('강릉시 여행', { exact: true }).click();
-    await expect(tabs).toHaveText(['개요', '들른 곳', /^사진/, /^글/]);
+    await expect(tabs).toHaveText(['개요', '맛집·명소', /^사진/, /^글/]);
     await expect(page.getByRole('tab', { name: '준비' })).toHaveCount(0);
     const boxes = await tabs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { y: r.y, h: r.height, wrap: getComputedStyle(e).whiteSpace, over: e.scrollWidth > e.clientWidth + 1 }; }));
     for (const b of boxes) {
@@ -794,7 +794,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByRole('heading', { name: '장소', exact: true })).toHaveCount(0);
     await expect(page.getByText('v22에서 가져옴')).toHaveCount(0);
     // 들른 곳 = 우리 장소 기록(평가·한 줄 평). 일정 줄의 '또 갈래요' 하트·적는 칸은 없다
-    await page.getByRole('tab', { name: '들른 곳' }).click();
+    await page.getByRole('tab', { name: '맛집·명소' }).click();
     const visited = page.getByTestId('trip-visited');
     await expect(visited.getByTestId('place-rec')).toContainText('초당할머니순두부');
     await expect(page.getByTestId('plan-tab')).toHaveCount(0);

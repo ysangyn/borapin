@@ -391,6 +391,7 @@ b, strong { font-weight: 600; }
 /* 탭 넷이 375px에서 한 줄에: 글자는 줄바꿈하지 않고 여백만 줄인다 */
 .seg.tabs button { flex: 1; min-width: 0; padding: 0 8px; white-space: nowrap; }
 .plan-row { padding: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+[data-testid="planned-place"] { flex-direction: row; align-items: center; justify-content: space-between; }
 .plan-row + .plan-row { border-top: 1px solid var(--line); }
 .plan-row.done .plan-name .plan-title { color: var(--ink4); text-decoration: line-through; }
 .plan-name { flex: 1; min-width: 0; border: none; background: none; padding: 0; text-align: left; display: flex; gap: 8px; align-items: center; font-size: 15px; font-weight: 600; color: var(--ink); }
@@ -1723,3 +1724,6 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .wish-stop-tag.food { background: var(--pink-mist); color: var(--pink-ink); }
 .wish-stop-tag.sight { background: var(--mist); color: var(--violet-dark); }
 .wish-stop-tag.todo { background: var(--butter, #FFF2BF); color: var(--butter-ink, #7A5B00); }
+.record-to-place { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--pink-mist); color: var(--pink-ink); }
+.record-to-place > span { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.record-to-place b { font-size: 14px; }

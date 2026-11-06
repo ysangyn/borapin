@@ -22,6 +22,7 @@ import { deletePhoto, photoUsage, suggestPlaces, suggestWhen, useTripPhotos } fr
 import { photosLeft } from '../lib/usage';
 import { useStore } from '../lib/store';
 import PlaceRecRow from '../components/PlaceRecRow';
+import { isWayLine, visitUrl } from '../lib/visitFromPlan';
 import { dday, formatWhen, isUpcoming, nightsDays } from '../lib/dates';
 import { josa } from 'es-hangul';
 import { isOffline } from '../lib/writes';
@@ -85,7 +86,7 @@ export default function TripDetail() {
   const coverScene = trip.places.map(photoForPlace).find(Boolean) ?? null;
   const label: Record<TripTab, string> = {
     info: '개요',
-    plan: trip.status === 'done' ? '들른 곳' : '일정',
+    plan: trip.status === 'done' ? '맛집·명소' : '일정',
     prep: '준비',
     photos: `사진${photos.length ? ` ${photos.length}` : ''}`,
     notes: `글${notes?.length ? ` ${notes.length}` : ''}`,
@@ -288,13 +289,13 @@ function PlacesSummary({ trip, recs, onOpen }: { trip: Trip; recs: PlaceRec[] | 
       <button style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', padding: 0, textAlign: 'left', font: 'inherit', color: 'inherit' }} onClick={onOpen} data-testid="places-summary">
         <span className="ico"><Icon name="pin" size={17} /></span>
         <span style={{ flex: 1, minWidth: 0 }}>
-          <b>들른 곳</b>
+          <b>맛집·명소</b>
           <div className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {names.length ? `우리 장소 ${names.length}곳 · ${names.slice(0, 3).join(', ')}${names.length > 3 ? ` 외 ${names.length - 3}` : ''}` : '맛집·카페·명소를 둘의 한 줄 평과 함께'}
           </div>
         </span>
       </button>
-      <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500, flex: 'none' }}>+ 장소 남기기</Link>
+      <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500, flex: 'none' }}>+ 맛집·카페 남기기</Link>
     </div>
   );
 }
@@ -317,7 +318,7 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
           <span style={{ display: 'flex', gap: 12 }}>
             {/* 이 여행에서 남긴 곳은 그 지역 '내 지도'에도 그대로 들어가 있다 (같은 기록) */}
             {!!recs?.length && trip.places[0] && <Link to={`/maps?m=${encodeURIComponent(`${placeParam(trip.places[0])}|all`)}`} className="small" style={{ fontWeight: 500 }} data-testid="trip-mymap">{placeLabel(trip.places[0])} 내 지도</Link>}
-            <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500 }}>+ 장소 남기기</Link>
+            <Link to={`/places/new?trip=${trip.id}`} className="small" style={{ fontWeight: 500 }}>+ 맛집·카페 남기기</Link>
           </span>
         </div>
         {recs && recs.length === 0 ? (
@@ -328,7 +329,8 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
       </section>
       {rest.length > 0 && (
         <section data-testid="trip-planned-places">
-          <h2 className="h2" style={{ fontSize: 17, marginBottom: 2 }}>일정에 있던 곳</h2>
+          <h2 className="h2" style={{ fontSize: 17, marginBottom: 2 }}>계획에 있던 곳</h2>
+          <span className="tiny muted">다녀온 곳은 '다녀왔어요'를 누르면 한 줄 평과 함께 위로 올라가요</span>
           <div className="list">
             {rest.map((it) => (
               <div key={it.id} className="plan-row" data-testid="planned-place">
@@ -338,6 +340,10 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
                   {it.day && days.includes(it.day) && <span className="tiny muted">{dayLabel(it.day, days)}</span>}
                   {it.info && <span className="tiny muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.info}</span>}
                 </div>
+                {/* 계획에 담았던 곳 → 다녀온 곳(우리 장소)으로: 이름·종류·자리를 채워서 한 줄 평만 쓰면 되게 */}
+                {!isWayLine(it.name) && (
+                  <Link className="btn sm soft" style={{ flex: 'none' }} to={visitUrl(trip.id, it)} data-testid="planned-visit">다녀왔어요</Link>
+                )}
               </div>
             ))}
           </div>
