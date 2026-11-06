@@ -7,6 +7,9 @@ import StreetMap, { type StreetPin } from '../components/StreetMap';
 import StopoverFind from '../components/StopoverFind';
 import { useStore } from '../lib/store';
 import { useAuth } from '../lib/auth';
+import { createPlace } from '../lib/data';
+import { guessKind } from '../lib/recordStops';
+import { withJosa } from '../lib/ko';
 import { parsePlaceParam, placeLabel, placeLong, placeParam } from '../lib/geo';
 import { defaultTab, emptyLine, statusChips, summarize, type RegionTab } from '../lib/region';
 import { areaLabel, areasOf } from '../lib/area';
@@ -201,6 +204,17 @@ function PlacesTab({ place, s }: { place: ReturnType<typeof parsePlaceParam>[num
   const been = themes.flatMap((t) => rankedRecs(s.been.filter((r) => themeOf(r) === t), docs?.find((d) => d.id === mapKey(place, t))?.order)).filter(inArea);
   const name = placeLabel(place);
   const left = s.wish ? leftItems(s.wish, recNames(s.recs, place)) : [];
+  const [busy, setBusy] = useState<string | null>(null);
+  /** 적어 둔 글 줄 → 가고 싶어요 가게 (이름·종류 짐작만, 자세한 건 가게 화면에서) */
+  const adoptLine = async (n: string) => {
+    if (auth.status !== 'ready') { toast('로그인하면 담을 수 있어요'); return; }
+    setBusy(n);
+    try {
+      const id = await createPlace({ name: n.slice(0, 80), kind: guessKind(n, s.wish), region: place, status: 'want', reviews: {}, verdict: null }, auth.user);
+      toast(`${withJosa(n, '을/를')} 가고 싶어요로 담았어요`, { label: '자세히 쓰기', onClick: () => nav(`/places/${id}`) });
+    } catch { toast('담지 못했어요. 다시 해 주세요'); }
+    setBusy(null);
+  };
   const markBeen = async (r: PlaceRec) => {
     // 가고 싶어요 → 다녀왔어요: 평가·한 줄 평을 쓰러 가게 화면으로 (상태는 거기서 저장)
     nav(`/places/${r.id}?been=1`);
@@ -242,9 +256,9 @@ function PlacesTab({ place, s }: { place: ReturnType<typeof parsePlaceParam>[num
             ))}
             {left.length > 0 && (
               <div className="card" style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }} data-testid="region-left">
-                <span className="tiny muted">가고 싶은 곳에 적어 둔 곳 · 누르면 가게로 담아요</span>
+                <span className="tiny muted">가고 싶은 곳에 적어 둔 곳 · 누르면 가게로 담아요 (한 번에)</span>
                 <div className="chips" style={{ gap: 6 }}>
-                  {left.slice(0, 12).map((n) => <Link key={n} to={`/places/new?region=${placeParam(place)}&status=want&from=${encodeURIComponent(n)}`} className="chip sm dashed">{n}</Link>)}
+                  {left.slice(0, 12).map((n) => <button key={n} type="button" className="chip sm dashed" disabled={busy === n} onClick={() => void adoptLine(n)} data-testid="region-left-chip">{busy === n ? '담는 중…' : n}</button>)}
                 </div>
               </div>
             )}
