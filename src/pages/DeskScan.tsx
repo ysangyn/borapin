@@ -105,7 +105,7 @@ export default function DeskScan() {
           <Thumb item={open} file={fileOf.get(open.rel)} big />
           <div className="desk-view-cap">
             <div className="small" style={{ wordBreak: 'break-all' }}>{open.rel}</div>
-            <div className="tiny" style={{ opacity: .8 }}>{open.taken ?? '시각 없음'} · {FROM_LABEL[open.takenFrom ?? ''] ?? ''}{open.received ? ' · 받은 사진' : ''}{open.lat != null ? ' · 자리 있음' : ' · 자리 없음'}{open.camera ? ` · ${open.camera}` : ''}</div>
+            <div className="tiny" style={{ opacity: .8 }}>{open.taken ? open.taken.replace('T', ' ') : '시각 없음'} · {FROM_LABEL[open.takenFrom ?? ''] ?? ''}{open.received ? ' · 받은 사진' : ''}{open.lat != null ? ' · 자리 있음' : ' · 자리 없음'}{open.camera ? ` · ${open.camera}` : ''}</div>
           </div>
         </div>
       )}
