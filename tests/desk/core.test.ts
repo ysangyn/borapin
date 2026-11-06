@@ -87,6 +87,7 @@ test('HTML 보고서에 네 숫자와 표가 들어간다', () => {
   assert.match(html, /사진 <b>1<\/b>장/);
   assert.match(html, /중복 <b>1<\/b>장/);
   assert.match(html, /강릉 바다/);
+  assert.match(html, /<details open><summary>여행/); // 서랍은 접히는 목록, 여행은 펼쳐서
   assert.doesNotMatch(html, /<script/); // 보고서는 스크립트 없이, 어디서 열어도 안전하게
 });
 

@@ -1810,3 +1810,30 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .desk-nums .jua { font-size: 17px; }
 .desk-nums .jua b { font-size: 24px; color: var(--violet); margin: 0 2px; }
 .desk-scan .label { padding: 0 2px 6px; }
+/* 사진 서랍 (폰) */
+.desk-sum { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 2px 16px 10px; font-size: 14px; }
+.desk-sum b { color: var(--violet); font-weight: 800; }
+.desk-sum .linklike { background: none; border: none; padding: 0; font: inherit; color: var(--violet); text-decoration: underline; cursor: pointer; }
+.desk-crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 4px 16px 8px; font-size: 13.5px; }
+.desk-crumb button { background: none; border: none; padding: 4px 6px; font: inherit; color: var(--muted); border-radius: 8px; cursor: pointer; }
+.desk-crumb button.on { color: var(--ink); font-weight: 700; }
+.desk-crumb i { font-style: normal; color: var(--muted); }
+.desk-drawers { display: flex; flex-direction: column; gap: 8px; padding: 0 16px 14px; }
+.desk-drawer { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 12px 12px 14px; border-radius: 16px; background: var(--card); border: 1.5px solid var(--line); text-align: left; font: inherit; color: var(--ink); cursor: pointer; box-shadow: 0 1px 0 var(--line); }
+.desk-drawer .ico { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--mist); color: var(--violet); flex: none; }
+.desk-drawer[data-kind="trip"] .ico, .desk-drawer[data-kind="trips"] .ico { background: #EFEBFF; }
+.desk-drawer[data-kind="unknown"] .ico { background: #FFF2BF; color: #8A6A00; }
+.desk-drawer[data-kind="dupes"] .ico, .desk-drawer[data-kind="dupe"] .ico { background: #FFECF0; color: var(--coral-ink); }
+.desk-drawer[data-kind="stuff"] .ico, .desk-drawer[data-kind="vaults"] .ico, .desk-drawer[data-kind="vault"] .ico { background: #F0EDFA; color: var(--muted); }
+.desk-drawer .name { flex: 1; min-width: 0; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desk-drawer .cnt { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.desk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 16px 24px; }
+.desk-thumb { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--line); background: var(--card); padding: 0; cursor: pointer; }
+.desk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.desk-thumb .ph { position: absolute; inset: 0; background: var(--mist); }
+.desk-thumb .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 6px 4px; font-size: 10.5px; color: #fff; text-align: left; background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.55)); }
+.desk-thumb.guess .cap::after { content: ' ?'; color: #FFE28A; font-weight: 700; }
+.desk-view { position: fixed; inset: 0; z-index: 60; background: rgba(20, 14, 40, .92); display: flex; flex-direction: column; justify-content: center; padding: 16px; color: #fff; }
+.desk-big { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.desk-big img { max-width: 100%; max-height: 100%; border-radius: 12px; }
+.desk-view-cap { padding: 12px 4px 0; }

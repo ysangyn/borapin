@@ -1008,9 +1008,20 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(nums).toContainText('사진 3장', { timeout: 15_000 });
     await expect(nums).toContainText('파일 5개');
     await expect(nums).toContainText('중복 2장');
-    await expect(page.getByTestId('desk-unknown')).toContainText('DSC_9999.JPG');
-    await expect(page.getByTestId('desk-unknown')).toContainText('수정 시각(추정)');
+    // 서랍: 모르는 사진 → 언제 모름 → DSC_9999 (촬영 정보도 파일명 날짜도 없음)
+    const drawers = page.getByTestId('desk-drawers');
+    await expect(drawers).toContainText('모르는 사진');
     await shot(page, '15d-desk-scan');
+    await drawers.getByRole('button', { name: /^모르는 사진/ }).click();
+    await drawers.getByRole('button', { name: /^언제 모름/ }).click();
+    await expect(page.getByTestId('desk-crumb')).toContainText('언제 모름');
+    await expect(page.getByTestId('desk-grid').getByRole('button', { name: 'DSC_9999.JPG' })).toBeVisible();
+    await page.getByTestId('desk-grid').getByRole('button', { name: 'DSC_9999.JPG' }).click();
+    await expect(page.getByRole('dialog')).toContainText('수정 시각(추정)');
+    await shot(page, '15d2-desk-view');
+    await page.getByRole('dialog').click();
+    await page.getByTestId('desk-crumb').getByRole('button', { name: '서랍' }).click();
+    await expect(drawers).toContainText('중복');
     await page.goto('/space');
 
     // 엑셀: 시트 4개짜리 .xlsx
