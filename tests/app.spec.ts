@@ -829,8 +829,13 @@ test.describe.serial('보라핀 1단계', () => {
     const pack = page.getByTestId('packing');
     await pack.getByRole('button', { name: '휴양' }).click();
     await expect(pack).toContainText('수영복');
-    await pack.getByLabel('수영복 챙김').check();
-    await expect(pack).toContainText(/1\/\d+ 챙김/);
+    // 휴양 목록이 저장되며 한 번 다시 그려질 수 있어서: 체크가 남을 때까지 (사람도 안 되면 다시 누른다)
+    await expect(async () => {
+      const box = pack.getByLabel('수영복 챙김');
+      await box.scrollIntoViewIfNeeded();
+      if (!(await box.isChecked())) await box.click();
+      await expect(pack).toContainText(/1\/\d+ 챙김/, { timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
     await pack.getByLabel('선크림 담당자').click();
     await expect(pack.getByLabel('선크림 담당자')).toHaveText('보라');
     await shot(page, '13b-packing');
