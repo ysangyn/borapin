@@ -218,8 +218,8 @@ function FeedRow({ item, i, me, heart, uid, onHeart }: { item: FeedItem; i: numb
           {lines.map(([w, t]) => <span key={w} className={'hand ticket-line ' + inkOf(w)}>{w === me ? '나' : w} · {t}</span>)}
           {foot(`/places/${item.rec.id}`, '장소 보기')}
         </div>
-        <div className={'ticket-stub' + (item.rec.verdict === 'again' ? ' again' : '')} aria-hidden={!item.rec.verdict}>
-          <span className="jua">{item.rec.verdict ? VERDICT_LABEL[item.rec.verdict] : KIND_LABEL[item.rec.kind]}</span>
+        <div className={'ticket-stub' + (item.rec.status === 'want' ? ' want' : item.rec.verdict === 'again' ? ' again' : '')} aria-hidden={!item.rec.verdict && item.rec.status !== 'want'}>
+          <span className="jua">{item.rec.status === 'want' ? '가고 싶어요' : item.rec.verdict ? VERDICT_LABEL[item.rec.verdict] : KIND_LABEL[item.rec.kind]}</span>
         </div>
       </article>
     );

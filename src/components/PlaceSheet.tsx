@@ -125,7 +125,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
           <Link to={`/region/${placeParam}`} className="jua" style={{ fontSize: 28, lineHeight: 1.1, color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }} data-testid="sheet-title">{name}<Icon name="chev" size={18} /></Link>
-          <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600 }} data-testid="sheet-region">{name} 한 장 열기 · 맛집·명소·여행 모두</Link>
+          <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600 }} data-testid="sheet-region">맛집·명소·여행 한눈에 보기 ›</Link>
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           {fests.length > 0 && (
             <div className="sheet-fests" data-testid="sheet-festivals">

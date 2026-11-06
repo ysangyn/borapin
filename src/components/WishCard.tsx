@@ -122,7 +122,7 @@ export default function WishCard({ wish, state, seasons, compact, hero, wantShop
     ? planLink
     : !compact || !mine
       ? <MyHeart wish={wish} size={compact ? 'sm' : 'md'} />
-      : <span className="tiny muted" style={{ flex: 'none', textAlign: 'right', maxWidth: 96 }} data-testid="wish-waiting">{waiting.join('·')} 마음 기다리는 중</span>;
+      : <span className="tag" style={{ flex: 'none', whiteSpace: 'nowrap' }} data-testid="wish-waiting" title={`${waiting.join('·')} 마음 기다리는 중`}>{waiting.length > 1 ? `${waiting.length}명` : waiting[0]} 기다려요</span>;
 
   if (hero && !compact) {
     return (
