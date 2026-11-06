@@ -38,6 +38,9 @@ export function grounded(text: string, facts: string): boolean {
   // 달·날짜(1~31)와 질문·앞 대화에 나온 숫자는 지어낸 것이 아니다 (facts에 질문·맥락도 함께 넘긴다)
   const nums = (text.match(/\d{2,}/g) ?? []).filter((n) => Number(n) > 31);
   if (nums.some((n) => !facts.includes(n))) return false;
+  // 꽃·날씨·축제 같은 '그럴듯한' 말도 사실에 없으면 지어낸 것 (교토 11월에 벚꽃 절정 같은 답)
+  const claims = text.match(/벚꽃|단풍|눈꽃|설경|오로라|불꽃|유채|억새|폭염|한파|장마|영하|영상\s*\d|기온|습도/g) ?? [];
+  if (claims.some((w) => !facts.includes(w))) return false;
   return true;
 }
 

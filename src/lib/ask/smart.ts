@@ -56,7 +56,11 @@ export async function askSmart(question: string, ctx: AskCtx, d: AskData, user: 
     if (!text || !grounded([text, ...lines].join(' '), [factText, question, context].join('\n'))) return { answer: rule, via: 'rules', reason: 'ungrounded' };
     const ids = (Array.isArray(ans.buttons) ? ans.buttons : []).map(String);
     const buttons: Btn[] = ids.map((id) => facts.actions.find((x) => x.id === id)?.btn).filter((b): b is Btn => !!b);
-    if (!buttons.length) buttons.push(...facts.actions.slice(0, 3).map((x) => x.btn));
+    // 모델이 단추를 안 골랐으면, 답 글에 실제로 나온 곳의 단추만 붙인다 (엉뚱한 추천 단추가 따라붙지 않게)
+    if (!buttons.length) {
+      const said = [text, ...lines].join(' ');
+      buttons.push(...facts.actions.filter((x) => { const w = x.btn.label.replace(/\s*(보기|열기|담기|만들기)$/, '').trim(); return w.length >= 2 && said.includes(w); }).slice(0, 3).map((x) => x.btn));
+    }
     const place = lastPlace(calls, ctx.place ?? null);
     return {
       answer: { intent: 'ai' as Intent, text, lines, buttons, source: '핀이 · 우리 기록과 여행정보만으로 답했어요', ctx: { place, intent: 'ai' as Intent } },
