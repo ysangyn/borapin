@@ -9,7 +9,7 @@ import { matchTrips, type DeskTrip } from '../../desk/src/trips';
 import type { Item } from '../../desk/src/types';
 
 const n = (x: number) => x.toLocaleString('ko-KR');
-const mb = (b: number) => (b >= 1e9 ? `${(b / 1e9).toFixed(1)}GB` : `${Math.round(b / 1e6)}MB`);
+const mb = (b: number) => (b >= 1e9 ? `${(b / 1e9).toFixed(1)}GB` : b >= 1e6 ? `${Math.round(b / 1e6)}MB` : `${Math.max(1, Math.round(b / 1e3))}KB`);
 
 /**
  * 사진 훑어보기 (폰): 고른 사진을 폰 안에서만 읽어 네 숫자를 보여 준다. 아무것도 올리지 않는다.
@@ -70,7 +70,7 @@ export default function DeskScan() {
               <div className="label">여행별</div>
               <div className="card" style={{ padding: '4px 14px' }}>
                 {s.byTrip.map((t) => (
-                  <div key={t.id} className="row" style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
+                  <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
                     <Link to={`/trips/${t.id}`} className="small" style={{ fontWeight: 600 }}>{t.title}</Link>
                     <span className="tiny muted">{n(t.files)}장 · 날짜로 확실 {n(t.sure)}</span>
                   </div>
@@ -82,7 +82,7 @@ export default function DeskScan() {
           <section style={{ padding: '6px 16px' }}>
             <div className="label">촬영 시각을 어디서 읽었나</div>
             <div className="card" style={{ padding: '10px 14px' }}>
-              {Object.entries(s.byTakenFrom).map(([k, c]) => <div key={k} className="row small" style={{ justifyContent: 'space-between' }}><span>{FROM_LABEL[k] ?? k}</span><span className="muted">{n(c)}</span></div>)}
+              {Object.entries(s.byTakenFrom).map(([k, c]) => <div key={k} className="small" style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}><span>{FROM_LABEL[k] ?? k}</span><span className="muted">{n(c)}장</span></div>)}
             </div>
           </section>
 
