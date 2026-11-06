@@ -1712,3 +1712,8 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .stopover-find { width: 100%; text-align: left; }
 .stopover-find b { color: var(--violet); }
 .stopover-find-arrow { margin-left: auto; color: var(--ink3); font-size: 12px; }
+.mymaps-card { display: flex; flex-direction: column; gap: 6px; color: inherit; }
+.mymaps-card-head { display: flex; align-items: center; justify-content: space-between; font-size: 18px; }
+.mymaps-card.empty { border: 1.5px dashed var(--v3, #9B82F6); }
+.mymaps-card .chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.mymaps-card .chip b { color: var(--violet); margin-left: 3px; }

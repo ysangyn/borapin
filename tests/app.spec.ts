@@ -195,7 +195,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('국내 여행 기록 (초성 검색, 연도만)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.getByRole('button', { name: '남기기', exact: true }).click();
-    await page.getByRole('menuitem', { name: /다녀온 곳 남기기/ }).click();
+    await page.getByRole('menuitem', { name: /여행 기록 남기기/ }).click();
     await pickPlace(page, 'ㄱㄹ', '강릉시');
     await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByLabel('연도').selectOption('2024');

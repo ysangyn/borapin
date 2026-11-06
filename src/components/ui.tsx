@@ -111,7 +111,8 @@ export function BottomNav() {
     {menu && (
       <div className="plus-sheet-backdrop" onClick={() => setMenu(false)}>
         <div className="plus-sheet" role="menu" aria-label="무엇을 할까요" onClick={(e) => e.stopPropagation()} data-testid="plus-sheet">
-          <NavLink to="/record" role="menuitem" className="plus-item"><Icon name="pin" size={22} /><span><b>다녀온 곳 남기기</b><span className="tiny muted">핀 꽂기 · 사진 · 한 줄</span></span></NavLink>
+          <NavLink to="/places/new" role="menuitem" className="plus-item" data-testid="plus-place"><Icon name="heart" size={22} /><span><b>맛집·카페 담기</b><span className="tiny muted">여행 아니어도 · 동네마다 내 지도가 돼요</span></span></NavLink>
+          <NavLink to="/record" role="menuitem" className="plus-item"><Icon name="pin" size={22} /><span><b>여행 기록 남기기</b><span className="tiny muted">핀 꽂기 · 사진 · 한 줄</span></span></NavLink>
           <NavLink to="/plan" role="menuitem" className="plus-item"><Icon name="calendar" size={22} /><span><b>여행 계획하기</b><span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에서 둘이 고르기</span></span></NavLink>
         </div>
       </div>

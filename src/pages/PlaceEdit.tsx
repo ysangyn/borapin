@@ -18,6 +18,7 @@ import { formatWhen } from '../lib/dates';
 import { parsePlaceParam, placeLabel } from '../lib/geo';
 import { KIND_LABEL, KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
+import { useHome } from '../lib/home';
 import { memberNames, toneOf } from '../lib/members';
 import type { Place, PlaceKind, PlaceRec, PlaceRecInput, Verdict } from '../lib/types';
 
@@ -41,6 +42,9 @@ export default function PlaceEdit() {
   const [tag, setTag] = useState<string>(() => (sp.get('tag') ?? '').slice(0, 20));
   const [tagOpen, setTagOpen] = useState(false);
   const [region, setRegion] = useState<Place[]>(() => parsePlaceParam(sp.get('region')));
+  // 지역을 아무도 안 정했으면 '우리 집' 동네로 (여행 아니어도 동네 맛집을 바로 담게). 붙여 넣은 링크의 자리나 손으로 고른 지역이 이긴다
+  const home = useHome();
+  const [regionAuto, setRegionAuto] = useState(false);
   const [tripId, setTripId] = useState<string>(tripParam ?? '');
   const [reviews, setReviews] = useState<Record<string, string>>({});
   const [verdict, setVerdict] = useState<Verdict | null>(null);
@@ -74,6 +78,10 @@ export default function PlaceEdit() {
   useEffect(() => {
     if (!editing && tripFromParam && region.length === 0) setRegion(tripFromParam.places.slice(0, 1));
   }, [editing, tripFromParam, region.length]);
+  useEffect(() => {
+    if (!editing && !tripParam && !sp.get('region') && region.length === 0 && home?.code) { setRegion([{ t: 'kr', code: home.code }]); setRegionAuto(true); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [home?.code]);
 
   useEffect(() => {
     if (editing && existing && !loaded) {
@@ -128,7 +136,7 @@ export default function PlaceEdit() {
       if (info.lat != null && info.lng != null) {
         setCoords({ lat: info.lat, lng: info.lng });
         const at = await locate(info.lng, info.lat).catch(() => null);
-        if (on && at) setRegion((r) => (r.length ? r : [at]));
+        if (on && at) { setRegion((r) => (r.length && !regionAuto ? r : [at])); setRegionAuto(false); }
       }
     });
     return () => { on = false; };
@@ -291,7 +299,8 @@ export default function PlaceEdit() {
 
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
-          <PlacePicker value={where ? [where] : []} onChange={(v) => setRegion(v.slice(-1))} />
+          <PlacePicker value={where ? [where] : []} onChange={(v) => { setRegion(v.slice(-1)); setRegionAuto(false); }} />
+          {regionAuto && where && <span className="tiny muted" data-testid="region-auto">우리 집 동네로 두었어요 · 다른 곳이면 위에서 바꿔 주세요</span>}
           <input className="input" aria-label="주소" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="자세한 주소 (선택)" />
         </div>
 

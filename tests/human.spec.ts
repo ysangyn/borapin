@@ -160,7 +160,7 @@ test.describe('사람처럼 쓰기', () => {
     const page = await phone(browser);
     await googleSignIn(page);
     await page.getByRole('button', { name: '남기기', exact: true }).click();
-    await page.getByRole('menuitem', { name: /다녀온 곳 남기기/ }).click();
+    await page.getByRole('menuitem', { name: /여행 기록 남기기/ }).click();
     // 단추 말과 알림 말이 같은 동사: '기록 남기기' → '기록했어요'
     await expect(page.getByTestId('save')).toHaveText('기록 남기기');
     // 장소: 한 글자씩 쳐서 찾기

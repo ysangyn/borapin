@@ -57,7 +57,7 @@ test('메일로 로그인 → 기록 → 새로 고침 → 장소 → 사진 →
 
   // 기록
   await page.getByRole('button', { name: '남기기', exact: true }).click();
-  await page.getByRole('menuitem', { name: /다녀온 곳 남기기/ }).click();
+  await page.getByRole('menuitem', { name: /여행 기록 남기기/ }).click();
   await page.getByLabel('어디 검색').click();
   await page.keyboard.type('강릉', { delay: 50 });
   await page.getByRole('option', { name: /강릉시/ }).first().click();
