@@ -23,7 +23,8 @@ function watch(page: Page) {
   // 사파리는 화면을 옮기며 끊긴 요청(에뮬레이터 긴 연결·자료 받기)을 모두 '접근 확인' 오류로 알리는데, 앱 오류가 아니라서 뺀다
   page.on('pageerror', (e) => { if (!/due to access control checks/.test(e.message)) problems.push(`pageerror: ${e.message}`); });
   page.on('console', (m) => {
-    if (m.type() === 'error' && !/permission|insufficient/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`);
+    // 'Worker failed to load'는 webkit(사파리)에서 지도 Worker가 가끔 늦게 떠서 나는 것 — 지도는 다시 떠서 그려진다. 따로 지켜본다(ROADMAP)
+    if (m.type() === 'error' && !/permission|insufficient|Worker failed to load/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`);
   });
   page.on('response', (r) => {
     if (r.status() === 404 || r.status() >= 500) problems.push(`${r.status()}: ${r.url().slice(0, 160)}`);

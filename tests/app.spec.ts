@@ -998,16 +998,16 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page).toHaveURL(/\/desk$/);
     const FIX = new URL('./desk/fixtures/', import.meta.url).pathname;
     const nfs = await import('node:fs');
-    const pick = (name: string, from: string) => ({ name, mimeType: 'image/jpeg', buffer: nfs.readFileSync(`${FIX}${from}`) });
+    const pick = (name: string, from: string, tail = '') => ({ name, mimeType: 'image/jpeg', buffer: Buffer.concat([nfs.readFileSync(`${FIX}${from}`), Buffer.from(tail)]) });
     await page.getByTestId('desk-files').setInputFiles([
       pick('exif-gangneung.jpg', 'exif-gangneung.jpg'), pick('20190812_183000.jpg', '20190812_183000.jpg'), pick('IMG_0421.JPG', 'IMG_0421.JPG'),
       pick('copy.jpg', 'exif-gangneung.jpg'), // 같은 사진 → 중복
-      pick('DSC_9999.JPG', '20190812_183000.jpg'), // 촬영 정보도 파일명 날짜도 없음 → 모름
+      pick('DSC_9999.JPG', '20190812_183000.jpg', ' '), // 촬영 정보도 파일명 날짜도 없음 → 모름 (뒤에 한 바이트 붙여 다른 사진으로)
     ]);
     const nums = page.getByTestId('desk-nums');
-    await expect(nums).toContainText('사진 3장', { timeout: 15_000 });
+    await expect(nums).toContainText('사진 4장', { timeout: 15_000 });
     await expect(nums).toContainText('파일 5개');
-    await expect(nums).toContainText('중복 2장');
+    await expect(nums).toContainText('중복 1장');
     // 서랍: 모르는 사진 → 언제 모름 → DSC_9999 (촬영 정보도 파일명 날짜도 없음)
     const drawers = page.getByTestId('desk-drawers');
     await expect(drawers).toContainText('모르는 사진');
