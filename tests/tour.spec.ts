@@ -303,6 +303,17 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.goto('/wishes');
   await expect(page.getByTestId('wish-again').first()).toContainText('못 간 곳 2');
   await snap(page, 'm13-wishes');
+  // 가고 싶은 곳 담기: '들를 곳'(맛집·카페·관광지)이 어디 바로 밑에, 지도 공유 글을 붙여 넣으면 이름만
+  await page.goto('/wishes/new');
+  await expect(page.getByTestId('wish-stops')).toBeVisible();
+  await page.getByLabel('맛집·카페').focus();
+  await page.evaluate(() => {
+    const dt = new DataTransfer();
+    dt.setData('text', '[네이버 지도]\n테라로사 커피공장\n강원 강릉시 구정면 현천길 7\nhttps://naver.me/xyz');
+    document.activeElement?.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  });
+  await expect(page.getByLabel('맛집·카페')).toHaveValue('테라로사 커피공장');
+  await snap(page, 'm13b-wish-new', false);
   await page.goto('/wishes/w6');
   await expect(page.getByTestId('wish-gone')).toBeVisible();
   await expect(page.getByTestId('wish-gone-rec')).toContainText('보헤미안 박이추 커피');

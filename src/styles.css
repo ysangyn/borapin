@@ -1717,3 +1717,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .mymaps-card.empty { border: 1.5px dashed var(--v3, #9B82F6); }
 .mymaps-card .chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 .mymaps-card .chip b { color: var(--violet); margin-left: 3px; }
+.wish-stops { gap: 8px; }
+.wish-stop { display: flex; flex-direction: column; gap: 4px; }
+.wish-stop-tag { align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 99px; }
+.wish-stop-tag.food { background: var(--pink-mist); color: var(--pink-ink); }
+.wish-stop-tag.sight { background: var(--mist); color: var(--violet-dark); }
+.wish-stop-tag.todo { background: var(--butter, #FFF2BF); color: var(--butter-ink, #7A5B00); }

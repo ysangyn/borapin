@@ -1,3 +1,5 @@
+import type { ClipboardEvent } from 'react';
+import { parseNaverShare } from '../lib/placeRecs';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../components/ui';
@@ -148,6 +150,14 @@ export default function WishEdit() {
     return <Spinner />;
   }
 
+  /** 지도 '공유' 글을 붙여 넣으면 가게 이름만 한 줄로 (주소·링크는 버린다) */
+  const pasteNames = (set: (f: (v: string) => string) => void) => (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    const text = e.clipboardData.getData('text');
+    const parsed = parseNaverShare(text);
+    if (!parsed.name || !/https?:\/\//.test(text)) return;
+    e.preventDefault();
+    set((v) => (v.trim() ? `${v.replace(/\s+$/, '')}\n${parsed.name}` : parsed.name!));
+  };
   return (
     <>
       <TopBar back backTo="/wishes" confirmLeave={dirty} title={editing ? '가고 싶은 곳' : '가고 싶은 곳 담기'} />
@@ -155,8 +165,26 @@ export default function WishEdit() {
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
           <PlacePicker value={place ? [place] : []} onChange={(v) => setPlaces(v.slice(-1))} />
-          <span className="tiny muted" style={{ marginTop: 4 }}>특정 장소 (선택)</span>
+          <span className="tiny muted" style={{ marginTop: 4 }}>딱 한 곳이면 그 이름 (선택)</span>
           <input className="input" aria-label="특정 장소 이름" placeholder="예: 성산일출봉, 단골 카페" value={spotName} onChange={(e) => setSpotName(e.target.value)} maxLength={60} />
+        </div>
+
+        {/* 들를 곳: 맛집·카페·관광지 — 가고 싶은 곳의 알맹이라 맨 위에. 지도 '공유' 글을 붙여 넣으면 이름만 남긴다 */}
+        <div className="field wish-stops" data-testid="wish-stops">
+          <span className="label">들를 곳 <span className="muted small">(한 줄에 하나 · 네이버·카카오 지도 '공유' 글을 붙여 넣어도 돼요)</span></span>
+          <div className="wish-stop">
+            <span className="wish-stop-tag food">맛집·카페</span>
+            <textarea className="textarea" aria-label="맛집·카페" rows={2} value={foods} onChange={(e) => setFoods(e.target.value)} onPaste={pasteNames(setFoods)} placeholder={'고기국수\n단골 카페'} />
+          </div>
+          <div className="wish-stop">
+            <span className="wish-stop-tag sight">관광지·볼거리</span>
+            <textarea className="textarea" aria-label="관광지·볼거리" rows={2} value={spots} onChange={(e) => setSpots(e.target.value)} onPaste={pasteNames(setSpots)} placeholder={'성산일출봉\n우도'} />
+          </div>
+          <div className="wish-stop">
+            <span className="wish-stop-tag todo">해볼 것</span>
+            <textarea className="textarea" aria-label="해볼 것" rows={1} value={todos} onChange={(e) => setTodos(e.target.value)} placeholder="일출 보기" />
+          </div>
+          <span className="tiny muted">여기 적은 곳은 여행을 계획할 때 '담기' 후보로 먼저 나와요.</span>
         </div>
 
         <div className="field">
@@ -193,23 +221,10 @@ export default function WishEdit() {
               const cur = kind === 'foods' ? foods : spots;
               if (lines(cur).includes(text)) return toast('이미 메모에 있어요');
               (kind === 'foods' ? setFoods : setSpots)(cur.trim() ? `${cur.replace(/\s+$/, '')}\n${text}` : text);
-              toast(`${kind === 'foods' ? '먹거리' : '볼거리'}에 넣었어요`);
+              toast(`${kind === 'foods' ? '맛집·카페' : '관광지·볼거리'}에 넣었어요`);
             }} />
           </div>
         )}
-        <div className="field">
-          <span className="label">볼거리 <span className="muted small">(한 줄에 하나)</span></span>
-          <textarea className="textarea" aria-label="볼거리" rows={3} value={spots} onChange={(e) => setSpots(e.target.value)} placeholder={'성산일출봉\n우도'} />
-        </div>
-        <div className="field">
-          <span className="label">해볼 것</span>
-          <textarea className="textarea" aria-label="해볼 것" rows={2} value={todos} onChange={(e) => setTodos(e.target.value)} placeholder="일출 보기" />
-        </div>
-        <div className="field">
-          <span className="label">먹거리</span>
-          <textarea className="textarea" aria-label="먹거리" rows={2} value={foods} onChange={(e) => setFoods(e.target.value)} placeholder="고기국수" />
-        </div>
-
         {/* 다녀온 것 표시: 누르면 바로 저장 (남은 것이 있으면 '다시 가고 싶어요'로 남는다) */}
         {existing && [...existing.spots, ...existing.foods].length > 0 && (
           <div className="field" data-testid="wish-gone">
@@ -244,8 +259,9 @@ export default function WishEdit() {
         </div>
 
         <div className="field">
-          <span className="label">참고 링크 <span className="muted small">(인스타·블로그·지도, 한 줄에 하나)</span></span>
-          <textarea className="textarea" aria-label="참고 링크" rows={2} value={links} onChange={(e) => setLinks(e.target.value)} placeholder="https://" />
+          <span className="label">참고한 글 <span className="muted small">(선택 · 한 줄에 주소 하나)</span></span>
+          <span className="tiny muted" style={{ marginBottom: 4 }}>이 곳을 알게 된 인스타·블로그·유튜브 주소를 넣어 두면, 계획 짤 때 여기서 바로 다시 열어 봐요.</span>
+          <textarea className="textarea" aria-label="참고한 글" rows={2} value={links} onChange={(e) => setLinks(e.target.value)} placeholder="https://" />
           {lines(links).filter((l) => /^https?:\/\//.test(l)).map((l) => (
             <a key={l} href={l} target="_blank" rel="noreferrer" className="tiny" style={{ display: 'flex', gap: 4, alignItems: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               <Icon name="link" size={13} />{l}

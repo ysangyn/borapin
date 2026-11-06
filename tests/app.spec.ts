@@ -357,7 +357,7 @@ test.describe.serial('보라핀 1단계', () => {
     await page.getByRole('button', { name: '보라', exact: true }).click();
     await expect(page.getByText('둘 다 원해요')).toBeVisible();
     await page.getByRole('button', { name: '1순위' }).click();
-    await page.getByLabel('볼거리').fill('성산일출봉\n우도');
+    await page.getByLabel('관광지·볼거리').fill('성산일출봉\n우도');
     await page.getByTestId('wish-save').click();
     // 저장하면 들어왔던 화면(홈)으로 돌아간다
     await expect(page.getByRole('status')).toContainText('고쳤어요');
@@ -455,7 +455,7 @@ test.describe.serial('보라핀 1단계', () => {
     const firstEat = info.getByRole('button', { name: /메모에 넣기$/ }).first();
     const eatText = (await firstEat.getAttribute('aria-label'))!.replace(' 메모에 넣기', '');
     await firstEat.click();
-    await expect(page.getByLabel('먹거리')).toHaveValue(new RegExp(eatText));
+    await expect(page.getByLabel('맛집·카페')).toHaveValue(new RegExp(eatText));
     // 투어·티켓 찾기: 단추 하나 → 세 곳 고르기 창
     await info.getByTestId('tour-pick').click();
     const tc = page.getByTestId('tour-choice');
