@@ -30,6 +30,7 @@ const Wishes = lazy(() => import('./pages/Wishes'));
 const WishEdit = lazy(() => import('./pages/WishEdit'));
 const Places = lazy(() => import('./pages/Places'));
 const MyMaps = lazy(() => import('./pages/MyMaps'));
+const RegionPage = lazy(() => import('./pages/RegionPage'));
 const SharedMapPage = lazy(() => import('./pages/SharedMapPage'));
 const PlaceEdit = lazy(() => import('./pages/PlaceEdit'));
 const Ask = lazy(() => import('./pages/Ask'));
@@ -125,6 +126,7 @@ export default function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/places" element={<Places />} />
               <Route path="/maps" element={<MyMaps />} />
+              <Route path="/region/:param" element={<RegionPage />} />
               <Route path="/places/:id" element={<PlaceEdit />} />
               <Route path="/join/:code" element={<AlreadyIn />} />
               <Route path="*" element={<Navigate to="/" replace />} />

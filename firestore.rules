@@ -93,6 +93,7 @@ service cloud.firestore {
         && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
         // 내가 만든 꼬리표 (소품샵·옷가게·빵집…): 종류 안의 작은 주제
         && (!('tag' in d) || (d.tag is string && d.tag.size() <= 20))
+        && (!('status' in d) || d.status in ['want', 'been'])
         && d.region is map
         && (!('reviews' in d) || (d.reviews is map && d.reviews.size() <= 10))
         && (!('verdict' in d) || d.verdict == null || d.verdict in ['again', 'once', 'meh'])

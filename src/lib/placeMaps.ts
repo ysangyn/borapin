@@ -32,7 +32,8 @@ export const mapKey = (region: Place, theme: Theme) => `${placeParam(region)}|${
 /** 우리 장소 → 지도 묶음 (지역×주제, 곳이 많은 순). 한눈에(all)는 여기 없고 화면이 지역으로 모은다 */
 export function mapsOf(recs: PlaceRec[]): MyMap[] {
   const out: MyMap[] = [];
-  for (const r of recs) {
+  // 내 지도(보내는 지도)는 다녀온 곳만: 가고 싶어요는 지역 한 장에서 빈 핀으로
+  for (const r of recs.filter((x) => x.status !== 'want')) {
     const t = themeOf(r);
     const m = out.find((x) => x.theme === t && samePlace(x.region, r.region));
     if (m) m.recs.push(r); else out.push({ region: r.region, theme: t, recs: [r] });

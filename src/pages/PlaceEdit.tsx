@@ -15,7 +15,8 @@ import PlaceView from '../components/PlaceView';
 import { quickTripInput } from '../lib/tripActions';
 import { celebrate, whatsNew } from '../lib/celebrate';
 import { formatWhen } from '../lib/dates';
-import { parsePlaceParam, placeLabel } from '../lib/geo';
+import { parsePlaceParam, placeLabel, placeParam, searchPlaces } from '../lib/geo';
+import { regionFromAddress } from '../lib/area';
 import { KIND_LABEL, KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
 import { useHome } from '../lib/home';
@@ -54,6 +55,9 @@ export default function PlaceEdit() {
   const [memo, setMemo] = useState('');
   const [paste, setPaste] = useState('');
   const [visited, setVisited] = useState(false);
+  // 가고 싶어요 / 다녀왔어요 (지역 한 장의 '♥ 가게 담기'는 want로 연다; ?been=1은 가고 싶어요 → 다녀왔어요로 바꾸러 온 것)
+  const [status, setStatus] = useState<'want' | 'been'>(() => (sp.get('status') === 'want' ? 'want' : 'been'));
+  const [mode, setMode] = useState<'view' | 'form'>(() => (sp.get('been') === '1' ? 'form' : 'view'));
   const [loaded, setLoaded] = useState(!editing);
   // 고치는 칸을 '연 때'의 장소. 저장할 때 이것과 견줘 고친 칸만 보낸다
   // (실시간 existing과 견주면 상대가 그사이 고친 칸이 내 옛 값으로 덮이고, 상대 한 줄 평이 지워진다)
@@ -61,7 +65,6 @@ export default function PlaceEdit() {
   const [saving, setSaving] = useState(false);
   const [rank, setRank] = useState<{ id: string; name: string; kind: PlaceKind; tag?: string; region: Place } | null>(null);
   const [confirm, setConfirm] = useState(false);
-  const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' ? 'view' : 'form');
   const [kindTouched, setKindTouched] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   // 일정에서 '다녀왔어요'로 오면 그 자리(?lat&lng)와 그 일정 줄(?plan)을 가져온다
@@ -81,8 +84,11 @@ export default function PlaceEdit() {
   useEffect(() => {
     if (!editing && tripFromParam && region.length === 0) setRegion(tripFromParam.places.slice(0, 1));
   }, [editing, tripFromParam, region.length]);
+  // 어디? 시트에서 공유 글을 붙여 넣고 왔으면 그대로 푼다
+  useEffect(() => { const t = sp.get('paste'); if (t && !editing) applyPaste(t); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
-    if (!editing && !tripParam && !sp.get('region') && region.length === 0 && home?.code) { setRegion([{ t: 'kr', code: home.code }]); setRegionAuto(true); }
+    if (!editing && !tripParam && !sp.get('region') && !sp.get('paste') && region.length === 0 && home?.code) { setRegion([{ t: 'kr', code: home.code }]); setRegionAuto(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [home?.code]);
 
@@ -95,6 +101,7 @@ export default function PlaceEdit() {
       setTripId(existing.tripId ?? '');
       setReviews(existing.reviews ?? {});
       setVerdict(existing.verdict ?? null);
+      setStatus(sp.get('been') === '1' ? 'been' : existing.status === 'want' ? 'want' : 'been');
       setNaverUrl(existing.naverUrl ?? '');
       setAddress(existing.address ?? '');
       setMemo(existing.memo ?? '');
@@ -118,6 +125,8 @@ export default function PlaceEdit() {
     if (r.name && !name) setName(r.name.slice(0, 80));
     if (r.url) setNaverUrl(r.url);
     if (r.address && !address) setAddress(r.address);
+    // 주소에 시·군이 있으면 지역도 그걸로 (우리 집 동네로 자동으로 둔 것은 바꾼다)
+    if (r.address) { const at = regionFromAddress(r.address, searchPlaces); if (at) { setRegion((cur) => (cur.length && !regionAuto ? cur : [at])); setRegionAuto(false); } }
   };
 
   // 링크가 붙으면 그쪽 지도에서 이름·사진·주소·종류·자리를 가져와 빈 칸만 채운다
@@ -152,7 +161,7 @@ export default function PlaceEdit() {
     // 여행 없이 장소만 남기면서 '여기 다녀왔어요'를 골랐으면 핀(날짜 없는 여행)도 꽂고 이어 둔다
     let linkTrip = tripId || null;
     let news: string | null = null;
-    if (!editing && !linkTrip && visited) {
+    if (!editing && !linkTrip && visited && status === 'been') {
       try {
         const ti = quickTripInput(where, memberNames());
         news = trips ? whatsNew(trips, [...trips, { ...ti, id: 'new', v: 1 }]) : null;
@@ -172,6 +181,7 @@ export default function PlaceEdit() {
       tag: tag.trim().slice(0, 20) || undefined,
       region: where,
       tripId: linkTrip,
+      status,
       reviews: Object.fromEntries(Object.entries(reviews).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v)),
       verdict,
       naverUrl: /^https?:\/\//i.test(naverUrl.trim()) ? naverUrl.trim() : undefined,
@@ -189,10 +199,11 @@ export default function PlaceEdit() {
       if (!editing && newId && planParam) await updatePlan(planParam, { recId: newId, done: true }).catch((e) => console.warn(e));
       if (news) celebrate();
       toast(editing ? '고쳤어요' : linkTrip && visited ? `담고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : `${withJosa(name.trim(), '을/를')} 담았어요`);
-      if (editing) { setSaving(false); setMode('view'); return; }
+      if (editing) { setSaving(false); if (sp.get('been') === '1') { goBack(`/region/${placeParam(input.region)}?tab=places`); return; } setMode('view'); return; }
       // 새로 담은 곳: 같은 지역·주제에 이미 담은 곳이 있으면 한 번 견줘 내 지도 순위에 끼운다 (없으면 바로 돌아감)
-      if (newId && (places ?? []).some((r) => themeOf(r) === themeOf(input) && samePlace(r.region, input.region))) { setRank({ id: newId, name: input.name, kind: input.kind, tag: input.tag, region: input.region }); setSaving(false); return; }
-      goBack(tripParam ? `/trips/${tripParam}` : '/places');
+      if (newId && status === 'been' && (places ?? []).some((r) => r.status !== 'want' && themeOf(r) === themeOf(input) && samePlace(r.region, input.region))) { setRank({ id: newId, name: input.name, kind: input.kind, tag: input.tag, region: input.region }); setSaving(false); return; }
+      // 담고 나면 그 지역 한 장(맛집·명소 탭)으로: 방금 담은 곳이 어디 들어갔는지 바로 보이게
+      goBack(tripParam ? `/trips/${tripParam}` : `/region/${placeParam(input.region)}?tab=places`);
     } catch (e) {
       console.warn(e);
       toast('저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -238,9 +249,14 @@ export default function PlaceEdit() {
 
   return (
     <>
-      {rank && <RankAsk rec={rank} all={places ?? []} onDone={() => { const k = `${rank.region.t === 'kr' ? 'kr:' + rank.region.code : 'country:' + rank.region.id}|${themeOf(rank)}`; setRank(null); goBack(tripParam ? `/trips/${tripParam}` : `/maps?m=${encodeURIComponent(k)}`); }} />}
+      {rank && <RankAsk rec={rank} all={places ?? []} onDone={() => { setRank(null); goBack(tripParam ? `/trips/${tripParam}` : `/region/${placeParam(rank.region)}?tab=places`); }} />}
       <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '맛집·카페 담기'} right={editing ? <button className="btn sm ghost" onClick={() => { if (dirty && !window.confirm('고친 내용이 사라져요. 그만 고칠까요?')) return; setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
+        <div className="seg" role="radiogroup" aria-label="가고 싶어요 또는 다녀왔어요" data-testid="place-status">
+          <button type="button" role="radio" aria-checked={status === 'want'} className={status === 'want' ? 'on coral' : ''} onClick={() => setStatus('want')} data-testid="status-want">♥ 가고 싶어요</button>
+          <button type="button" role="radio" aria-checked={status === 'been'} className={status === 'been' ? 'on' : ''} onClick={() => setStatus('been')} data-testid="status-been">다녀왔어요</button>
+        </div>
+        {status === 'want' && <span className="tiny muted" style={{ marginTop: -8 }}>그 동네 내 지도에 빈 핀으로 찍히고, 여행을 계획할 때 담기 후보로 먼저 나와요. 가 본 뒤 '다녀왔어요'로 바꾸면 돼요.</span>}
         <div className="field">
           <span className="label">네이버지도 <span className="muted small">(선택)</span></span>
           {/^https?:\/\//i.test(naverUrl.trim()) ? (
@@ -319,13 +335,14 @@ export default function PlaceEdit() {
           </div>
         )}
 
-        {!editing && !tripId && (
+        {!editing && !tripId && status === 'been' && (
           <label className="check-row">
             <input type="checkbox" checked={visited} onChange={(e) => setVisited(e.target.checked)} />
             <span>여기 다녀왔어요 (지도에 핀도 꽂기)</span>
           </label>
         )}
 
+        {status === 'been' ? (<>
         <div className="field">
           <span className="label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>한 줄 평
             {/* 꼬리표 모양이지만 누르는 단추라 36px 높이(.tag-btn) — 손가락으로 누르기 쉽게 */}
@@ -365,6 +382,12 @@ export default function PlaceEdit() {
         </div>
 
 
+        </>) : (
+          <div className="field">
+            <span className="label">왜 가고 싶어요? <span className="muted small">(선택)</span></span>
+            <input className="input" aria-label="가고 싶은 이유" value={reviews[me] ?? ''} onChange={(e) => setReviews({ ...reviews, [me]: e.target.value })} placeholder="예: 릴스에서 본 소금빵, 바다 뷰" maxLength={200} />
+          </div>
+        )}
         <div className="field">
           <span className="label">메모</span>
           <textarea className="textarea" aria-label="장소 메모" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="주문한 메뉴, 웨이팅, 주차…" maxLength={5000} />

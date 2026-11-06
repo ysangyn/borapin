@@ -148,6 +148,10 @@ describe('함께 쓰는 사람 (보라)', () => {
     await assertFails(setDoc(P('p3'), place({ photoUrl: 'http://x.example/a.jpg' })));
     await assertFails(setDoc(P('p4'), place({ lat: 135, lng: 128 })));
     await assertFails(setDoc(P('p5'), place({ lng: '128' })));
+    // 가고 싶어요/다녀왔어요 상태: 둘 중 하나만
+    await assertSucceeds(setDoc(P('p6'), place({ status: 'want' })));
+    await assertSucceeds(setDoc(P('p7'), place({ status: 'been' })));
+    await assertFails(setDoc(P('p8'), place({ status: 'maybe' })));
   });
   test('우리 집: 국내 위경도와 정해진 칸만 저장된다', async () => {
     const db = as.bora();

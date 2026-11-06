@@ -107,6 +107,8 @@ export interface PlaceRec {
   /** 어느 지역 (국내 시·군 / 해외 나라·도시) */
   region: Place;
   tripId?: string | null;
+  /** 가고 싶어요(want) / 다녀왔어요(been). 없으면 been (옛 기록). 가고 싶어요는 내 지도에 빈 핀, 계획 담기 후보, 공개 지도엔 안 실림 */
+  status?: 'want' | 'been';
   /** 둘의 한 줄 평 */
   reviews: Record<string, string>;
   verdict: Verdict | null;

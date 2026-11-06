@@ -2,6 +2,7 @@ import { onSpeechNote } from '../lib/speech';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { NavLink, useBlocker, useLocation, useNavigate } from 'react-router-dom';
 import { leaveFreely, shouldAskLeave } from '../lib/leave';
+import WhereSheet from './WhereSheet';
 import { members, memberNames } from '../lib/members';
 import { asksForFeed, useRecentAsks } from '../lib/asks';
 import { useStore } from '../lib/store';
@@ -110,11 +111,7 @@ export function BottomNav() {
     <>
     {menu && (
       <div className="plus-sheet-backdrop" onClick={() => setMenu(false)}>
-        <div className="plus-sheet" role="menu" aria-label="무엇을 할까요" onClick={(e) => e.stopPropagation()} data-testid="plus-sheet">
-          <NavLink to="/places/new" role="menuitem" className="plus-item" data-testid="plus-place"><Icon name="heart" size={22} /><span><b>맛집·카페 담기</b><span className="tiny muted">가게 한 곳 · 한 줄 평 · 동네마다 내 지도로</span></span></NavLink>
-          <NavLink to="/record" role="menuitem" className="plus-item"><Icon name="pin" size={22} /><span><b>여행 기록 남기기</b><span className="tiny muted">여행 한 번 · 어디·언제·누구와·사진</span></span></NavLink>
-          <NavLink to="/plan" role="menuitem" className="plus-item"><Icon name="calendar" size={22} /><span><b>여행 계획하기</b><span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에서 둘이 고르기</span></span></NavLink>
-        </div>
+        <WhereSheet onClose={() => setMenu(false)} />
       </div>
     )}
     <nav className="nav" aria-label="주 메뉴">

@@ -118,7 +118,12 @@ const RECS = [
   { id: 'r2', name: '보헤미안 박이추 커피', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '바다 뷰' }, verdict: 'again', lat: 37.8003, lng: 128.9059 },
   { id: 'r7', name: '테라로사 커피공장', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 영상: '공장 구경하다 한 시간' }, verdict: 'again', lat: 37.7008, lng: 128.8629 },
   { id: 'r8', name: '카페 툇마루', kind: 'cafe', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '흑임자 라테' }, verdict: 'once', lat: 37.7676, lng: 128.8763 },
-  { id: 'r9', name: '강릉 월화거리 소품가게', kind: 'shop', tag: '소품샵', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '엽서 샀어' }, verdict: 'again', lat: 37.7519, lng: 128.8962 },
+  { id: 'r9', name: '강릉 월화거리 소품가게', kind: 'shop', tag: '소품샵', region: { t: 'kr', code: '51150' }, tripId: 't1', reviews: { 보라: '엽서 샀어' }, verdict: 'again', lat: 37.7519, lng: 128.8962, address: '강원 강릉시 성남동 48-1' },
+  // 가고 싶어요: 빈 핀 · 공개 지도엔 안 실림 · 동네 칩(주소)
+  { id: 'r10', name: '버드나무 브루어리', kind: 'food', tag: '빵집', region: { t: 'kr', code: '51150' }, status: 'want', reviews: { 보라: '릴스에서 봄, 소금빵' }, verdict: null, lat: 37.7553, lng: 128.8926, address: '강원 강릉시 경강로 1961' },
+  { id: 'r11', name: '어니언 성수', kind: 'cafe', region: { t: 'kr', code: '11' }, reviews: { 보라: '팡도르' }, verdict: 'again', lat: 37.5446, lng: 127.0565, address: '서울 성동구 성수동2가 277-135' },
+  { id: 'r12', name: '소문난 성수 감자탕', kind: 'food', region: { t: 'kr', code: '11' }, reviews: { 영상: '해장은 여기' }, verdict: 'once', lat: 37.5434, lng: 127.0537, address: '서울 성동구 성수동1가 668-33' },
+  { id: 'r13', name: '연남동 어느 카페', kind: 'cafe', region: { t: 'kr', code: '11' }, status: 'want', reviews: {}, verdict: null, lat: 37.5628, lng: 126.9254, address: '서울 마포구 연남동 227-15' },
   { id: 'r3', name: '해녀의 집', kind: 'food', region: { t: 'kr', code: '50' }, tripId: 't2', reviews: { 영상: '전복죽' }, verdict: 'once' },
   { id: 'r4', name: '감천문화마을', kind: 'sight', region: { t: 'kr', code: '26' }, tripId: 't5', reviews: {}, verdict: 'once' },
   { id: 'r5', name: '이치란 시부야', kind: 'food', region: { t: 'country', id: 'JPN', city: '도쿄' }, tripId: 't8', reviews: { 영상: '줄이 길다' }, verdict: 'meh' },
@@ -221,9 +226,30 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   // 맛집 지도로 가는 문: 홈 '내 지도' 카드(동네별 칩) → + 메뉴 첫 줄 '맛집·카페 담기' → 지역은 우리 집 동네가 기본
   await expect(page.getByTestId('mymaps-card')).toBeVisible();
   await expect(page.getByTestId('mymaps-card-chip').first()).toContainText(/강릉시 (카페|맛집)/);
+  // + 단추 = 어디?: 우리 집·자주 가는 곳 칩 → 지역 한 장 / 공유 글 붙여 넣기 → 가게 담기 / 바로 가기 세 줄
+  await page.getByRole('button', { name: '남기기' }).click();
+  await expect(page.getByTestId('where-home')).toContainText('고양시');
+  await expect(page.getByTestId('where-frequent').first()).toContainText('강릉시');
+  await snap(page, 'm01b-plus-sheet', false);
+  await page.getByTestId('where-search').fill('통영');
+  await page.getByTestId('where-hits').getByRole('button', { name: /통영/ }).click();
+  await expect(page).toHaveURL(/\/region\/kr:48220/);
+  await expect(page.getByTestId('region-page')).toBeVisible();
+  await snap(page, 'm01b2-region-tongyeong', false);
+  await page.goto('/');
+  await page.getByRole('button', { name: '남기기' }).click();
+  await page.getByTestId('where-search').focus();
+  await page.evaluate(() => {
+    const dt = new DataTransfer();
+    dt.setData('text', '[네이버 지도]\n오미사꿀빵\n경남 통영시 항남동 123\nhttps://naver.me/tongyeong');
+    document.activeElement?.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  });
+  await expect(page).toHaveURL(/\/places\/new\?paste=/);
+  await expect(page.getByLabel('장소 이름')).toHaveValue('오미사꿀빵');
+  await expect(page.getByText('경남 통영시').first()).toBeVisible(); // 주소에서 지역을 알아서
+  await page.goto('/');
   await page.getByRole('button', { name: '남기기' }).click();
   await expect(page.getByTestId('plus-sheet').getByRole('menuitem').first()).toContainText('맛집·카페 담기');
-  await snap(page, 'm01b-plus-sheet', false);
   await page.getByTestId('plus-place').click();
   await expect(page.getByTestId('region-auto')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('고양시').first()).toBeVisible();
@@ -342,8 +368,35 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.getByTestId('rank-better').click();
   // 3곳이면 많아야 2번 묻는다
   if (await page.getByTestId('rank-ask').isVisible().catch(() => false)) await page.getByTestId('rank-better').click();
-  await expect(page).toHaveURL(/\/maps\?m=/);
-  await expect(page.getByTestId('mymap-list').getByTestId('place-rec').first()).toContainText('안목 커피거리 2호점');
+  // 담고 나면 그 지역 한 장(맛집·명소 탭)으로
+  await expect(page).toHaveURL(/\/region\/kr:51150\?tab=places/);
+  await expect(page.getByTestId('region-been').first()).toContainText('안목 커피거리 2호점');
+  await expect(page.getByTestId('region-want')).toHaveCount(1); // 버드나무 브루어리 (가고 싶어요)
+  await snap(page, 'm15c2-region-places');
+  // 한눈에: 채운 핀·빈 핀 지도 · 여행 · 때
+  await page.getByTestId('region-tab-glance').click();
+  await expect(page.getByTestId('region-glance')).toBeVisible();
+  await page.waitForTimeout(2500);
+  await snap(page, 'm15c3-region-glance');
+  await page.getByTestId('region-tab-trips').click();
+  await expect(page.getByTestId('region-trips')).toBeVisible();
+  await snap(page, 'm15c4-region-trips', false);
+  // 큰 도시는 동네 칩으로 (주소에서): 서울 → 성동구 2 · 마포구 1
+  await page.goto('/region/kr:11?tab=places');
+  await expect(page.getByTestId('region-areas')).toContainText('성동구');
+  await page.getByTestId('region-areas').getByRole('button', { name: /성동구/ }).click();
+  await expect(page.getByTestId('region-been')).toHaveCount(2);
+  await expect(page.getByTestId('region-want')).toHaveCount(0);
+  await snap(page, 'm15c5-region-seoul', false);
+  // 가고 싶어요 → 다녀왔어요: ✓ 누르면 평가 쓰는 화면이 '다녀왔어요'로 열린다
+  await page.goto('/region/kr:51150?tab=places');
+  await page.getByTestId('region-mark-been').first().click();
+  await expect(page.getByTestId('status-been')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('place-save').click();
+  await expect(page).toHaveURL(/\/region\/kr:51150/);
+  await expect(page.getByTestId('region-want')).toHaveCount(0);
+  await page.goto('/maps?m=kr:51150|cafe');
+  await expect(page.getByTestId('mymaps')).toBeVisible();
   // 보내기: 공개 사본이 생기고 토큰으로 열린다
   await page.getByTestId('mymap-share').click();
   // 기기 공유 창이 열리면 알림이 없을 수 있으니, 공개 토큰이 생기는 것으로 확인한다

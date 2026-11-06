@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from './ui';
 import { useMyMaps } from '../lib/placeMapData';
 import { ALL, KIND_COLOR, themeLabel } from '../lib/placeMaps';
-import { placeLabel } from '../lib/geo';
+import { placeLabel, placeParam } from '../lib/geo';
 import type { PlaceKind } from '../lib/types';
 
 /**
@@ -30,7 +30,7 @@ export default function MyMapsCard() {
       </span>
       <div className="chips" style={{ marginTop: 2 }}>
         {themed.slice(0, 5).map((m) => (
-          <Link key={m.key} to={`/maps?m=${encodeURIComponent(m.key)}`} className="chip" data-testid="mymaps-card-chip">
+          <Link key={m.key} to={`/region/${placeParam(m.region)}?tab=places`} className="chip" data-testid="mymaps-card-chip">
             <i className="dot" style={{ background: KIND_COLOR[(m.recs[0]?.kind ?? 'etc') as PlaceKind] }} aria-hidden="true" />
             {placeLabel(m.region)} {themeLabel(m.theme)} <b>{m.recs.length}</b>
           </Link>

@@ -124,7 +124,8 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       )}
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
-          <div className="jua" style={{ fontSize: 28, lineHeight: 1.1 }} data-testid="sheet-title">{name}</div>
+          <Link to={`/region/${placeParam}`} className="jua" style={{ fontSize: 28, lineHeight: 1.1, color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }} data-testid="sheet-title">{name}<Icon name="chev" size={18} /></Link>
+          <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600 }} data-testid="sheet-region">{name} 한 장 열기 · 맛집·명소·여행 모두</Link>
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           {fests.length > 0 && (
             <div className="sheet-fests" data-testid="sheet-festivals">
@@ -178,10 +179,10 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
 
       <div className="sheet-recs">
         <div className="row-between" style={{ alignItems: 'center' }}>
-          <span className="small" style={{ fontWeight: 600 }}>우리 장소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
+          <span className="small" style={{ fontWeight: 600 }}>맛집·명소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
           <span style={{ display: 'flex', gap: 12 }}>
-            {recsHere(recs, place).length > 0 && <Link to={`/maps?m=${encodeURIComponent(`${placeParam}|all`)}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-mymap">내 지도</Link>}
-            <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-place-new">+ 장소 남기기</Link>
+            {recsHere(recs, place).length > 0 && <Link to={`/region/${placeParam}?tab=places`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-mymap">모두 보기</Link>}
+            <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-place-new">+ 담기</Link>
           </span>
         </div>
         {recsHere(recs, place).slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
