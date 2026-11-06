@@ -1,4 +1,4 @@
-import { groupDupes } from './dupes';
+import { groupDupes, uniquePhotos } from './dupes';
 import { HINT_LABEL } from './inventory';
 import { matchTrips, type DeskTrip } from './trips';
 import type { Item } from './types';
@@ -27,15 +27,7 @@ const MONTH = (m: string) => `${Number(m)}월`;
 const DAY = (d: string) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
 
 export function buildTree(items: Item[], trips: DeskTrip[]): TreeNode[] {
-  // 같은 사진은 처음 것 하나만 (촬영 정보가 더 좋은 쪽을 대표로: exif > filename > folder > mtime)
-  const rank = { exif: 0, filename: 1, folder: 2, mtime: 3 } as const;
-  const rep = new Map<string, Item>();
-  items.forEach((i, n) => {
-    const k = i.sha ?? `nosha:${n}`;
-    const prev = rep.get(k);
-    if (!prev || rank[i.takenFrom ?? 'mtime'] < rank[prev.takenFrom ?? 'mtime']) rep.set(k, i);
-  });
-  const photos = [...rep.values()];
+  const photos = uniquePhotos(items);
   const m = matchTrips(photos, trips);
 
   const tripsNode = node('여행', 'trips');

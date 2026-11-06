@@ -1,4 +1,4 @@
-import { groupDupes } from './dupes';
+import { groupDupes, uniquePhotos } from './dupes';
 import { matchTrips, type DeskTrip } from './trips';
 import { fullPath, type Item } from './types';
 
@@ -31,14 +31,15 @@ const HINT_LABEL: Record<string, string> = { screenshot: '스크린샷', receive
 
 export function summarize(items: Item[], trips: DeskTrip[]): Summary {
   const d = groupDupes(items);
-  const m = matchTrips(items, trips);
+  // 언제·어디·여행은 '사진' 단위(같은 사진은 하나로), 파일 수·용량·종류는 파일 단위
+  const photos = uniquePhotos(items);
+  const m = matchTrips(photos, trips);
   const byKind: Record<string, number> = {}, byTakenFrom: Record<string, number> = {};
   const tripRows = new Map<string, { id: string; title: string; files: number; sure: number }>();
   const years = new Map<string, number>();
   let unknownWhen = 0, unknownWhere = 0, unknown = 0, bytes = 0;
-  items.forEach((i, n) => {
-    bytes += i.size;
-    byKind[i.kind] = (byKind[i.kind] ?? 0) + 1;
+  for (const i of items) { bytes += i.size; byKind[i.kind] = (byKind[i.kind] ?? 0) + 1; }
+  photos.forEach((i, n) => {
     byTakenFrom[i.takenFrom ?? 'none'] = (byTakenFrom[i.takenFrom ?? 'none'] ?? 0) + 1;
     const when = !!i.taken && i.takenFrom !== 'mtime' && !i.received;
     const where = (i.lat != null && i.lng != null) || !!m[n].tripId;

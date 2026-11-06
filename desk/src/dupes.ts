@@ -30,3 +30,15 @@ export function groupDupes(items: Item[]): DupeResult {
   groups.sort((a, b) => b.size * (b.paths.length - 1) - a.size * (a.paths.length - 1));
   return { unique: by.size + noSha, extraFiles, extraBytes, groups };
 }
+
+/** 같은 사진(해시)은 하나만 — 촬영 정보가 더 좋은 쪽(exif > filename > folder > mtime)을 대표로 */
+export function uniquePhotos(items: Item[]): Item[] {
+  const rank = { exif: 0, filename: 1, folder: 2, mtime: 3 } as const;
+  const rep = new Map<string, Item>();
+  items.forEach((i, n) => {
+    const k = i.sha ?? `nosha:${n}`;
+    const prev = rep.get(k);
+    if (!prev || rank[i.takenFrom ?? 'mtime'] < rank[prev.takenFrom ?? 'mtime']) rep.set(k, i);
+  });
+  return [...rep.values()];
+}
