@@ -57,7 +57,7 @@ export default function PlaceEdit() {
   const [visited, setVisited] = useState(false);
   // 가고 싶어요 / 다녀왔어요 (지역 한 장의 '♥ 가게 담기'는 want로 연다; ?been=1은 가고 싶어요 → 다녀왔어요로 바꾸러 온 것)
   const [status, setStatus] = useState<'want' | 'been'>(() => (sp.get('status') === 'want' ? 'want' : 'been'));
-  const [mode, setMode] = useState<'view' | 'form'>(() => (sp.get('been') === '1' ? 'form' : 'view'));
+  const [mode, setMode] = useState<'view' | 'form'>(editing && sp.get('edit') !== '1' && sp.get('been') !== '1' ? 'view' : 'form');
   const [loaded, setLoaded] = useState(!editing);
   // 고치는 칸을 '연 때'의 장소. 저장할 때 이것과 견줘 고친 칸만 보낸다
   // (실시간 existing과 견주면 상대가 그사이 고친 칸이 내 옛 값으로 덮이고, 상대 한 줄 평이 지워진다)

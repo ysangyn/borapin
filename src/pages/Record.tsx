@@ -308,7 +308,7 @@ export default function Record() {
               <select className="input" aria-label="종류" value={stopKind} onChange={(e) => setStopKind(e.target.value as PlaceKind)} style={{ width: 92, flex: 'none' }}>
                 <option value="food">맛집</option><option value="cafe">카페</option><option value="sight">볼거리</option><option value="shop">쇼핑</option><option value="stay">숙소</option><option value="etc">기타</option>
               </select>
-              <button type="button" className="btn sm" onClick={addStop} disabled={!stopName.trim()} data-testid="record-stop-add">추가</button>
+              <button type="button" className="btn sm" onClick={addStop} disabled={!stopName.trim()} data-testid="record-stop-add">넣기</button>
             </div>
             {stops.length > 0 && (
               <div className="chips" data-testid="record-stop-list">

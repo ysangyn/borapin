@@ -383,7 +383,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   if (await page.getByTestId('rank-ask').isVisible().catch(() => false)) await page.getByTestId('rank-better').click();
   // 담고 나면 그 지역 한 장(맛집·명소 탭)으로
   await expect(page).toHaveURL(/\/region\/kr:51150\?tab=places/);
-  await expect(page.getByTestId('region-been').first()).toContainText('안목 커피거리 2호점');
+  await expect(page.getByTestId('region-been').filter({ hasText: '안목 커피거리 2호점' })).toHaveCount(1);
   await expect(page.getByTestId('region-want')).toHaveCount(1); // 버드나무 브루어리 (가고 싶어요)
   await snap(page, 'm15c2-region-places');
   // 한눈에: 채운 핀·빈 핀 지도 · 여행 · 때
