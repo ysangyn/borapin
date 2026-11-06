@@ -4,7 +4,10 @@ import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../co
 import PlacePicker from '../components/PlacePicker';
 import PlaceHint from '../components/PlaceHint';
 import { useAuth } from '../lib/auth';
-import { companionSuggestions, createTrip, updateTrip, updateWish, useTrips } from '../lib/data';
+import { companionSuggestions, createPlace, createTrip, markPlaceBeen, updateTrip, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
+import { candidates as stopCandidates, type Stop } from '../lib/recordStops';
+import { KIND_LABEL } from '../lib/placeRecs';
+import type { PlaceKind } from '../lib/types';
 import { fromInputDate, SEASON_LABEL, toInputDate } from '../lib/dates';
 import { parsePlaceParam, placeLabel, placeParam } from '../lib/geo';
 import type { Place, Precision, Season, Trip, TripInput, TripKind, TripStatus, When } from '../lib/types';
@@ -39,6 +42,13 @@ export default function Record() {
   const uploader = useUploader();
   const flags = useFlags();
   const { trips } = useTrips();
+  const { places: recs } = usePlaces();
+  const { wishes } = useWishes();
+  // 들른 맛집·명소: 체크한 후보(가고 싶어요 가게·적어 둔 글 줄) + 새로 적은 곳
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [stops, setStops] = useState<Stop[]>([]);
+  const [stopName, setStopName] = useState('');
+  const [stopKind, setStopKind] = useState<PlaceKind>('food');
   const existing = useMemo(() => trips?.find((t) => t.id === id), [trips, id]);
   const thisYear = new Date().getFullYear();
 
@@ -81,6 +91,11 @@ export default function Record() {
   }, [trips, companions]);
 
   const autoTitle = places.length ? `${placeLabel(places[0])} ${kind === 'outing' ? '나들이' : '여행'}` : '';
+  const cands = useMemo(() => (!editing && status === 'done' ? stopCandidates(places, recs ?? [], wishes ?? []) : []), [editing, status, places, recs, wishes]);
+  const stopKey = (c: Stop) => (c.k === 'want' ? `w:${c.id}` : `l:${c.name}`);
+  // 새로 적은 곳의 지역: 마지막으로 고른 곳 (여러 지역이면 첫 곳)
+  const regionOfStop = (_s: Stop): Place => places[places.length - 1] ?? places[0];
+  const addStop = () => { const n = stopName.trim(); if (!n) return; if (stops.some((x) => x.name === n)) { setStopName(''); return; } setStops([...stops, { k: 'new', name: n, kind: stopKind }]); setStopName(''); };
   const whenOk = when.p === 'unknown' || (when.p === 'day' ? !!(when.y && when.m && when.d) : when.p === 'month' ? !!(when.y && when.m) : when.p === 'season' ? !!when.s : !!when.y);
   const endBeforeStart = when.p === 'day' && !!when.d2 && toInputDate(when.y2 ?? when.y, when.m2 ?? when.m, when.d2) < toInputDate(when.y, when.m, when.d);
   const canSave = places.length > 0 && whenOk && !endBeforeStart && !saving;
@@ -89,7 +104,7 @@ export default function Record() {
   const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
   const dirty = !saving && (editing
     ? loaded && !!opened && (title !== opened.title || memo !== opened.memo || !same(places, opened.places) || !same(when, opened.when) || !same(companions, opened.companions) || kind !== opened.kind || status !== opened.status || pending.length > 0)
-    : !!memo.trim() || !!title.trim() || pending.length > 0 || !!when.y || !same(places, initialPlaces.current));
+    : !!memo.trim() || !!title.trim() || pending.length > 0 || !!when.y || !same(places, initialPlaces.current) || picked.size > 0 || stops.length > 0);
   useLeaveGuard(dirty);
 
   const setP = (p: Precision) => setWhen((w) => ({ p, y: w.y ?? (p === 'unknown' ? undefined : thisYear), m: p === 'day' || p === 'month' ? w.m : undefined, d: p === 'day' ? w.d : undefined, d2: p === 'day' ? w.d2 : undefined, m2: p === 'day' ? w.m2 : undefined, y2: p === 'day' ? w.y2 : undefined, s: p === 'season' ? w.s : undefined }));
@@ -124,6 +139,16 @@ export default function Record() {
       } else {
         const news = status === 'done' && trips ? whatsNew(trips, [...trips, { ...input, id: 'new', v: 1 }]) : null;
         const newId = await createTrip(input, auth.user);
+        // 들른 맛집·명소: 체크한 가고 싶어요 가게는 다녀왔어요로, 글 줄·새로 적은 곳은 가게로 만들어 이 여행에 묶는다
+        if (status === 'done') {
+          const todo: Stop[] = [...cands.filter((c) => picked.has(stopKey(c))), ...stops];
+          for (const st of todo) {
+            try {
+              if (st.k === 'want') await markPlaceBeen(st.id, newId);
+              else await createPlace({ name: st.name.slice(0, 80), kind: st.kind, region: regionOfStop(st), tripId: newId, status: 'been', reviews: {}, verdict: null }, auth.user);
+            } catch (e) { console.warn('들른 곳 저장 실패', e); }
+          }
+        }
         const wishId = sp.get('wish');
         if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
         if (news) celebrate();
@@ -140,7 +165,8 @@ export default function Record() {
           return;
         }
         // 다녀온 여행이면 다음 할 일로 '들른 맛집·카페'를 바로 권한다 (그 여행·지역이 채워진 채로)
-        toast(`${did}${news ? ` · ${news}` : ''}`, status === 'done' ? { label: '들른 맛집·카페 남기기', onClick: () => nav(`/places/new?trip=${newId}`) } : undefined);
+        const nStops = status === 'done' ? picked.size + stops.length : 0;
+        toast(`${did}${nStops ? ` · 맛집·명소 ${nStops}곳 함께` : ''}${news ? ` · ${news}` : ''}`, status === 'done' ? (nStops ? { label: '한 줄 평 쓰기', onClick: () => nav(`/trips/${newId}?tab=plan`) } : { label: '들른 맛집·명소 남기기', onClick: () => nav(`/places/new?trip=${newId}`) }) : undefined);
         nav(`/trips/${newId}`, { replace: true });
       }
     } catch (e) {
@@ -261,6 +287,37 @@ export default function Record() {
             <button type="button" className="btn soft sm" style={{ height: 46 }} onClick={addName}>추가</button>
           </div>
         </div>
+
+        {!editing && status === 'done' && places.length > 0 && (
+          <div className="field record-stops" data-testid="record-stops">
+            <span className="label">들른 맛집·명소 <span className="muted small">(선택 · 한 줄 평은 나중에 써도 돼요)</span></span>
+            {cands.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span className="tiny muted">계획에 담았던 곳 · 다녀온 곳에 체크</span>
+                <div className="chips">
+                  {cands.map((c) => { const k = stopKey(c); const on = picked.has(k); return (
+                    <button key={k} type="button" className={'chip' + (on ? ' on' : c.k === 'want' ? ' coral-soft' : ' dashed')} aria-pressed={on} onClick={() => setPicked((p) => { const n = new Set(p); if (n.has(k)) n.delete(k); else n.add(k); return n; })} data-testid="record-stop-cand">
+                      {on && <span className="chip-check" aria-hidden="true"><Icon name="check" size={13} stroke={2.6} /></span>}{c.name}<span className="tiny" style={{ opacity: .7, marginLeft: 4 }}>{KIND_LABEL[c.kind]}</span>
+                    </button>
+                  ); })}
+                </div>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input className="input" aria-label="들른 곳 이름" placeholder="가게·명소 이름" value={stopName} onChange={(e) => setStopName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addStop(); } }} style={{ flex: 1 }} />
+              <select className="input" aria-label="종류" value={stopKind} onChange={(e) => setStopKind(e.target.value as PlaceKind)} style={{ width: 92, flex: 'none' }}>
+                <option value="food">맛집</option><option value="cafe">카페</option><option value="sight">볼거리</option><option value="shop">쇼핑</option><option value="stay">숙소</option><option value="etc">기타</option>
+              </select>
+              <button type="button" className="btn sm" onClick={addStop} disabled={!stopName.trim()} data-testid="record-stop-add">추가</button>
+            </div>
+            {stops.length > 0 && (
+              <div className="chips" data-testid="record-stop-list">
+                {stops.map((st) => <span key={st.name} className="chip on">{st.name}<span className="tiny" style={{ opacity: .8, marginLeft: 4 }}>{KIND_LABEL[st.kind]}</span><button type="button" className="chip-x" aria-label={`${st.name} 빼기`} onClick={() => setStops(stops.filter((x) => x !== st))}>×</button></span>)}
+              </div>
+            )}
+            {(picked.size > 0 || stops.length > 0) && <span className="tiny" style={{ color: 'var(--violet)' }}>저장하면 {picked.size + stops.length}곳이 이 여행의 맛집·명소와 그 동네 내 지도에 들어가요.</span>}
+          </div>
+        )}
 
         <div className="field">
           <span className="label">제목</span>

@@ -318,8 +318,21 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.waitForTimeout(1200);
   await page.screenshot({ path: path.join(OUT, 'm08-slideshow.jpg'), type: 'jpeg', quality: 82 });
   await page.keyboard.press('Escape');
-  await page.goto('/record');
+  // 여행 기록 안의 '들른 맛집·명소': 그 지역의 가고 싶어요 가게가 체크 후보로
+  await page.goto('/record?place=kr:51150');
+  await expect(page.getByTestId('record-stop-cand').first()).toContainText('버드나무 브루어리');
   await snap(page, 'm09-record');
+  // 새로 적은 곳은 저장하면 가게로 만들어 여행에 묶인다
+  await page.goto('/record?place=kr:47170');
+  await page.getByRole('button', { name: '날짜', exact: true }).click();
+  await page.getByLabel('시작 날짜').fill('2026-10-03');
+  await page.getByLabel('들른 곳 이름').fill('안동찜닭 골목');
+  await page.getByTestId('record-stop-add').click();
+  await expect(page.getByTestId('record-stop-list')).toContainText('안동찜닭 골목');
+  await page.getByTestId('save').click();
+  await expect(page.getByRole('status')).toContainText('맛집·명소 1곳 함께');
+  await page.goto('/region/kr:47170?tab=places');
+  await expect(page.getByTestId('region-been').first()).toContainText('안동찜닭 골목');
   await page.goto('/trips/t1/edit');
   await snap(page, 'm10-trip-edit');
   await page.goto('/map');

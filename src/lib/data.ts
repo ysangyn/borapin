@@ -180,6 +180,11 @@ export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecI
   syncMapShareAfterWrite(opened, input);
 }
 /** 링크에서 가져온 사진·자리만 조용히 채우기 (이미 있는 값은 건드리지 않는다) */
+/** 가고 싶어요 → 다녀왔어요 (여행에 묶으면서). 평가·한 줄 평은 나중에 가게 화면에서 */
+export async function markPlaceBeen(id: string, tripId: string | null) {
+  await patch(doc(placesCol(), id), { status: 'been', ...(tripId ? { tripId } : {}) });
+  syncShareAfterWrite(tripId);
+}
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
   const f = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined && v !== null && v !== ''));
   if (Object.keys(f).length) await patch(doc(placesCol(), id), f);
