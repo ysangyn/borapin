@@ -188,7 +188,7 @@ export default function PlaceEdit() {
       // 일정 줄과 잇는다: 그 줄은 '들른 곳'의 우리 장소로 올라가고 일정에선 다녀온 것으로
       if (!editing && newId && planParam) await updatePlan(planParam, { recId: newId, done: true }).catch((e) => console.warn(e));
       if (news) celebrate();
-      toast(editing ? '고쳤어요' : linkTrip && visited ? `장소를 남기고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : '장소를 남겼어요');
+      toast(editing ? '고쳤어요' : linkTrip && visited ? `담고 핀도 꽂았어요${news ? ` · ${news}` : ''}` : `${withJosa(name.trim(), '을/를')} 담았어요`);
       if (editing) { setSaving(false); setMode('view'); return; }
       // 새로 담은 곳: 같은 지역·주제에 이미 담은 곳이 있으면 한 번 견줘 내 지도 순위에 끼운다 (없으면 바로 돌아감)
       if (newId && (places ?? []).some((r) => themeOf(r) === themeOf(input) && samePlace(r.region, input.region))) { setRank({ id: newId, name: input.name, kind: input.kind, tag: input.tag, region: input.region }); setSaving(false); return; }
@@ -239,7 +239,7 @@ export default function PlaceEdit() {
   return (
     <>
       {rank && <RankAsk rec={rank} all={places ?? []} onDone={() => { const k = `${rank.region.t === 'kr' ? 'kr:' + rank.region.code : 'country:' + rank.region.id}|${themeOf(rank)}`; setRank(null); goBack(tripParam ? `/trips/${tripParam}` : `/maps?m=${encodeURIComponent(k)}`); }} />}
-      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '장소 남기기'} right={editing ? <button className="btn sm ghost" onClick={() => { if (dirty && !window.confirm('고친 내용이 사라져요. 그만 고칠까요?')) return; setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
+      <TopBar back backTo="/places" confirmLeave={dirty} title={editing ? '장소 고치기' : '맛집·카페 담기'} right={editing ? <button className="btn sm ghost" onClick={() => { if (dirty && !window.confirm('고친 내용이 사라져요. 그만 고칠까요?')) return; setMode('view'); setLoaded(false); }}>그만 고치기</button> : undefined} />
       <div className="page" style={{ paddingTop: 4, gap: 18 }}>
         <div className="field">
           <span className="label">네이버지도 <span className="muted small">(선택)</span></span>
@@ -371,7 +371,7 @@ export default function PlaceEdit() {
         </div>
 
         <button className="btn block" disabled={!where || !name.trim() || saving} onClick={save} data-testid="place-save">
-          {saving ? '저장 중…' : editing ? '고친 내용 저장' : '남기기'}
+          {saving ? '담는 중…' : editing ? '고친 내용 저장' : '담기'}
         </button>
         {editing && existing && (
           !confirm ? (
