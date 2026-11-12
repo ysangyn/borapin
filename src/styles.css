@@ -279,6 +279,8 @@ b, strong { font-weight: 600; }
 .empty b { font-size: 16px; color: var(--ink); }
 
 .sheet-open .toast { bottom: auto; top: calc(14px + env(safe-area-inset-top, 0px)); }
+/* 계획 이어가기: 아래쪽에 큰 단추·담은 곳 막대가 있어 알림은 위(머리 밑)에 띄운다 */
+body:has(.plan-flow) .toast { bottom: auto; top: calc(64px + env(safe-area-inset-top, 0px)); }
 .toast-region { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 50; }
 .toast-action { border: none; background: none; color: #c9bcff; font-weight: 600; font-size: 14px; padding: 8px 4px; margin: -8px -4px; white-space: nowrap; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 20px + var(--safe-b)); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; z-index: 50; box-shadow: 0 8px 24px rgba(23, 20, 43, 0.25); display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); }
@@ -1458,6 +1460,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .pick-card { position: relative; border: 1.5px solid var(--edge); border-radius: 14px; background: var(--card); overflow: hidden; box-shadow: 2px 2px 0 var(--line2); }
 .pick-hit { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 0 0 8px; border: 0; background: none; font: inherit; color: var(--ink); cursor: pointer; }
 .pick-hit img, .pick-noimg { width: 100%; height: 84px; object-fit: cover; border-bottom: 1.5px solid var(--edge); display: grid; place-items: center; font-size: 26px; background: var(--mist); }
+.pick-noimg.flower img { width: 52px; height: 52px; border: 0; object-fit: contain; opacity: .5; background: none; }
 .pick-noimg.eat { background: var(--peach); } .pick-noimg.buy { background: var(--mint); } .pick-noimg.fest { background: var(--pink-mist); }
 .pick-hit b { padding: 4px 8px 0; font-size: 13.5px; } .pick-hit .tiny { padding: 0 8px; }
 .pick-more { position: absolute; bottom: 6px; right: 6px; border: 1px solid var(--edge); border-radius: 99px; background: var(--card); font: inherit; font-size: 11px; font-weight: 600; padding: 1px 8px; color: var(--ink); cursor: pointer; }

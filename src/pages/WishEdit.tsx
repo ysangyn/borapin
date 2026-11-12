@@ -11,7 +11,7 @@ import { useAuth, displayName } from '../lib/auth';
 import { createWish, deleteWish, restoreWish, saveWishEdits, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
 import { parsePlaceParam, placeLabel, placeParam } from '../lib/geo';
-import { itemMarks, lines, recNames, sameName, samePlace, wishState } from '../lib/wishes';
+import { canPlanWish, itemMarks, lines, recNames, sameName, samePlace, wishState } from '../lib/wishes';
 import { everyoneLabel, everyoneWants, isMemberName, memberNames } from '../lib/members';
 import type { Place, Wish, WishInput, WishPriority } from '../lib/types';
 
@@ -279,7 +279,7 @@ export default function WishEdit() {
           {saving ? '저장 중…' : editing ? '고친 내용 저장' : '담기'}
         </button>
 
-        {editing && existing && state?.kind === 'wish' && (
+        {editing && existing && canPlanWish(state) && (
           <Link to={`/plan?wish=${existing.id}`} className="btn soft block" data-testid="wish-edit-plan">이곳으로 여행 만들기</Link>
         )}
         {editing && existing && (

@@ -26,6 +26,7 @@ export { daysOf };
 import { accessFor } from '../lib/transport';
 import { lookupLink } from '../lib/placeLookup';
 import { placeLabel, REGION_BY_CODE } from '../lib/geo';
+import { flowerOf, flowerSrc } from '../lib/flowers';
 import { memberNames, toneOf } from '../lib/members';
 import type { PlanItem, Trip, When } from '../lib/types';
 
@@ -275,6 +276,8 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
   const both = mine.filter((p) => members.length > 1 && members.every((n) => p.by?.includes(n)));
   const extra = mine.filter((p) => !picks.some((x) => x.name === p.name) && (p.kind ?? 'see') === tab);
   const area = place.t === 'kr' ? REGION_BY_CODE.get(place.code)?.name ?? '' : placeLabel(place);
+  // 사진 없는 볼거리 칸: 핀 하나 대신 그 고장 꽃 그림 (꽃 도감과 같은 그림)
+  const flower = flowerOf(place);
   return (
     <div className="flow-body" style={{ paddingBottom: 70 }}>
       <div className="flow-tabs" role="tablist">{(abroadCity && aiAvailable() ? (['see', 'do', 'eat', 'buy'] as PickKind[]) : (['see', 'eat', 'buy', 'fest'] as PickKind[]).filter((k) => k === 'see' || picks.some((p) => p.kind === k))).map((k) => { const n = picks.filter((p) => p.kind === k).length; return <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{PICK_LABEL[k]}{n > 0 && <small> {n}</small>}</button>; })}</div>
@@ -284,7 +287,7 @@ function PickStep({ trip, onNext }: { trip: Trip; onNext: () => void }) {
           return (
             <div key={p.key} className={'pick-card' + (by.includes(name) ? ' mine' : '')} data-testid="pick-card">
               <button type="button" className="pick-hit" onClick={() => void toggle(p)} aria-pressed={by.includes(name)} aria-label={`${p.name} ${by.includes(name) ? '하트 빼기' : '담기'}`}>
-                {p.img ? <img src={p.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className={'pick-noimg ' + p.kind} aria-hidden="true">{p.kind === 'eat' ? '🍲' : p.kind === 'buy' ? '🛍' : p.kind === 'fest' ? '🎪' : '📍'}</span>}
+                {p.img ? <img src={p.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : p.kind === 'see' && flower ? <span className="pick-noimg see flower" aria-hidden="true"><img src={flowerSrc(flower.icon, '-ink')} alt="" /></span> : <span className={'pick-noimg ' + p.kind} aria-hidden="true">{p.kind === 'eat' ? '🍲' : p.kind === 'buy' ? '🛍' : p.kind === 'fest' ? '🎪' : '📍'}</span>}
                 {members.length > 1 && members.every((n) => by.includes(n)) ? <span className="pick-star">★ 둘 다</span> : p.wished ? <span className="pick-star wish" data-testid="pick-wished">{p.key.startsWith('ours:') ? '우리 지도' : '가고 싶던 곳'}</span> : null}
                 <span className="pick-hearts">{members.map((n) => <i key={n} className={'t' + Math.max(0, toneOf(n)) + (by.includes(n) ? ' on' : '')}>{[...n][0]}</i>)}</span>
                 <b>{p.name}</b>

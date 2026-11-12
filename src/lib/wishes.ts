@@ -51,6 +51,9 @@ export function wishState(w: Wish, trips: Trip[], visitedNames: string[] = []): 
   return { kind: 'wish' };
 }
 
+/** '이곳으로 여행 만들기'를 보일 때: 아직 안 간 곳, 또는 다녀왔지만 못 가 본 곳이 남은 곳(다시 가고 싶어요) */
+export const canPlanWish = (s: WishState | null): boolean => !s || s.kind === 'wish' || s.kind === 'again';
+
 export const bothWant = (w: Wish) => everyoneWants(w.wantedBy);
 
 /** 목록 순서: 1·2·3순위 → 둘 다 원해요 → 최근에 담은 것 */

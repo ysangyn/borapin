@@ -348,7 +348,7 @@ test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
   await step(page, 'home-scroll1', async () => { await page.mouse.wheel(0, 700); });
   await step(page, 'home-scroll2', async () => { await page.mouse.wheel(0, 700); });
   await step(page, 'home-bottom', async () => { await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); });
-  await step(page, 'home-stage-card', async () => { await page.goto('/'); await page.getByRole('link', { name: /준비물 보기/ }).first().click({ timeout: 5000 }); });
+  await step(page, 'home-stage-card', async () => { await page.goto('/'); await page.getByTestId('stage-link').first().click({ timeout: 5000 }); });
 
   // ── 2. 남기기(+) ──
   log('\n== 남기기 (+) ==');
@@ -485,6 +485,9 @@ test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
 
   // ── 13. 인터넷이 끊겼을 때 ──
   log('\n== 인터넷 끊김 ==');
+  // 실제 폰처럼: 한 번 열어 앱이 기기에 저장된(서비스 워커가 맡은) 뒤에 끊는다
+  await page.goto('/');
+  await page.evaluate(async () => { if ('serviceWorker' in navigator) await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(r, 15000))]); });
   await step(page, 'offline-home', async () => { await page.context().setOffline(true); await page.goto('/').catch(() => undefined); });
   await step(page, 'offline-plan-add', async () => {
     await page.goto('/trips/t11?tab=plan').catch(() => undefined);

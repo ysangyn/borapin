@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { leftItems, leftoverPlans, recNames, sameName, wishState } from '../../src/lib/wishes';
+import { canPlanWish, leftItems, leftoverPlans, recNames, sameName, wishState } from '../../src/lib/wishes';
 import type { Trip, Wish } from '../../src/lib/types';
 
 const gn = { t: 'kr' as const, code: '48220' }; // 통영
@@ -56,4 +56,14 @@ test('편집 화면 칩: 다녀옴 표시는 gone, 장소 기록으로 가 본 �
     { name: '오죽헌', mark: null },
     { name: '보헤미안 박이추 커피', mark: 'rec' },
   ]);
+});
+
+test('여행 만들기 단추: 아직 안 간 곳과 다시 가고 싶은 곳(못 가 본 곳이 남음)에서 보이고, 계획 중·다 가 본 곳에선 숨는다', () => {
+  const w = wish({ createdAt: ts(1000), spots: ['동피랑', '미륵산'] });
+  assert.ok(canPlanWish(wishState(w, [])), '아직 안 간 곳');
+  const again = wishState(w, [trip('done')], ['동피랑']);
+  assert.equal(again.kind, 'again');
+  assert.ok(canPlanWish(again), '다녀왔지만 미륵산이 남음 → 다시 갈 여행을 만들 수 있어야');
+  assert.ok(!canPlanWish(wishState(w, [trip('planned')])), '이미 계획 중');
+  assert.ok(!canPlanWish(wishState(w, [trip('done')], ['동피랑', '미륵산'])), '다 가 봄');
 });

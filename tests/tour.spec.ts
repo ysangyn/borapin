@@ -89,6 +89,11 @@ const by = { uid: 'owner', email: OWNER, name: '영상' };
 const byB = { uid: 'bora', email: BORA, name: '보라' };
 const ts = (s: string) => Timestamp.fromDate(new Date(s));
 
+// 예정 여행(통영)은 늘 '나흘 뒤 떠나는' 여행: 날짜를 고정하면 그날이 지나 '다녀오셨나요'로 바뀌어 예정 여행 화면을 못 본다
+const kstDay = (n: number) => { const d = new Date(Date.now() + 9 * 3600_000 + n * 86400_000); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
+const ymd = (o: { y: number; m: number; d: number }) => `${o.y}-${String(o.m).padStart(2, '0')}-${String(o.d).padStart(2, '0')}`;
+const GO = kstDay(4), GO2 = kstDay(5), BACK = kstDay(6);
+
 const TRIPS = [
   { id: 't1', title: '강릉 바다 여행', kind: 'trip', status: 'done', when: { p: 'day', y: 2024, m: 5, d: 3, d2: 5 }, places: [{ t: 'kr', code: '51150' }, { t: 'kr', code: '51830' }], companions: [], memo: '경포 바다 보며 커피, 초당 순두부. 둘째 날은 비가 와서 카페 투어.', tags: ['바다', '카페'] },
   { id: 't2', title: '제주 한 바퀴', kind: 'trip', status: 'done', when: { p: 'day', y: 2023, m: 10, d: 12, d2: 15 }, places: [{ t: 'kr', code: '50' }], companions: [], memo: '오름 세 개, 해녀의 집 전복죽.', tags: ['섬'] },
@@ -100,7 +105,7 @@ const TRIPS = [
   { id: 't8', title: '도쿄 첫 해외여행', kind: 'trip', status: 'done', when: { p: 'day', y: 2024, m: 11, d: 21, d2: 24 }, places: [{ t: 'country', id: 'JPN', city: '도쿄' }], companions: [], memo: '시부야, 츠키지 시장, 디즈니씨', tags: ['해외'] },
   { id: 't9', title: '다낭 휴양', kind: 'trip', status: 'done', when: { p: 'month', y: 2025, m: 7 }, places: [{ t: 'country', id: 'VNM', city: '다낭' }], companions: [], memo: '', tags: ['휴양'] },
   { id: 't10', title: '파리 · 로마', kind: 'trip', status: 'done', when: { p: 'day', y: 2019, m: 9, d: 2, d2: 10 }, places: [{ t: 'country', id: 'FRA', city: '파리' }, { t: 'country', id: 'ITA', city: '로마' }], companions: [], memo: '신혼여행', tags: ['해외'] },
-  { id: 't11', title: '통영 · 남해 드라이브', kind: 'trip', status: 'planned', when: { p: 'day', y: 2026, m: 11, d: 7, d2: 9 }, places: [{ t: 'kr', code: '48220' }, { t: 'kr', code: '48840' }], companions: [], memo: '', tags: [], packing: [{ t: '여권 말고 신분증', who: null, done: true }, { t: '충전기', who: '영상', done: false }, { t: '선크림', who: '보라', done: false }] },
+  { id: 't11', title: '통영 · 남해 드라이브', kind: 'trip', status: 'planned', when: { p: 'day', y: GO.y, m: GO.m, d: GO.d, y2: BACK.y, m2: BACK.m, d2: BACK.d }, places: [{ t: 'kr', code: '48220' }, { t: 'kr', code: '48840' }], companions: [], memo: '', tags: [], packing: [{ t: '여권 말고 신분증', who: null, done: true }, { t: '충전기', who: '영상', done: false }, { t: '선크림', who: '보라', done: false }] },
   { id: 't12', title: '타이베이 겨울', kind: 'trip', status: 'planned', when: { p: 'month', y: 2027, m: 1 }, places: [{ t: 'country', id: 'TWN', city: '타이베이' }], companions: [], memo: '', tags: [] },
   { id: 't13', title: '속초 당일치기', kind: 'outing', status: 'done', when: { p: 'unknown' }, places: [{ t: 'kr', code: '51210' }], companions: [], memo: '', tags: [] },
 ];
@@ -179,10 +184,10 @@ async function seed(page: Page) {
   for (const w of WISHES) batch.set(sp.collection('wishes').doc(w.id), { ...w, source: 'app', createdBy: by, createdAt: ts('2025-06-01'), updatedAt: Timestamp.now(), v: 1 });
   for (const r of RECS) batch.set(sp.collection('places').doc(r.id), { ...r, createdBy: by, createdAt: ts('2025-06-01'), updatedAt: Timestamp.now(), v: 1 });
   const plans = [
-    ['p1', 't11', '통영 케이블카', '2026-11-07', '10:00', true],
-    ['p2', 't11', '동피랑 벽화마을', '2026-11-07', '14:00', false],
-    ['p3', 't11', '남해 독일마을', '2026-11-08', null, false],
-    ['p4', 't11', '다랭이마을 일몰', '2026-11-08', '17:30', false],
+    ['p1', 't11', '통영 케이블카', ymd(GO), '10:00', true],
+    ['p2', 't11', '동피랑 벽화마을', ymd(GO), '14:00', false],
+    ['p3', 't11', '남해 독일마을', ymd(GO2), null, false],
+    ['p4', 't11', '다랭이마을 일몰', ymd(GO2), '17:30', false],
     ['p5', 't11', '멸치쌈밥 맛집 찾기', null, null, false],
   ] as const;
   plans.forEach(([id, tripId, name, day, time, done], i) => batch.set(sp.collection('plans').doc(id), { tripId, name, order: i, day, time, info: '', recId: null, done, createdAt: Timestamp.now(), v: 1 }));
