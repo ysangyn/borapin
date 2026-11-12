@@ -1880,7 +1880,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 
 /* 도착했어요 창: 사진·어땠어요·한 줄을 한 번에 */
 .arrive-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(23, 20, 43, .38); display: flex; align-items: flex-end; justify-content: center; }
-.arrive-sheet { width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; background: var(--card); border: 1.5px solid var(--edge); border-bottom: 0; border-radius: 28px 28px 0 0; padding: 10px 20px calc(18px + var(--safe-b)); display: flex; flex-direction: column; gap: 12px; animation: sheet-in .24s cubic-bezier(.2, .9, .3, 1.1) both; }
+.arrive-sheet { width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; background: var(--card); border: 1.5px solid var(--edge); border-bottom: 0; border-radius: 28px 28px 0 0; padding: 10px 20px calc(18px + var(--safe-b)); display: flex; flex-direction: column; gap: 12px; animation: arrive-in .24s cubic-bezier(.2, .9, .3, 1.1) both; }
+/* .sheet의 sheet-in은 가운데 맞춤용 translateX(-50%)가 들어 있어 이 창을 왼쪽으로 밀어냈다 → 위로만 올라오는 움직임 */
+@keyframes arrive-in { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 .arrive-grip { align-self: center; width: 44px; height: 5px; border-radius: 99px; background: var(--edge); }
 .arrive-photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .arrive-add { height: 96px; border: 2px dashed var(--edge-strong); border-radius: 16px; background: var(--mist); color: var(--violet); font: inherit; font-weight: 700; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
