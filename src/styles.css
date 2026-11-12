@@ -1876,7 +1876,11 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .here-own .input { flex: 1; min-width: 0; }
 .here-form { display: flex; flex-direction: column; gap: 14px; }
 .here-trip { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-.where-quick .here-quick { background: var(--violet); color: #fff; border-color: var(--outline); }
+.where-quick { flex-wrap: wrap; }
+.where-quick .here-big { flex: 1 0 100%; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; margin-bottom: 6px; border-radius: 18px; background: var(--violet); color: #fff; border: 2px solid var(--outline); box-shadow: 2px 2px 0 var(--line2); text-decoration: none; }
+.where-quick .here-big span { display: flex; flex-direction: column; gap: 1px; }
+.where-quick .here-big b { font-size: 16px; }
+.where-quick .here-big small { font-size: 12px; opacity: .85; }
 
 /* 도착했어요 창: 사진·어땠어요·한 줄을 한 번에 */
 .arrive-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(23, 20, 43, .38); display: flex; align-items: flex-end; justify-content: center; }
@@ -1905,3 +1909,6 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .night-form { display: flex; flex-direction: column; gap: 6px; }
 .night-form .input { flex: 1; min-width: 0; background: #221C3D; color: #EDE9FF; border-color: #4E4380; }
 .night-form .input::placeholder { color: #8E84B8; }
+/* 지도 범례: 좁은 폰에서 '다녀온 / 곳'처럼 낱말 중간에서 꺾이지 않게 — 항목은 한 줄로, 넘치면 줄째 내려간다 */
+.map-legend { flex-wrap: wrap; row-gap: 4px; column-gap: 12px; max-width: calc(100% - 24px); border-radius: 14px; }
+.map-legend > span { white-space: nowrap; }
