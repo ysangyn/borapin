@@ -8,7 +8,6 @@ import { photoForPlace } from '../lib/media';
 import { stageAction, todayPlanLine, type Stage } from '../lib/stage';
 import { usePlan } from '../lib/tripExtras';
 import { localDate } from '../lib/dates';
-import HereNow from './HereNow';
 import { nextPlanStep, PLAN_STEP_LABEL } from '../lib/planPick';
 import { departLine } from '../lib/way';
 import { bookingLine, nextBooking } from '../lib/booking';
@@ -71,7 +70,7 @@ export default function StageCard({ stage }: { stage: Stage }) {
             </Link>
           )}
           {today && <Link to={`/trips/${t.id}?tab=plan`} className="btn sm glass" data-testid="stage-today">일정</Link>}
-          {stage.kind === 'during' && <HereNow trip={t} />}
+          {stage.kind === 'during' && <Link to="/here" className="btn sm glass" data-testid="here-now">지금 여기</Link>}
         </span>
       </span>
       <img className="stage-art" src={art} alt="" aria-hidden="true" decoding="async" />

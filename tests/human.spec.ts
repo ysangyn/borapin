@@ -773,7 +773,31 @@ test.describe('사람처럼 쓰기', () => {
     });
   }
 
-  test('여행 중: 단계 카드의 \'지금 여기\' → 위치 → (뒷단 없으면) 이 근처로 남기기', async ({ browser }) => {
+  test('여행이 아니어도: + → 지금 여기 남기기 → 이름 적고 빵집 → 내 맛집으로', async ({ browser }) => {
+    test.setTimeout(90_000);
+    const page = await phone(browser);
+    await page.context().grantPermissions(['geolocation']);
+    await page.context().setGeolocation({ latitude: 37.6584, longitude: 126.832 }); // 고양
+    await signIn(page);
+    try {
+      await page.goto('/');
+      await page.getByRole('button', { name: '남기기', exact: true }).click();
+      await page.getByTestId('plus-here').click();
+      const pg = page.getByTestId('here-page');
+      await pg.getByTestId('here-typed').pressSequentially('동네 소금빵집', { timeout: 15_000 });
+      await pg.getByTestId('here-typed-next').click();
+      await expect(pg.getByTestId('here-kind-bakery')).toHaveAttribute('aria-checked', 'true');
+      await expect(pg).not.toContainText('에도 남기기');
+      await pg.getByTestId('here-save').click();
+      await expect(page.getByRole('status')).toContainText('동네 소금빵집을 남겼어요');
+      await page.goto('/places');
+      await expect(page.getByText('동네 소금빵집')).toBeVisible({ timeout: 15_000 });
+    } finally {
+      await page.context().close();
+    }
+  });
+
+  test('여행 중: 단계 카드의 \'지금 여기\' → 이름 적고 종류·어땠어요·한 줄 → 그 여행에도', async ({ browser }) => {
     test.setTimeout(120_000);
     const page = await phone(browser);
     await page.context().grantPermissions(['geolocation']);
@@ -788,12 +812,21 @@ test.describe('사람처럼 쓰기', () => {
       const stage = page.getByTestId('stage-card');
       await expect(stage).toHaveAttribute('data-stage', 'during');
       await stage.getByTestId('here-now').click({ timeout: 15_000 });
-      const sheet = page.getByTestId('here-sheet');
-      // 에뮬레이터에선 뒷단(관광공사)을 부르지 않으므로 '이 근처로 남기기'만
-      await expect(sheet).toContainText('지금은 근처 장소를 찾을 수 없어요');
-      await sheet.getByTestId('here-fallback').click({ timeout: 15_000 });
-      await expect(page.getByRole('status')).toContainText('이 근처를 남겼어요');
-      await expect(sheet).toHaveCount(0);
+      const pg = page.getByTestId('here-page');
+      // 에뮬레이터에선 뒷단(관광공사)을 부르지 않으므로 목록 없이 이름을 적는다 — 한글 입력, 종류는 이름으로 짐작(커피 → 카페)
+      await expect(pg).toContainText('가게 이름을 적어 주세요', { timeout: 15_000 });
+      await pg.getByTestId('here-typed').pressSequentially('경포 커피');
+      await pg.getByTestId('here-typed-next').click();
+      await expect(pg.getByTestId('here-kind-cafe')).toHaveAttribute('aria-checked', 'true');
+      await pg.getByTestId('here-verdict-again').click();
+      await pg.getByTestId('here-line').fill('바다 보이는 창가 자리');
+      await expect(pg).toContainText('강릉 지금 여행에도 남기기');
+      await pg.getByTestId('here-save').click();
+      await expect(page.getByRole('status')).toContainText('경포 커피를 남겼어요');
+      // 우리 맛집 목록에 들어가고, 장소 화면에 그 여행이 붙어 있다
+      await page.goto('/places');
+      await page.getByText('경포 커피').first().click({ timeout: 15_000 });
+      await expect(page.getByText('강릉 지금 여행').first()).toBeVisible({ timeout: 15_000 });
     } finally {
       // 지우기가 막혀도 시험 실패 이유가 가려지지 않게 10초만 기다린다
       await Promise.race([page.evaluate((x) => (window as unknown as { __testDeleteTrip: (i: string) => Promise<void> }).__testDeleteTrip(x), id).catch(() => {}), new Promise((r) => setTimeout(r, 10_000))]);

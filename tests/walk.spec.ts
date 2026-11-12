@@ -231,8 +231,8 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await me.context().grantPermissions(['geolocation']);
   await me.context().setGeolocation({ latitude: 34.74, longitude: 127.74 });
   await step(me, 'k36-home-during', async () => { await me.goto('/'); });
-  await step(me, 'k37-during-here', async () => { await me.getByTestId('here-now').click(); await me.getByTestId('here-sheet').waitFor({ timeout: 10_000 }); });
-  await step(me, 'k38-during-here-save', async () => { const b = me.getByTestId('here-fallback').first(); if (await b.count()) await b.click(); log(`  · 알림: ${await toastText(me)}`); });
+  await step(me, 'k37-during-here', async () => { await me.getByTestId('here-now').click(); await me.getByTestId('here-page').waitFor({ timeout: 10_000 }); await me.getByTestId('here-typed').fill('닭갈비 골목 원조집'); await me.getByTestId('here-typed-next').click(); });
+  await step(me, 'k38-during-here-save', async () => { await me.getByTestId('here-verdict-again').click(); await me.getByTestId('here-save').click(); log(`  · 알림: ${await toastText(me)}`); });
   await step(me, 'k39-during-quick-photos', async () => {
     await me.goto('/');
     const inp = me.getByTestId('quick-upload-input');

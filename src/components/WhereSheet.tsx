@@ -80,6 +80,7 @@ export default function WhereSheet({ onClose }: { onClose: () => void }) {
         </>
       )}
       <div className="where-quick" role="menu" aria-label="바로 가기">
+        <NavLink to="/here" role="menuitem" className="plus-item sm here-quick" data-testid="plus-here"><Icon name="pin" size={18} /><span><b>지금 여기 남기기</b></span></NavLink>
         <NavLink to="/places/new" role="menuitem" className="plus-item sm" data-testid="plus-place"><Icon name="heart" size={18} /><span><b>맛집·카페 담기</b></span></NavLink>
         <NavLink to="/record" role="menuitem" className="plus-item sm"><Icon name="pin" size={18} /><span><b>여행 기록 남기기</b></span></NavLink>
         <NavLink to="/plan" role="menuitem" className="plus-item sm"><Icon name="calendar" size={18} /><span><b>여행 계획하기</b></span></NavLink>

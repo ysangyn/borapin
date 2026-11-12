@@ -256,7 +256,9 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await expect(page.getByText('경남 통영시').first()).toBeVisible(); // 주소에서 지역을 알아서
   await page.goto('/');
   await page.getByRole('button', { name: '남기기' }).click();
-  await expect(page.getByTestId('plus-sheet').getByRole('menuitem').first()).toContainText('맛집·카페 담기');
+  // 첫 줄은 '지금 여기 남기기'(오늘 간 가게를 바로), 다음이 맛집·카페 담기(링크·이름으로)
+  await expect(page.getByTestId('plus-sheet').getByRole('menuitem').first()).toContainText('지금 여기 남기기');
+  await expect(page.getByTestId('plus-sheet').getByRole('menuitem').nth(1)).toContainText('맛집·카페 담기');
   await page.getByTestId('plus-place').click();
   await expect(page.getByTestId('region-auto')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('고양시').first()).toBeVisible();
