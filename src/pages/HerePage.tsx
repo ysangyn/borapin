@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar, useBusy, useToast } from '../components/ui';
 import { useAuth, displayName } from '../lib/auth';
 import { createPlace, useTrips } from '../lib/data';
-import { fetchNearby, here, walkText, type NearbyItem } from '../lib/nearby';
+import { fetchNearby, fetchShops, here, walkText, type NearbyItem } from '../lib/nearby';
 import { locate } from '../lib/geodata';
 import { useHome } from '../lib/home';
 import { tripStage } from '../lib/stage';
@@ -39,6 +39,7 @@ export default function HerePage() {
   const [msg, setMsg] = useState('지금 위치를 찾는 중…');
   const [items, setItems] = useState<NearbyItem[] | null>(null);
   const [shown, setShown] = useState(5);
+  const [source, setSource] = useState<'kakao' | 'tour' | null>(null);
   const [pick, setPick] = useState<Pick | null>(null);
   const [typed, setTyped] = useState('');
   const [verdict, setVerdict] = useState<Verdict | null>(null);
@@ -57,8 +58,12 @@ export default function HerePage() {
       setRegion(await locate(p.lng, p.lat).catch(() => null));
       if (!on) return;
       setMsg('근처를 찾는 중…');
-      const r = await fetchNearby(auth.status === 'ready' ? auth.user : null, p.lat, p.lng);
+      // 동네 가게는 카카오(음식점·카페)가 먼저, 안 되면 관광공사(관광지·음식점)
+      const user = auth.status === 'ready' ? auth.user : null;
+      const shops = await fetchShops(user, p.lat, p.lng);
+      const r = shops?.items.length ? shops : await fetchNearby(user, p.lat, p.lng);
       if (!on) return;
+      setSource(shops?.items.length ? 'kakao' : r?.items.length ? 'tour' : null);
       const list = r && !r.outside ? r.items.filter((x) => x.kind !== 'stay') : [];
       setItems(list);
       setMsg(list.length ? '여기예요?' : '근처 가게 목록은 못 받았어요 · 가게 이름을 적어 주세요');
@@ -102,12 +107,13 @@ export default function HerePage() {
             {!!items?.length && (
               <div className="here-list" data-testid="here-list">
                 {items.slice(0, shown).map((it) => (
-                  <button key={it.id} type="button" className="here-item" onClick={() => choose({ name: it.name, kind: hereKind(it.name, it.kind), pos: { lat: it.lat, lng: it.lng }, addr: it.addr })} data-testid="here-item">
+                  <button key={it.id} type="button" className="here-item" onClick={() => choose({ name: it.name, kind: hereKind(`${it.name} ${it.type}`, it.kind), pos: { lat: it.lat, lng: it.lng }, addr: it.addr })} data-testid="here-item">
                     {it.img ? <img src={it.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className="here-noimg" aria-hidden="true" />}
                     <span className="here-copy"><b>{it.name}</b><span className="tiny muted">{it.type} · {walkText(it)}</span></span>
                   </button>
                 ))}
                 {items.length > shown && <button className="link-btn" onClick={() => setShown(shown + 5)}>더 보기</button>}
+                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'kakao' ? '카카오맵 장소 정보' : '한국관광공사 관광정보'}</span>}
               </div>
             )}
             <form className="here-own" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) choose({ name: typed.trim(), kind: hereKind(typed, null), pos }); }}>

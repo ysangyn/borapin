@@ -18,3 +18,10 @@ test('종류마다 저장할 장소 종류와 꼬리표 (빵집·술집은 맛�
   assert.equal(by.cafe.kind, 'cafe');
   assert.equal(by.cafe.tag, undefined);
 });
+
+test('카카오 분류 이름도 함께 보면 이름에 티가 안 나는 가게도 맞힌다', () => {
+  assert.equal(hereKind('정성당 제과,베이커리', 'food'), 'bakery');
+  assert.equal(hereKind('달빛 호프,요리주점', 'food'), 'bar');
+  assert.equal(hereKind('블루보틀 커피전문점', 'cafe'), 'cafe');
+  assert.equal(hereKind('미진 냉면', 'food'), 'food');
+});

@@ -16,6 +16,7 @@ import { parseShareDoc, previewHtml } from './mapPreview';
 import { find } from './find';
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { nearby, spot } from './nearby';
+import { parseKakaoNear } from './kakaoParse';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
 import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, RateCounter, TtlCache, type TokenPayload } from './guard';
 
@@ -28,6 +29,8 @@ export interface Env {
   DAILY_LIMIT: string;
   /** 관광공사(공공데이터포털) 키: CI가 wrangler secret으로 넣는다. 없으면 /nearby는 503 */
   DATA_GO_KR_KEY?: string;
+  /** 카카오 REST API 키 (카카오맵 사용 설정 ON·무료 쿼터 앱): CI가 wrangler secret으로 넣는다. 없으면 /shops는 503 */
+  KAKAO_REST_KEY?: string;
 }
 
 const CORS = {
@@ -287,7 +290,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isNearby = req.method === 'GET' && url.pathname === '/nearby';
     const isSpot = req.method === 'GET' && url.pathname === '/spot';
     const isFind = req.method === 'GET' && url.pathname === '/find';
-    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isShops = req.method === 'GET' && url.pathname === '/shops';
+    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -334,6 +338,23 @@ async function handle(req: Request, env: Env): Promise<Response> {
       try {
         const r = await nearby(env.DATA_GO_KR_KEY, lat, lng);
         return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 502); }
+    }
+    // 지금 여기 근처 음식점·카페 (카카오 로컬, 키는 Worker 비밀값 KAKAO_REST_KEY).
+    // 카카오 정책상 결과를 저장해 다시 쓰지 않으므로 캐시하지 않는다. 200m 안에 다섯이 안 되면 500m까지
+    if (isShops) {
+      if (!env.KAKAO_REST_KEY) return json({ error: 'no key' }, 503);
+      const rl4 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl4.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad position' }, 400);
+      if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) return json({ items: [], outside: true });
+      const get = (code: string, radius: number) => fetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=${code}&x=${lng.toFixed(6)}&y=${lat.toFixed(6)}&radius=${radius}&sort=distance&size=15`, { headers: { authorization: `KakaoAK ${env.KAKAO_REST_KEY}` } })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`kakao ${r.status}`))));
+      try {
+        let items = parseKakaoNear(await Promise.all([get('FD6', 200), get('CE7', 200)]));
+        if (items.length < 5) items = parseKakaoNear(await Promise.all([get('FD6', 500), get('CE7', 500)]));
+        return json({ items: items.slice(0, 15), source: 'kakao' });
       } catch { return json({ error: 'upstream' }, 502); }
     }
     // 관광지 하나 자세히 (관광공사, 7일 캐시)

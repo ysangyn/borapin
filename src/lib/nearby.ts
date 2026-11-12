@@ -16,6 +16,17 @@ export async function fetchNearby(user: User | null, lat: number, lng: number): 
 }
 
 /** '걸어서 3분' · '120m' */
+/** 지금 여기 근처 음식점·카페 (카카오, 서버 /shops). 키가 없거나 실패하면 null → 관광공사 목록으로 */
+export async function fetchShops(user: User | null, lat: number, lng: number): Promise<NearbyResult> {
+  if (!aiAvailable() || !user) return null;
+  try {
+    const token = await user.getIdToken();
+    const r = await fetch(`${ASK_URL}/shops?lat=${lat.toFixed(5)}&lng=${lng.toFixed(5)}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return null;
+    return (await r.json()) as NearbyResult;
+  } catch { return null; }
+}
+
 export const walkText = (it: Pick<NearbyItem, 'walk' | 'dist'>) => (it.dist < 60 ? '바로 앞' : `걸어서 ${it.walk}분`);
 
 /** 지금 위치 (10초 안에 못 받으면 실패). 거절·실패 이유를 화면 글로 */
