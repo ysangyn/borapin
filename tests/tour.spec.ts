@@ -89,10 +89,12 @@ const by = { uid: 'owner', email: OWNER, name: '영상' };
 const byB = { uid: 'bora', email: BORA, name: '보라' };
 const ts = (s: string) => Timestamp.fromDate(new Date(s));
 
-// 예정 여행(통영)은 늘 '나흘 뒤 떠나는' 여행: 날짜를 고정하면 그날이 지나 '다녀오셨나요'로 바뀌어 예정 여행 화면을 못 본다
+// 예정 여행(통영)은 늘 '곧 떠나는' 여행: 날짜를 고정하면 그날이 지나 '다녀오셨나요'로 바뀌어 예정 여행 화면을 못 본다
 const kstDay = (n: number) => { const d = new Date(Date.now() + 9 * 3600_000 + n * 86400_000); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
 const ymd = (o: { y: number; m: number; d: number }) => `${o.y}-${String(o.m).padStart(2, '0')}-${String(o.d).padStart(2, '0')}`;
-const GO = kstDay(4), GO2 = kstDay(5), BACK = kstDay(6);
+// 떠나는 날은 사흘 뒤부터 가장 가까운 토요일 (준비 탭 가는 길이 토요일 시각표를 고르는지 본다)
+const SAT = [3, 4, 5, 6, 7, 8, 9].find((n) => { const o = kstDay(n); return new Date(Date.UTC(o.y, o.m - 1, o.d)).getUTCDay() === 6; })!;
+const GO = kstDay(SAT), GO2 = kstDay(SAT + 1), BACK = kstDay(SAT + 2);
 
 const TRIPS = [
   { id: 't1', title: '강릉 바다 여행', kind: 'trip', status: 'done', when: { p: 'day', y: 2024, m: 5, d: 3, d2: 5 }, places: [{ t: 'kr', code: '51150' }, { t: 'kr', code: '51830' }], companions: [], memo: '경포 바다 보며 커피, 초당 순두부. 둘째 날은 비가 와서 카페 투어.', tags: ['바다', '카페'] },
