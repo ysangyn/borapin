@@ -62,7 +62,8 @@ export function normalizeTrend(raw: unknown): TrendData | null {
     at: typeof raw.at === 'string' ? raw.at : '',
     window: { from: typeof win.from === 'string' ? win.from : '', to: typeof win.to === 'string' ? win.to : '' },
     regions,
-    hot: strs(raw.hot),
+    // 두 배 넘게 튄 곳은 행사·집계 변화일 때가 많아 순위에서 뺀다 (이미 만들어진 지난 자료에도 바로)
+    hot: strs(raw.hot).filter((c) => !(((regions[c]?.growth) ?? 0) > 1)),
     quiet: strs(raw.quiet),
   };
 }

@@ -117,11 +117,13 @@ export function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b), m = s.length >> 1;
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
-/** 요즘 뜨는 곳: growth 높은 순, 외지인(out)이 전체 중앙값 이상인 곳만 (작은 곳의 몇 배 뜀은 빼기) */
+/** 작년보다 이만큼 넘게 뛰면(두 배 넘게) 행사 한 번·집계 변화일 때가 많아 '뜨는 곳' 순위에서 뺀다 (지역 화면의 숫자는 그대로) */
+export const HOT_MAX_GROWTH = 1;
+/** 요즘 뜨는 곳: growth 높은 순, 외지인(out)이 전체 중앙값 이상인 곳만 (작은 곳의 몇 배 뜀은 빼기), 두 배 넘게 튄 곳 빼기 */
 export function pickHot(regions: Record<string, { out: number; growth: number | null }>, n = 15): string[] {
   const med = median(Object.values(regions).map((r) => r.out));
   return Object.entries(regions)
-    .filter(([, r]) => r.growth !== null && r.out >= med)
+    .filter(([, r]) => r.growth !== null && r.out >= med && r.growth <= HOT_MAX_GROWTH)
     .sort((a, b) => b[1].growth! - a[1].growth! || b[1].out - a[1].out || a[0].localeCompare(b[0]))
     .slice(0, n).map(([c]) => c);
 }

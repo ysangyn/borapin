@@ -79,7 +79,7 @@ test('(c) 요즘 뜨는 곳은 growth 높은 순 중 out이 중앙값 이상인 
   assert.equal(median([]), 0);
   // 40곳: out 1..40, growth는 out이 작을수록 큼 (작은 곳이 몇 배 뛴 것처럼)
   const regionsMap: Record<string, { out: number; growth: number | null }> = {};
-  for (let i = 1; i <= 40; i++) regionsMap[`c${String(i).padStart(2, '0')}`] = { out: i * 100, growth: (41 - i) / 10 };
+  for (let i = 1; i <= 40; i++) regionsMap[`c${String(i).padStart(2, '0')}`] = { out: i * 100, growth: (41 - i) / 50 };
   regionsMap.c40.growth = null; // 작년 자료 없는 곳은 뜨는 곳에 못 든다
   regionsMap.metro = { out: 1, growth: 9 }; // 광역시(한적한 곳에서 빼야) — out이 중앙값 아래라 뜨는 곳에도 안 든다
   const hot = pickHot(regionsMap);
@@ -160,4 +160,15 @@ test('광주·전남은 관광공사 옛 번호 12로 오므로 구는 광주(29
   assert.equal(r('12130', '여수시'), '46130');
   assert.equal(r('12740', '고흥군'), '46770');
   assert.equal(r('12190', '광양시'), '46230');
+});
+
+test('요즘 뜨는 곳: 작년보다 두 배 넘게 뛴 곳(행사·집계 변화일 때가 많음)은 순위에서 뺀다', async () => {
+  const { pickHot } = await import('../../scripts/tour-trend');
+  const regions = {
+    a: { out: 1000, growth: 1.55 }, // 화성시처럼 +155%: 행사 한 번으로 튄 값
+    b: { out: 1200, growth: 0.32 },
+    c: { out: 1100, growth: 0.12 },
+    d: { out: 100, growth: 0.9 }, // 작은 곳(중앙값 아래)
+  };
+  assert.deepEqual(pickHot(regions), ['b', 'c']);
 });
