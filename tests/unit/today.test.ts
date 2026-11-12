@@ -49,9 +49,17 @@ test('해 지는 시각: 서울 11월 중순은 오후 5시 20분 무렵', () =>
 test('오늘로 정한 곳이 없으면 날짜 안 정한 곳을 오늘 후보로 (다른 날로 정한 곳은 빼고)', () => {
   const plan = [it('공지천', { day: null, order: 2 }), it('남이섬', { day: '2026-11-15' }), it('닭갈비', { day: null, order: 1, done: true })];
   const r = todayPool(plan, '2026-11-14');
-  assert.equal(r.loose, true);
+  assert.equal(r.mode, 'loose');
   assert.deepEqual(r.list.map((p) => p.id), ['닭갈비', '공지천']);
   const r2 = todayPool([...plan, it('스카이워크', { time: '15:00' })], '2026-11-14');
-  assert.equal(r2.loose, false);
+  assert.equal(r2.mode, 'today');
   assert.deepEqual(r2.list.map((p) => p.id), ['스카이워크']);
+});
+
+test('오늘 것도 날짜 안 정한 것도 없으면(여행 날짜를 옮긴 뒤 등) 아직 안 간 곳을 날짜·시각 순으로', () => {
+  const plan = [it('남이섬', { day: '2026-12-06', time: '09:30' }), it('공지천', { day: '2026-12-05', time: '11:00' }), it('닭갈비', { day: '2026-12-05', time: '12:30', done: true })];
+  const r = todayPool(plan, '2026-11-14');
+  assert.equal(r.mode, 'left');
+  assert.deepEqual(r.list.map((p) => p.id), ['공지천', '남이섬']);
+  assert.equal(todayPool(plan.map((p) => ({ ...p, done: true })), '2026-11-14').list.length, 0);
 });

@@ -16,12 +16,17 @@ export function todayList<T extends Item>(plan: T[], day: string): T[] {
   return [...timed, ...rest];
 }
 
-/** 오늘 다닐 곳: 오늘로 정한 곳, 없으면 날짜 안 정한 곳을 오늘 후보로 (loose: 날짜 안 정한 곳에서 왔음) */
-export function todayPool<T extends Item>(plan: T[], day: string): { list: T[]; loose: boolean } {
+/**
+ * 오늘 다닐 곳: 오늘로 정한 곳(today) → 없으면 날짜 안 정한 곳(loose)
+ * → 그것도 없으면 아직 안 간 곳을 날짜·시각 순으로(left: 여행 날짜를 옮겨 일정 날짜가 어긋났을 때)
+ */
+export function todayPool<T extends Item>(plan: T[], day: string): { list: T[]; mode: 'today' | 'loose' | 'left' } {
   const list = todayList(plan, day);
-  if (list.length) return { list, loose: false };
+  if (list.length) return { list, mode: 'today' };
   const loose = plan.filter((p) => !p.day).sort((a, b) => a.order - b.order);
-  return { list: loose, loose: loose.length > 0 };
+  if (loose.length) return { list: loose, mode: 'loose' };
+  const days = [...new Set(plan.filter((p) => !p.done && p.day).map((p) => p.day!))].sort();
+  return { list: days.flatMap((d) => todayList(plan, d).filter((p) => !p.done)), mode: 'left' };
 }
 
 /** 다음 갈 곳: 아직 안 간 첫 곳. 숙소는 다른 곳을 다 다닌 뒤에 (체크인 시각이 낮이어도 구경이 먼저) */

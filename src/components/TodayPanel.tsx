@@ -5,6 +5,7 @@ import { updatePlan, usePlan } from '../lib/tripExtras';
 import { localDate } from '../lib/dates';
 import { hhmm, moveGuess, nextStop, sunsetAt, todayPool } from '../lib/today';
 import { placeLabel } from '../lib/geo';
+import { withIGa } from '../lib/ko';
 import type { Trip } from '../lib/types';
 
 /**
@@ -18,7 +19,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
   const [openMap, mapSheet] = useMapChoice();
   const now = new Date();
   if (!plan) return null;
-  const { list, loose } = todayPool(plan, localDate(now));
+  const { list, mode } = todayPool(plan, localDate(now));
   if (!list.length) return null;
   const next = nextStop(list);
   const done = list.filter((p) => p.done).length;
@@ -46,7 +47,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
             <span className="today-when">{next.time ? `다음 갈 곳 · ${next.time}` : '다음 갈 곳'}</span>
             <b className="jua today-name">{next.name}</b>
             <span className="small today-sub">
-              {[move ? `${move.mode === 'walk' ? '걸어서' : '차로'} ${move.min}분 · ${move.km}km` : null, next.by?.length ? `${next.by.join('·')}${next.by.length > 1 ? '가 같이' : '가'} 하트한 곳` : null].filter(Boolean).join(' · ') || area}
+              {[move ? `${move.mode === 'walk' ? '걸어서' : '차로'} ${move.min}분 · ${move.km}km` : null, next.by?.length ? `${withIGa(next.by.join('·'))}${next.by.length > 1 ? ' 같이' : ''} 하트한 곳` : null].filter(Boolean).join(' · ') || area}
             </span>
             <div className="today-acts">
               <button className="btn primary" onClick={() => openMap({ name: next.name, area, lat: next.lat, lng: next.lng })} data-testid="today-go"><Icon name="nav" size={18} />길찾기</button>
@@ -58,7 +59,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
         <div className="today-next done" data-testid="today-next"><div className="today-body"><b className="jua today-name">오늘 일정 다 다녀왔어요</b><span className="small today-sub">사진과 한 줄을 남겨 두면 여행책에 그대로 들어가요</span></div></div>
       )}
 
-      <div className="today-head"><b className="jua">{loose ? '가 볼 곳 (날짜 안 정함)' : '오늘 다닐 곳'}</b><span className="small muted">{list.length}곳 중 {done}곳</span></div>
+      <div className="today-head"><b className="jua">{mode === 'today' ? '오늘 다닐 곳' : mode === 'loose' ? '가 볼 곳 (날짜 안 정함)' : '아직 안 간 곳'}</b><span className="small muted">{mode === 'left' ? `${list.length}곳` : `${list.length}곳 중 ${done}곳`}</span></div>
       <ol className="today-list" data-testid="today-list">
         {list.map((p) => (
           <li key={p.id} className={(p.done ? 'done' : '') + (p === next ? ' next' : '')}>
