@@ -24,6 +24,7 @@ import { useHome } from '../lib/home';
 import { memoryLine, pickMemory, type Memory } from '../lib/memories';
 import { tripStage } from '../lib/stage';
 import StageCard from '../components/StageCard';
+import TodayPanel from '../components/TodayPanel';
 import NearbyCard from '../components/NearbyCard';
 import { DraftNudge } from '../components/NextTripHub';
 import PendingWishesCard from '../components/PendingWishesCard';
@@ -86,6 +87,8 @@ export default function Home() {
 
         {/* 단계 카드는 그 여행의 사진·글 개수만 서버에서 센다 (사진·글 전체 구독 없음) */}
         {stage && <StageCard key={stage.trip.id} stage={stage} />}
+        {/* 여행 중: 다음 갈 곳·오늘 다닐 곳 (일정이 있는 날만) */}
+        {stage?.kind === 'during' && <TodayPanel trip={stage.trip} />}
         {/* 날짜가 지난 예정 여행: 다녀왔다고 바꾸는 게 지금 할 일이라 맨 위에 */}
         {overdue[0] && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
