@@ -3,7 +3,7 @@ import { Icon, useToast } from './ui';
 import { useMapChoice } from './MapChoice';
 import { updatePlan, usePlan } from '../lib/tripExtras';
 import { localDate } from '../lib/dates';
-import { hhmm, moveGuess, nextStop, sunsetAt, todayList } from '../lib/today';
+import { hhmm, moveGuess, nextStop, sunsetAt, todayPool } from '../lib/today';
 import { placeLabel } from '../lib/geo';
 import type { Trip } from '../lib/types';
 
@@ -18,7 +18,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
   const [openMap, mapSheet] = useMapChoice();
   const now = new Date();
   if (!plan) return null;
-  const list = todayList(plan, localDate(now));
+  const { list, loose } = todayPool(plan, localDate(now));
   if (!list.length) return null;
   const next = nextStop(list);
   const done = list.filter((p) => p.done).length;
@@ -58,7 +58,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
         <div className="today-next done" data-testid="today-next"><div className="today-body"><b className="jua today-name">오늘 일정 다 다녀왔어요</b><span className="small today-sub">사진과 한 줄을 남겨 두면 여행책에 그대로 들어가요</span></div></div>
       )}
 
-      <div className="today-head"><b className="jua">오늘 다닐 곳</b><span className="small muted">{list.length}곳 중 {done}곳</span></div>
+      <div className="today-head"><b className="jua">{loose ? '가 볼 곳 (날짜 안 정함)' : '오늘 다닐 곳'}</b><span className="small muted">{list.length}곳 중 {done}곳</span></div>
       <ol className="today-list" data-testid="today-list">
         {list.map((p) => (
           <li key={p.id} className={(p.done ? 'done' : '') + (p === next ? ' next' : '')}>

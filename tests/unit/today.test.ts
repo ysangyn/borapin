@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { todayList, nextStop, moveGuess, sunsetAt, hhmm } from '../../src/lib/today';
+import { todayList, todayPool, nextStop, moveGuess, sunsetAt, hhmm } from '../../src/lib/today';
 
 const it = (id: string, over: Record<string, unknown>) => ({ id, name: id, day: '2026-11-14', time: null, done: false, order: 0, ...over }) as Parameters<typeof todayList>[0][number];
 
@@ -44,4 +44,14 @@ test('해 지는 시각: 서울 11월 중순은 오후 5시 20분 무렵', () =>
   const min = kst.getUTCHours() * 60 + kst.getUTCMinutes();
   assert.ok(Math.abs(min - (17 * 60 + 20)) <= 6, `서울 해 지는 시각 ${kst.getUTCHours()}:${kst.getUTCMinutes()}`);
   assert.equal(hhmm(new Date(2026, 10, 14, 7, 5)), '07:05');
+});
+
+test('오늘로 정한 곳이 없으면 날짜 안 정한 곳을 오늘 후보로 (다른 날로 정한 곳은 빼고)', () => {
+  const plan = [it('공지천', { day: null, order: 2 }), it('남이섬', { day: '2026-11-15' }), it('닭갈비', { day: null, order: 1, done: true })];
+  const r = todayPool(plan, '2026-11-14');
+  assert.equal(r.loose, true);
+  assert.deepEqual(r.list.map((p) => p.id), ['닭갈비', '공지천']);
+  const r2 = todayPool([...plan, it('스카이워크', { time: '15:00' })], '2026-11-14');
+  assert.equal(r2.loose, false);
+  assert.deepEqual(r2.list.map((p) => p.id), ['스카이워크']);
 });

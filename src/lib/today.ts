@@ -16,6 +16,14 @@ export function todayList<T extends Item>(plan: T[], day: string): T[] {
   return [...timed, ...rest];
 }
 
+/** 오늘 다닐 곳: 오늘로 정한 곳, 없으면 날짜 안 정한 곳을 오늘 후보로 (loose: 날짜 안 정한 곳에서 왔음) */
+export function todayPool<T extends Item>(plan: T[], day: string): { list: T[]; loose: boolean } {
+  const list = todayList(plan, day);
+  if (list.length) return { list, loose: false };
+  const loose = plan.filter((p) => !p.day).sort((a, b) => a.order - b.order);
+  return { list: loose, loose: loose.length > 0 };
+}
+
 /** 다음 갈 곳: 아직 안 간 첫 곳. 숙소는 다른 곳을 다 다닌 뒤에 (체크인 시각이 낮이어도 구경이 먼저) */
 export function nextStop<T extends Item>(list: T[]): T | null {
   const open = list.filter((p) => !p.done);
