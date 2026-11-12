@@ -3,6 +3,7 @@ import { withJosa } from '../lib/ko';
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Avatars, Icon, TopBar } from '../components/ui';
+import { isSomeday } from '../lib/someday';
 import TripRow from '../components/TripRow';
 import WishCard from '../components/WishCard';
 import { useSeasons } from '../lib/seasons';
@@ -54,7 +55,9 @@ export default function Trips() {
   }, [trips, filter, who, q]);
 
   // 다가오는 여행은 가까운 날부터 (날짜 모르는 계획은 맨 뒤)
-  const planned = list.filter((t) => t.status === 'planned').sort((a, b) => (a.when.y ? whenSortKey(a.when) : 9e9) - (b.when.y ? whenSortKey(b.when) : 9e9));
+  const planned = list.filter((t) => t.status === 'planned' && !isSomeday(t)).sort((a, b) => whenSortKey(a.when) - whenSortKey(b.when));
+  // 날짜를 정하지 않은 '갈 거예요'는 다가오는 여행과 섞지 않고 따로 (최근에 적은 것 먼저)
+  const someday = list.filter(isSomeday);
   const done = list.filter((t) => t.status === 'done');
   // 해·계절로 묶는다: '2026년 가을 · 세 번'. 달을 모르면 해만, 해도 모르면 '날짜 모름'
   const byYear = new Map<string, Trip[]>();
@@ -101,6 +104,14 @@ export default function Trips() {
             </Link>
           )}
         </section>
+
+        {someday.length > 0 && (
+          <section data-testid="trips-someday">
+            <h2 className="h2" style={{ marginBottom: 2 }}>언젠가 갈 곳 <span className="muted small">{someday.length}</span></h2>
+            <div className="tiny muted" style={{ marginBottom: 6 }}>날짜를 정하면 다가오는 여행으로 올라가요</div>
+            <div className="list">{someday.map((t) => <TripRow key={t.id} trip={t} />)}</div>
+          </section>
+        )}
 
         <section>
           <h2 className="h2" style={{ marginBottom: 4 }}>다녀온 곳</h2>

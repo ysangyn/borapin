@@ -5,6 +5,7 @@ import type { Trip } from '../lib/types';
 import { dday, formatWhen, nightsDays } from '../lib/dates';
 import { placeLabel, placeLong, REGION_BY_CODE, COUNTRY_BY_ID, areaShort } from '../lib/geo';
 import { isMemberName } from '../lib/members';
+import { isSomeday, tripMark } from '../lib/someday';
 
 export function tileText(t: Trip): string {
   const p = t.places[0];
@@ -29,14 +30,14 @@ export default function TripRow({ trip }: { trip: Trip }) {
   return (
     <Link to={`/trips/${trip.id}`} className="trip-row" data-testid="trip-row">
       {(() => { const ph = trip.places[0] ? photoForPlace(trip.places[0]) : null; return ph
-        ? <span className={cls + ' photo'}><img src={ph.src.s} alt="" loading="lazy" decoding="async" />{trip.status === 'planned' && <span className="tile-mark">예정</span>}</span>
+        ? <span className={cls + ' photo'}><img src={ph.src.s} alt="" loading="lazy" decoding="async" />{trip.status === 'planned' && <span className="tile-mark">{isSomeday(trip) ? '언젠가' : '예정'}</span>}</span>
         : <span className={cls}>{tileText(trip)}</span>; })()}
       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <span className="t">{trip.title || placeLabel(trip.places[0])}</span>
-        <span className="s">{tripSubtitle(trip)}</span>
+        <span className="s">{isSomeday(trip) ? tripSubtitle(trip).replace(/ · 날짜 모름$/, '') : tripSubtitle(trip)}</span>
         {(others.length > 0 || trip.kind === 'outing' || trip.status === 'planned') && (
           <span className="chips" style={{ gap: 4 }}>
-            {trip.status === 'planned' && <span className="tag violet">{dday(trip.when) ?? '예정'}</span>}
+            {trip.status === 'planned' && <span className={'tag' + (isSomeday(trip) ? '' : ' violet')}>{tripMark(trip, dday)}</span>}
             {trip.kind === 'outing' && <span className="tag">나들이</span>}
             {others.length > 0 && <span className="tag coral">{josa(others.join('·'), '와/과')} 함께</span>}
           </span>
