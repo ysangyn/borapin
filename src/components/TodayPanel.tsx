@@ -1,12 +1,13 @@
-import { useNavigate } from 'react-router-dom';
-import { Icon, useToast } from './ui';
+import { useState } from 'react';
+import { Icon } from './ui';
+import ArriveSheet from './ArriveSheet';
 import { useMapChoice } from './MapChoice';
 import { updatePlan, usePlan } from '../lib/tripExtras';
 import { localDate } from '../lib/dates';
 import { hhmm, moveGuess, nextStop, sunsetAt, todayPool } from '../lib/today';
 import { placeLabel } from '../lib/geo';
 import { withIGa } from '../lib/ko';
-import type { Trip } from '../lib/types';
+import type { PlanItem, Trip } from '../lib/types';
 
 /**
  * 여행 중 '오늘' (홈 맨 위 단계 카드 바로 밑): 다음 갈 곳 큰 카드 + 오늘 다닐 곳 + 해 지는 시각.
@@ -14,9 +15,8 @@ import type { Trip } from '../lib/types';
  */
 export default function TodayPanel({ trip }: { trip: Trip }) {
   const plan = usePlan(trip.id);
-  const toast = useToast();
-  const nav = useNavigate();
   const [openMap, mapSheet] = useMapChoice();
+  const [arriving, setArriving] = useState<PlanItem | null>(null);
   const now = new Date();
   if (!plan) return null;
   const { list, mode } = todayPool(plan, localDate(now));
@@ -30,13 +30,8 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
   const sunset = anchor ? sunsetAt(anchor.lat!, anchor.lng!, now) : null;
   const area = trip.places[0] ? placeLabel(trip.places[0]) : '';
 
-  const arrive = () => {
-    if (!next) return;
-    void updatePlan(next.id, { done: true }).then(
-      () => toast(`${next.name} 도착했어요`, { label: '사진 올리기', onClick: () => nav(`/trips/${trip.id}?tab=photos`) }),
-      () => toast('저장하지 못했어요'),
-    );
-  };
+  // 도착했어요: 사진·어땠어요·한 줄을 한 번에 남기는 창 (다녀옴 표시도 거기서)
+  const arrive = () => { if (next) setArriving(next); };
 
   return (
     <section className="today" aria-label="오늘 다닐 곳" data-testid="today">
@@ -75,6 +70,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
         <div className="today-sun small" data-testid="today-sun"><Icon name="sun" size={18} />해 지는 시각 {hhmm(sunset)}</div>
       )}
       {mapSheet}
+      {arriving && <ArriveSheet trip={trip} item={arriving} onClose={() => setArriving(null)} />}
     </section>
   );
 }

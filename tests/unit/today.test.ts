@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { todayList, todayPool, nextStop, moveGuess, sunsetAt, hhmm } from '../../src/lib/today';
+import { todayList, todayPool, nextStop, moveGuess, sunsetAt, hhmm, arriveKind } from '../../src/lib/today';
 
 const it = (id: string, over: Record<string, unknown>) => ({ id, name: id, day: '2026-11-14', time: null, done: false, order: 0, ...over }) as Parameters<typeof todayList>[0][number];
 
@@ -62,4 +62,12 @@ test('오늘 것도 날짜 안 정한 것도 없으면(여행 날짜를 옮긴 �
   assert.equal(r.mode, 'left');
   assert.deepEqual(r.list.map((p) => p.id), ['공지천', '남이섬']);
   assert.equal(todayPool(plan.map((p) => ({ ...p, done: true })), '2026-11-14').list.length, 0);
+});
+
+test('도착했어요로 새로 남길 때 일정 종류 → 장소 종류 (먹을 곳=맛집, 살 곳=가게, 나머지 볼거리)', () => {
+  assert.equal(arriveKind('eat'), 'food');
+  assert.equal(arriveKind('buy'), 'shop');
+  assert.equal(arriveKind('see'), 'sight');
+  assert.equal(arriveKind('fest'), 'sight');
+  assert.equal(arriveKind(undefined), 'sight');
 });

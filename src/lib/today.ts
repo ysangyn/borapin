@@ -69,3 +69,8 @@ export function sunsetAt(lat: number, lng: number, date: Date): Date | null {
 }
 
 export const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+/** 도착했어요로 새 기록을 만들 때: 일정 종류 → 장소 종류 (먹을 곳=맛집, 살 곳=가게, 그 밖=볼거리) */
+export function arriveKind(kind: PlanItem['kind']): 'food' | 'shop' | 'sight' {
+  return kind === 'eat' ? 'food' : kind === 'buy' ? 'shop' : 'sight';
+}

@@ -28,7 +28,7 @@ import { queued } from './writes';
 import { DELETE, editsOf, isTimestampLike, restoreFields, type Edit } from './tripActions';
 import { syncShareAfterWrite } from './share';
 import { syncMapShareAfterWrite } from './placeMapData';
-import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation } from './types';
+import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation, Verdict } from './types';
 import { whenSortKey } from './dates';
 
 const sp = (name: string) => collection(db, 'spaces', SPACE_ID, name);
@@ -183,6 +183,14 @@ export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecI
 /** 가고 싶어요 → 다녀왔어요 (여행에 묶으면서). 평가·한 줄 평은 나중에 가게 화면에서 */
 export async function markPlaceBeen(id: string, tripId: string | null) {
   await patch(doc(placesCol(), id), { status: 'been', ...(tripId ? { tripId } : {}) });
+  syncShareAfterWrite(tripId);
+}
+/** 도착했어요: 다녀옴 + 어땠어요 + 내 한 줄(내 칸만, 남의 한 줄은 그대로) */
+export async function reviewPlace(id: string, tripId: string, me: string, verdict: Verdict | null, line: string) {
+  const f: Record<string, unknown> = { status: 'been', tripId };
+  if (verdict) f.verdict = verdict;
+  if (line && me) f[`reviews.${me}`] = line;
+  await patch(doc(placesCol(), id), f);
   syncShareAfterWrite(tripId);
 }
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
