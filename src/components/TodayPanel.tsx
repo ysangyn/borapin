@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from './ui';
 import ArriveSheet from './ArriveSheet';
+import NightCard from './NightCard';
 import { useMapChoice } from './MapChoice';
 import { updatePlan, usePlan } from '../lib/tripExtras';
 import { localDate } from '../lib/dates';
@@ -33,8 +34,12 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
   // 도착했어요: 사진·어땠어요·한 줄을 한 번에 남기는 창 (다녀옴 표시도 거기서)
   const arrive = () => { if (next) setArriving(next); };
 
+  // 밤 8시 뒤엔 하루 끝 카드가 먼저 (시험·미리보기: ?night=1)
+  const night = now.getHours() >= 20 || new URLSearchParams(window.location.search).get('night') === '1';
+
   return (
     <section className="today" aria-label="오늘 다닐 곳" data-testid="today">
+      {night && <NightCard trip={trip} plan={plan} day={localDate(now)} />}
       {next ? (
         <div className="today-next" data-testid="today-next">
           {next.img ? <img className="today-img" src={next.img} alt="" referrerPolicy="no-referrer" /> : null}

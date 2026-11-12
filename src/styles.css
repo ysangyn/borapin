@@ -1888,3 +1888,18 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .arrive-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .arrive-thumb span { position: absolute; right: 6px; bottom: 6px; font-size: 11px; font-weight: 700; background: var(--card); border-radius: 99px; padding: 1px 7px; }
 @media (prefers-reduced-motion: reduce) { .arrive-sheet { animation: none; } }
+
+/* 하루 끝 (여행 중 밤): 밤하늘 카드 */
+.night-card { background: #16122B; color: #EDE9FF; border: 2px solid var(--outline); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.night-title { font-size: 21px; }
+.night-photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.night-photo { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #221C3D; }
+.night-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.night-photo .more { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(22, 18, 43, .55); color: #fff; font-weight: 700; }
+.night-route { line-height: 1.5; }
+.night-sub, .night-next { color: #B9A8FF; }
+.night-lines { display: flex; flex-direction: column; gap: 4px; border-top: 1px dashed #4E4380; padding-top: 8px; }
+.night-line { font-size: 18px; color: #FFD9E2; }
+.night-form { display: flex; flex-direction: column; gap: 6px; }
+.night-form .input { flex: 1; min-width: 0; background: #221C3D; color: #EDE9FF; border-color: #4E4380; }
+.night-form .input::placeholder { color: #8E84B8; }

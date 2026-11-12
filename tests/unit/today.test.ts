@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { todayList, todayPool, nextStop, moveGuess, sunsetAt, hhmm, arriveKind } from '../../src/lib/today';
+import { todayList, todayPool, nextStop, moveGuess, sunsetAt, hhmm, arriveKind, nightOf } from '../../src/lib/today';
 
 const it = (id: string, over: Record<string, unknown>) => ({ id, name: id, day: '2026-11-14', time: null, done: false, order: 0, ...over }) as Parameters<typeof todayList>[0][number];
 
@@ -70,4 +70,20 @@ test('도착했어요로 새로 남길 때 일정 종류 → 장소 종류 (먹�
   assert.equal(arriveKind('see'), 'sight');
   assert.equal(arriveKind('fest'), 'sight');
   assert.equal(arriveKind(undefined), 'sight');
+});
+
+test('하루 끝: 오늘 다녀온 곳(순서대로)·오늘 찍은 사진·내일 첫 일정', () => {
+  const plan = [
+    it('닭갈비', { time: '12:30', done: true }),
+    it('공지천', { time: '11:00', done: true }),
+    it('스카이워크', { time: '15:00' }),
+    it('남이섬', { day: '2026-11-15', time: '09:30' }),
+    it('레고랜드', { day: '2026-11-15', time: '14:00' }),
+  ];
+  const photos = [{ id: 'p1', taken: '2026-11-14T11:20' }, { id: 'p2', taken: '2026-11-13T20:00' }, { id: 'p3', taken: '2026-11-14T15:40' }, { id: 'p4', taken: null }];
+  const n = nightOf(plan, photos, '2026-11-14');
+  assert.deepEqual(n.went.map((p) => p.id), ['공지천', '닭갈비']);
+  assert.deepEqual(n.photos.map((p) => p.id), ['p1', 'p3']);
+  assert.equal(n.tomorrow?.id, '남이섬');
+  assert.equal(nightOf(plan, photos, '2026-11-15').tomorrow, null);
 });

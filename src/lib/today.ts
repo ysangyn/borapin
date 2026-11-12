@@ -74,3 +74,14 @@ export const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${Str
 export function arriveKind(kind: PlanItem['kind']): 'food' | 'shop' | 'sight' {
   return kind === 'eat' ? 'food' : kind === 'buy' ? 'shop' : 'sight';
 }
+
+const nextDay = (day: string) => { const d = new Date(`${day}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
+
+/** 하루 끝: 오늘 다녀온 곳(시각 순)·오늘 찍은 사진·내일 첫 일정 */
+export function nightOf<T extends Item, P extends { id: string; taken: string | null }>(plan: T[], photos: P[], day: string): { went: T[]; photos: P[]; tomorrow: T | null } {
+  return {
+    went: todayList(plan, day).filter((p) => p.done),
+    photos: photos.filter((p) => p.taken?.slice(0, 10) === day),
+    tomorrow: todayList(plan, nextDay(day)).find((p) => p.kind !== 'stay') ?? null,
+  };
+}

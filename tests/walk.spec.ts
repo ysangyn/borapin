@@ -233,6 +233,7 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'k36-home-during', async () => { await me.goto('/'); await me.getByTestId('today').waitFor({ timeout: 10_000 }); }, true);
   await step(me, 'k36b-arrive', async () => { await me.getByTestId('today-arrive').click(); await me.getByTestId('arrive-sheet').waitFor({ timeout: 10_000 }); });
   await step(me, 'k36c-arrive-save', async () => { await me.getByTestId('arrive-verdict-again').click(); await me.getByTestId('arrive-line').fill('호수 바람이 시원했다'); await me.getByTestId('arrive-save').click(); log(`  · 알림: ${await toastText(me)}`); }, true);
+  await step(me, 'k36d-night', async () => { await me.goto('/?night=1'); await me.getByTestId('night-card').waitFor({ timeout: 10_000 }); await me.getByTestId('night-line').fill('호수 바람 맞으며 걸은 날'); await me.getByTestId('night-save').click(); log(`  · 알림: ${await toastText(me)}`); }, true);
   await step(me, 'k37-during-here', async () => { await me.getByTestId('here-now').click(); await me.getByTestId('here-page').waitFor({ timeout: 10_000 }); await me.getByTestId('here-typed').fill('닭갈비 골목 원조집'); await me.getByTestId('here-typed-next').click(); });
   await step(me, 'k38-during-here-save', async () => { await me.getByTestId('here-verdict-again').click(); await me.getByTestId('here-save').click(); log(`  · 알림: ${await toastText(me)}`); });
   await step(me, 'k39-during-quick-photos', async () => {
