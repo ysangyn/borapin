@@ -674,7 +674,9 @@ body:has(.plan-flow) .toast { bottom: auto; top: calc(64px + env(safe-area-inset
 /* 말풍선은 몇 초 보여 주고 접는다 (얼굴만 남음) */
 @keyframes fab-bubble { 0%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateX(6px); visibility: hidden; } }
 .ask-fab-bubble { animation: fab-bubble 7s ease forwards; }
-@media (prefers-reduced-motion: reduce) { .ask-fab-bubble { animation: none; } }
+/* 동작 줄이기: 움직이지 않고 7초 뒤 그냥 사라진다 (animation: none이면 말풍선이 영영 남아 글을 가렸음) */
+@keyframes fab-bubble-off { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .ask-fab-bubble { animation: fab-bubble-off 7s step-end forwards; } }
 
 /* 홈 가고 싶은 곳: 흰 카드 안에 세 줄, 가로로 돌아가지 않는다 */
 .wish-home { padding: 4px 14px; }
