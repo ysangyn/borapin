@@ -1912,3 +1912,5 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 /* 지도 범례: 좁은 폰에서 '다녀온 / 곳'처럼 낱말 중간에서 꺾이지 않게 — 항목은 한 줄로, 넘치면 줄째 내려간다 */
 .map-legend { flex-wrap: wrap; row-gap: 4px; column-gap: 12px; max-width: calc(100% - 24px); border-radius: 14px; }
 .map-legend > span { white-space: nowrap; }
+/* 일정 이름(눌러서 펼치기): 글줄 높이(22px)만이라 손가락으로 누르기 빠듯했다 → 위아래로 넓게 */
+.plan-name { min-height: 44px; padding: 10px 0; }
