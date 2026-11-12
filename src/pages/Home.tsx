@@ -89,8 +89,12 @@ export default function Home() {
         {/* 날짜가 지난 예정 여행: 다녀왔다고 바꾸는 게 지금 할 일이라 맨 위에 */}
         {overdue[0] && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="overdue">
-            <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로 바꿔 둘게요.</span></span>
-            <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
+            <span className="small" style={{ flex: 1 }}><b>{overdue[0].title}</b> 다녀오셨나요?<span className="tiny muted" style={{ display: 'block' }}>날짜가 지났어요. 다녀왔으면 지도에 핀으로, 못 갔으면 날짜를 바꿔요.</span></span>
+            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <button className="btn sm" onClick={() => patchTrip(overdue[0].id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
+              {/* 취소·연기된 여행도 치울 수 있게: 고치기에서 날짜를 바꾸거나 지운다 */}
+              <Link to={`/trips/${overdue[0].id}/edit`} className="tiny" style={{ fontWeight: 600, padding: '4px 6px' }} data-testid="overdue-not">못 갔어요</Link>
+            </span>
           </div>
         )}
         {/* 상대가 여행 후보를 골라 두었으면 내 차례: 맨 위에 */}

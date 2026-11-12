@@ -111,8 +111,11 @@ export default function TripDetail() {
 
         {past && (
           <div className="card coral-soft" style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="past-planned">
-            <span className="small" style={{ flex: 1 }}><b>다녀오셨나요?</b> 날짜가 지났어요. 다녀왔으면 핀으로 바꿔 둘게요.</span>
-            <button className="btn sm" onClick={() => patchTrip(trip.id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
+            <span className="small" style={{ flex: 1 }}><b>다녀오셨나요?</b> 날짜가 지났어요. 다녀왔으면 핀으로, 못 갔으면 날짜를 바꿔요.</span>
+            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <button className="btn sm" onClick={() => patchTrip(trip.id, { status: 'done' }).then(() => toast('다녀온 여행으로 바꿨어요'), () => toast('저장하지 못했어요'))}>다녀왔어요</button>
+              <Link to={`/trips/${trip.id}/edit`} className="tiny" style={{ fontWeight: 600, padding: '4px 6px' }} data-testid="past-not">못 갔어요</Link>
+            </span>
           </div>
         )}
 
@@ -261,7 +264,7 @@ function PhotoSpaceNote({ count }: { count: number }) {
   }, [count, records]);
   return (
     <div className="tiny muted" style={{ marginTop: 8, lineHeight: 1.5 }} data-testid="photo-space">
-      여행마다 고른 사진 30장쯤을 남기는 앱이에요.
+      좋았던 사진만 골라 올려요(여행마다 30장쯤이면 넉넉해요).
       {left !== null && <> 앞으로 <b>약 {(Math.round(left / 100) * 100).toLocaleString()}장</b> 더 올릴 수 있어요.</>}
       {count > 60 && <> 이 여행은 사진이 많아요 — 공유 링크에는 앞 60장만 보여요.</>}
     </div>
