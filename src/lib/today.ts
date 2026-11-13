@@ -4,7 +4,7 @@
  */
 import type { PlanItem } from './types';
 
-type Item = Pick<PlanItem, 'id' | 'name' | 'day' | 'time' | 'done' | 'order'> & Partial<Pick<PlanItem, 'kind' | 'lat' | 'lng' | 'img' | 'by'>>;
+type Item = Pick<PlanItem, 'id' | 'name' | 'day' | 'time' | 'done' | 'order'> & Partial<Pick<PlanItem, 'kind' | 'lat' | 'lng' | 'img' | 'by' | 'doneDay'>>;
 
 const mins = (t: string | null | undefined) => { const m = t ? /^(\d{1,2}):(\d{2})/.exec(t) : null; return m ? +m[1] * 60 + +m[2] : null; };
 
@@ -80,7 +80,8 @@ const nextDay = (day: string) => { const d = new Date(`${day}T00:00:00Z`); d.set
 /** 하루 끝: 오늘 다녀온 곳(시각 순)·오늘 찍은 사진·내일 첫 일정 */
 export function nightOf<T extends Item, P extends { id: string; taken: string | null }>(plan: T[], photos: P[], day: string): { went: T[]; photos: P[]; tomorrow: T | null } {
   return {
-    went: todayList(plan, day).filter((p) => p.done),
+    // 오늘 도착한 곳(doneDay)이 먼저. 언제 갔는지 모르는 예전 표시는 그 일정 날짜가 오늘일 때만
+    went: todayList(plan.filter((p) => p.done && (p.doneDay ? p.doneDay === day : p.day === day)).map((p) => ({ ...p, day })), day).map((p) => plan.find((x) => x.id === p.id)!),
     photos: photos.filter((p) => p.taken?.slice(0, 10) === day),
     tomorrow: todayList(plan, nextDay(day)).find((p) => p.kind !== 'stay') ?? null,
   };

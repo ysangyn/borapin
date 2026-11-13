@@ -64,7 +64,7 @@ export default function TodayPanel({ trip }: { trip: Trip }) {
         {list.map((p) => (
           <li key={p.id} className={(p.done ? 'done' : '') + (p === next ? ' next' : '')}>
             <span className="t">{p.time ?? ''}</span>
-            <button className="dot" onClick={() => void updatePlan(p.id, { done: !p.done })} aria-pressed={p.done} aria-label={`${p.name} ${p.done ? '다녀옴 빼기' : '다녀왔어요'}`}>{p.done && <Icon name="check" size={13} />}</button>
+            <button className="dot" onClick={() => void updatePlan(p.id, { done: !p.done, doneDay: p.done ? null : localDate(new Date()) })} aria-pressed={p.done} aria-label={`${p.name} ${p.done ? '다녀옴 빼기' : '다녀왔어요'}`}>{p.done && <Icon name="check" size={13} />}</button>
             <span className="n">{p.name}</span>
             {p === next && <span className="tag violet">다음</span>}
           </li>

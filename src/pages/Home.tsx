@@ -75,11 +75,11 @@ export default function Home() {
         <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
       </div>
       <div className="page" style={{ paddingTop: 4 }}>
-        <div className="home-head">
+        <div className={'home-head' + (stage?.kind === 'during' ? ' compact' : '')}>
           <div style={{ minWidth: 0 }}>
             <div className="small" style={{ fontWeight: 500, color: 'var(--ink3)' }}>{spaceTitle()}의 지도</div>
             <div className="headline" data-testid="headline">
-              {stats ? (stats.tripsDone ? <>{times(stats.tripsDone)}의 여행,<br />핀 <b>{stats.pins}</b>개 꽂았어요</> : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
+              {stats ? (stats.tripsDone ? <>{times(stats.tripsDone)}의 여행,{' '}<br />핀 <b>{stats.pins}</b>개 꽂았어요</> : '첫 핀을 꽂아 볼까요?') : <span className="skeleton-text" aria-busy="true" />}
             </div>
           </div>
           <img className="home-bora" src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />

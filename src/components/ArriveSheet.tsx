@@ -5,6 +5,7 @@ import { createPlace, reviewPlace } from '../lib/data';
 import { captionPhoto, uploadPhoto } from '../lib/photos';
 import { updatePlan } from '../lib/tripExtras';
 import { arriveKind } from '../lib/today';
+import { localDate } from '../lib/dates';
 import type { PlanItem, Trip, Verdict } from '../lib/types';
 
 const VERDICTS: { v: Verdict; label: string }[] = [
@@ -40,7 +41,7 @@ export default function ArriveSheet({ trip, item, onClose }: { trip: Trip; item:
     if (auth.status !== 'ready' || saving) return;
     setSaving(true);
     try {
-      await updatePlan(item.id, { done: true });
+      await updatePlan(item.id, { done: true, doneDay: localDate(new Date()) });
       const text = line.trim().slice(0, 200);
       if (verdict || text) {
         if (item.recId) {

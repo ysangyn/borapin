@@ -1914,3 +1914,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .map-legend > span { white-space: nowrap; }
 /* 일정 이름(눌러서 펼치기): 글줄 높이(22px)만이라 손가락으로 누르기 빠듯했다 → 위아래로 넓게 */
 .plan-name { min-height: 44px; padding: 10px 0; }
+
+/* 여행 중 홈: 숫자 머리를 한 줄로 작게 — '오늘'의 길찾기·도착했어요가 첫 화면에 들어오게 */
+.home-head.compact .headline { font-size: 18px; margin-top: 0; }
+.home-head.compact .headline br { display: none; }
+.home-head.compact .small { display: none; }
+.home-head.compact .home-bora { width: 44px; height: 44px; box-shadow: 2px 2px 0 var(--line2); }

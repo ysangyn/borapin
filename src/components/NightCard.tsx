@@ -43,8 +43,8 @@ export default function NightCard({ trip, plan, day }: { trip: Trip; plan: PlanI
           ))}
         </div>
       )}
-      <span className="small night-route">{n.went.length ? n.went.map((p) => p.name).join(' → ') : '오늘 다녀온 곳을 아직 표시하지 않았어요'}</span>
-      <span className="tiny night-sub">{n.went.length}곳 · 사진 {n.photos.length}장</span>
+      <span className="small night-route">{n.went.length ? n.went.map((p) => p.name).join(' → ') : '다녀온 곳의 동그라미를 누르면 오늘 다닌 길이 여기 모여요'}</span>
+      {(n.went.length > 0 || n.photos.length > 0) && <span className="tiny night-sub">{n.went.length}곳 · 사진 {n.photos.length}장</span>}
       {lines.length > 0 && (
         <div className="night-lines">
           {lines.map((x) => <span key={x.id} className="night-line hand">{x.by.name} “{x.text}”</span>)}

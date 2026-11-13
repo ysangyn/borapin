@@ -169,6 +169,8 @@ export interface PlanItem {
   kind?: 'see' | 'eat' | 'buy' | 'do' | 'fest' | 'stay';
   img?: string;
   done: boolean;
+  /** 다녀옴으로 표시한 날 'YYYY-MM-DD' (하루 끝 '오늘 다닌 곳'. 예전 기록엔 없음) */
+  doneDay?: string | null;
   /** 다녀온 여행에서: 다음에 또 가고 싶은 곳 */
   again?: boolean;
   createdAt?: Timestamp | null;

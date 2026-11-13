@@ -87,3 +87,13 @@ test('하루 끝: 오늘 다녀온 곳(순서대로)·오늘 찍은 사진·내�
   assert.equal(n.tomorrow?.id, '남이섬');
   assert.equal(nightOf(plan, photos, '2026-11-15').tomorrow, null);
 });
+
+test('하루 끝: 일정 날짜가 달라도(날짜 없이 담았거나 어긋났어도) 오늘 도착한 곳은 오늘 다닌 곳', () => {
+  const plan = [
+    it('공지천', { day: '2026-12-05', time: '11:00', done: true, doneDay: '2026-11-14' }),
+    it('닭갈비', { day: null, done: true, doneDay: '2026-11-14', order: 2 }),
+    it('남이섬', { day: '2026-11-14', time: '09:00', done: true, doneDay: '2026-11-13' }), // 어제 미리 다녀옴
+    it('레고랜드', { day: '2026-12-06', done: true }), // 언제 갔는지 모름 → 그 날짜의 것
+  ];
+  assert.deepEqual(nightOf(plan, [], '2026-11-14').went.map((p) => p.id), ['공지천', '닭갈비']);
+});
