@@ -617,7 +617,7 @@ body:has(.plan-flow) .toast { bottom: auto; top: calc(64px + env(safe-area-inset
 .ask-fab-bubble::after { content: ''; position: absolute; right: -5px; bottom: 7px; width: 10px; height: 10px; background: var(--card); transform: rotate(45deg); border-radius: 2px; }
 .sheet-open .ask-fab { display: none; }
 .ask-fab { transition: opacity 0.2s, transform 0.2s; }
-.toast-open .ask-fab, .typing .ask-fab { opacity: 0; pointer-events: none; transform: translateY(8px); }
+.toast-open .ask-fab, .typing .ask-fab, .ask-fab.away { opacity: 0; pointer-events: none; transform: translateY(8px); }
 /* 떠 있는 보라가 맨 아래 단추를 가리지 않게 화면 끝 여백을 더 둔다 */
 .app.has-fab .page { padding-bottom: calc(var(--nav-h) + 100px + var(--safe-b)); }
 @media (min-width: 560px) { .ask-fab { right: calc(50% - 260px + 14px); } }

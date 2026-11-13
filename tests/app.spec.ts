@@ -738,7 +738,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(stage.getByTestId('stage-plan')).toHaveAttribute('href', /^\/trips\/[^/?]+\/plan-next\?step=stay$/);
     await expect(stage).toContainText("계획 1/5 · 다음은 '어디서 자요'");
     // 접힌 둘러보기 칸 제목엔 '추억'이 없다 (추억 카드는 있으면 접힌 칸 안에)
-    await expect(page.getByTestId('home-more').locator('summary')).toHaveText('이달의 추천 · 가고 싶은 곳');
+    await expect(page.getByTestId('home-more').locator('summary')).toHaveText('이달의 추천 · 가고 싶은 곳 · 최근 기록');
     await page.goto((await stage.getByTestId('stage-link').getAttribute('href'))! + '?tab=prep');
     await expect(page).toHaveURL(/\/trips\/[^/?]+\?tab=prep$/);
     await expect(page.getByRole('tab', { name: '준비' })).toHaveAttribute('aria-selected', 'true');

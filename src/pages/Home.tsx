@@ -147,7 +147,8 @@ export default function Home() {
 
 
         {trips && <CapsuleCard trips={trips} />}
-        <NearbyCard />
+        {/* 여행 전·중·후엔 근처 카드도 아래 접힌 칸으로 (지금 할 일이 첫 화면을 차지하게) */}
+        {!stage && <NearbyCard />}
         {trips && wishes && <SafetyLine trips={trips} wishes={wishes} />}
 
         {/* 예정 여행은 아래 '다음 여행 준비' 묶음이 맡는다 (같은 여행을 두 번 보여 주지 않게) */}
@@ -155,11 +156,13 @@ export default function Home() {
         {trips && wishes && <NextTripHub wishes={wishes} trips={trips} stats={stats} excludeTripId={stage?.trip.id ?? null} />}
         {stage ? (
           <details className="home-more" data-testid="home-more">
-            <summary><span>이달의 추천 · 가고 싶은 곳</span><Icon name="chev" size={16} /></summary>
+            <summary><span>이달의 추천 · 가고 싶은 곳 · 최근 기록</span><Icon name="chev" size={16} /></summary>
             <div className="home-more-body">
               {trips && wishes && <MonthPick stats={stats} wishes={wishes} />}
               {trips && wishes && <WishRolling wishes={wishes} trips={trips} stats={stats} />}
               {memory && <MemoryCard memory={memory} />}
+              <NearbyCard />
+              {!noRecords && recent.length > 0 && <RecentList recent={recent} />}
             </div>
           </details>
         ) : (
@@ -169,19 +172,27 @@ export default function Home() {
           </>
         )}
 
-        {!noRecords && (
-          <section>
-            <div className="row-between" style={{ marginBottom: 2 }}>
-              <h2 className="h2">최근에 남긴 기록</h2>
-              <Link to="/trips" className="small" style={{ fontWeight: 600 }}>전체 보기</Link>
-            </div>
+        {!noRecords && !stage && (
+          <>
             {trips && recent.length === 0 && <EmptyRecords />}
-            <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
-          </section>
+            {recent.length > 0 && <RecentList recent={recent} />}
+          </>
         )}
       </div>
       {sel && trips && <PlaceSheet key={JSON.stringify(sel)} place={sel} trips={trips} stats={stats} wishes={wishes ?? []} recs={recs ?? []} onClose={() => setSel(null)} />}
     </>
+  );
+}
+
+function RecentList({ recent }: { recent: Trip[] }) {
+  return (
+    <section>
+      <div className="row-between" style={{ marginBottom: 2 }}>
+        <h2 className="h2">최근에 남긴 기록</h2>
+        <Link to="/trips" className="small" style={{ fontWeight: 600 }}>전체 보기</Link>
+      </div>
+      <div className="list">{recent.map((t) => <TripRow key={t.id} trip={t} />)}</div>
+    </section>
   );
 }
 

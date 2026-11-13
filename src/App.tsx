@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import { DataProvider } from './lib/store';
@@ -149,8 +149,23 @@ function AskFab() {
   // 말풍선은 처음 몇 번만: 물어보기를 한 번 써 본 뒤엔 얼굴만 (카드·단추를 덜 가리게)
   let seen = false;
   try { seen = localStorage.getItem('bp-ask-seen') === '1'; } catch { /* */ }
+  // 아래로 내리며 읽는 동안엔 비켜 있다가(목록 오른쪽 끝 글자·단추를 가리지 않게), 멈추거나 올리면 돌아온다
+  const [away, setAway] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY, t = 0;
+    const on = () => {
+      const y = window.scrollY;
+      if (y > last + 4 && y > 80) setAway(true);
+      else if (y < last - 4) setAway(false);
+      last = y;
+      window.clearTimeout(t);
+      t = window.setTimeout(() => setAway(false), 900);
+    };
+    window.addEventListener('scroll', on, { passive: true });
+    return () => { window.removeEventListener('scroll', on); window.clearTimeout(t); };
+  }, []);
   return (
-    <Link to="/ask" className={'ask-fab' + (seen ? ' quiet' : '')} aria-label="물어보기" data-testid="ask-fab">
+    <Link to="/ask" className={'ask-fab' + (seen ? ' quiet' : '') + (away ? ' away' : '')} aria-label="물어보기" data-testid="ask-fab">
       {!seen && <span className="ask-fab-bubble" aria-hidden="true">물어봐요</span>}
       <img src="/art/pini.svg" alt="" width={80} height={80} decoding="async" />
     </Link>

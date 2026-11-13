@@ -4,7 +4,8 @@ import { Icon, Spinner, TopBar, useGoBack, useLeaveGuard, useToast } from '../co
 import PlacePicker from '../components/PlacePicker';
 import PlaceHint from '../components/PlaceHint';
 import { useAuth } from '../lib/auth';
-import { companionSuggestions, createPlace, createTrip, markPlaceBeen, updateTrip, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
+import { companionSuggestions, createPlace, createTrip, createWish, markPlaceBeen, updateTrip, updateWish, usePlaces, useTrips, useWishes } from '../lib/data';
+import { somedayToWishes } from '../lib/someday';
 import { candidates as stopCandidates, type Stop } from '../lib/recordStops';
 import { KIND_LABEL } from '../lib/placeRecs';
 import type { PlaceKind } from '../lib/types';
@@ -116,6 +117,7 @@ export default function Record() {
     setNewName('');
   };
 
+  const toWish = !editing && status === 'planned' && when.p === 'unknown' && !pending.length && !sp.get('wish');
   const save = async () => {
     if (!canSave || auth.status !== 'ready') return;
     setSaving(true);
@@ -132,6 +134,14 @@ export default function Record() {
       source: opened?.source ?? 'app',
     };
     try {
+      // 날짜를 안 정한 '갈 거예요'는 뜻으로는 가고 싶은 곳: 여행 대신 가고 싶은 곳에 담는다 (날짜를 정하면 그때 여행으로)
+      if (toWish && wishes) {
+        const add = somedayToWishes(input, wishes);
+        for (const w of add) await createWish(w, auth.user);
+        toast(add.length ? '가고 싶은 곳에 담았어요' : '이미 가고 싶은 곳에 있어요');
+        goBack('/wishes');
+        return;
+      }
       if (editing && id && opened) {
         await updateTrip(id, opened, input);
         toast('고쳤어요');
@@ -350,7 +360,7 @@ export default function Record() {
 
         {uploader.queue.length > 0 && <div className="small muted" role="status">사진 올리는 중 {uploader.queue.filter((q) => q.pct >= 1).length}/{uploader.queue.length}…</div>}
         <button className="btn block" disabled={!canSave} onClick={save} data-testid="save">
-          {saving ? (editing ? '저장 중…' : '남기는 중…') : editing ? '고친 내용 저장' : status === 'planned' ? '계획 남기기' : '기록 남기기'}
+          {saving ? (editing ? '저장 중…' : '남기는 중…') : editing ? '고친 내용 저장' : toWish ? '가고 싶은 곳에 담기' : status === 'planned' ? '계획 남기기' : '기록 남기기'}
         </button>
         {!places.length && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">어디를 하나 이상 골라 주세요</div>}
         {places.length > 0 && !whenOk && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">언제인지 골라 주세요 · 모르면 '몰라요'를 눌러요</div>}

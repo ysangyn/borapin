@@ -5,6 +5,7 @@ import {
   deleteField,
   doc,
   FieldPath,
+  getCountFromServer,
   getDoc,
   getDocFromCache,
   getDocs,
@@ -29,6 +30,7 @@ import { DELETE, editsOf, isTimestampLike, restoreFields, type Edit } from './tr
 import { syncShareAfterWrite } from './share';
 import { syncMapShareAfterWrite } from './placeMapData';
 import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation, Verdict } from './types';
+import { somedayToWishes } from './someday';
 import { whenSortKey } from './dates';
 
 const sp = (name: string) => collection(db, 'spaces', SPACE_ID, name);
@@ -162,6 +164,26 @@ export async function deleteTripAll(trip: Trip, onStep?: (done: number, total: n
     await b.commit();
     onStep?.(Math.min(ops.length, i + 400), ops.length);
   }
+}
+
+/**
+ * 언젠가 갈 곳(날짜 없는 예정 여행)을 가고 싶은 곳으로 옮기기. 사용자가 확인한 뒤에만 부른다.
+ * 일정·사진·글·장소·가고 싶은 곳이 하나라도 붙은 여행, 공유 중인 여행은 건드리지 않는다(셀 수 없을 때도).
+ */
+export async function moveSomedayToWishes(trips: Trip[], wishes: Wish[], user: User): Promise<{ moved: number; kept: number }> {
+  let moved = 0, kept = 0;
+  const known = [...wishes.map((w) => ({ place: w.place }))];
+  for (const t of trips) {
+    if (t.share?.token) { kept++; continue; }
+    const counts = await Promise.all(['plans', 'photos', 'notes', 'places', 'wishes'].map((n) =>
+      getCountFromServer(query(sp(n), where('tripId', '==', t.id))).then((r) => r.data().count, () => -1)));
+    if (counts.some((c) => c !== 0)) { kept++; continue; }
+    const add = somedayToWishes(t, known);
+    for (const w of add) { await createWish(w, user); known.push({ place: w.place }); }
+    await deleteTrip(t.id);
+    moved++;
+  }
+  return { moved, kept };
 }
 
 // ---------- 우리 장소 ----------

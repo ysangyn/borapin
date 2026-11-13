@@ -2,13 +2,14 @@ import { SEASON_LABEL } from '../lib/dates';
 import { withJosa } from '../lib/ko';
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Avatars, Icon, TopBar } from '../components/ui';
+import { Avatars, Icon, TopBar, useToast } from '../components/ui';
 import { isSomeday } from '../lib/someday';
 import TripRow from '../components/TripRow';
 import WishCard from '../components/WishCard';
 import { useSeasons } from '../lib/seasons';
 import { recNames, sortWishes, wishState } from '../lib/wishes';
-import { usePlaces, useTrips, useWishes } from '../lib/data';
+import { moveSomedayToWishes, usePlaces, useTrips, useWishes } from '../lib/data';
+import { useAuth } from '../lib/auth';
 import { normalizeQuery, placeLong } from '../lib/geo';
 import type { Trip } from '../lib/types';
 import { whenSortKey } from '../lib/dates';
@@ -22,6 +23,9 @@ const seasonLabel = (m: number) => (m >= 3 && m <= 5 ? '봄' : m >= 6 && m <= 8 
 export default function Trips() {
   const { trips } = useTrips();
   const { wishes } = useWishes();
+  const auth = useAuth();
+  const toast = useToast();
+  const [moving, setMoving] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [who, setWho] = useState<string>('');
   const [sp] = useSearchParams();
@@ -110,6 +114,18 @@ export default function Trips() {
             <h2 className="h2" style={{ marginBottom: 2 }}>언젠가 갈 곳 <span className="muted small">{someday.length}</span></h2>
             <div className="tiny muted" style={{ marginBottom: 6 }}>날짜를 정하면 다가오는 여행으로 올라가요</div>
             <div className="list">{someday.map((t) => <TripRow key={t.id} trip={t} />)}</div>
+            {/* 날짜 없는 '갈 거예요'는 뜻으로는 가고 싶은 곳: 확인을 받고 옮긴다 (일정·사진·글이 붙은 여행은 그대로) */}
+            <button className="btn soft block" style={{ marginTop: 8 }} disabled={moving || auth.status !== 'ready'} data-testid="someday-move"
+              onClick={async () => {
+                if (auth.status !== 'ready' || !wishes) return;
+                if (!window.confirm(`언젠가 갈 곳 ${someday.length}곳을 가고 싶은 곳으로 옮길까요?\n일정·사진·글이 붙은 여행은 그대로 둬요.`)) return;
+                setMoving(true);
+                try {
+                  const r = await moveSomedayToWishes(someday, wishes, auth.user);
+                  toast(r.moved ? `${r.moved}곳을 가고 싶은 곳으로 옮겼어요${r.kept ? ` · ${r.kept}곳은 기록이 있어 그대로 뒀어요` : ''}` : '기록이 붙어 있어 옮기지 않았어요');
+                } catch { toast('옮기지 못했어요. 잠시 뒤 다시 해 주세요'); }
+                finally { setMoving(false); }
+              }}>{moving ? '옮기는 중…' : '가고 싶은 곳으로 옮기기'}</button>
           </section>
         )}
 
