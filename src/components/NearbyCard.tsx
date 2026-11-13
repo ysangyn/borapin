@@ -28,12 +28,12 @@ export default function NearbyCard() {
   return (
     <section className="card white nearby" data-testid="nearby">
       <div className="row-between" style={{ alignItems: 'center' }}>
-        <div className="hub-label" style={{ margin: 0 }}>지금 근처</div>
-        {st.s !== 'ok' && <button className="btn sm soft" onClick={find} disabled={st.s === 'busy'} data-testid="nearby-find"><Icon name="pin" size={15} />{st.s === 'busy' ? '찾는 중…' : '근처에 담아 둔 곳'}</button>}
+        <div className="hub-label" style={{ margin: 0 }}>근처에 담아 둔 곳</div>
+        {st.s !== 'ok' && <button className="btn sm soft" onClick={find} disabled={st.s === 'busy'} data-testid="nearby-find"><Icon name="pin" size={15} />{st.s === 'busy' ? '찾는 중…' : '찾아보기'}</button>}
         {st.s === 'ok' && <Link to="/maps" className="small" style={{ fontWeight: 500 }}>내 지도</Link>}
       </div>
       {st.s === 'idle' && <span className="tiny muted">그 동네에 가면 눌러 보세요. 담아 둔 카페·맛집이 가까운 순으로 나와요.</span>}
-      {st.s === 'none' && <span className="small muted">2km 안에 담아 둔 곳이 없어요. 오늘 새 곳을 담아 볼까요?</span>}
+      {st.s === 'none' && <span className="small muted">2km 안에 담아 둔 곳이 없어요. <Link to="/here" style={{ fontWeight: 600 }}>지금 여기 남기기</Link></span>}
       {st.s === 'fail' && <span className="small muted">위치를 못 읽었어요. 폰의 위치 권한을 켜 주세요.</span>}
       {st.s === 'ok' && (
         <div className="list" style={{ gap: 0 }}>
