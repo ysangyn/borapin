@@ -236,7 +236,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('홈 통계와 지도', async ({ page }) => {
     await signIn(page, OWNER);
     // 횟수는 우리말로 (times): '2번'이 아니라 '두 번'
-    await expect(page.getByTestId('headline')).toContainText('두 번의 여행,핀 2개 꽂았어요');
+    await expect(page.getByTestId('headline')).toContainText('두 번의 여행, 핀 2개 꽂았어요');
     await expectMapDrawn(page);
     await shot(page, '06-home');
     await page.goto('/map');
@@ -284,7 +284,7 @@ test.describe.serial('보라핀 1단계', () => {
       const m = (window as unknown as { __map: { querySourceFeatures: (s: string) => { properties: Record<string, unknown> }[] } }).__map;
       return m.querySourceFeatures('kr').find((f) => f.properties.cell === '26')?.properties.wash ?? null;
     })).toMatch(/^#[0-9A-F]{6}$/);
-    await expect(page.getByTestId('headline')).toContainText('세 번의 여행,핀 3개 꽂았어요');
+    await expect(page.getByTestId('headline')).toContainText('세 번의 여행, 핀 3개 꽂았어요');
     await shot(page, '09-sheet');
     await sheet.getByRole('button', { name: '닫기' }).click();
     await expect(sheet).toHaveCount(0);
