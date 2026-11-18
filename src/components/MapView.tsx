@@ -10,7 +10,7 @@ import type { Place } from '../lib/types';
 import type { Stats } from '../lib/data';
 import { Icon } from './ui';
 import { labelsFor } from './mapLabels';
-import { ensurePaper, washColor } from './gardenPatterns';
+import { washColor } from './gardenPatterns';
 import { flowerOf, flowerSrc } from '../lib/flowers';
 import type { Plant } from '../lib/garden';
 import { toneOf } from '../lib/members';
@@ -54,7 +54,7 @@ function frame(map: MLMap, mode: MapMode, stats: Stats | null, duration: number,
 const DARK = isDark();
 const COLORS = DARK
   ? { v1: '#5A4A9E', v2: '#7A62D8', v3: '#A08CFF', none: '#2B2547', sea: '#15122A', land: '#2B2547', line: '#3D3568', planned: '#332B5A' }
-  : { v1: '#B9A8F5', v2: '#8D73EE', v3: '#5B3FD1', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0', line: '#FFFFFF', planned: '#F6F2FF' };
+  : { v1: '#B4B3EE', v2: '#7E7CDB', v3: '#4B48B8', none: '#F3EFE6', sea: '#E3E9F5', land: '#ECE8E0', line: '#FFFFFF', planned: '#F6F2FF' };
 
 function fillExpr() {
   return [
@@ -249,7 +249,6 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       // 꽃 지도: 칸 자료에 물빛 색(wash)·한 사람만 남긴 칸의 테두리 색(ring)을 넣어 그린다 (feature-state로는 색 식을 못 넣어서)
       krData.current = g.kr as GeoJSON.FeatureCollection;
       map.addLayer({ id: 'kr-garden', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-color': ['get', 'wash'], 'fill-outline-color': COLORS.line, 'fill-opacity': DARK ? 0.88 : 1 } });
-      try { ensurePaper(map); map.addLayer({ id: 'kr-paper', type: 'fill', source: 'kr', filter: ['has', 'wash'], paint: { 'fill-pattern': 'g-paper', 'fill-opacity': 0.9 } }); } catch (e) { console.warn(e); }
       map.addLayer({ id: 'kr-ring', type: 'line', source: 'kr', filter: ['has', 'ring'], paint: { 'line-color': ['get', 'ring'], 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.8, 8, 1.6], 'line-opacity': 0.8 } });
       map.addLayer({ id: 'kr-line', type: 'line', source: 'kr', paint: { 'line-color': COLORS.line, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.3, 8, 1] } });
       map.addLayer({ id: 'kr-group', type: 'line', source: 'krmesh', paint: { 'line-color': COLORS.line, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 8, 2.4] } });

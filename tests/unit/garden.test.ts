@@ -41,13 +41,13 @@ test('두 번 이상 가면 촘촘한 무늬, 나이테는 해마다', () => {
   assert.equal(plantLine(g), '보랏빛으로 물들기 시작했어요 · 2019 · 2024');
 });
 
-test('보라 수채: 어떤 꽃이든 보라 범위, 마음을 남길수록 진하게', async () => {
+test('남보라 단색: 어떤 꽃이든 보라 범위, 마음을 남길수록 진하게', async () => {
   const { washColor } = await import('../../src/components/gardenPatterns');
   const hue = (c: string) => { const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; };
-  for (const icon of ['rose', 'forsythia', 'camellia', 'magnolia', 'iris', 'wild']) {
-    const h = hue(washColor(icon, 'sprout', 1, '41280'));
-    assert.ok(h >= 238 && h <= 296, `${icon} ${h}`);
-  }
+  // 단색 남보라: 꽃·지역이 달라도 같은 색(빛깔 하나), 자주보라 쪽(>260)으로 가지 않는다
+  const hs = ['rose', 'forsythia', 'camellia', 'magnolia', 'iris', 'wild'].flatMap((icon) => ['41280', '26', '11'].map((code) => hue(washColor(icon, 'sprout', 1, code))));
+  for (const h of hs) assert.ok(h >= 238 && h <= 256, `남보라 ${h}`);
+  assert.equal(new Set(['rose', 'iris'].flatMap((icon) => ['41280', '26'].map((code) => washColor(icon, 'sprout', 1, code)))).size, 1);
   const L = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)).reduce((a, b) => a + b, 0);
   assert.ok(L(washColor('rose', 'flower', 2, '26')) < L(washColor('rose', 'seed', 1, '26')));
 });

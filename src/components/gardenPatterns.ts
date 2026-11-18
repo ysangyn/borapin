@@ -62,38 +62,21 @@ export function ensurePattern(map: MLMap, id: string) {
  * 다녀온 칸을 그 고장 꽃 색의 옅은 물빛으로 칠한다. 마음(사진·글·평)을 남길수록, 여러 번 갈수록 조금씩 진해진다.
  * 흰 꽃(목련·배꽃 등)은 꽃 가운데 색을 쓴다. 꽃 그림은 칸을 누를 때 피어나는 한 송이로만.
  */
-const hex = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
 const toHex = (v: number[]) => '#' + v.map((x) => Math.round(Math.max(0, Math.min(1, x)) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
-const lum = ([r, g, b]: number[]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
 const LIGHT = { seed: 0.85, sprout: 0.77, flower: 0.68 } as const;
-/** 색의 각도(0~360) */
-function hueOf([r, g, b]: number[]): number {
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
-  if (!d) return 0;
-  const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  return (h * 60 + 360) % 360;
-}
 function hsl(h: number, s: number, l: number): number[] {
   const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
   const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
   return [r + m, g + m, b + m];
 }
 /**
- * 보라 수채 (11-04 사용자: 보라핀 보라로, 단조롭지 않게 — 시안 D).
- * 고장 꽃 색을 보라 범위 안으로 옮긴다: 분홍·빨강 → 난초빛 보라(286°), 노랑·주황 → 라일락(266°), 파랑·보라 → 남보라(248°).
- * 칸마다 ±8° 흔들어 이웃 칸이 한 덩어리로 보이지 않게, 마음을 남길수록·여러 번 갈수록 진하게.
+ * 다녀온 칸 색 (11-19 사용자·아내: 수채 말고 단색 남보라 — 자주보라로 보였음).
+ * 빛깔은 남보라(248°) 하나, 마음을 남길수록·여러 번 갈수록 진하게만.
  */
-export function washColor(icon: string, stage: keyof typeof LIGHT, visits: number, code = ''): string {
-  const k = KINDS[icon] ?? KINDS.wild ?? { petal: '#C9B8F5', mid: '#9B82F6' };
-  let base = hex(k.petal);
-  if (lum(base) > 0.85) base = hex(k.mid);
-  const h0 = hueOf(base);
-  const target = h0 >= 300 || h0 < 20 ? 286 : h0 < 70 ? 266 : h0 < 200 ? 276 : 248;
-  let n = 0;
-  for (const ch of code) n = (n * 31 + ch.charCodeAt(0)) % 997;
-  const jit = (n % 17) - 8;
-  const l = Math.max(0.62, LIGHT[stage] - (visits > 1 ? 0.04 : 0));
-  return toHex(hsl((target + jit + 360) % 360, 0.62, l));
+export function washColor(_icon: string, stage: keyof typeof LIGHT, visits: number, _code = ''): string {
+  // 단색 남보라(빛깔 하나): 꽃·지역마다 색이 흔들리던 수채 대신, 마음을 남길수록 진해지기만 한다
+  const l = Math.max(0.6, LIGHT[stage] - (visits > 1 ? 0.04 : 0));
+  return toHex(hsl(248, 0.55, l));
 }
 
 /** 물빛 결: 칸 위에 옅게 얹는 종이·물감 얼룩 (한 장을 모든 칸이 같이 쓴다) */

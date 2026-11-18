@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { crowdOf, loadTour, relatedOf, useTrend, type TourCell } from '../lib/trend';
 import { REGION_BY_CODE } from '../lib/geo';
-import { useMapChoice, useWishItem } from './MapChoice';
+import { useWishItem } from './MapChoice';
 import SpotDetail, { type SpotTarget } from './SpotDetail';
 
 /**
@@ -12,7 +12,6 @@ export default function TourSpots({ code }: { code: string }) {
   const [cell, setCell] = useState<TourCell | null>(null);
   const [bad, setBad] = useState<Set<string>>(new Set());
   const trend = useTrend();
-  const [openMap, mapChoice] = useMapChoice();
   const wi = useWishItem();
   const [detail, setDetail] = useState<SpotTarget | null>(null);
   const here = { t: 'kr' as const, code };
@@ -55,15 +54,15 @@ export default function TourSpots({ code }: { code: string }) {
       )}
       {related.length > 0 && (
         <div className="trend-related" data-testid="trend-related">
-          <div className="info-line"><span className="k">같이</span><span className="tiny muted">같이 가면 좋은 곳 · 요즘 함께 많이 찾아요 · 누르면 지도</span></div>
+          <div className="info-line"><span className="k">같이</span><span className="tiny muted">같이 가면 좋은 곳 · 요즘 함께 많이 찾아요 · 누르면 검색</span></div>
           <div className="trend-chips">
             {related.map((x) => (
-              <button type="button" key={x.n} className="chip trend-chip" onClick={() => openMap({ name: x.n, area: x.m })}>{x.n}</button>
+              // 어떤 곳인지부터 알게: 지도 대신 네이버 검색(블로그·기사·리뷰)으로
+              <a key={x.n} className="chip trend-chip" href={`https://search.naver.com/search.naver?query=${encodeURIComponent(`${x.m ?? ''} ${x.n}`.trim())}`} target="_blank" rel="noopener noreferrer" data-testid="trend-chip">{x.n}</a>
             ))}
           </div>
         </div>
       )}
-      {mapChoice}
       {detail && <SpotDetail spot={detail} onClose={() => setDetail(null)} />}
       {cell && cell.easy > 0 && <div className="info-line" data-testid="tour-easy"><span className="k">편하게</span><span>휠체어·유모차로 다니기 편한 관광지 {cell.easy}곳 (무장애 정보)</span></div>}
     </div>
