@@ -786,7 +786,8 @@ test.describe('사람처럼 쓰기', () => {
       const pg = page.getByTestId('here-page');
       await pg.getByTestId('here-typed').pressSequentially('동네 소금빵집', { timeout: 15_000 });
       await pg.getByTestId('here-typed-next').click();
-      await expect(pg.getByTestId('here-kind-bakery')).toHaveAttribute('aria-checked', 'true');
+      await expect(pg.getByTestId('kind-food')).toHaveAttribute('aria-pressed', 'true');
+      await expect(pg.getByTestId('tag-빵집')).toHaveAttribute('aria-pressed', 'true');
       await expect(pg).not.toContainText('에도 남기기');
       await pg.getByTestId('here-save').click();
       await expect(page.getByRole('status')).toContainText('동네 소금빵집을 남겼어요');
@@ -817,8 +818,8 @@ test.describe('사람처럼 쓰기', () => {
       await expect(pg).toContainText('가게 이름을 적어 주세요', { timeout: 15_000 });
       await pg.getByTestId('here-typed').pressSequentially('경포 커피');
       await pg.getByTestId('here-typed-next').click();
-      await expect(pg.getByTestId('here-kind-cafe')).toHaveAttribute('aria-checked', 'true');
-      await pg.getByTestId('here-verdict-again').click();
+      await expect(pg.getByTestId('kind-cafe')).toHaveAttribute('aria-pressed', 'true');
+      await pg.getByTestId('verdict-again').click();
       await pg.getByTestId('here-line').fill('바다 보이는 창가 자리');
       await expect(pg).toContainText('강릉 지금 여행에도 남기기');
       await pg.getByTestId('here-save').click();

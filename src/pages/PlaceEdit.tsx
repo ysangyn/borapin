@@ -1,6 +1,6 @@
 import { withJosa } from '../lib/ko';
 import RankAsk from '../components/RankAsk';
-import { TAG_SUGGEST, themeOf } from '../lib/placeMaps';
+import { themeOf } from '../lib/placeMaps';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { hideReview, useBlind } from '../lib/blind';
@@ -17,7 +17,8 @@ import { celebrate, whatsNew } from '../lib/celebrate';
 import { formatWhen } from '../lib/dates';
 import { parsePlaceParam, placeLabel, placeParam, searchPlaces } from '../lib/geo';
 import { regionFromAddress } from '../lib/area';
-import { KIND_LABEL, KINDS, parseNaverShare, VERDICTS } from '../lib/placeRecs';
+import { parseNaverShare } from '../lib/placeRecs';
+import { KindTagPicker, VerdictPicker } from '../components/KindTagPicker';
 import { samePlace } from '../lib/wishes';
 import { useHome } from '../lib/home';
 import { updatePlan } from '../lib/tripExtras';
@@ -42,7 +43,6 @@ export default function PlaceEdit() {
   const [kind, setKind] = useState<PlaceKind>(() => { const k = sp.get('kind'); return ['food', 'cafe', 'sight', 'stay', 'shop', 'etc'].includes(k ?? '') ? (k as PlaceKind) : 'food'; });
   // 내 꼬리표(소품샵·옷가게·빵집…): 있으면 내 지도의 주제가 된다
   const [tag, setTag] = useState<string>(() => (sp.get('tag') ?? '').slice(0, 20));
-  const [tagOpen, setTagOpen] = useState(false);
   const [region, setRegion] = useState<Place[]>(() => parsePlaceParam(sp.get('region')));
   // 지역을 아무도 안 정했으면 '우리 집' 동네로 (여행 아니어도 동네 맛집을 바로 담게). 붙여 넣은 링크의 자리나 손으로 고른 지역이 이긴다
   const home = useHome();
@@ -295,28 +295,7 @@ export default function PlaceEdit() {
           <input className="input" aria-label="장소 이름" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="예: 초당할머니순두부" />
         </div>
 
-        <div className="field">
-          <span className="label">종류</span>
-          <div className="chips">
-            {KINDS.map((k) => (
-              <button key={k.k} type="button" aria-pressed={kind === k.k} className={'chip' + (kind === k.k ? ' on' : '')} onClick={() => { setKind(k.k); setKindTouched(true); }}>
-                {kind === k.k && <span className="chip-check" aria-hidden="true"><Icon name="check" size={13} stroke={2.6} /></span>}{k.label}
-              </button>
-            ))}
-          </div>
-          {/* 꼬리표: 종류 안의 작은 주제. 있으면 내 지도가 '성동구 소품샵 지도'처럼 따로 생긴다 */}
-          <div className="chips" style={{ marginTop: 8 }} data-testid="place-tags">
-            {[...new Set([...(TAG_SUGGEST[kind] ?? []), ...(places ?? []).filter((p) => p.kind === kind && p.tag?.trim()).map((p) => p.tag!.trim())])].slice(0, 8).map((t) => (
-              <button key={t} type="button" className={'chip' + (tag === t ? ' on' : '')} aria-pressed={tag === t} onClick={() => setTag(tag === t ? '' : t)}>{t}</button>
-            ))}
-            {tagOpen || (tag && !(TAG_SUGGEST[kind] ?? []).includes(tag) && !(places ?? []).some((p) => p.tag?.trim() === tag)) ? (
-              <input className="input" aria-label="내 꼬리표" placeholder="내 꼬리표 (예: 옷가게)" value={tag} onChange={(e) => setTag(e.target.value.slice(0, 20))} style={{ height: 36, width: 150 }} autoFocus={tagOpen} />
-            ) : (
-              <button type="button" className="chip dashed" onClick={() => setTagOpen(true)}>+ 내 꼬리표</button>
-            )}
-          </div>
-          <span className="tiny muted" style={{ display: 'block', marginTop: 4 }}>꼬리표를 붙이면 '{placeLabel(region[0] ?? { t: 'kr', code: '11' })} {tag.trim() || '소품샵'} 지도'처럼 내 지도가 따로 생겨요. 안 붙이면 {KIND_LABEL[kind]} 지도에 들어가요.</span>
-        </div>
+        <KindTagPicker kind={kind} tag={tag} onKind={(k) => { setKind(k); setKindTouched(true); }} onTag={setTag} area={placeLabel(region[0] ?? { t: 'kr', code: '11' })} />
 
         <div className="field">
           <span className="label">어디<span className="req">*</span></span>
@@ -371,16 +350,7 @@ export default function PlaceEdit() {
           ))}
         </div>
 
-        <div className="field">
-          <span className="label">다시 간다면</span>
-          <div className="chips">
-            {VERDICTS.map((v) => (
-              <button key={v.v} type="button" aria-pressed={verdict === v.v} className={'chip' + (verdict === v.v ? (v.v === 'again' ? ' on-coral' : ' on') : '')} onClick={() => setVerdict(verdict === v.v ? null : v.v)}>
-                {verdict === v.v && <span className="chip-check" aria-hidden="true"><Icon name="check" size={13} stroke={2.6} /></span>}{v.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <VerdictPicker value={verdict} onChange={setVerdict} />
 
 
         </>) : (
