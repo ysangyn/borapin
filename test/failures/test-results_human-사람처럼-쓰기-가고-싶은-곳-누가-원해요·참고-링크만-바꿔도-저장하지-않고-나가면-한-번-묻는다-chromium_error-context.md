@@ -83,7 +83,7 @@ Test timeout of 60000ms exceeded.
             - /placeholder: 안 써도 돼요
         - button "고친 내용 저장" [ref=f2e76] [cursor=pointer]
         - link "이곳으로 여행 만들기" [ref=f2e77] [cursor=pointer]:
-          - /url: /plan?wish=pt4CaNjzOUX8fSY6OnO2
+          - /url: /plan?wish=XMTVi1SrmntSJ30fTZW8
         - button "가고 싶은 곳에서 빼기" [ref=f2e78] [cursor=pointer]
     - status
   - iframe [aria-hidden] [ref=f2e81]

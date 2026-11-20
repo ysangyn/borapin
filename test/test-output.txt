@@ -12,31 +12,31 @@ TAP version 13
 # Subtest: 완전 중복: 같은 해시끼리 묶고, 보관처가 다른 것만 "안전한 사본"으로 센다
 ok 1 - 완전 중복: 같은 해시끼리 묶고, 보관처가 다른 것만 "안전한 사본"으로 센다
   ---
-  duration_ms: 1.674474
+  duration_ms: 1.297458
   type: 'test'
   ...
 # Subtest: 여행 대조: 날짜 여행은 그날 안이면, 달·해 여행은 느슨하게, 밖이면 없음
 ok 2 - 여행 대조: 날짜 여행은 그날 안이면, 달·해 여행은 느슨하게, 밖이면 없음
   ---
-  duration_ms: 0.629619
+  duration_ms: 0.520145
   type: 'test'
   ...
 # Subtest: 네 숫자와 CSV
 ok 3 - 네 숫자와 CSV
   ---
-  duration_ms: 0.846555
+  duration_ms: 0.638273
   type: 'test'
   ...
 # Subtest: HTML 보고서에 네 숫자와 표가 들어간다
 ok 4 - HTML 보고서에 네 숫자와 표가 들어간다
   ---
-  duration_ms: 7.516046
+  duration_ms: 5.554373
   type: 'test'
   ...
 # Subtest: 진짜 파일: EXIF → 파일명 → 수정시각 순으로 촬영 정보를 읽는다
 ok 5 - 진짜 파일: EXIF → 파일명 → 수정시각 순으로 촬영 정보를 읽는다
   ---
-  duration_ms: 370.886083
+  duration_ms: 301.982874
   type: 'test'
   ...
 
@@ -45,130 +45,129 @@ Running 58 tests using 1 worker
 # Subtest: 진짜 폴더: 훑기는 사진만 모으고 숨김·캐시 폴더는 건너뛴다, 해시는 같은 파일에 같게
 ok 6 - 진짜 폴더: 훑기는 사진만 모으고 숨김·캐시 폴더는 건너뛴다, 해시는 같은 파일에 같게
   ---
-  duration_ms: 15.434563
+  duration_ms: 13.779917
   type: 'test'
   ...
 # Subtest: 파일명에서 날짜·시각: 갤럭시·픽셀·아이폰·카톡·카메라 번호
 ok 7 - 파일명에서 날짜·시각: 갤럭시·픽셀·아이폰·카톡·카메라 번호
   ---
-  duration_ms: 0.551564
+  duration_ms: 0.552063
   type: 'test'
   ...
 # Subtest: 폴더 이름에서 날짜·여행 이름
 ok 8 - 폴더 이름에서 날짜·여행 이름
   ---
-  duration_ms: 0.941255
+  duration_ms: 0.772525
   type: 'test'
   ...
 # Subtest: 확장자 종류와 출처 힌트
 ok 9 - 확장자 종류와 출처 힌트
   ---
-  duration_ms: 0.326659
+  duration_ms: 0.272291
   type: 'test'
   ...
 # Subtest: 서랍 나무: 여행 → 날짜, 여행 아닌 사진 → 해 → 달, 자료, 모르는 사진, 중복, 보관처
 ok 10 - 서랍 나무: 여행 → 날짜, 여행 아닌 사진 → 해 → 달, 자료, 모르는 사진, 중복, 보관처
   ---
-  duration_ms: 1.017846
+  duration_ms: 0.863023
   type: 'test'
   ...
 # Subtest: 여행이 없으면 모두 "여행 아닌 사진"에 해·달로, 빈 서랍은 빠진다
 ok 11 - 여행이 없으면 모두 "여행 아닌 사진"에 해·달로, 빈 서랍은 빠진다
   ---
-  duration_ms: 0.248923
+  duration_ms: 0.226963
   type: 'test'
   ...
-  ✓   1 [chromium] › tests/app.spec.ts:65:3 › 보라핀 1단계 › 로그인 화면 (1.5s)
-  ✓   2 [chromium] › tests/app.spec.ts:71:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (4.5s)
-  ✓   3 [chromium] › tests/app.spec.ts:78:3 › 보라핀 1단계 › 기록이 없으면 빈 상태 카드가 지도 바로 아래(물어보기 다음)에, 묶음은 그 뒤에 (2.5s)
-  ✓   4 [chromium] › tests/app.spec.ts:112:3 › 보라핀 1단계 › 피드는 둘의 소식만: 일반 소식 묶음이 없고, 비어 있으면 다음 단추가 있다 (1.2s)
-  ✓   5 [chromium] › tests/app.spec.ts:123:3 › 보라핀 1단계 › 초대 링크: 관리자가 만들고 → 링크로 온 사람이 로그인하면 바로 들어온다 (한 번만) (5.3s)
-  ✘   6 [chromium] › tests/app.spec.ts:168:3 › 보라핀 1단계 › 새 공간 열어 주기: 주인이 링크를 만들고 → 받은 사람은 우리와 따로 쓰는 자기 공간의 관리자가 된다 (18.4s)
-  -   7 [chromium] › tests/app.spec.ts:221:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다
-  -   8 [chromium] › tests/app.spec.ts:248:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만)
-  -   9 [chromium] › tests/app.spec.ts:265:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만)
-  -  10 [chromium] › tests/app.spec.ts:279:3 › 보라핀 1단계 › 여행 목록과 필터
-  -  11 [chromium] › tests/app.spec.ts:289:3 › 보라핀 1단계 › 홈 통계와 지도
-  -  12 [chromium] › tests/app.spec.ts:308:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름
-  -  13 [chromium] › tests/app.spec.ts:378:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기
-  -  14 [chromium] › tests/app.spec.ts:541:3 › 보라핀 1단계 › 홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다
-  -  15 [chromium] › tests/app.spec.ts:609:3 › 보라핀 1단계 › 여행 계획하기: + → 조건만 고르면 후보 3곳 → 둘이 하트 → 여기로 정해요 → 갈 예정 여행과 하루 뼈대
-  -  16 [chromium] › tests/app.spec.ts:666:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임
-  -  17 [chromium] › tests/app.spec.ts:729:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩
-  -  18 [chromium] › tests/app.spec.ts:783:3 › 보라핀 1단계 › 여행 상세: 탭 넷, 일정 3단계, 들른 곳, 둘의 기록, 예정 여행 준비물
-  -  19 [chromium] › tests/app.spec.ts:897:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기
-  -  20 [chromium] › tests/app.spec.ts:924:3 › 보라핀 1단계 › 피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점
-  -  21 [chromium] › tests/app.spec.ts:986:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기
-  -  22 [chromium] › tests/app.spec.ts:1089:3 › 보라핀 1단계 › 우리 공간엔 개발자 글 대신 출처와 버전 링크, 버전·지도 출처는 /credits에
-  -  23 [chromium] › tests/app.spec.ts:1104:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고
-  -  24 [chromium] › tests/app.spec.ts:1134:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다
-  -  25 [chromium] › tests/app.spec.ts:1181:3 › 보라핀 1단계 › 기록 고치기와 지우기
-  -  26 [chromium] › tests/app.spec.ts:1200:3 › 보라핀 1단계 › 지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게)
-  ✓  27 [chromium] › tests/human.spec.ts:124:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.7s)
-  ✓  28 [chromium] › tests/human.spec.ts:133:3 › 사람처럼 쓰기 › 로그인 화면에서 이용약관 링크를 눌러 열고 로고로 돌아와도 화면이 살아 있다 (3.6s)
-  ✓  29 [chromium] › tests/human.spec.ts:160:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (5.2s)
-  ✓  30 [chromium] › tests/human.spec.ts:195:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (6.9s)
+  ✓   1 [chromium] › tests/app.spec.ts:65:3 › 보라핀 1단계 › 로그인 화면 (1.2s)
+  ✓   2 [chromium] › tests/app.spec.ts:71:3 › 보라핀 1단계 › 주인 계정으로 들어오면 빈 홈 (3.8s)
+  ✓   3 [chromium] › tests/app.spec.ts:78:3 › 보라핀 1단계 › 기록이 없으면 빈 상태 카드가 지도 바로 아래(물어보기 다음)에, 묶음은 그 뒤에 (1.9s)
+  ✓   4 [chromium] › tests/app.spec.ts:112:3 › 보라핀 1단계 › 피드는 둘의 소식만: 일반 소식 묶음이 없고, 비어 있으면 다음 단추가 있다 (1.0s)
+  ✓   5 [chromium] › tests/app.spec.ts:123:3 › 보라핀 1단계 › 초대 링크: 관리자가 만들고 → 링크로 온 사람이 로그인하면 바로 들어온다 (한 번만) (4.9s)
+  ✘   6 [chromium] › tests/app.spec.ts:168:3 › 보라핀 1단계 › 새 공간 열어 주기: 주인이 링크를 만들고 → 받은 사람은 우리와 따로 쓰는 자기 공간의 관리자가 된다 (3.9s)
+  -   7 [chromium] › tests/app.spec.ts:224:3 › 보라핀 1단계 › 초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다
+  -   8 [chromium] › tests/app.spec.ts:251:3 › 보라핀 1단계 › 국내 여행 기록 (초성 검색, 연도만)
+  -   9 [chromium] › tests/app.spec.ts:268:3 › 보라핀 1단계 › 해외 여행 기록 (도시, 계절만)
+  -  10 [chromium] › tests/app.spec.ts:282:3 › 보라핀 1단계 › 여행 목록과 필터
+  -  11 [chromium] › tests/app.spec.ts:292:3 › 보라핀 1단계 › 홈 통계와 지도
+  -  12 [chromium] › tests/app.spec.ts:311:3 › 보라핀 1단계 › 지도에서 지역을 눌러 바로 핀 꽂기, 되돌리기, 확대하면 이름
+  -  13 [chromium] › tests/app.spec.ts:381:3 › 보라핀 1단계 › 가고 싶은 곳: 지도에서 담기, 고치기, 여행 만들기, 깃발, 뽑기
+  -  14 [chromium] › tests/app.spec.ts:544:3 › 보라핀 1단계 › 홈 다음 여행 준비: 오늘의 한 질문은 둘 다 답해야 열리고, 영어·가는 길이 같은 곳을 본다
+  -  15 [chromium] › tests/app.spec.ts:612:3 › 보라핀 1단계 › 여행 계획하기: + → 조건만 고르면 후보 3곳 → 둘이 하트 → 여기로 정해요 → 갈 예정 여행과 하루 뼈대
+  -  16 [chromium] › tests/app.spec.ts:669:3 › 보라핀 1단계 › 우리 장소: 네이버 공유 붙여넣기, 둘의 한 줄 평, 여행 상세·지도 시트에 보임
+  -  17 [chromium] › tests/app.spec.ts:732:3 › 보라핀 1단계 › 사진: 촬영 정보로 날짜 채우기, 표지, 슬라이드쇼, 사진첩
+  -  18 [chromium] › tests/app.spec.ts:786:3 › 보라핀 1단계 › 여행 상세: 탭 넷, 일정 3단계, 들른 곳, 둘의 기록, 예정 여행 준비물
+  -  19 [chromium] › tests/app.spec.ts:900:3 › 보라핀 1단계 › 찾아보기: 여행정보, 이어서 묻기, 우리 기록, 되묻기
+  -  20 [chromium] › tests/app.spec.ts:927:3 › 보라핀 1단계 › 피드: 둘이 남긴 사진·글·장소·핀이 시간순으로, 다른 사람 소식엔 아래 메뉴에 점
+  -  21 [chromium] › tests/app.spec.ts:989:3 › 보라핀 1단계 › 공유: 링크 공개(로그인 없이 보기), 공유 카드, 엑셀 내보내기
+  -  22 [chromium] › tests/app.spec.ts:1092:3 › 보라핀 1단계 › 우리 공간엔 개발자 글 대신 출처와 버전 링크, 버전·지도 출처는 /credits에
+  -  23 [chromium] › tests/app.spec.ts:1107:3 › 보라핀 1단계 › 관리자: 사용량, 사진 올리기 멈춤, 문제 신고
+  -  24 [chromium] › tests/app.spec.ts:1137:3 › 보라핀 1단계 › 이메일로 가입하고 메일 인증 뒤 들어온다
+  -  25 [chromium] › tests/app.spec.ts:1184:3 › 보라핀 1단계 › 기록 고치기와 지우기
+  -  26 [chromium] › tests/app.spec.ts:1203:3 › 보라핀 1단계 › 지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게)
+  ✓  27 [chromium] › tests/human.spec.ts:124:3 › 사람처럼 쓰기 › 구글 로그인 창을 거쳐 들어오고, 새로 고침해도 로그인이 유지된다 (2.8s)
+  ✓  28 [chromium] › tests/human.spec.ts:133:3 › 사람처럼 쓰기 › 로그인 화면에서 이용약관 링크를 눌러 열고 로고로 돌아와도 화면이 살아 있다 (3.9s)
+  ✓  29 [chromium] › tests/human.spec.ts:160:3 › 사람처럼 쓰기 › 375px: 손으로 입력해 기록하고, 새로 고침해도 남아 있다 @webkit (4.2s)
+  ✓  30 [chromium] › tests/human.spec.ts:195:3 › 사람처럼 쓰기 › 375px: 지도에서 지역을 누르면 핀 꽂기 버튼이 스크롤 없이 보이고, 새로 고침해도 핀이 남는다 @webkit (5.2s)
   ✓  31 [chromium] › tests/human.spec.ts:236:3 › 사람처럼 쓰기 › 한글 입력 중 Enter는 조합을 끝낼 뿐, 저장·선택하지 않는다 (IME) (1.4s)
-  ✓  32 [chromium] › tests/human.spec.ts:266:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (5.8s)
-  ✓  33 [chromium] › tests/human.spec.ts:314:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (14.4s)
+  ✓  32 [chromium] › tests/human.spec.ts:266:3 › 사람처럼 쓰기 › PC: 사진을 끌어다 놓아 올리고, 사진이 아닌 파일은 거른다 (4.9s)
+  ✓  33 [chromium] › tests/human.spec.ts:314:3 › 사람처럼 쓰기 › 375px: 어느 화면도 옆으로 넘치지 않는다 @webkit (12.3s)
   ✘  34 [chromium] › tests/human.spec.ts:338:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 (1.0m)
-  ✓  35 [chromium] › tests/human.spec.ts:369:3 › 사람처럼 쓰기 › 폰 뒤로 가기: 쓰던 게 있으면 묻고, 취소하면 그대로, 앱의 뒤로·저장 뒤에는 묻지 않는다 (1.6s)
-  ✓  36 [chromium] › tests/human.spec.ts:398:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (1.5s)
-  ✓  37 [chromium] › tests/human.spec.ts:431:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (6.7s)
-  ✓  38 [chromium] › tests/human.spec.ts:465:3 › 사람처럼 쓰기 › 우리 집을 정하면 다음 여행지까지 지도 앱 길찾기가 출발·도착이 채워져 열린다 (4.9s)
-  ✓  39 [chromium] › tests/human.spec.ts:494:3 › 사람처럼 쓰기 › 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히 (3.1s)
-  ✓  40 [chromium] › tests/human.spec.ts:534:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (3.2s)
-  ✓  41 [chromium] › tests/human.spec.ts:553:3 › 사람처럼 쓰기 › 폰에서 홈 지도는 한 손가락으로 끌면 움직인다 (두 손가락 안내 없이) (4.6s)
-  ✓  42 [chromium] › tests/human.spec.ts:572:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (4.8s)
-  ✓  43 [chromium] › tests/human.spec.ts:594:3 › 사람처럼 쓰기 › 홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드 (4.6s)
-  ✓  44 [chromium] › tests/human.spec.ts:629:3 › 사람처럼 쓰기 › 기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다 (2.9s)
-  ✓  45 [chromium] › tests/human.spec.ts:648:3 › 사람처럼 쓰기 › 피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다 (2.3s)
-  ✓  46 [chromium] › tests/human.spec.ts:666:3 › 사람처럼 쓰기 › 오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다 (4.3s)
-  ✓  47 [chromium] › tests/human.spec.ts:700:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (908ms)
-  ✓  48 [chromium] › tests/human.spec.ts:715:3 › 사람처럼 쓰기 › 카카오톡 안 브라우저로 열면 바깥 브라우저 안내와 주소 복사 단추가 먼저 보인다 (982ms)
-  ✓  49 [chromium] › tests/human.spec.ts:727:3 › 사람처럼 쓰기 › 가고 싶은 곳에서 여행 만들기: /plan?wish= 로 가서 목적지가 미리 채워지고, 뽑기는 ?find=dice 로 바로 열린다 (2.6s)
-  ✓  50 [chromium] › tests/human.spec.ts:751:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (839ms)
-  ✓  51 [chromium] › tests/human.spec.ts:751:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (799ms)
-  ✓  52 [chromium] › tests/human.spec.ts:751:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (797ms)
-  ✓  53 [chromium] › tests/human.spec.ts:776:3 › 사람처럼 쓰기 › 여행이 아니어도: + → 지금 여기 남기기 → 이름 적고 빵집 → 내 맛집으로 (3.9s)
-  ✓  54 [chromium] › tests/human.spec.ts:801:3 › 사람처럼 쓰기 › 여행 중: 단계 카드의 '지금 여기' → 이름 적고 종류·어땠어요·한 줄 → 그 여행에도 (5.4s)
-  ✓  55 [chromium] › tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.5s)
-  ✓  56 [chromium] › tests/tour.spec.ts:225:1 › 가득 찬 화면 · 휴대폰 (2.0m)
-  ✓  57 [chromium] › tests/tour.spec.ts:515:1 › 가득 찬 화면 · PC (48.4s)
-  ✓  58 [chromium] › tests/tour.spec.ts:540:1 › 화면 오류 없음 (2ms)
+  ✓  35 [chromium] › tests/human.spec.ts:369:3 › 사람처럼 쓰기 › 폰 뒤로 가기: 쓰던 게 있으면 묻고, 취소하면 그대로, 앱의 뒤로·저장 뒤에는 묻지 않는다 (1.5s)
+  ✓  36 [chromium] › tests/human.spec.ts:398:3 › 사람처럼 쓰기 › 장소 남기기: 고른 종류·평가에 체크 표시, 네이버지도 칸은 하나, 붙여 넣으면 링크 한 줄 (2.1s)
+  ✓  37 [chromium] › tests/human.spec.ts:431:3 › 사람처럼 쓰기 › 우리 장소를 남기면 지도에 장소 표시가 뜨고, 다녀왔다고 고르면 핀도 꽂힌다 (5.3s)
+  ✓  38 [chromium] › tests/human.spec.ts:465:3 › 사람처럼 쓰기 › 우리 집을 정하면 다음 여행지까지 지도 앱 길찾기가 출발·도착이 채워져 열린다 (5.1s)
+  ✓  39 [chromium] › tests/human.spec.ts:494:3 › 사람처럼 쓰기 › 가고 싶은 곳 카드: 축제 이름이 길어도 꼬리표는 한 줄, 네모와 버튼은 가운데로 나란히 (2.2s)
+  ✓  40 [chromium] › tests/human.spec.ts:534:3 › 사람처럼 쓰기 › 우하단 보라 얼굴(물어봐요)을 누르면 물어보기가 열리고, 물어보기·지도 화면엔 안 뜬다 (2.4s)
+  ✓  41 [chromium] › tests/human.spec.ts:553:3 › 사람처럼 쓰기 › 폰에서 홈 지도는 한 손가락으로 끌면 움직인다 (두 손가락 안내 없이) (3.8s)
+  ✓  42 [chromium] › tests/human.spec.ts:572:3 › 사람처럼 쓰기 › 홈 지도는 최근 핀 둘레를 가까이 보여 주고, 맞춤 단추를 누르면 남한 전체로 (4.0s)
+  ✓  43 [chromium] › tests/human.spec.ts:594:3 › 사람처럼 쓰기 › 홈은 여행 전·중·후에 따라 바뀐다: 닷새 뒤 떠나는 여행을 만들면 맨 위에 D-5 카드 (3.6s)
+  ✓  44 [chromium] › tests/human.spec.ts:629:3 › 사람처럼 쓰기 › 기록 남기기에서 사진을 같이 고르면 저장과 함께 올라가고 사진 탭이 열린다 (2.2s)
+  ✓  45 [chromium] › tests/human.spec.ts:648:3 › 사람처럼 쓰기 › 피드 맨 위에서 여행을 골라 사진을 바로 올리면 피드에 묶음으로 뜬다 (1.6s)
+  ✓  46 [chromium] › tests/human.spec.ts:666:3 › 사람처럼 쓰기 › 오늘의 영어: 새 문장 3개가 뜨고, 외웠어요를 누르면 연속 학습일이 1이 되고, 고르기 퀴즈가 돈다 (2.8s)
+  ✓  47 [chromium] › tests/human.spec.ts:700:3 › 사람처럼 쓰기 › 로그인: 구글 단추가 맨 위, 메일은 접혀 있다가 누르면 펼쳐진다 @webkit (752ms)
+  ✓  48 [chromium] › tests/human.spec.ts:715:3 › 사람처럼 쓰기 › 카카오톡 안 브라우저로 열면 바깥 브라우저 안내와 주소 복사 단추가 먼저 보인다 (783ms)
+  ✓  49 [chromium] › tests/human.spec.ts:727:3 › 사람처럼 쓰기 › 가고 싶은 곳에서 여행 만들기: /plan?wish= 로 가서 목적지가 미리 채워지고, 뽑기는 ?find=dice 로 바로 열린다 (2.7s)
+  ✓  50 [chromium] › tests/human.spec.ts:751:5 › 사람처럼 쓰기 › 360px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (678ms)
+  ✓  51 [chromium] › tests/human.spec.ts:751:5 › 사람처럼 쓰기 › 375px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (671ms)
+  ✓  52 [chromium] › tests/human.spec.ts:751:5 › 사람처럼 쓰기 › 390px 로그인: 걷는 보라 그림이 문구와 겹치지 않는다 @webkit (680ms)
+  ✓  53 [chromium] › tests/human.spec.ts:776:3 › 사람처럼 쓰기 › 여행이 아니어도: + → 지금 여기 남기기 → 이름 적고 빵집 → 내 맛집으로 (3.3s)
+  ✓  54 [chromium] › tests/human.spec.ts:801:3 › 사람처럼 쓰기 › 여행 중: 단계 카드의 '지금 여기' → 이름 적고 종류·어땠어요·한 줄 → 그 여행에도 (4.3s)
+  ✓  55 [chromium] › tests/tour.spec.ts:70:1 › 빈 화면 (처음 쓰는 사람) (17.0s)
+  ✓  56 [chromium] › tests/tour.spec.ts:225:1 › 가득 찬 화면 · 휴대폰 (1.8m)
+  ✓  57 [chromium] › tests/tour.spec.ts:515:1 › 가득 찬 화면 · PC (36.1s)
+  ✓  58 [chromium] › tests/tour.spec.ts:540:1 › 화면 오류 없음 (3ms)
 
 
   1) [chromium] › tests/app.spec.ts:168:3 › 보라핀 1단계 › 새 공간 열어 주기: 주인이 링크를 만들고 → 받은 사람은 우리와 따로 쓰는 자기 공간의 관리자가 된다 
 
-    Error: expect(locator).toContainText(expected) failed
+    Error: expect(locator).toBeVisible() failed
 
-    Locator: getByRole('status')
-    Expected substring: "처제로 불려요"
-    Received string:    ""
-    Timeout: 15000ms
+    Locator: getByText('sister@example.com')
+    Expected: visible
+    Error: strict mode violation: getByText('sister@example.com') resolved to 2 elements:
+        1) <div class="tiny muted">파랑새로 들어와 있어요 · sister@example.com</div> aka getByText('파랑새로 들어와 있어요 · sister@example')
+        2) <div class="tiny muted">sister@example.com</div> aka getByText('sister@example.com', { exact: true })
 
     Call log:
-      - Expect "toContainText" getByRole('status') with timeout 15000ms
-      - waiting for getByRole('status')
-        34 × locator resolved to <div role="status" aria-live="polite" class="toast-region"></div>
-           - unexpected value ""
+      - Expect "toBeVisible" getByText('sister@example.com') with timeout 15000ms
+      - waiting for getByText('sister@example.com')
 
 
-      197 |     await p2.getByLabel('내 이름').fill('처제');
-      198 |     await p2.getByTestId('welcome-name-next').click();
-    > 199 |     await expect(p2.getByRole('status')).toContainText('처제로 불려요');
-          |                                          ^
-      200 |     await p2.getByTestId('welcome-done').click();
-      201 |     await expect(p2.getByTestId('headline')).toBeVisible({ timeout: 20_000 });
-      202 |     // 설정: 함께 쓰는 사람은 나 하나(관리자). 우리 공간 사람은 보이지 않고, 새 공간 열어 주기는 주인에게만
-        at /home/runner/work/borapin/borapin/tests/app.spec.ts:199:42
+      204 |     // 설정: 함께 쓰는 사람은 나 하나(관리자). 우리 공간 사람은 보이지 않고, 새 공간 열어 주기는 주인에게만
+      205 |     await p2.goto('/space');
+    > 206 |     await expect(p2.getByText('sister@example.com')).toBeVisible();
+          |                                                      ^
+      207 |     await expect(p2.getByText('파랑새', { exact: true }).first()).toBeVisible();
+      208 |     await expect(p2.getByText(OWNER)).toHaveCount(0);
+      209 |     await expect(p2.getByText('관리자', { exact: true }).first()).toBeVisible();
+        at /home/runner/work/borapin/borapin/tests/app.spec.ts:206:54
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-새-공간-열어-주기-주인이-8cc22-람은-우리와-따로-쓰는-자기-공간의-관리자가-된다-chromium/test-failed-2.png
+    test-results/app-보라핀-1단계-새-공간-열어-주기-주인이-8cc22-람은-우리와-따로-쓰는-자기-공간의-관리자가-된다-chromium/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/app-보라핀-1단계-새-공간-열어-주기-주인이-8cc22-람은-우리와-따로-쓰는-자기-공간의-관리자가-된다-chromium/test-failed-1.png
+    test-results/app-보라핀-1단계-새-공간-열어-주기-주인이-8cc22-람은-우리와-따로-쓰는-자기-공간의-관리자가-된다-chromium/test-failed-2.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     Error Context: test-results/app-보라핀-1단계-새-공간-열어-주기-주인이-8cc22-람은-우리와-따로-쓰는-자기-공간의-관리자가-된다-chromium/error-context.md
@@ -217,7 +216,7 @@ ok 11 - 여행이 없으면 모두 "여행 아닌 사진"에 해·달로, 빈 �
     [chromium] › tests/app.spec.ts:168:3 › 보라핀 1단계 › 새 공간 열어 주기: 주인이 링크를 만들고 → 받은 사람은 우리와 따로 쓰는 자기 공간의 관리자가 된다 
     [chromium] › tests/human.spec.ts:338:3 › 사람처럼 쓰기 › 가고 싶은 곳: 누가 원해요·참고 링크만 바꿔도, 저장하지 않고 나가면 한 번 묻는다 
   20 did not run
-  36 passed (6.5m)
+  36 passed (5.5m)
 [33m[1m⚠ [22m[39m Script exited unsuccessfully (code 1)
 [36m[1mi  emulators:[22m[39m Shutting down emulators.
 [36m[1mi  firestore:[22m[39m Stopping Firestore Emulator
