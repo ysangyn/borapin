@@ -112,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSpaceId('main');
         let confirmed = false; // 이번에 열려 있는 동안 서버에서 내 구성원 문서를 확인했나
         let shown = false; // 이미 화면을 열었나 (그 뒤에 문서를 새로 만들었다면 끊긴 구독을 다시 잇는다)
+        let waitingOnline = false;
         unsubAccess = onSnapshot(
           doc(db, 'config', 'access'),
           (snap) => {
@@ -129,7 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const info = { name: nameOf(email), isAdmin: admin, relation: access.relations?.[email] };
             const open = () => { shown = true; setState({ status: 'ready', user, access, isAdmin: admin }); };
             const check = async () => {
-              const r = await ensureMembership(user, info);
+              // 연결이 나쁘면 쓰기가 끝나지 않을 수 있다: 12초까지만 기다린다 (쓰기는 줄에 남아 이어지면 마저 된다)
+              const r = await Promise.race([ensureMembership(user, info), new Promise<'failed'>((res) => setTimeout(() => res('failed'), 12_000))]);
               if (auth.currentUser?.uid !== user.uid) return r;
               if (r !== 'failed') {
                 confirmed = true;
@@ -139,19 +141,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
               return r;
             };
-            const offline = snap.metadata.fromCache;
-            // 이 폰에서 이미 만들어 둔 적이 있으면 바로 연다. 서버와 이어져 있으면 뒤에서 한 번 확인한다
+            // 폰이 오프라인인가 (snap.metadata.fromCache는 쓰지 않는다: 연결돼 있어도 첫 스냅샷은 캐시에서 오고, 내용이 같으면 다시 불리지 않는다)
+            const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+            const later = () => {
+              // 오프라인으로 열었다: 다시 이어지면 그때 확인하고 만든다
+              if (waitingOnline) return;
+              waitingOnline = true;
+              window.addEventListener('online', () => { waitingOnline = false; if (auth.currentUser?.uid === user.uid && !confirmed) void check(); }, { once: true });
+            };
+            // 이 폰에서 이미 만들어 둔 적이 있으면 바로 연다. 뒤에서 한 번 확인한다
             if (confirmed || membershipKnown(user, info)) {
               open();
-              if (!confirmed && !offline) void check();
+              if (!confirmed) { if (offline) later(); else void check(); }
               return;
             }
-            // 오프라인: 만들 수 없다. 폰에 받아 둔 기록으로 열고, 이어지면 이 구독이 다시 불려 그때 만든다
-            if (offline) return open();
+            // 오프라인: 만들 수 없다. 폰에 받아 둔 기록으로 연다
+            if (offline) { open(); return later(); }
             void check().then((r) => {
               if (auth.currentUser?.uid !== user.uid) return;
-              if (r === 'failed') { if (!shown) setState({ status: 'error', user, message: '연결이 불안정해 기록을 불러오지 못했어요.' }); }
-              else open();
+              if (r !== 'failed') return open();
+              // 확인하지 못했다(연결이 끊겼을 수 있다): 받아 둔 기록으로 열고, 이어지면 다시 본다
+              if (snap.metadata.fromCache) { open(); later(); } else if (!shown) setState({ status: 'error', user, message: '연결이 불안정해 기록을 불러오지 못했어요.' });
             });
           },
           (e) => {
