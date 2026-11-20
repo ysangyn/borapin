@@ -56,6 +56,9 @@ beforeEach(async () => {
     await setDoc(doc(db, 'config/flags'), { uploadsPaused: false });
     await setDoc(T(db), trip());
     await setDoc(doc(db, 'spaces/main/notes/n-owner'), { tripId: 't1', text: '영상이 쓴 글', by: { uid: 'owner', name: '영상' }, v: 1 });
+    // 4걸음부터: 우리 공간도 구성원 문서가 있어야 들어온다 (앱이 들어올 때 스스로 만든다)
+    await setDoc(doc(db, 'spaces/main/members/owner'), memberDoc('owner', OWNER, { role: 'admin', name: '영상' }));
+    await setDoc(doc(db, 'spaces/main/members/bora'), memberDoc('bora', BORA));
     await setDoc(doc(db, 'shares/tok1'), { title: '공개 여행', when: '2024', places: [], photos: [], v: 1 });
     await setDoc(doc(db, 'mapShares/map1'), { title: '성동구 카페 지도', intro: '', theme: 'cafe', by: '보라 & 영상', regionLabel: '서울 성동구', places: [], v: 1 });
     await setDoc(doc(db, 'spaces/main/photoData/p1_l'), { photoId: 'p1', tripId: 't1', kind: 'l', data: Bytes.fromUint8Array(new Uint8Array([1, 2, 3])), size: 3, public: false, v: 1 });
@@ -332,7 +335,9 @@ describe('초대 링크', () => {
     await assertSucceeds(updateDoc(doc(me, 'config/access'), 'allowed', arrayUnion(STRANGER), new FieldPath('names', STRANGER), '새 식구', 'via', 'abcdefgh1234', 'updatedAt', 1));
     const after = await getDoc(doc(as.owner(), 'config/access'));
     assert.deepEqual(after.data()?.allowed, [OWNER, BORA, STRANGER]);
-    // 이제 멤버: 여행을 읽는다
+    // 목록에 들었어도 구성원 문서가 없으면 아직 못 읽는다 → 자기 문서를 만들고 나면 읽는다 (앱이 알아서 한다)
+    await assertFails(getDoc(T(as.stranger())));
+    await assertSucceeds(setDoc(doc(me, 'spaces/main/members/stranger'), memberDoc('stranger', STRANGER, { name: '새 식구' })));
     await assertSucceeds(getDoc(T(as.stranger())));
     // 같은 코드를 다른 사람이 또 쓰진 못한다
     const other = env.authenticatedContext('other', { email: 'other@example.com', email_verified: true }).firestore() as unknown as Firestore;
@@ -852,5 +857,109 @@ describe('여러 공간 3걸음: 초대장과 새 공간', () => {
     // 내보내지면 바로 끊긴다 (별명 문서가 남아 있어도)
     await assertSucceeds(deleteDoc(M(as2.carol(), S2, 'dave')));
     await assertFails(getDoc(doc(as2.dave(), 'config/flags')));
+  });
+});
+
+// 여러 공간 4걸음 (docs/design/SPACES-PUBLIC.md 3-5절): 우리 공간(main)도 구성원 문서가 문이다.
+// 옛 목록은 '자기 구성원 문서를 만들 자격'이자 안전장치로 남는다: 목록에 있고 + 문서가 있어야 들어온다.
+describe('여러 공간 4걸음: 우리 공간의 문 = 옛 목록 + 구성원 문서', () => {
+  const M = (db: Firestore, uid: string) => doc(db, `spaces/main/members/${uid}`);
+  const drop = (uid: string) => env.withSecurityRulesDisabled(async (ctx) => { await deleteDoc(M(ctx.firestore() as unknown as Firestore, uid)); });
+  const put = (uid: string, data: Record<string, unknown>) => env.withSecurityRulesDisabled(async (ctx) => { await setDoc(M(ctx.firestore() as unknown as Firestore, uid), data); });
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      await seedSpace(db, 'main', 'bora');
+    });
+  });
+
+  test('목록에 있어도 구성원 문서가 없으면 우리 공간의 열두 모음을 읽지도 쓰지도 못한다', async () => {
+    await drop('bora');
+    const db = as.bora();
+    await assertFails(getDoc(doc(db, 'spaces/main')));
+    for (const [col, id] of Object.entries(COLS)) {
+      await assertFails(getDoc(doc(db, `spaces/main/${col}/${id('bora')}`)));
+      await assertFails(getDocs(collection(db, `spaces/main/${col}`)));
+    }
+    await assertFails(setDoc(doc(db, 'spaces/main/trips/new1'), trip()));
+    await assertFails(getDocs(collection(db, 'spaces/main/members')));
+    await assertFails(setDoc(doc(db, 'shares/tok1'), { title: '고침', when: '', places: [], photos: [], spaceId: 'main', v: 1 }));
+    await assertFails(setDoc(doc(db, 'profiles/bora'), { nick: '보라', spaceId: 'main', v: 1 }));
+  });
+
+  test('스스로 들어오기: 목록에 있는 사람은 자기 구성원 문서(와 별명 문서)를 한 묶음으로 만들고 바로 읽는다', async () => {
+    await drop('bora');
+    const db = as.bora();
+    const b = writeBatch(db);
+    b.set(M(db, 'bora'), memberDoc('bora', BORA));
+    b.set(doc(db, 'profiles/bora'), { nick: '보라', spaceId: 'main', v: 1 });
+    await assertSucceeds(b.commit());
+    for (const [col, id] of Object.entries(COLS)) await assertSucceeds(getDoc(doc(db, `spaces/main/${col}/${id('bora')}`)));
+    await assertSucceeds(getDocs(collection(db, 'spaces/main/trips')));
+    await assertSucceeds(setDoc(doc(db, 'spaces/main/trips/new1'), trip()));
+    // 주인(관리자)도 같다
+    await drop('owner');
+    await assertFails(getDoc(T(as.owner())));
+    await assertSucceeds(setDoc(M(as.owner(), 'owner'), memberDoc('owner', OWNER, { role: 'admin', name: '영상' })));
+    await assertSucceeds(getDoc(T(as.owner())));
+  });
+
+  test('문서가 없어도 되는 일: 옛 목록 읽기(앱이 내가 누구인지 알아야 한다), 앱 스위치 읽기, 문제 신고', async () => {
+    await drop('bora');
+    const db = as.bora();
+    await assertSucceeds(getDoc(doc(db, 'config/access')));
+    await assertSucceeds(getDoc(doc(db, 'config/flags')));
+    await assertSucceeds(setDoc(doc(db, 'reports/r-bora-1'), { kind: 'report', message: '못 들어가요' }));
+  });
+
+  test('목록에서 빼면 구성원 문서가 남아 있어도 바로 못 들어오고, 문서를 다시 만들지도 못한다 (옛 버전 앱으로 빼도 안전)', async () => {
+    await assertSucceeds(getDoc(T(as.bora())));
+    await assertSucceeds(updateDoc(doc(as.owner(), 'config/access'), { allowed: [OWNER] }));
+    const db = as.bora();
+    for (const [col, id] of Object.entries(COLS)) await assertFails(getDoc(doc(db, `spaces/main/${col}/${id('bora')}`)));
+    await assertFails(getDocs(collection(db, 'spaces/main/trips')));
+    await assertFails(setDoc(M(db, 'bora'), memberDoc('bora', BORA)));
+    await drop('bora');
+    await assertFails(setDoc(M(db, 'bora'), memberDoc('bora', BORA)));
+  });
+
+  test('구성원 문서만 있고 목록에 없는 사람은 못 들어온다 (어떻게 생긴 문서든)', async () => {
+    await put('stranger', memberDoc('stranger', STRANGER));
+    await put('carol', { uid: 'carol', email: CAROL, role: 'admin', name: '캐롤', via: 'some-invite-code', v: 1 });
+    for (const db of [as.stranger(), as2.carol()]) {
+      for (const [col, id] of Object.entries(COLS)) await assertFails(getDoc(doc(db, `spaces/main/${col}/${id('bora')}`)));
+      await assertFails(getDocs(collection(db, 'spaces/main/members')));
+      await assertFails(setDoc(doc(db, 'spaces/main/trips/hack'), trip()));
+    }
+    await assertFails(setDoc(doc(as.stranger(), 'profiles/stranger'), { nick: '손님', spaceId: 'main', v: 1 }));
+  });
+
+  test('메일 인증을 안 한 계정은 문서가 있어도 못 들어온다', async () => {
+    await put('bora-unverified', memberDoc('bora-unverified', BORA));
+    await assertFails(getDoc(T(as.boraUnverified())));
+    await assertFails(getDocs(collection(as.boraUnverified(), 'spaces/main/trips')));
+  });
+
+  test('관리자가 뺄 때: 목록에서 빼고 그 사람의 구성원 문서도 지운다. 구성원은 남의 문서를 못 지운다', async () => {
+    await assertFails(deleteDoc(M(as.bora(), 'owner')));
+    const db = as.owner();
+    await assertSucceeds(updateDoc(doc(db, 'config/access'), { allowed: [OWNER] }));
+    await assertSucceeds(deleteDoc(M(db, 'bora')));
+    await assertFails(getDoc(T(as.bora())));
+  });
+
+  test('다른 공간 사람은 우리 공간에 자기 구성원 문서를 만들지 못한다 (공간 초대장으로도)', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      await setDoc(doc(db, 'spaces/sp2/members/carol'), memberDoc('carol', CAROL, { role: 'admin', name: '캐롤', via: 'invite-code-1' }));
+      await setDoc(doc(db, 'spaceInvites/main-trick-code'), { by: OWNER, spaceId: 'main', role: 'member', expiresAt: Date.now() + 86400000, v: 1 });
+    });
+    const db = as2.carol();
+    await assertFails(setDoc(M(db, 'carol'), memberDoc('carol', CAROL)));
+    const b = writeBatch(db);
+    b.update(doc(db, 'spaceInvites/main-trick-code'), { usedBy: CAROL, usedAt: 2 });
+    b.set(M(db, 'carol'), { uid: 'carol', email: CAROL, role: 'member', name: '캐롤', via: 'main-trick-code', v: 1 });
+    await assertFails(b.commit());
+    await assertFails(getDoc(T(db)));
   });
 });
