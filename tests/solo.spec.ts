@@ -43,6 +43,8 @@ test('혼자 쓰는 공간: 주요 화면에 둘이 쓴다는 말이 없다', as
     await page.waitForTimeout(700);
     const text = await page.locator('body').innerText();
     for (const line of text.split('\n')) {
+      // 여행 계획의 동행 고르기 칩 '둘이'(누군가와 둘이 가요)는 혼자 쓰는 사람도 고를 수 있는 말이다
+      if (line.trim() === '둘이') continue;
       const m = line.match(COUPLE_WORDS);
       if (m) found.push(`${where}: '${m[0]}' · ${line.trim().slice(0, 80)}`);
     }

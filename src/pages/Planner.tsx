@@ -88,7 +88,7 @@ export default function Planner() {
         ) : (
           <div className="planner-lead">
             <img src="/art/bora-think.webp" alt="" aria-hidden="true" width={360} height={675} />
-            <span><b>어디 갈지 몰라도 돼요</b><span className="small muted">언제·며칠·누구와만 고르면 가고 싶은 곳·제철·축제를 섞어 후보 3곳을 골라 드려요. 둘이 같은 곳을 고르면 정해져요.</span></span>
+            <span><b>어디 갈지 몰라도 돼요</b><span className="small muted">언제·며칠·누구와만 고르면 가고 싶은 곳·제철·축제를 섞어 후보 3곳을 골라 드려요. {isSolo() ? '마음에 드는 곳을 고르면 정해져요.' : '둘이 같은 곳을 고르면 정해져요.'}</span></span>
           </div>
         )}
         {wishGone && <div className="small muted" role="status">그 가고 싶은 곳은 이미 빠졌어요. 조건으로 골라 볼게요.</div>}
