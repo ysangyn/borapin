@@ -103,6 +103,8 @@ function platformOwner()  { return signedIn() && email() == OWNER; }
 
 ![초대 다섯 마디](img/spaces-invite.png)
 
+만든 모습(3걸음 가): 공간 초대장은 `spaceInvites/{코드}`에 따로 둔다. 우리 공간(main)의 초대는 옛 문을 닫을 때까지 예전 `invites/{코드}` 그대로다. 관리자는 공간을 연 한 사람이고 역할은 바뀌지 않는다(관리자 넘기기는 나중에).
+
 받는 쪽 순서 (한 묶음 쓰기로):
 
 1. `invites/{코드}`에 `usedBy = 내 uid` 표시 — 안 쓴 초대, 기한 안, 한 번만.

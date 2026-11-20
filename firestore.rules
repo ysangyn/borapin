@@ -209,12 +209,12 @@ service cloud.firestore {
 
     // 앱 스위치(사진 올리기 멈춤 등): 멤버는 읽고 관리자만 바꾼다
     match /config/flags {
-      allow read: if isMember();
+      allow read: if isMember() || isUser();
       allow write: if isAdmin();
     }
     // 오류 기록·문제 신고: 멤버가 남기고 관리자가 보고 지운다
     match /reports/{id} {
-      allow create: if isMember()
+      allow create: if (isMember() || isUser())
         && request.resource.data.kind in ['error', 'report']
         && request.resource.data.message is string && request.resource.data.message.size() <= 500
         && (!('detail' in request.resource.data) || (request.resource.data.detail is string && request.resource.data.detail.size() <= 3000));
@@ -254,17 +254,89 @@ service cloud.firestore {
         || (spaceId != 'main' && signedIn() && exists(memberPath(spaceId)));
     }
 
-    // 옛 목록에 있는 사람이 우리 공간에 만드는 자기 구성원 문서. 역할은 옛 관리자 목록을 그대로 따른다
-    function validLegacyMember(d) {
+    // 이 요청(묶음)이 끝난 뒤의 모습으로 보는 문: 들어오는 묶음 안에서 별명 문서를 함께 만들 때 쓴다
+    function inSpaceAfter(spaceId) {
+      return (spaceId == 'main' && isMember())
+        || (spaceId != 'main' && signedIn() && existsAfter(memberPath(spaceId)));
+    }
+    function spaceAdmin(spaceId) {
+      return (spaceId == 'main' && isAdmin())
+        || (spaceId != 'main' && signedIn() && exists(memberPath(spaceId)) && get(memberPath(spaceId)).data.role == 'admin');
+    }
+    // 보라핀 사람: 별명 문서가 가리키는 공간에 지금도 구성원 문서가 있는 사람 (내보내지면 바로 아니게 된다)
+    function profilePath() { return /databases/$(database)/documents/profiles/$(request.auth.uid); }
+    function isUser() {
+      return signedIn() && exists(profilePath()) && inSpace(get(profilePath()).data.spaceId);
+    }
+
+    // ---- 공간 초대장 (spaceInvites/{코드}): 어느 공간에 어떤 역할로 들어오는지 적혀 있다 ----
+    // 우리 공간(main)의 초대는 옛 문을 닫을 때까지 예전 그대로 invites/{코드}를 쓴다. 두 모음은 서로 섞이지 않는다.
+    function spaceInvitePath(code) { return /databases/$(database)/documents/spaceInvites/$(code); }
+    function spaceDocPath(spaceId) { return /databases/$(database)/documents/spaces/$(spaceId); }
+    function validMemberBasics(d) {
       return d.keys().hasOnly(['uid', 'email', 'role', 'name', 'relation', 'via', 'joinedAt', 'updatedAt', 'v'])
         && d.keys().hasAll(['uid', 'email', 'role', 'name', 'via', 'v'])
         && d.uid == request.auth.uid
         && d.email == email()
-        && ((isAdmin() && d.role == 'admin') || (!isAdmin() && d.role == 'member'))
         && d.name is string && d.name.size() >= 1 && d.name.size() <= 20
         && (!('relation' in d) || d.relation in ['spouse', 'partner', 'family', 'friend', 'relative', 'other'])
-        && d.via == 'legacy'
         && d.v == 1;
+    }
+    // 초대장으로 들어오는 사람의 구성원 문서. 같은 묶음에서 초대장에 '썼음' 표시를 해야 한다:
+    // - 묶음 전에는 안 쓴 초대장이고, 묶음 뒤에는 내 메일로 표시돼 있다 → 한 번만, 기한 안에만 (표시 규칙이 기한을 본다)
+    // - 공간과 역할은 초대장에 적힌 그대로
+    // - 구성원 자리: 이미 있는 공간에만. 관리자 자리: 아직 없는 공간에, 같은 묶음에서 공간 문서를 만들 때만 (첫 관리자는 한 사람)
+    function validInvitedMember(spaceId, d) {
+      return validMemberBasics(d)
+        && d.role in ['admin', 'member']
+        && d.via is string && d.via.size() >= 8 && d.via.size() <= 64
+        && exists(spaceInvitePath(d.via))
+        && !('usedBy' in get(spaceInvitePath(d.via)).data)
+        && getAfter(spaceInvitePath(d.via)).data.usedBy == email()
+        && get(spaceInvitePath(d.via)).data.spaceId == spaceId
+        && get(spaceInvitePath(d.via)).data.role == d.role
+        && ((d.role == 'member' && exists(spaceDocPath(spaceId)))
+          || (d.role == 'admin' && !exists(spaceDocPath(spaceId)) && existsAfter(spaceDocPath(spaceId))));
+    }
+    function validSpaceInvite(d) {
+      return d.keys().hasOnly(['by', 'spaceId', 'role', 'spaceName', 'name', 'relation', 'createdAt', 'expiresAt', 'v'])
+        && d.keys().hasAll(['by', 'spaceId', 'role', 'expiresAt', 'v'])
+        && d.by == email()
+        && d.spaceId is string && d.spaceId.matches('^[A-Za-z0-9]{20}$')
+        && (!('spaceName' in d) || (d.spaceName is string && d.spaceName.size() <= 60))
+        && (!('name' in d) || (d.name is string && d.name.size() <= 20))
+        && (!('relation' in d) || d.relation in ['spouse', 'partner', 'family', 'friend', 'relative', 'other'])
+        && d.expiresAt is int
+        && d.expiresAt <= request.time.toMillis() + 8 * 24 * 3600 * 1000
+        && d.v == 1;
+    }
+    match /spaceInvites/{code} {
+      allow get: if signedIn();
+      // 목록은 만든 사람이 자기 것만 (남의 공간 초대장 코드를 엿보지 못하게)
+      allow list: if signedIn() && resource.data.by == email();
+      allow create: if signedIn() && validSpaceInvite(request.resource.data)
+        && (
+          // 있는 공간에 들이기: 그 공간 관리자가, 구성원 자리만
+          (request.resource.data.role == 'member' && spaceAdmin(request.resource.data.spaceId))
+          // 새 공간 열어 주기: 마을 주인만, 아직 없는 공간에, 첫 관리자 자리만
+          || (request.resource.data.role == 'admin' && isOwner() && !exists(spaceDocPath(request.resource.data.spaceId)))
+        );
+      // 쓰기: 안 쓴 초대장에 내 메일로 한 번만, 기한 안에. 같은 묶음에서 그 공간에 내 구성원 문서가 생겨야 한다 (표시만 해서 못 쓰게 만들 수 없다)
+      allow update: if signedIn()
+        && !('usedBy' in resource.data)
+        && request.time.toMillis() < resource.data.expiresAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])
+        && request.resource.data.usedBy == email()
+        && !exists(memberPath(resource.data.spaceId))
+        && existsAfter(memberPath(resource.data.spaceId));
+      allow delete: if signedIn() && (resource.data.by == email() || spaceAdmin(resource.data.spaceId));
+    }
+
+    // 옛 목록에 있는 사람이 우리 공간에 만드는 자기 구성원 문서. 역할은 옛 관리자 목록을 그대로 따른다
+    function validLegacyMember(d) {
+      return validMemberBasics(d)
+        && ((isAdmin() && d.role == 'admin') || (!isAdmin() && d.role == 'member'))
+        && d.via == 'legacy';
     }
 
     // 별명 문서: 사람마다 하나. 별명과 '지금 쓰는 공간'만 (메일·실명·역할 칸은 없다). 자기 것만 읽고 쓴다
@@ -277,36 +349,60 @@ service cloud.firestore {
         && request.resource.data.nick is string
         && request.resource.data.nick.size() >= 1 && request.resource.data.nick.size() <= 10
         && request.resource.data.spaceId is string && request.resource.data.spaceId.size() <= 40
-        && inSpace(request.resource.data.spaceId)
+        && inSpaceAfter(request.resource.data.spaceId)
         && request.resource.data.v == 1;
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    function validSpace(d) {
+      return d.name is string
+        && d.name.size() <= 60
+        // 우리 집: 이름·시군 코드·위경도·정확히 여부만
+        && (!('home' in d) || (
+          d.home is map
+          && d.home.keys().hasOnly(['label', 'code', 'lat', 'lng', 'exact'])
+          && d.home.label is string && d.home.label.size() <= 40
+          && d.home.code is string && d.home.code.size() <= 10
+          && d.home.lat is number && d.home.lat >= 33 && d.home.lat <= 39
+          && d.home.lng is number && d.home.lng >= 124 && d.home.lng <= 132
+          && d.home.exact is bool));
+    }
+
     match /spaces/{spaceId} {
       allow read: if inSpace(spaceId);
-      allow create, update: if inSpace(spaceId)
-        && request.resource.data.name is string
-        && request.resource.data.name.size() <= 60
-        // 우리 집: 이름·시군 코드·위경도·정확히 여부만
-        && (!('home' in request.resource.data) || (
-          request.resource.data.home is map
-          && request.resource.data.home.keys().hasOnly(['label', 'code', 'lat', 'lng', 'exact'])
-          && request.resource.data.home.label is string && request.resource.data.home.label.size() <= 40
-          && request.resource.data.home.code is string && request.resource.data.home.code.size() <= 10
-          && request.resource.data.home.lat is number && request.resource.data.home.lat >= 33 && request.resource.data.home.lat <= 39
-          && request.resource.data.home.lng is number && request.resource.data.home.lng >= 124 && request.resource.data.home.lng <= 132
-          && request.resource.data.home.exact is bool));
+      allow update: if inSpace(spaceId) && validSpace(request.resource.data)
+        // 만든 사람 칸은 바꾸지 못한다
+        && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null);
+      // 만들기: 우리 공간은 예전대로. 새 공간은 같은 묶음에서 초대장으로 첫 관리자가 되는 사람만 (규칙 validInvitedMember)
+      allow create: if validSpace(request.resource.data)
+        && (
+          (spaceId == 'main' && isMember())
+          || (spaceId != 'main' && signedIn()
+            && !exists(memberPath(spaceId))
+            && existsAfter(memberPath(spaceId))
+            && getAfter(memberPath(spaceId)).data.role == 'admin'
+            && request.resource.data.createdBy == request.auth.uid)
+        );
       allow delete: if false;
 
       // 구성원 문서: 같은 공간 사람끼리 본다.
-      // 지금은 우리 공간(main)에서만, 옛 목록에 있는 사람이 자기 것을 만들고 고친다. 다른 공간은 초대(3걸음)가 생길 때까지 닫혀 있다.
+      // - 우리 공간(main): 옛 목록에 있는 사람이 자기 것을 만들고 고친다 (문은 아직 옛 목록)
+      // - 그 밖의 공간: 초대장으로만 생긴다. 자기 이름·관계만 고친다. 역할은 바뀌지 않는다
+      //   (관리자는 공간을 연 한 사람. 스스로 나갈 수 없어서 관리자 없는 공간이 생기지 않는다)
       match /members/{uid} {
         allow read: if inSpace(spaceId);
-        allow create, update: if spaceId == 'main' && isMember()
-          && request.auth.uid == uid
-          && validLegacyMember(request.resource.data);
-        allow delete: if spaceId == 'main' && isMember()
-          && (request.auth.uid == uid || isAdmin());
+        allow create: if (spaceId == 'main' && isMember() && request.auth.uid == uid && validLegacyMember(request.resource.data))
+          || (spaceId != 'main' && signedIn() && request.auth.uid == uid && validInvitedMember(spaceId, request.resource.data));
+        allow update: if (spaceId == 'main' && isMember() && request.auth.uid == uid && validLegacyMember(request.resource.data))
+          || (spaceId != 'main' && inSpace(spaceId) && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'relation', 'updatedAt'])
+            && validMemberBasics(request.resource.data));
+        allow delete: if (spaceId == 'main' && isMember() && (request.auth.uid == uid || isAdmin()))
+          || (spaceId != 'main' && (
+            // 구성원이 스스로 나가기
+            (inSpace(spaceId) && request.auth.uid == uid && resource.data.role != 'admin')
+            // 관리자가 남을 내보내기
+            || (spaceAdmin(spaceId) && request.auth.uid != uid)));
       }
 
       match /trips/{tripId} {
