@@ -13,7 +13,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { Bytes, FieldPath, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc, writeBatch, type Firestore } from 'firebase/firestore';
+import { Bytes, FieldPath, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, type Firestore } from 'firebase/firestore';
 
 const OWNER = 'ysangyn@gmail.com';
 const BORA = 'bora@example.com';
@@ -610,10 +610,9 @@ describe('여러 공간 2걸음: 공간 가르기 (다른 공간 sp2에 캐롤�
       }
     }
   });
-  test('다른 공간의 구성원 문서는 아직 아무도 만들거나 고치지 못한다 (초대는 3걸음에서)', async () => {
+  test('초대장 없이는 다른 공간의 구성원 문서를 만들지 못한다. 관리자도 남의 문서를 대신 만들지 못한다', async () => {
     await assertFails(setDoc(doc(as2.dave(), 'spaces/sp2/members/dave'), memberDoc('dave', DAVE)));
     await assertFails(setDoc(doc(as2.carol(), 'spaces/sp2/members/dave'), memberDoc('dave', DAVE)));
-    await assertFails(setDoc(doc(as2.carol(), 'spaces/sp2/members/carol'), memberDoc('carol', CAROL, { role: 'admin', name: '캐롤 2' })));
     await assertFails(deleteDoc(doc(as2.carol(), 'spaces/sp2/members/carol')));
   });
 });
@@ -653,5 +652,205 @@ describe('여러 공간 2걸음: 별명 문서 (profiles)', () => {
     await assertFails(deleteDoc(P(as.bora(), 'owner')));
     await assertFails(getDocs(collection(as.bora(), 'profiles')));
     await assertFails(getDoc(P(as.anon(), 'owner')));
+  });
+});
+
+// 여러 공간 3걸음 가 (docs/design/SPACES-PUBLIC.md 3-3절): 공간이 적힌 초대장, 새 공간 열기, 들어오기·나가기
+describe('여러 공간 3걸음: 초대장과 새 공간', () => {
+  const DAY = 24 * 3600 * 1000;
+  const S2 = 'CarolSpace0123456789'; // 이미 있는 공간 (캐롤이 관리자, 에린이 구성원)
+  const NEW = 'NewSpace012345678901'; // 아직 없는 공간
+  const ERIN = 'erin@example.com';
+  const FRANK = 'frank@example.com';
+  const erin = () => env.authenticatedContext('erin', { email: ERIN, email_verified: true }).firestore() as unknown as Firestore;
+  const frank = () => env.authenticatedContext('frank', { email: FRANK, email_verified: true }).firestore() as unknown as Firestore;
+  const inv = (over: Record<string, unknown> = {}) => ({ by: OWNER, spaceId: NEW, role: 'admin', createdAt: 1, expiresAt: Date.now() + 7 * DAY, v: 1, ...over });
+  const I = (db: Firestore, code: string) => doc(db, 'spaceInvites', code);
+  const M = (db: Firestore, sid: string, uid: string) => doc(db, `spaces/${sid}/members/${uid}`);
+  const joined = (uid: string, email: string, code: string, over: Record<string, unknown> = {}) => ({ uid, email, role: 'member', name: '새 사람', via: code, v: 1, ...over });
+  /** 들어오기 한 묶음: 초대장에 내 표시 + 내 구성원 문서 (+ 새 공간 문서) (+ 별명 문서) */
+  const join = (db: Firestore, o: { code: string; sid: string; uid: string; email: string; role: string; space?: boolean; profile?: boolean; mark?: boolean; member?: boolean }) => {
+    const b = writeBatch(db);
+    if (o.mark !== false) b.update(I(db, o.code), { usedBy: o.email, usedAt: 2 });
+    if (o.member !== false) b.set(M(db, o.sid, o.uid), joined(o.uid, o.email, o.code, { role: o.role }));
+    if (o.space) b.set(doc(db, 'spaces', o.sid), { name: '데이브네', createdBy: o.uid, v: 1 });
+    if (o.profile) b.set(doc(db, 'profiles', o.uid), { nick: '데이브', spaceId: o.sid, v: 1 });
+    return b.commit();
+  };
+  const dNew = { code: 'newspace-code-1', sid: NEW, uid: 'dave', email: DAVE, role: 'admin', space: true };
+  const dMem = { code: 'member-code-1', sid: S2, uid: 'dave', email: DAVE, role: 'member' };
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      await setDoc(doc(db, 'spaces', S2), { name: '캐롤네', createdBy: 'carol', v: 1 });
+      await setDoc(M(db, S2, 'carol'), joined('carol', CAROL, 'seed-code-carol', { role: 'admin', name: '캐롤' }));
+      await setDoc(M(db, S2, 'erin'), joined('erin', ERIN, 'seed-code-erin', { name: '에린' }));
+      await setDoc(doc(db, `spaces/${S2}/trips/x1`), trip());
+      await setDoc(I(db, 'newspace-code-1'), inv());
+      await setDoc(I(db, 'newspace-code-2'), inv());
+      await setDoc(I(db, 'member-code-1'), inv({ by: CAROL, spaceId: S2, role: 'member' }));
+      await setDoc(I(db, 'expired-code-1'), inv({ by: CAROL, spaceId: S2, role: 'member', expiresAt: Date.now() - 1000 }));
+      await setDoc(doc(db, 'invites/legacy-main-code'), { by: OWNER, createdAt: 1, expiresAt: Date.now() + 7 * DAY, v: 1 });
+    });
+  });
+
+  test('새 공간 초대장은 마을 주인만 만든다 (아직 없는 공간, 관리자 자리, 8일 안)', async () => {
+    await assertSucceeds(setDoc(I(as.owner(), 'ownermade-code-1'), inv({ spaceId: 'Another0123456789abc' })));
+    await assertFails(setDoc(I(as.bora(), 'boramade-code-1'), inv({ by: BORA, spaceId: 'Another0123456789abd' })));
+    await assertFails(setDoc(I(as2.carol(), 'carolmade-code-1'), inv({ by: CAROL, spaceId: 'Another0123456789abe' })));
+    await assertFails(setDoc(I(as2.dave(), 'davemade-code-1'), inv({ by: DAVE, spaceId: 'Another0123456789abf' })));
+    // 이미 있는 공간에 관리자 자리를 만들 수 없다 (주인이 남의 공간에 들어가는 길이 되지 않게)
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-2'), inv({ spaceId: S2 })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-3'), inv({ spaceId: S2, role: 'member' })));
+    // 모양
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-4'), inv({ spaceId: 'main' })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-5'), inv({ spaceId: 'short' })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-6'), inv({ spaceId: 'Another0123456789ab/' })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-7'), inv({ spaceId: 'Another0123456789abg', expiresAt: Date.now() + 30 * DAY })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-8'), inv({ spaceId: 'Another0123456789abh', by: BORA })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-9'), inv({ spaceId: 'Another0123456789abi', role: 'host' })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-10'), inv({ spaceId: 'Another0123456789abj', usedBy: OWNER })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-11'), inv({ spaceId: 'Another0123456789abk', extra: 1 })));
+  });
+
+  test('있는 공간에 들이는 초대장은 그 공간 관리자만 만든다 (구성원 자리만)', async () => {
+    await assertSucceeds(setDoc(I(as2.carol(), 'carolmade-code-2'), inv({ by: CAROL, spaceId: S2, role: 'member', name: '프랭크', relation: 'friend', spaceName: '캐롤네' })));
+    await assertFails(setDoc(I(erin(), 'erinmade-code-1'), inv({ by: ERIN, spaceId: S2, role: 'member' })));
+    await assertFails(setDoc(I(as2.carol(), 'carolmade-code-3'), inv({ by: CAROL, spaceId: S2, role: 'admin' })));
+    await assertFails(setDoc(I(as.bora(), 'boramade-code-2'), inv({ by: BORA, spaceId: S2, role: 'member' })));
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-12'), inv({ spaceId: S2, role: 'member' })));
+  });
+
+  test('초대장은 코드를 아는 로그인한 사람이 하나씩 읽는다. 목록은 만든 사람이 자기 것만', async () => {
+    await assertSucceeds(getDoc(I(as2.dave(), 'member-code-1')));
+    await assertFails(getDoc(I(as.anon(), 'member-code-1')));
+    await assertSucceeds(getDocs(query(collection(as2.carol(), 'spaceInvites'), where('by', '==', CAROL))));
+    await assertSucceeds(getDocs(query(collection(as.owner(), 'spaceInvites'), where('by', '==', OWNER))));
+    // 남의 초대장 코드를 목록으로 엿볼 수 없다 (주인도, 우리 공간 사람도, 그 공간의 구성원도)
+    await assertFails(getDocs(query(collection(as.owner(), 'spaceInvites'), where('by', '==', CAROL))));
+    await assertFails(getDocs(query(collection(as.owner(), 'spaceInvites'), where('spaceId', '==', S2))));
+    await assertFails(getDocs(collection(as.owner(), 'spaceInvites')));
+    await assertFails(getDocs(query(collection(as.bora(), 'spaceInvites'), where('spaceId', '==', S2))));
+    await assertFails(getDocs(query(collection(erin(), 'spaceInvites'), where('spaceId', '==', S2))));
+    await assertFails(getDocs(query(collection(as2.dave(), 'spaceInvites'), where('by', '==', OWNER))));
+    // 지우기: 만든 사람과 그 공간 관리자
+    await assertFails(deleteDoc(I(erin(), 'member-code-1')));
+    await assertFails(deleteDoc(I(as.owner(), 'member-code-1')));
+    await assertSucceeds(deleteDoc(I(as2.carol(), 'member-code-1')));
+    await assertSucceeds(deleteDoc(I(as.owner(), 'newspace-code-2')));
+  });
+
+  test('새 공간 열기: 초대장 표시 + 내 구성원 문서(관리자) + 공간 문서를 한 묶음으로. 그 뒤 그 공간을 쓰고, 주인은 들여다보지 못한다', async () => {
+    await assertSucceeds(join(as2.dave(), { ...dNew, profile: true }));
+    const db = as2.dave();
+    await assertSucceeds(setDoc(doc(db, `spaces/${NEW}/trips/t1`), trip({ title: '데이브의 첫 여행' })));
+    await assertSucceeds(getDocs(collection(db, `spaces/${NEW}/trips`)));
+    await assertSucceeds(getDoc(doc(db, 'spaces', NEW)));
+    await assertSucceeds(getDoc(doc(db, 'profiles/dave')));
+    // 관리자가 되었으니 짝을 초대할 수 있다
+    await assertSucceeds(setDoc(I(db, 'davemade-code-2'), inv({ by: DAVE, spaceId: NEW, role: 'member' })));
+    // 마을 주인·우리 공간 사람·다른 공간 관리자는 못 본다
+    for (const other of [as.owner(), as.bora(), as2.carol()]) {
+      await assertFails(getDoc(doc(other, `spaces/${NEW}/trips/t1`)));
+      await assertFails(getDocs(collection(other, `spaces/${NEW}/members`)));
+    }
+    // 데이브는 여전히 우리 공간·캐롤 공간을 못 본다
+    await assertFails(getDoc(T(db)));
+    await assertFails(getDoc(doc(db, `spaces/${S2}/trips/x1`)));
+  });
+
+  test('새 공간 열기의 빈틈: 하나라도 빠지거나 어긋나면 통째로 막힌다', async () => {
+    const db = as2.dave();
+    await assertFails(join(db, { ...dNew, mark: false })); // 초대장에 표시 없이
+    await assertFails(join(db, { ...dNew, member: false, space: false })); // 표시만 하고 안 들어오기 (초대장 못 쓰게 만들기)
+    await assertFails(join(db, { ...dNew, space: false })); // 공간 문서 없이
+    await assertFails(join(db, { ...dNew, role: 'member' })); // 초대장과 다른 역할
+    await assertFails(join(db, { ...dNew, sid: 'Different01234567890' })); // 초대장과 다른 공간
+    await assertFails(join(db, { ...dNew, sid: S2, space: false })); // 새 공간 초대장으로 있는 공간에
+    await assertFails(join(db, { ...dNew, uid: 'frank' })); // 남의 구성원 문서
+    await assertFails(join(db, { ...dNew, email: FRANK })); // 남의 메일
+    await assertFails(setDoc(doc(db, 'spaces', NEW), { name: '그냥 만들기', createdBy: 'dave', v: 1 })); // 초대 없이 공간만
+    await assertFails(setDoc(doc(db, 'spaces/Whatever012345678901'), { name: '그냥 만들기', createdBy: 'dave', v: 1 }));
+    await assertFails(join(db, { ...dNew, code: 'legacy-main-code' })); // 우리 공간용 옛 초대 코드로
+    await assertFails(join(db, { ...dNew, code: 'no-such-code-123' }));
+    // 아무것도 안 생겼다
+    await assertFails(getDoc(doc(db, 'spaces', NEW)));
+  });
+
+  test('한 초대장은 한 번만, 한 공간의 첫 관리자는 한 사람만', async () => {
+    await assertSucceeds(join(as2.dave(), dNew));
+    // 같은 코드를 다른 사람이
+    await assertFails(join(frank(), { ...dNew, uid: 'frank', email: FRANK, space: false }));
+    await assertFails(join(frank(), { ...dNew, uid: 'frank', email: FRANK }));
+    // 같은 공간을 가리키는 또 다른 새 공간 초대장으로 (공간이 이미 열렸다)
+    await assertFails(join(frank(), { ...dNew, code: 'newspace-code-2', uid: 'frank', email: FRANK, space: false }));
+    await assertFails(join(frank(), { ...dNew, code: 'newspace-code-2', uid: 'frank', email: FRANK }));
+    // 주인도 이제 이 공간에 관리자 초대장을 새로 만들 수 없다
+    await assertFails(setDoc(I(as.owner(), 'ownermade-code-13'), inv()));
+  });
+
+  test('있는 공간에 들어오기: 초대장 표시 + 내 구성원 문서(구성원)를 한 묶음으로', async () => {
+    await assertFails(join(as2.dave(), { ...dMem, role: 'admin' }));
+    await assertFails(join(as2.dave(), { ...dMem, mark: false }));
+    await assertFails(join(as2.dave(), { ...dMem, code: 'expired-code-1' }));
+    await assertFails(join(as2.dave(), { ...dMem, sid: NEW }));
+    await assertSucceeds(join(as2.dave(), { ...dMem, profile: true }));
+    await assertSucceeds(getDoc(doc(as2.dave(), `spaces/${S2}/trips/x1`)));
+    await assertSucceeds(getDocs(collection(as2.dave(), `spaces/${S2}/members`)));
+    await assertFails(getDoc(T(as2.dave())));
+    // 구성원은 초대장을 만들지 못한다
+    await assertFails(setDoc(I(as2.dave(), 'davemade-code-3'), inv({ by: DAVE, spaceId: S2, role: 'member' })));
+  });
+
+  test('내보낸 사람은 바로 못 들어오고, 쓴 초대장으로 다시 들어오지도 못한다', async () => {
+    await assertSucceeds(join(as2.dave(), dMem));
+    await assertSucceeds(deleteDoc(M(as2.carol(), S2, 'dave')));
+    await assertFails(getDoc(doc(as2.dave(), `spaces/${S2}/trips/x1`)));
+    await assertFails(join(as2.dave(), dMem));
+    await assertFails(join(as2.dave(), { ...dMem, mark: false }));
+    await assertFails(setDoc(M(as2.dave(), S2, 'dave'), joined('dave', DAVE, 'member-code-1')));
+  });
+
+  test('구성원 문서: 자기 이름·관계만 고친다. 역할은 못 바꾼다. 구성원은 스스로 나가고, 관리자는 남을 내보내되 자기는 못 나간다', async () => {
+    await assertSucceeds(updateDoc(M(erin(), S2, 'erin'), { name: '에린이', relation: 'friend' }));
+    await assertFails(updateDoc(M(erin(), S2, 'erin'), { role: 'admin' }));
+    await assertFails(updateDoc(M(erin(), S2, 'erin'), { email: CAROL }));
+    await assertFails(updateDoc(M(erin(), S2, 'erin'), { uid: 'carol' }));
+    await assertFails(updateDoc(M(erin(), S2, 'erin'), { via: 'other-code-123' }));
+    await assertFails(updateDoc(M(erin(), S2, 'erin'), { name: '' }));
+    await assertFails(updateDoc(M(erin(), S2, 'carol'), { name: '바꿔치기' }));
+    await assertFails(updateDoc(M(as2.carol(), S2, 'erin'), { role: 'admin' }));
+    await assertFails(updateDoc(M(as2.carol(), S2, 'carol'), { role: 'member' }));
+    await assertSucceeds(updateDoc(M(as2.carol(), S2, 'carol'), { name: '캐롤 언니' }));
+    await assertFails(deleteDoc(M(erin(), S2, 'carol')));
+    await assertFails(deleteDoc(M(as2.carol(), S2, 'carol'))); // 관리자가 없는 공간이 되지 않게
+    await assertFails(deleteDoc(M(as.owner(), S2, 'erin')));
+    await assertSucceeds(deleteDoc(M(erin(), S2, 'erin')));
+    await assertFails(getDoc(doc(erin(), `spaces/${S2}/trips/x1`)));
+  });
+
+  test('공간 초대장으로는 우리 공간(main)에 들어올 수 없다', async () => {
+    const db = as2.dave();
+    await assertFails(updateDoc(doc(db, 'config/access'), 'allowed', arrayUnion(DAVE), 'via', 'member-code-1', 'updatedAt', 1));
+    await assertSucceeds(join(db, dMem));
+    await assertFails(updateDoc(doc(db, 'config/access'), 'allowed', arrayUnion(DAVE), 'via', 'member-code-1', 'updatedAt', 1));
+    await assertFails(setDoc(M(db, 'main', 'dave'), memberDoc('dave', DAVE)));
+    await assertFails(setDoc(M(db, 'main', 'dave'), joined('dave', DAVE, 'member-code-1')));
+    await assertFails(getDoc(T(db)));
+  });
+
+  test('어느 공간이든 든 사람은 앱 스위치를 읽고 문제 신고를 남긴다. 아무 데도 없는 사람은 못 한다', async () => {
+    await assertFails(getDoc(doc(as2.dave(), 'config/flags')));
+    await assertFails(setDoc(doc(as2.dave(), 'reports/r-dave-0'), { kind: 'report', message: '안녕' }));
+    await assertSucceeds(join(as2.dave(), { ...dMem, profile: true }));
+    await assertSucceeds(getDoc(doc(as2.dave(), 'config/flags')));
+    await assertSucceeds(setDoc(doc(as2.dave(), 'reports/r-dave-1'), { kind: 'report', message: '안녕' }));
+    // 스위치를 바꾸거나 남의 신고를 읽지는 못한다
+    await assertFails(setDoc(doc(as2.dave(), 'config/flags'), { uploadsPaused: true }));
+    await assertFails(getDoc(doc(as2.dave(), 'reports/r-dave-1')));
+    // 내보내지면 바로 끊긴다 (별명 문서가 남아 있어도)
+    await assertSucceeds(deleteDoc(M(as2.carol(), S2, 'dave')));
+    await assertFails(getDoc(doc(as2.dave(), 'config/flags')));
   });
 });
