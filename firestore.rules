@@ -354,6 +354,166 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // ================= 모임 (docs/design/SPACES-PUBLIC.md 4절) =================
+    // 공간은 전부 함께 쓰는 사이, 모임은 고른 가게의 사본만 보여 주는 사이.
+    // - 모임 사람만 읽는다 (마을 주인도 들지 않은 모임은 못 본다). 모임에 든다고 서로의 공간이 보이지는 않는다.
+    // - 만들기: 자기 공간이 있는 사람. 들어오기: 방장이 만든 초대장으로, 공간이 없는 사람도 손님으로.
+    // - 구성원 문서·초대장에는 메일을 넣지 않는다 (uid와 별명만).
+    function circlePath(cid) { return /databases/$(database)/documents/circles/$(cid); }
+    function circleMemberPath(cid) { return /databases/$(database)/documents/circles/$(cid)/members/$(request.auth.uid); }
+    function circleInvitePath(code) { return /databases/$(database)/documents/circleInvites/$(code); }
+    function inCircle(cid) { return signedIn() && exists(circleMemberPath(cid)); }
+    function circleHost(cid) { return signedIn() && exists(circleMemberPath(cid)) && get(circleMemberPath(cid)).data.role == 'host'; }
+    // 사본에 적는 공간 이름: 없거나(손님), 내가 든 공간. 같은 공간 사람(짝)이 내려 줄 수 있게 하려는 칸이다
+    function ownSpaceOrNone(d) { return d.spaceId == null || (d.spaceId is string && inSpace(d.spaceId)); }
+    function validCircle(d) {
+      return d.keys().hasOnly(['name', 'createdBy', 'createdAt', 'updatedAt', 'v'])
+        && d.keys().hasAll(['name', 'createdBy', 'v'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 20
+        && d.createdBy is string
+        && d.v == 1;
+    }
+    function validCircleMember(d) {
+      return d.keys().hasOnly(['uid', 'role', 'nick', 'via', 'joinedAt', 'updatedAt', 'v'])
+        && d.keys().hasAll(['uid', 'role', 'nick', 'via', 'v'])
+        && d.uid == request.auth.uid
+        && d.role in ['host', 'member']
+        && d.nick is string && d.nick.size() >= 1 && d.nick.size() <= 10
+        && d.via is string
+        && d.v == 1;
+    }
+    // 걸린 가게(사본). 문서 이름은 '열쇠_내 uid': 한 사람이 한 가게를 한 번만, 그리고 자기 것만
+    function validCircleItem(d, itemId) {
+      return d.keys().hasOnly(['key', 'name', 'kind', 'tag', 'lat', 'lng', 'region', 'verdict', 'line', 'photos', 'placeKey', 'by', 'spaceId', 'at', 'updatedAt', 'v'])
+        && d.keys().hasAll(['key', 'name', 'kind', 'by', 'spaceId', 'v'])
+        && d.key is string && d.key.matches('^[A-Za-z0-9]{1,60}$')
+        && itemId == d.key + '_' + request.auth.uid
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
+        && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
+        && (!('tag' in d) || (d.tag is string && d.tag.size() <= 20))
+        && (!('lat' in d) || (d.lat is number && d.lat >= -90 && d.lat <= 90))
+        && (!('lng' in d) || (d.lng is number && d.lng >= -180 && d.lng <= 180))
+        && (!('region' in d) || (d.region is map && d.region.size() <= 4))
+        && (!('verdict' in d) || d.verdict == null || d.verdict in ['again', 'once', 'meh'])
+        && (!('line' in d) || (d.line is string && d.line.size() <= 200))
+        && (!('photos' in d) || (d.photos is list && d.photos.size() <= 4))
+        && (!('placeKey' in d) || (d.placeKey is string && d.placeKey.size() <= 64))
+        && d.by is map && d.by.keys().hasOnly(['uid', 'nick'])
+        && d.by.uid == request.auth.uid
+        && d.by.nick is string && d.by.nick.size() >= 1 && d.by.nick.size() <= 10
+        && ownSpaceOrNone(d)
+        && d.v == 1;
+    }
+    // 내릴 수 있는 사람: 본인, 방장, 같은 공간 사람(짝) — 모두 모임 안에 있어야 한다
+    function canTakeDown(cid, by, spaceId) {
+      return inCircle(cid)
+        && (by == request.auth.uid || circleHost(cid) || (spaceId is string && inSpace(spaceId)));
+    }
+
+    match /circles/{cid} {
+      allow get: if inCircle(cid);
+      allow list: if false;
+      // 만들기: 같은 묶음에서 내 방장 문서를 함께 만든다 (서로를 확인)
+      allow create: if isUser()
+        && cid.matches('^[A-Za-z0-9]{20}$')
+        && validCircle(request.resource.data)
+        && request.resource.data.createdBy == request.auth.uid
+        && !exists(circleMemberPath(cid))
+        && existsAfter(circleMemberPath(cid))
+        && getAfter(circleMemberPath(cid)).data.role == 'host';
+      allow update: if circleHost(cid) && validCircle(request.resource.data)
+        && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if circleHost(cid);
+
+      match /members/{uid} {
+        allow read: if inCircle(cid);
+        allow create: if signedIn() && request.auth.uid == uid && validCircleMember(request.resource.data)
+          && (
+            // 방장: 모임을 만드는 그 묶음에서만
+            (request.resource.data.role == 'host' && request.resource.data.via == 'host'
+              && !exists(circlePath(cid)) && existsAfter(circlePath(cid))
+              && getAfter(circlePath(cid)).data.createdBy == request.auth.uid)
+            // 구성원: 이 모임의 안 쓴 초대장에 같은 묶음에서 내 표시를 할 때만 (한 번만·기한 안은 초대장 규칙이 본다)
+            || (request.resource.data.role == 'member'
+              && request.resource.data.via.size() >= 8 && request.resource.data.via.size() <= 64
+              && exists(circlePath(cid))
+              && exists(circleInvitePath(request.resource.data.via))
+              && !('usedBy' in get(circleInvitePath(request.resource.data.via)).data)
+              && getAfter(circleInvitePath(request.resource.data.via)).data.usedBy == request.auth.uid
+              && get(circleInvitePath(request.resource.data.via)).data.circleId == cid)
+          );
+        // 자기 별명만
+        allow update: if inCircle(cid) && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick', 'updatedAt'])
+          && validCircleMember(request.resource.data);
+        allow delete: if
+          // 스스로 나가기 (방장은 모임을 없애는 묶음에서만)
+          (inCircle(cid) && request.auth.uid == uid && (resource.data.role != 'host' || !existsAfter(circlePath(cid))))
+          // 방장이 남을 내보내기
+          || (circleHost(cid) && request.auth.uid != uid);
+      }
+
+      match /items/{itemId} {
+        allow read: if inCircle(cid);
+        allow create: if inCircle(cid) && validCircleItem(request.resource.data, itemId);
+        allow update: if inCircle(cid) && resource.data.by.uid == request.auth.uid && validCircleItem(request.resource.data, itemId);
+        allow delete: if canTakeDown(cid, resource.data.by.uid, resource.data.spaceId);
+      }
+
+      // 사진 사본 (작게 줄인 것). 위경도·찍은 시각 칸은 없다
+      match /photos/{photoId} {
+        allow read: if inCircle(cid);
+        allow create: if inCircle(cid)
+          && request.resource.data.keys().hasOnly(['by', 'spaceId', 'itemId', 'data', 'w', 'h', 'at', 'v'])
+          && request.resource.data.keys().hasAll(['by', 'spaceId', 'itemId', 'data', 'v'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.itemId is string && request.resource.data.itemId.size() <= 130
+          && request.resource.data.data is bytes && request.resource.data.data.size() <= 220000
+          && (!('w' in request.resource.data) || request.resource.data.w is int)
+          && (!('h' in request.resource.data) || request.resource.data.h is int)
+          && ownSpaceOrNone(request.resource.data)
+          && request.resource.data.v == 1;
+        allow update: if false;
+        allow delete: if canTakeDown(cid, resource.data.by, resource.data.spaceId);
+      }
+    }
+
+    // 모임 초대장: 방장만 만든다. 코드를 아는 로그인한 사람이 하나씩 읽는다
+    match /circleInvites/{code} {
+      allow get: if signedIn();
+      allow list: if signedIn() && resource.data.by == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['by', 'circleId', 'circleName', 'createdAt', 'expiresAt', 'v'])
+        && request.resource.data.keys().hasAll(['by', 'circleId', 'expiresAt', 'v'])
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.circleId is string
+        && circleHost(request.resource.data.circleId)
+        && (!('circleName' in request.resource.data) || (request.resource.data.circleName is string && request.resource.data.circleName.size() <= 20))
+        && request.resource.data.expiresAt is int
+        && request.resource.data.expiresAt <= request.time.toMillis() + 8 * 24 * 3600 * 1000
+        && request.resource.data.v == 1;
+      // 쓰기: 안 쓴 초대장에 내 uid로 한 번만, 기한 안에. 같은 묶음에서 그 모임에 내 구성원 문서가 생겨야 한다
+      allow update: if signedIn()
+        && !('usedBy' in resource.data)
+        && request.time.toMillis() < resource.data.expiresAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])
+        && request.resource.data.usedBy == request.auth.uid
+        && !exists(circleMemberPath(resource.data.circleId))
+        && existsAfter(circleMemberPath(resource.data.circleId));
+      allow delete: if signedIn() && (resource.data.by == request.auth.uid || circleHost(resource.data.circleId));
+    }
+
+    // 내 모임 목록: 내가 든 모임을 찾는 길 (모임은 목록으로 못 읽는다). 자기 것만, 들어 있는 모임만 적는다
+    match /users/{uid}/circles/{cid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'joinedAt', 'updatedAt', 'v'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 20
+        && request.resource.data.v == 1
+        && existsAfter(circleMemberPath(cid));
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     function validSpace(d) {
       return d.name is string
         && d.name.size() <= 60
