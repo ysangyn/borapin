@@ -16,6 +16,7 @@ import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/fires
 import { auth, db, OWNER_EMAIL, SPACE_ID, USE_EMULATOR } from './firebase';
 import type { Access } from './types';
 import { setMembers } from './members';
+import { ensureMembership } from './membershipSync';
 export { memberNames } from './members';
 
 type State =
@@ -110,7 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e), relation: access.relations?.[e] })));
           const isOwner = email === OWNER_EMAIL;
           if (verdict === 'denied') return setState({ status: 'denied', user });
-          setState({ status: 'ready', user, access, isAdmin: isOwner || access.admins.includes(email) });
+          const admin = isOwner || access.admins.includes(email);
+          setState({ status: 'ready', user, access, isAdmin: admin });
+          // 새 문에 쓸 내 구성원 문서·별명 문서를 미리 만들어 둔다 (서버가 확인해 준 목록일 때만, 화면은 그대로)
+          if (!snap.metadata.fromCache) void ensureMembership(user, { name: nameOf(email), isAdmin: admin, relation: access.relations?.[email] });
         },
         (e) => {
           // 권한 문제일 때만 '초대되지 않음', 나머지(무료 한도·연결)는 다시 시도할 수 있게

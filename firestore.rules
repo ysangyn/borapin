@@ -1,7 +1,8 @@
 rules_version = '2';
 
 // 보라핀 보안 규칙
-// - 허용 목록(config/access.allowed)에 있는 구글 계정만 읽고 쓸 수 있다.
+// - 우리 공간(main): 허용 목록(config/access.allowed)에 있는 계정만 읽고 쓸 수 있다.
+// - 그 밖의 공간: 그 공간에 구성원 문서(spaces/{공간}/members/{uid})가 있는 계정만.
 // - 주인 계정(OWNER)은 허용 목록이 비어 있어도 들어와 처음 설정을 만들 수 있다.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -243,9 +244,43 @@ service cloud.firestore {
       allow delete: if ownShare();
     }
 
-    // 지금은 우리 공간(main) 하나만 있다. 다른 공간 이름으로는 읽지도 쓰지도 못한다.
-    // (나중에 여러 커플이 쓰게 되면 공간마다 멤버 목록을 두고 이 함수만 바꾸면 된다)
-    function inSpace(spaceId) { return spaceId == 'main' && isMember(); }
+    // 공간의 문 (docs/design/SPACES-PUBLIC.md 3절). 옛 문(메일 목록)에서 새 문(공간마다 구성원 문서)으로 옮기는 중이다.
+    // - 우리 공간(main): 아직 옛 메일 목록이 문이다. 목록에서 빼면 구성원 문서가 남아 있어도 바로 못 들어온다.
+    //   구성원 문서는 미리 만들어 두기만 한다 (옛 문을 닫는 4걸음에서 이 줄을 바꾼다).
+    // - 그 밖의 공간: 그 공간에 내 구성원 문서가 있어야 들어온다. 마을 주인도 예외가 아니다.
+    function memberPath(spaceId) { return /databases/$(database)/documents/spaces/$(spaceId)/members/$(request.auth.uid); }
+    function inSpace(spaceId) {
+      return (spaceId == 'main' && isMember())
+        || (spaceId != 'main' && signedIn() && exists(memberPath(spaceId)));
+    }
+
+    // 옛 목록에 있는 사람이 우리 공간에 만드는 자기 구성원 문서. 역할은 옛 관리자 목록을 그대로 따른다
+    function validLegacyMember(d) {
+      return d.keys().hasOnly(['uid', 'email', 'role', 'name', 'relation', 'via', 'joinedAt', 'updatedAt', 'v'])
+        && d.keys().hasAll(['uid', 'email', 'role', 'name', 'via', 'v'])
+        && d.uid == request.auth.uid
+        && d.email == email()
+        && ((isAdmin() && d.role == 'admin') || (!isAdmin() && d.role == 'member'))
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 20
+        && (!('relation' in d) || d.relation in ['spouse', 'partner', 'family', 'friend', 'relative', 'other'])
+        && d.via == 'legacy'
+        && d.v == 1;
+    }
+
+    // 별명 문서: 사람마다 하나. 별명과 '지금 쓰는 공간'만 (메일·실명·역할 칸은 없다). 자기 것만 읽고 쓴다
+    match /profiles/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if false;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nick', 'spaceId', 'updatedAt', 'v'])
+        && request.resource.data.keys().hasAll(['nick', 'spaceId', 'v'])
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 1 && request.resource.data.nick.size() <= 10
+        && request.resource.data.spaceId is string && request.resource.data.spaceId.size() <= 40
+        && inSpace(request.resource.data.spaceId)
+        && request.resource.data.v == 1;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
 
     match /spaces/{spaceId} {
       allow read: if inSpace(spaceId);
@@ -262,6 +297,17 @@ service cloud.firestore {
           && request.resource.data.home.lng is number && request.resource.data.home.lng >= 124 && request.resource.data.home.lng <= 132
           && request.resource.data.home.exact is bool));
       allow delete: if false;
+
+      // 구성원 문서: 같은 공간 사람끼리 본다.
+      // 지금은 우리 공간(main)에서만, 옛 목록에 있는 사람이 자기 것을 만들고 고친다. 다른 공간은 초대(3걸음)가 생길 때까지 닫혀 있다.
+      match /members/{uid} {
+        allow read: if inSpace(spaceId);
+        allow create, update: if spaceId == 'main' && isMember()
+          && request.auth.uid == uid
+          && validLegacyMember(request.resource.data);
+        allow delete: if spaceId == 'main' && isMember()
+          && (request.auth.uid == uid || isAdmin());
+      }
 
       match /trips/{tripId} {
         allow read: if inSpace(spaceId);

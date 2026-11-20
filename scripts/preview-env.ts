@@ -49,12 +49,12 @@ async function seed() {
 
 async function cleanup() {
   // 시험용 프로젝트에는 시험이 만든 기록만 있다: 통째로 지운다
-  for (const name of ['spaces', 'config', 'shares', 'reports']) {
+  for (const name of ['spaces', 'config', 'shares', 'mapShares', 'reports', 'profiles']) {
     await db.recursiveDelete(db.collection(name));
   }
   const users = await auth.getUsers(Object.values(ACCOUNTS).map((a) => ({ email: a.email })));
   if (users.users.length) await auth.deleteUsers(users.users.map((u) => u.uid));
-  const left = (await Promise.all(['spaces', 'config', 'shares', 'reports'].map((n) => db.collection(n).limit(1).get()))).some((s) => !s.empty);
+  const left = (await Promise.all(['spaces', 'config', 'shares', 'mapShares', 'reports', 'profiles'].map((n) => db.collection(n).limit(1).get()))).some((s) => !s.empty);
   if (left) throw new Error('지우지 못한 기록이 남아 있어요');
   console.log(`시험 기록을 모두 지우고 시험 계정 ${users.users.length}개를 지웠어요`);
 }
