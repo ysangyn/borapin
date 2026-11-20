@@ -78,6 +78,7 @@ export function buildMapShare(view: { region: Place; theme: Theme; ranked: Place
       verdict: r.verdict ?? null,
       lines: Object.entries(r.reviews ?? {}).filter(([, t]) => t?.trim()).map(([who, text]) => ({ who, text: text.trim().slice(0, 200) })),
     })),
+    spaceId: SPACE_ID,
     v: 1,
   };
 }

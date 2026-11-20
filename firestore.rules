@@ -98,11 +98,35 @@ service cloud.firestore {
         && (!('reviews' in d) || (d.reviews is map && d.reviews.size() <= 10))
         && (!('verdict' in d) || d.verdict == null || d.verdict in ['again', 'once', 'meh'])
         && (!('naverUrl' in d) || (d.naverUrl is string && d.naverUrl.size() <= 500))
+        // 같은 가게를 알아보는 번호 (카카오 가게 번호 · 네이버 장소 번호)
+        && (!('ref' in d) || d.ref == null || (d.ref is map && d.ref.keys().hasOnly(['src', 'id'])
+              && d.ref.src in ['kakao', 'naver'] && d.ref.id is string && d.ref.id.size() >= 1 && d.ref.id.size() <= 40))
+        // 한 줄 평을 쓴 사람의 uid (이름 → uid). 공개 평을 나눌 때 '내 평'을 가려낸다
+        && (!('reviewBy' in d) || (d.reviewBy is map && d.reviewBy.size() <= 10))
         && (!('memo' in d) || (d.memo is string && d.memo.size() <= 5000))
         && (!('photoUrl' in d) || (d.photoUrl is string && d.photoUrl.size() <= 600 && d.photoUrl.matches('https://.*')))
         && (!('lat' in d) || (d.lat is number && d.lat >= -90 && d.lat <= 90))
         && (!('lng' in d) || (d.lng is number && d.lng >= -180 && d.lng <= 180))
         && d.v == 1;
+    }
+
+    // 링크 공유 사본은 어느 공간 것인지 spaceId로 안다 (없는 옛 사본은 우리 공간 'main').
+    // 공간이 여럿이 되어도 자기 공간 것만 만들고 고치고 지운다. 읽기는 토큰을 아는 누구나.
+    function shareSpaceOf(d) { return d.get('spaceId', 'main'); }
+    function shareSpaceOk() { return shareSpaceOf(request.resource.data) is string && inSpace(shareSpaceOf(request.resource.data)); }
+    function ownShare() { return inSpace(shareSpaceOf(resource.data)); }
+    function sameShareSpace() { return shareSpaceOf(request.resource.data) == shareSpaceOf(resource.data); }
+    function validTripShare(d) {
+      return d.keys().hasAll(['title', 'when', 'places', 'photos', 'v'])
+        && d.title is string && d.title.size() <= 100
+        && d.photos is list && d.photos.size() <= 60
+        && !('memo' in d) && !('companions' in d);
+    }
+    function validMapShare(d) {
+      return d.keys().hasAll(['title', 'theme', 'by', 'places', 'v'])
+        && d.title is string && d.title.size() <= 60
+        && d.places is list && d.places.size() <= 300
+        && !('memo' in d);
     }
 
     function validPhoto(d) {
@@ -201,24 +225,22 @@ service cloud.firestore {
     match /shares/{token} {
       allow get: if true;
       allow list: if false;
-      allow create, update: if isMember()
-        && request.resource.data.keys().hasAll(['title', 'when', 'places', 'photos', 'v'])
-        && request.resource.data.title is string && request.resource.data.title.size() <= 100
-        && request.resource.data.photos is list && request.resource.data.photos.size() <= 60
-        && !('memo' in request.resource.data) && !('companions' in request.resource.data);
-      allow delete: if isMember();
+      allow create: if shareSpaceOk()
+        && validTripShare(request.resource.data);
+      allow update: if shareSpaceOk() && ownShare() && sameShareSpace()
+        && validTripShare(request.resource.data);
+      allow delete: if ownShare();
     }
 
     // 링크 공개된 내 지도 사본: 토큰을 아는 사람은 누구나 하나씩 읽는다 (목록 조회 불가). 메모·함께 간 사람은 넣지 않는다
     match /mapShares/{token} {
       allow get: if true;
       allow list: if false;
-      allow create, update: if isMember()
-        && request.resource.data.keys().hasAll(['title', 'theme', 'by', 'places', 'v'])
-        && request.resource.data.title is string && request.resource.data.title.size() <= 60
-        && request.resource.data.places is list && request.resource.data.places.size() <= 300
-        && !('memo' in request.resource.data);
-      allow delete: if isMember();
+      allow create: if shareSpaceOk()
+        && validMapShare(request.resource.data);
+      allow update: if shareSpaceOk() && ownShare() && sameShareSpace()
+        && validMapShare(request.resource.data);
+      allow delete: if ownShare();
     }
 
     // 지금은 우리 공간(main) 하나만 있다. 다른 공간 이름으로는 읽지도 쓰지도 못한다.

@@ -23,6 +23,7 @@ export function buildShared(trip: Trip, photos: Photo[], recs: PlaceRec[]): Omit
     photos: [...photos].sort(byTaken).slice(0, 60).map((p) => ({ id: p.id, w: p.w, h: p.h, taken: p.taken, ...(p.caption ? { caption: p.caption } : {}) })),
     spots: [...recs].sort(byNewest).map((r) => ({ name: r.name, kind: r.kind, verdict: r.verdict ?? null })),
     space: spaceTitle(),
+    spaceId: SPACE_ID,
     v: 1,
   };
 }

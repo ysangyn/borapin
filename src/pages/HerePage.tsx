@@ -10,11 +10,12 @@ import { tripStage } from '../lib/stage';
 import { placeLabel } from '../lib/geo';
 import { withJosa } from '../lib/ko';
 import { guessKind } from '../lib/hereKinds';
+import { refFromNearbyId, type PlaceRef } from '../lib/placeRef';
 import { KindTagPicker, VerdictPicker } from '../components/KindTagPicker';
 import type { Place, PlaceKind, Verdict } from '../lib/types';
 
 type Pos = { lat: number; lng: number };
-type Pick = { name: string; kind: PlaceKind; tag: string; pos: Pos | null; addr?: string };
+type Pick = { name: string; kind: PlaceKind; tag: string; pos: Pos | null; addr?: string; ref?: PlaceRef | null };
 
 
 /**
@@ -82,7 +83,7 @@ export default function HerePage() {
         name: name.slice(0, 80), kind: pick.kind, ...(pick.tag.trim() ? { tag: pick.tag.trim().slice(0, 20) } : {}), region: where, status: 'been',
         tripId: trip && withTrip ? trip.id : null,
         reviews: line.trim() && me ? { [me]: line.trim().slice(0, 200) } : {}, verdict,
-        ...(pick.pos ? { lat: pick.pos.lat, lng: pick.pos.lng } : {}), ...(pick.addr ? { address: pick.addr.slice(0, 200) } : {}),
+        ...(pick.pos ? { lat: pick.pos.lat, lng: pick.pos.lng } : {}), ...(pick.addr ? { address: pick.addr.slice(0, 200) } : {}), ...(pick.ref ? { ref: pick.ref } : {}),
       }, auth.user);
       toast(`${withJosa(name, '을/를')} 남겼어요`, { label: '보기', onClick: () => nav(`/places/${id}`) });
       if (window.history.length > 1) nav(-1); else nav('/');
@@ -102,7 +103,7 @@ export default function HerePage() {
             {!!items?.length && (
               <div className="here-list" data-testid="here-list">
                 {items.slice(0, shown).map((it) => (
-                  <button key={it.id} type="button" className="here-item" onClick={() => choose({ name: it.name, ...guessKind(`${it.name} ${it.type}`, it.kind), pos: { lat: it.lat, lng: it.lng }, addr: it.addr })} data-testid="here-item">
+                  <button key={it.id} type="button" className="here-item" onClick={() => choose({ name: it.name, ...guessKind(`${it.name} ${it.type}`, it.kind), pos: { lat: it.lat, lng: it.lng }, addr: it.addr, ref: refFromNearbyId(it.id) })} data-testid="here-item">
                     {it.img ? <img src={it.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className="here-noimg" aria-hidden="true" />}
                     <span className="here-copy"><b>{it.name}</b><span className="tiny muted">{it.type} · {walkText(it)}</span></span>
                   </button>

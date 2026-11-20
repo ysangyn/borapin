@@ -22,11 +22,11 @@ import {
   type WriteBatch,
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { db, SPACE_ID, USE_EMULATOR } from './firebase';
+import { auth, db, SPACE_ID, USE_EMULATOR } from './firebase';
 import { displayName } from './auth';
 import { useStore } from './store';
 import { queued } from './writes';
-import { DELETE, editsOf, isTimestampLike, restoreFields, type Edit } from './tripActions';
+import { DELETE, editsOf, isTimestampLike, restoreFields, withReviewBy, type Edit } from './tripActions';
 import { syncShareAfterWrite } from './share';
 import { syncMapShareAfterWrite } from './placeMapData';
 import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation, Verdict } from './types';
@@ -189,14 +189,18 @@ export async function moveSomedayToWishes(trips: Trip[], wishes: Wish[], user: U
 // ---------- 우리 장소 ----------
 export async function createPlace(input: PlaceRecInput, user: User): Promise<string> {
   const ref = doc(placesCol());
-  await queued(setDoc(ref, { ...clean(input), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
+  const me = displayName(user);
+  // 내 한 줄 평이 있으면 쓴 사람 uid도 (공개 평을 나눌 때 '내 평'을 가려낸다)
+  const by = me && input.reviews?.[me]?.trim() ? { reviewBy: { ...(input.reviewBy ?? {}), [me]: user.uid } } : {};
+  await queued(setDoc(ref, { ...clean({ ...input, ...by }), createdBy: author(user), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), v: 1 }));
   syncShareAfterWrite(input.tripId);
   syncMapShareAfterWrite(input);
   return ref.id;
 }
 /** 고친 칸만 저장. opened는 편집 화면을 '연 때'의 장소. 한 줄 평은 이름별(reviews.이름)로만 보내고 남의 칸은 지우지 않는다(me = 내 이름) */
 export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecInput, me: string) {
-  await patchEdits(doc(placesCol(), id), editsOf(opened, input, { perPerson: ['reviews'], me }));
+  const edits = editsOf(opened, input, { perPerson: ['reviews'], me });
+  await patchEdits(doc(placesCol(), id), withReviewBy(edits, me, auth.currentUser?.uid));
   // 여행을 옮겼으면 두 여행의 사본 모두
   syncShareAfterWrite(opened.tripId, input.tripId);
   syncMapShareAfterWrite(opened, input);
@@ -209,10 +213,10 @@ export async function markPlaceBeen(id: string, tripId: string | null) {
 }
 /** 도착했어요: 다녀옴 + 어땠어요 + 내 한 줄(내 칸만, 남의 한 줄은 그대로) */
 export async function reviewPlace(id: string, tripId: string, me: string, verdict: Verdict | null, line: string) {
-  const f: Record<string, unknown> = { status: 'been', tripId };
-  if (verdict) f.verdict = verdict;
-  if (line && me) f[`reviews.${me}`] = line;
-  await patch(doc(placesCol(), id), f);
+  const edits: Edit[] = [{ path: ['status'], value: 'been' }, { path: ['tripId'], value: tripId }];
+  if (verdict) edits.push({ path: ['verdict'], value: verdict });
+  if (line && me) edits.push({ path: ['reviews', me], value: line });
+  await patchEdits(doc(placesCol(), id), withReviewBy(edits, me, auth.currentUser?.uid));
   syncShareAfterWrite(tripId);
 }
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {

@@ -51,6 +51,13 @@ export function editsOf(opened: object, form: object, opts: { perPerson?: string
   return out;
 }
 
+/** 내 한 줄 평(reviews.나)을 새로 쓰면 쓴 사람 uid(reviewBy.나)도 함께 보낸다. 지우거나 남의 칸만 고칠 땐 그대로 */
+export function withReviewBy(edits: Edit[], me: string, uid: string | undefined): Edit[] {
+  if (!me || !uid) return edits;
+  const mine = edits.some((e) => e.path[0] === 'reviews' && e.path[1] === me && typeof e.value === 'string' && e.value.trim() !== '');
+  return mine ? [...edits, { path: ['reviewBy', me], value: uid }] : edits;
+}
+
 /** Firestore Timestamp처럼 toMillis()가 있는 값 (피드·정렬이 이것으로 시각을 읽는다) */
 export const isTimestampLike = (v: unknown): boolean => !!v && typeof v === 'object' && typeof (v as { toMillis?: unknown }).toMillis === 'function';
 

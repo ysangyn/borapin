@@ -457,7 +457,7 @@ describe('여러 공간 1걸음: 가게 번호(ref)와 리뷰 쓴 사람(reviewB
     await assertFails(setDoc(P(db, 'bad3'), place({ ref: { src: 'kakao', id: 'x'.repeat(41) } })));
     await assertFails(setDoc(P(db, 'bad4'), place({ ref: 'k123' })));
   });
-  test('리뷰 쓴 사람은 내 uid로만 남긴다', async () => {
+  test('리뷰 쓴 사람 칸은 이름→uid 묶음(10명까지)으로만', async () => {
     const db = as.bora();
     await assertSucceeds(setDoc(P(db, 'pr3'), place({ reviews: { 보라: '빵이 짭짤' }, reviewBy: { 보라: 'bora' } })));
     await assertFails(setDoc(P(db, 'bad5'), place({ reviews: { 보라: '빵이 짭짤' }, reviewBy: '보라' })));

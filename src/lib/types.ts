@@ -1,3 +1,4 @@
+import type { PlaceRef } from './placeRef';
 import type { Timestamp } from 'firebase/firestore';
 
 export type Precision = 'day' | 'month' | 'season' | 'year' | 'unknown';
@@ -113,6 +114,10 @@ export interface PlaceRec {
   reviews: Record<string, string>;
   verdict: Verdict | null;
   naverUrl?: string;
+  /** 같은 가게를 알아보는 번호 (카카오 가게 번호 · 네이버 장소 번호). 손으로 적은 가게는 없다 */
+  ref?: PlaceRef | null;
+  /** 한 줄 평을 쓴 사람의 uid (이름 → uid). 공개 평을 나눌 때 '내 평'을 가려낸다 */
+  reviewBy?: Record<string, string>;
   address?: string;
   memo?: string;
   /** 지도 링크에서 가져온 대표 사진 주소 (그쪽 서버의 사진: 안 뜨면 숨긴다) */
@@ -224,6 +229,8 @@ export interface MapShare {
   /** 받은 사람이 '전부 담기'할 때 그 지역 (예전 사본엔 없다) */
   region?: Place;
   places: { id: string; name: string; kind: PlaceKind; tag?: string; lat?: number | null; lng?: number | null; photoUrl?: string; address?: string; naverUrl?: string; verdict: Verdict | null; lines: { who: string; text: string }[] }[];
+  /** 어느 공간의 사본인지 (예전 사본엔 없다 = main) */
+  spaceId?: string;
   updatedAt?: Timestamp | null;
   v: 1;
 }
@@ -235,6 +242,8 @@ export interface SharedTrip {
   photos: { id: string; w: number; h: number; taken: string | null; caption?: string }[];
   spots: { name: string; kind: string; verdict: string | null }[];
   space: string;
+  /** 어느 공간의 사본인지 (예전 사본엔 없다 = main) */
+  spaceId?: string;
   updatedAt?: Timestamp | null;
   v: 1;
 }
