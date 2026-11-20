@@ -407,3 +407,60 @@ describe('여행 계획하기 초안', () => {
     await assertSucceeds(deleteDoc(doc(as.owner(), 'spaces/main/planDrafts/d1')));
   });
 });
+
+// 여러 공간 1걸음 (docs/design/SPACES-PUBLIC.md 8절): 공간이 여럿이 되어도 남의 공유를 못 건드리게, 가게 번호·리뷰 쓴 사람 칸
+describe('여러 공간 1걸음: 링크 공유는 자기 공간 것만', () => {
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      // 다른 공간이 만든 공유 (지금은 다른 공간이 없지만, 생기면 이런 모양이 된다)
+      await setDoc(doc(db, 'shares/other1'), { title: '남의 여행', when: '2025', places: [], photos: [], spaceId: 'other', v: 1 });
+      await setDoc(doc(db, 'mapShares/othermap'), { title: '남의 지도', intro: '', theme: 'cafe', by: '남', regionLabel: '부산', places: [], spaceId: 'other', v: 1 });
+      await setDoc(doc(db, 'shares/mine1'), { title: '우리 여행', when: '2025', places: [], photos: [], spaceId: 'main', v: 1 });
+    });
+  });
+  test('다른 공간의 공유는 고치지도 지우지도 못한다 (링크로 읽기는 된다)', async () => {
+    const db = as.bora();
+    await assertSucceeds(getDoc(doc(db, 'shares/other1')));
+    await assertFails(setDoc(doc(db, 'shares/other1'), { title: '바꿔치기', when: '', places: [], photos: [], spaceId: 'other', v: 1 }));
+    await assertFails(deleteDoc(doc(db, 'shares/other1')));
+    await assertFails(setDoc(doc(db, 'mapShares/othermap'), { title: '바꿔치기', theme: 'cafe', by: 'x', places: [], spaceId: 'other', v: 1 }));
+    await assertFails(deleteDoc(doc(db, 'mapShares/othermap')));
+  });
+  test('남의 공간 이름으로 새 공유를 만들 수 없고, 내 공유를 남의 공간으로 옮길 수도 없다', async () => {
+    const db = as.bora();
+    await assertFails(setDoc(doc(db, 'shares/new1'), { title: 'x', when: '', places: [], photos: [], spaceId: 'other', v: 1 }));
+    await assertFails(setDoc(doc(db, 'mapShares/new2'), { title: 'x', theme: 'cafe', by: 'x', places: [], spaceId: 'other', v: 1 }));
+    await assertFails(setDoc(doc(db, 'shares/mine1'), { title: '우리 여행', when: '2025', places: [], photos: [], spaceId: 'other', v: 1 }));
+  });
+  test('우리 공간 공유는 지금처럼 만들고 고치고 지운다 (spaceId가 없는 옛 공유도 우리 것)', async () => {
+    const db = as.bora();
+    await assertSucceeds(setDoc(doc(db, 'shares/new3'), { title: 'x', when: '', places: [], photos: [], spaceId: 'main', v: 1 }));
+    await assertSucceeds(setDoc(doc(db, 'shares/mine1'), { title: '우리 여행 (고침)', when: '2025', places: [], photos: [], spaceId: 'main', v: 1 }));
+    await assertSucceeds(setDoc(doc(db, 'shares/tok1'), { title: '옛 공유 고침', when: '2024', places: [], photos: [], spaceId: 'main', v: 1 }));
+    await assertSucceeds(deleteDoc(doc(db, 'mapShares/map1')));
+  });
+});
+
+describe('여러 공간 1걸음: 가게 번호(ref)와 리뷰 쓴 사람(reviewBy)', () => {
+  const P = (db: Firestore, id = 'pr1') => doc(db, 'spaces/main/places', id);
+  const place = (over: Record<string, unknown> = {}) => ({ name: '소금빵집', kind: 'food', region: { t: 'kr', code: '41285' }, reviews: {}, verdict: null, v: 1, ...over });
+  test('카카오·네이버 가게 번호를 남길 수 있다', async () => {
+    const db = as.bora();
+    await assertSucceeds(setDoc(P(db), place({ ref: { src: 'kakao', id: '12345678' } })));
+    await assertSucceeds(setDoc(P(db, 'pr2'), place({ ref: { src: 'naver', id: '1234567890' } })));
+  });
+  test('가게 번호 모양이 틀리면 막는다', async () => {
+    const db = as.bora();
+    await assertFails(setDoc(P(db, 'bad1'), place({ ref: { src: 'google', id: '1' } })));
+    await assertFails(setDoc(P(db, 'bad2'), place({ ref: { src: 'kakao', id: 12345 } })));
+    await assertFails(setDoc(P(db, 'bad3'), place({ ref: { src: 'kakao', id: 'x'.repeat(41) } })));
+    await assertFails(setDoc(P(db, 'bad4'), place({ ref: 'k123' })));
+  });
+  test('리뷰 쓴 사람은 내 uid로만 남긴다', async () => {
+    const db = as.bora();
+    await assertSucceeds(setDoc(P(db, 'pr3'), place({ reviews: { 보라: '빵이 짭짤' }, reviewBy: { 보라: 'bora' } })));
+    await assertFails(setDoc(P(db, 'bad5'), place({ reviews: { 보라: '빵이 짭짤' }, reviewBy: '보라' })));
+    await assertFails(setDoc(P(db, 'bad6'), place({ reviewBy: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [`p${i}`, 'x'])) })));
+  });
+});
