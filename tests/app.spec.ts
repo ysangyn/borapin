@@ -194,14 +194,17 @@ test.describe.serial('보라핀 1단계', () => {
     await p2.getByTestId('join-go').click();
     await expect(p2.getByTestId('welcome')).toBeVisible({ timeout: 20_000 });
     await p2.getByTestId('welcome-next').click();
-    await p2.getByLabel('내 이름').fill('처제');
+    // 초대장에 적힌 이름('처제')이 이미 들어가 있다. 바꾸면 이 공간의 내 구성원 문서에 (옛 목록이 아니라)
+    await expect(p2.getByLabel('내 이름')).toHaveValue('처제');
+    await p2.getByLabel('내 이름').fill('파랑새');
     await p2.getByTestId('welcome-name-next').click();
-    await expect(p2.getByRole('status')).toContainText('처제로 불려요');
+    await expect(p2.getByRole('status')).toContainText('파랑새로 불려요');
     await p2.getByTestId('welcome-done').click();
     await expect(p2.getByTestId('headline')).toBeVisible({ timeout: 20_000 });
     // 설정: 함께 쓰는 사람은 나 하나(관리자). 우리 공간 사람은 보이지 않고, 새 공간 열어 주기는 주인에게만
     await p2.goto('/space');
     await expect(p2.getByText('sister@example.com')).toBeVisible();
+    await expect(p2.getByText('파랑새', { exact: true }).first()).toBeVisible();
     await expect(p2.getByText(OWNER)).toHaveCount(0);
     await expect(p2.getByText('관리자', { exact: true }).first()).toBeVisible();
     await expect(p2.getByTestId('new-space-section')).toHaveCount(0);
