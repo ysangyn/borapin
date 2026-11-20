@@ -6,6 +6,7 @@ import { usePlaces, useTrips, useWishes } from '../lib/data';
 import { photoUsage } from '../lib/photos';
 import { resolveReport, setFlags, useFlags, useReports } from '../lib/admin';
 import { FREE_DB_BYTES, photosLeft, usedBytes, type PhotoTotals } from '../lib/usage';
+import { SPACE_ID } from '../lib/firebase';
 
 const mb = (n: number) => (n >= 1024 ** 3 ? `${(n / 1024 ** 3).toFixed(2)}GB` : `${(n / 1024 / 1024).toFixed(1)}MB`);
 
@@ -38,7 +39,7 @@ export default function Admin() {
   const t = totals ?? { count: 0, bytes: 0 };
   const used = useMemo(() => usedBytes(t, records), [t, records]);
   const left = useMemo(() => photosLeft(t, records), [t, records]);
-  if (auth.status !== 'ready' || !auth.isAdmin) return <div className="center-screen">관리자만 볼 수 있어요</div>;
+  if (auth.status !== 'ready' || !auth.isAdmin || SPACE_ID !== 'main') return <div className="center-screen">관리자만 볼 수 있어요</div>;
 
   return (
     <>

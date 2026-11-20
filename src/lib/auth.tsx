@@ -12,9 +12,10 @@ import {
   signOut,
   type User,
 } from 'firebase/auth';
-import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
-import { auth, db, OWNER_EMAIL, SPACE_ID, USE_EMULATOR } from './firebase';
-import type { Access } from './types';
+import { collection, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
+import { auth, db, OWNER_EMAIL, SPACE_ID, setSpaceId, USE_EMULATOR } from './firebase';
+import { accessFromMembers, type SpaceMember } from './spaceAccess';
+import type { Access, Relation } from './types';
 import { setMembers } from './members';
 import { ensureMembership } from './membershipSync';
 export { memberNames } from './members';
@@ -41,9 +42,12 @@ export function nameOf(email: string | null | undefined, fallback = ''): string 
   if (!e) return fallback;
   const set = access.names?.[e];
   if (set) return set;
-  if (e === OWNER_EMAIL) return '영상';
-  const partner = access.allowed.find((x) => x !== OWNER_EMAIL);
-  if (partner && e === partner) return '보라';
+  // 처음부터 있던 두 사람의 기본 이름은 우리 공간에서만 (다른 공간은 구성원 문서에 이름이 있다)
+  if (SPACE_ID === 'main') {
+    if (e === OWNER_EMAIL) return '영상';
+    const partner = access.allowed.find((x) => x !== OWNER_EMAIL);
+    if (partner && e === partner) return '보라';
+  }
   return fallback || e.split('@')[0];
 }
 export function displayName(user: User | null | undefined): string {
@@ -73,7 +77,7 @@ async function bootstrapIfOwner(user: User) {
   if (!snap.exists()) {
     await setDoc(accessRef, { allowed: [OWNER_EMAIL], admins: [OWNER_EMAIL], updatedAt: serverTimestamp() });
   }
-  const spaceRef = doc(db, 'spaces', SPACE_ID);
+  const spaceRef = doc(db, 'spaces', 'main');
   const s = await getDoc(spaceRef);
   if (!s.exists()) {
     await setDoc(spaceRef, { name: '보라 & 영상', createdAt: serverTimestamp(), v: 1 });
@@ -97,28 +101,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         console.warn('bootstrap failed', e);
       }
+      // 지금 공간 정하기: 별명 문서가 다른 공간을 가리키면 그 공간의 구성원 문서로, 아니면 우리 공간(옛 메일 목록)
+      const profile = await getDoc(doc(db, 'profiles', user.uid)).then((p) => (p.exists() ? (p.data() as { spaceId?: string }) : null), () => null);
       // 기다리는 사이 다른 계정으로 바뀌었거나 나갔으면 멈춘다
       if (auth.currentUser?.uid !== user.uid) return;
+      const startMain = () => {
+        setSpaceId('main');
+        unsubAccess = onSnapshot(
+          doc(db, 'config', 'access'),
+          (snap) => {
+            const email = (user.email || '').toLowerCase();
+            const verdict = accessVerdict({ exists: snap.exists(), fromCache: snap.metadata.fromCache, allowed: (snap.data() as Access | undefined)?.allowed ?? [] }, email);
+            // 오프라인 첫 실행(캐시에 목록이 아직 없음): '초대되지 않은 계정'이 아니라 연결을 기다린다. 구독은 그대로 두어 연결되면 이어진다
+            if (verdict === 'waiting') return setState({ status: 'error', user, message: WAITING_TEXT });
+            const a = (snap.data() as Access | undefined) ?? { allowed: [], admins: [] };
+            access = { allowed: a.allowed ?? [], admins: a.admins ?? [], names: a.names ?? {}, relations: a.relations ?? {} };
+            setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e), relation: access.relations?.[e] })));
+            const isOwner = email === OWNER_EMAIL;
+            if (verdict === 'denied') return setState({ status: 'denied', user });
+            const admin = isOwner || access.admins.includes(email);
+            setState({ status: 'ready', user, access, isAdmin: admin });
+            // 새 문에 쓸 내 구성원 문서·별명 문서를 미리 만들어 둔다 (서버가 확인해 준 목록일 때만, 화면은 그대로)
+            if (!snap.metadata.fromCache) void ensureMembership(user, { name: nameOf(email), isAdmin: admin, relation: access.relations?.[email] });
+          },
+          (e) => {
+            // 권한 문제일 때만 '초대되지 않음', 나머지(무료 한도·연결)는 다시 시도할 수 있게
+            if (e.code === 'permission-denied') setState({ status: 'denied', user });
+            else setState({ status: 'error', user, message: e.code === 'resource-exhausted' ? '오늘 무료 사용량을 다 써서 잠시 멈췄어요. 오후 4~5시쯤 다시 열려요.' : '연결이 불안정해 기록을 불러오지 못했어요.' });
+          },
+        );
+      };
+      const sid = profile?.spaceId;
+      if (!sid || sid === 'main') return startMain();
+      setSpaceId(sid);
       unsubAccess = onSnapshot(
-        doc(db, 'config', 'access'),
+        collection(db, 'spaces', sid, 'members'),
         (snap) => {
-          const email = (user.email || '').toLowerCase();
-          const verdict = accessVerdict({ exists: snap.exists(), fromCache: snap.metadata.fromCache, allowed: (snap.data() as Access | undefined)?.allowed ?? [] }, email);
-          // 오프라인 첫 실행(캐시에 목록이 아직 없음): '초대되지 않은 계정'이 아니라 연결을 기다린다. 구독은 그대로 두어 연결되면 이어진다
-          if (verdict === 'waiting') return setState({ status: 'error', user, message: WAITING_TEXT });
-          const a = (snap.data() as Access | undefined) ?? { allowed: [], admins: [] };
-          access = { allowed: a.allowed ?? [], admins: a.admins ?? [], names: a.names ?? {}, relations: a.relations ?? {} };
-          setMembers(access.allowed.map((e) => ({ email: e, name: nameOf(e), relation: access.relations?.[e] })));
-          const isOwner = email === OWNER_EMAIL;
-          if (verdict === 'denied') return setState({ status: 'denied', user });
-          const admin = isOwner || access.admins.includes(email);
-          setState({ status: 'ready', user, access, isAdmin: admin });
-          // 새 문에 쓸 내 구성원 문서·별명 문서를 미리 만들어 둔다 (서버가 확인해 준 목록일 때만, 화면은 그대로)
-          if (!snap.metadata.fromCache) void ensureMembership(user, { name: nameOf(email), isAdmin: admin, relation: access.relations?.[email] });
+          const list = snap.docs.map((d) => d.data() as SpaceMember);
+          const me = list.find((m) => m.uid === user.uid);
+          if (!me) {
+            // 오프라인 첫 실행: 기다린다. 서버가 '없다'고 하면(내보내짐) 우리 공간 문으로 다시 (대개 '초대되지 않음' 또는 들어가기 화면)
+            if (snap.metadata.fromCache) return setState({ status: 'error', user, message: WAITING_TEXT });
+            unsubAccess?.();
+            return startMain();
+          }
+          access = accessFromMembers(list);
+          setMembers(list.map((m) => ({ email: m.email.toLowerCase(), name: m.name, relation: m.relation as Relation | undefined })));
+          setState({ status: 'ready', user, access, isAdmin: me.role === 'admin' });
         },
         (e) => {
-          // 권한 문제일 때만 '초대되지 않음', 나머지(무료 한도·연결)는 다시 시도할 수 있게
-          if (e.code === 'permission-denied') setState({ status: 'denied', user });
+          // 그 공간에서 내보내졌다(권한 없음): 우리 공간 문으로 다시 본다
+          if (e.code === 'permission-denied') { unsubAccess?.(); startMain(); }
           else setState({ status: 'error', user, message: e.code === 'resource-exhausted' ? '오늘 무료 사용량을 다 써서 잠시 멈췄어요. 오후 4~5시쯤 다시 열려요.' : '연결이 불안정해 기록을 불러오지 못했어요.' });
         },
       );

@@ -18,6 +18,8 @@ import { quickWish } from '../lib/wishActions';
 import { ask, STARTERS, type Answer, type AskCtx, type AskData, type Btn } from '../lib/ask/engine';
 import { askSmart } from '../lib/ask/smart';
 import type { Note, Photo, Place, PlanItem } from '../lib/types';
+import { SPACE_ID } from '../lib/firebase';
+import { spaceKey } from '../lib/spaceAccess';
 
 type Msg = { who: 'me'; text: string } | { who: 'bot'; a: Answer; q: string };
 
@@ -34,12 +36,13 @@ async function readRecordsOnce(): Promise<Records> {
 /** 단추 순서: 담기 → 화면으로 → 고르기 → 이어 묻기 */
 const rank = (b: Btn) => (b.wish ? 0 : b.to ? 1 : b.choose ? 2 : 3);
 
-const CHAT_KEY = 'borapin:ask-chat';
+/** 공간마다 따로 (우리 공간은 예전 열쇠 그대로) */
+const chatKey = () => spaceKey('borapin:ask-chat', SPACE_ID);
 function loadChat(): { msgs: Msg[]; ctx: AskCtx } | null {
-  try { const raw = sessionStorage.getItem(CHAT_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+  try { const raw = sessionStorage.getItem(chatKey()); return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 function saveChat(msgs: Msg[], ctx: AskCtx) {
-  try { if (msgs.length) sessionStorage.setItem(CHAT_KEY, JSON.stringify({ msgs: msgs.slice(-30), ctx })); else sessionStorage.removeItem(CHAT_KEY); } catch { /* 저장소 없어도 그만 */ }
+  try { if (msgs.length) sessionStorage.setItem(chatKey(), JSON.stringify({ msgs: msgs.slice(-30), ctx })); else sessionStorage.removeItem(chatKey()); } catch { /* 저장소 없어도 그만 */ }
 }
 
 /** 찾아보기: 규칙형 답변기 (비용·횟수 제한 없음, 기기 안에서 처리) */

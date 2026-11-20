@@ -165,6 +165,59 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByText('newbie@example.com')).toHaveCount(0);
   });
 
+  test('새 공간 열어 주기: 주인이 링크를 만들고 → 받은 사람은 우리와 따로 쓰는 자기 공간의 관리자가 된다', async ({ page, browser }) => {
+    await signIn(page, OWNER);
+    await page.goto('/space');
+    const sec = page.getByTestId('new-space-section');
+    await sec.getByLabel('새 공간 받는 사람 이름').fill('처제');
+    await sec.getByLabel('새 공간 이름').fill('꿈꾸는파랑새');
+    await sec.getByTestId('new-space-make').click();
+    await expect(page.getByRole('status')).toContainText('새 공간 링크를 만들었어요');
+    const row = sec.getByTestId('invite-row').first();
+    await expect(row).toContainText('꿈꾸는파랑새 열어 주기');
+    const url = (await row.getByTestId('invite-url').textContent())!.trim();
+    expect(url).toMatch(/\/join\/[a-z0-9]{8,}$/);
+    // 우리 공간 초대 목록에는 섞이지 않는다
+    await expect(page.getByTestId('invite-section').getByTestId('invite-row')).toHaveCount(0);
+    await shot(page, '02d-new-space-link');
+
+    // 받은 사람: 링크 → 로그인 → '새로 시작해요' → 들어가기 → 환영 → 홈
+    const ctx = await browser.newContext({ locale: 'ko-KR' });
+    const p2 = await ctx.newPage();
+    await p2.goto(url);
+    await expect(p2.getByTestId('login-invite')).toBeVisible();
+    await p2.waitForFunction(() => typeof (window as unknown as { __testSignIn?: unknown }).__testSignIn === 'function');
+    await p2.evaluate(() => (window as unknown as { __testSignIn: (e: string) => Promise<void> }).__testSignIn('sister@example.com'));
+    await expect(p2.getByTestId('join-title')).toHaveText('보라핀을 새로 시작해요');
+    await expect(p2.getByTestId('join')).toContainText('처제');
+    await shot(p2, '02e-join-new-space');
+    await p2.getByTestId('join-go').click();
+    await expect(p2.getByTestId('welcome')).toBeVisible({ timeout: 20_000 });
+    await p2.getByTestId('welcome-next').click();
+    await p2.getByLabel('내 이름').fill('처제');
+    await p2.getByTestId('welcome-name-next').click();
+    await expect(p2.getByRole('status')).toContainText('처제로 불려요');
+    await p2.getByTestId('welcome-done').click();
+    await expect(p2.getByTestId('headline')).toBeVisible({ timeout: 20_000 });
+    // 설정: 함께 쓰는 사람은 나 하나(관리자). 우리 공간 사람은 보이지 않고, 새 공간 열어 주기는 주인에게만
+    await p2.goto('/space');
+    await expect(p2.getByText('sister@example.com')).toBeVisible();
+    await expect(p2.getByText(OWNER)).toHaveCount(0);
+    await expect(p2.getByText('관리자', { exact: true }).first()).toBeVisible();
+    await expect(p2.getByTestId('new-space-section')).toHaveCount(0);
+    await expect(p2.getByTestId('admin-link')).toHaveCount(0);
+    // 자기 공간에 짝을 들이는 초대 링크를 만든다
+    await p2.getByLabel('초대 이름').fill('제부');
+    await p2.getByTestId('invite-make').click();
+    await expect(p2.getByTestId('invite-row').first()).toContainText('제부 초대');
+    await shot(p2, '02f-new-space-settings');
+    await ctx.close();
+    // 주인 화면: 그 링크는 쓰여서 사라졌고, 우리 함께 쓰는 사람에 처제는 없다
+    await page.reload();
+    await expect(page.getByTestId('new-space-section').getByTestId('invite-row')).toHaveCount(0);
+    await expect(page.getByText('sister@example.com')).toHaveCount(0);
+  });
+
   test('초대 안 된 계정은 막고, 이름과 함께 추가하면 들어와 같은 공간을 본다', async ({ page }) => {
     await signIn(page, 'stranger@example.com');
     await expect(page.getByText('아직 초대되지 않은 계정이에요')).toBeVisible();

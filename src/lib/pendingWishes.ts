@@ -1,4 +1,6 @@
 import type { Place } from './types';
+import { SPACE_ID } from './space';
+import { spaceKey } from './spaceAccess';
 
 /**
  * 받은 지도(/m/토큰)에서 ♡한 곳: 그 페이지는 앱 밖(로그인 없이)이라 이 폰에 적어 두고,
@@ -6,7 +8,8 @@ import type { Place } from './types';
  */
 export interface PendingItem { name: string; kind: string }
 export interface PendingMap { token: string; title: string; by: string; region: Place; items: PendingItem[] }
-const KEY = 'borapin:pending-wishes';
+/** 공간마다 따로 (우리 공간은 예전 열쇠 그대로) */
+const key = () => spaceKey('borapin:pending-wishes', SPACE_ID);
 const same = (a: string, b: string) => a.trim() === b.trim();
 
 export function togglePending(list: PendingMap[], head: Omit<PendingMap, 'items'>, item: PendingItem): PendingMap[] {
@@ -26,9 +29,9 @@ export function mergePending(list: PendingMap[], head: Omit<PendingMap, 'items'>
 export const pendingCount = (list: PendingMap[]) => list.reduce((a, m) => a + m.items.length, 0);
 
 export function loadPending(): PendingMap[] {
-  try { const v = JSON.parse(localStorage.getItem(KEY) ?? '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+  try { const v = JSON.parse(localStorage.getItem(key()) ?? '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
 }
 export function savePending(list: PendingMap[]) {
-  try { if (list.length) localStorage.setItem(KEY, JSON.stringify(list)); else localStorage.removeItem(KEY); } catch { /* 저장 못 하면 이번 화면에서만 */ }
+  try { if (list.length) localStorage.setItem(key(), JSON.stringify(list)); else localStorage.removeItem(key()); } catch { /* 저장 못 하면 이번 화면에서만 */ }
   try { window.dispatchEvent(new Event('borapin:pending')); } catch { /* */ }
 }

@@ -51,4 +51,5 @@ if (USE_EMULATOR) {
 
 /** 처음부터 관리자인 계정. Firestore 보안 규칙(firestore.rules)과 같은 값이어야 한다. */
 export const OWNER_EMAIL = 'ysangyn@gmail.com';
-export const SPACE_ID = 'main';
+/** 지금 쓰는 공간 (src/lib/space.ts) */
+export { SPACE_ID, setSpaceId } from './space';

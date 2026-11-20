@@ -5,4 +5,4 @@ export const db = { __fake: true };
 export const USE_EMULATOR = false;
 export const IS_PREVIEW = false;
 export const OWNER_EMAIL = 'ysangyn@gmail.com';
-export const SPACE_ID = 'main';
+export { SPACE_ID, setSpaceId } from '../../src/lib/space';

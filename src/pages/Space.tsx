@@ -10,7 +10,8 @@ import { exportXlsx, saveBlob } from '../lib/exportXlsx';
 import { sendReport } from '../lib/admin';
 import { useSeasons } from '../lib/seasons';
 import { loadTravelInfo } from '../lib/travelinfo';
-import { OWNER_EMAIL } from '../lib/firebase';
+import { OWNER_EMAIL, SPACE_ID } from '../lib/firebase';
+import { NewSpaceSetting, SpacePeople } from '../components/SpacePeople';
 import { isOffline } from '../lib/writes';
 import { localDate } from '../lib/dates';
 import type { Photo } from '../lib/types';
@@ -38,7 +39,7 @@ export default function Space() {
   const [inviteRel, setInviteRel] = useState<Relation | ''>('');
   const [madeCode, setMadeCode] = useState<string | null>(null);
   const [making, setMaking] = useState(false);
-  const invites = useOpenInvites(auth.status === 'ready' && auth.isAdmin);
+  const invites = useOpenInvites(auth.status === 'ready' && auth.isAdmin && SPACE_ID === 'main');
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   // '우리 집을 정하면…'에서 오면 그 칸으로
   useEffect(() => { if (location.hash === '#home') setTimeout(() => document.getElementById('home')?.scrollIntoView({ block: 'center' }), 300); }, []);
@@ -142,6 +143,8 @@ export default function Space() {
           </div>
         </div>
 
+        {SPACE_ID !== 'main' ? <SpacePeople /> : (
+          <>
         <section>
           <div className="label" style={{ padding: '0 4px 6px' }}>함께 쓰는 사람</div>
           <div className="setting-group">
@@ -237,6 +240,9 @@ export default function Space() {
             </div>
           </section>
         )}
+          </>
+        )}
+        {SPACE_ID === 'main' && (user.email ?? '').toLowerCase() === OWNER_EMAIL && <NewSpaceSetting />}
 
         <HomeSetting />
 
@@ -271,7 +277,7 @@ export default function Space() {
         </section>
 
         <div className="setting-group">
-          {isAdmin && (
+          {isAdmin && SPACE_ID === 'main' && (
             <Link to="/admin" className="setting-row" data-testid="admin-link">
               <span className="ico"><Icon name="shield" size={17} /></span>
               <span style={{ flex: 1 }}>관리자 화면<div className="tiny muted">무료 요금제 · 저장 공간 · 사진 올리기 멈춤 · 오류 신고</div></span>

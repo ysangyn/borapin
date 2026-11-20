@@ -33,6 +33,17 @@ export function memberFromStatus(status: number): 'member' | 'denied' | 'unknown
   if (status === 401 || status === 403) return 'denied';
   return 'unknown';
 }
+// 우리 공간(main)이 아닌 공간의 사람: 옛 목록(config/access)은 못 읽는다.
+// 그러면 자기 별명 문서(profiles/{uid}, 자기 것만 읽힘)가 가리키는 공간에서 자기 구성원 문서를 읽어 본다 (규칙: 그 공간 구성원만 읽힘).
+const FS = (project: string) => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(project)}/databases/(default)/documents`;
+export const profileDocUrl = (project: string, uid: string) => `${FS(project)}/profiles/${encodeURIComponent(uid)}?mask.fieldPaths=spaceId`;
+export const spaceMemberUrl = (project: string, spaceId: string, uid: string) => `${FS(project)}/spaces/${encodeURIComponent(spaceId)}/members/${encodeURIComponent(uid)}?mask.fieldPaths=role`;
+/** 별명 문서(REST 모양) → 다시 볼 공간 이름표. 우리 공간·이상한 값은 null */
+export function spaceOfProfile(json: unknown): string | null {
+  const v = (json as { fields?: { spaceId?: { stringValue?: unknown } } } | null)?.fields?.spaceId?.stringValue;
+  return typeof v === 'string' && /^[A-Za-z0-9]{20}$/.test(v) ? v : null;
+}
+
 /** 캐시 기간: 멤버는 1시간, 아닌 사람은 5분(초대로 막 들어온 사람이 오래 막히지 않게) */
 export const MEMBER_TTL_MS = { member: 60 * 60_000, denied: 5 * 60_000 } as const;
 

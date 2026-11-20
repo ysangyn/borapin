@@ -7,7 +7,8 @@
  *
  * 지키는 것
  * - Firebase 로그인 토큰(ID 토큰)이 맞는 요청만 받는다 (구글 공개 키로 서명 확인, 프로젝트 확인, 메일 인증 확인).
- * - 우리 공간 멤버만: 사용자 토큰으로 Firestore의 멤버 전용 문서(config/access)를 읽어 본다 (규칙이 멤버만 허용 → 200이면 멤버).
+ * - 보라핀 사람만: 사용자 토큰으로 Firestore의 멤버 전용 문서(config/access)를 읽어 본다 (규칙이 멤버만 허용 → 200이면 멤버).
+ *   우리 공간이 아닌 사람은 자기 별명 문서가 가리키는 공간의 자기 구성원 문서를 읽어 본다.
  *   결과는 사람(uid)마다 메모리에 1시간 두어 Firestore 읽기를 아낀다. 아무나 이메일 가입만으로 무료 한도를 쓰지 못하게.
  * - 사람당 분당 20번(/news는 따로 메모리로 분당 20번), 하루 DAILY_LIMIT번. 넘으면 429 → 앱은 규칙형 답으로 돌아간다.
  * - 모델이 사실에 없는 지명·숫자를 만들지 않도록 지시하고, 앱 쪽에서 한 번 더 거른다.
@@ -18,7 +19,7 @@ import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { nearby, spot } from './nearby';
 import { parseKakaoNear } from './kakaoParse';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
-import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, RateCounter, TtlCache, type TokenPayload } from './guard';
+import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, profileDocUrl, RateCounter, spaceMemberUrl, spaceOfProfile, TtlCache, type TokenPayload } from './guard';
 
 export interface Env {
   AI: Ai;
@@ -88,15 +89,24 @@ async function isMember(who: Who, token: string): Promise<boolean | null> {
   const key = `${who.project}:${who.uid}`;
   const hit = memberCache.get(key);
   if (hit !== undefined) return hit;
-  let status = 0;
-  try {
-    const r = await fetch(memberDocUrl(who.project), { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) });
-    status = r.status;
-    await r.body?.cancel().catch(() => undefined); // 내용은 필요 없다 (상태만 본다)
-  } catch {
-    status = 0; // 연결 실패·시간 초과 → 모름
+  const get = async (url: string, body = false): Promise<{ status: number; json?: unknown }> => {
+    try {
+      const r = await fetch(url, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) });
+      if (body && r.ok) return { status: r.status, json: await r.json().catch(() => null) };
+      await r.body?.cancel().catch(() => undefined); // 내용은 필요 없다 (상태만 본다)
+      return { status: r.status };
+    } catch {
+      return { status: 0 }; // 연결 실패·시간 초과 → 모름
+    }
+  };
+  let v = memberFromStatus((await get(memberDocUrl(who.project))).status);
+  // 우리 공간이 아니면: 별명 문서가 가리키는 공간의 내 구성원 문서 (없으면 그대로 '아님')
+  if (v === 'denied') {
+    const p = await get(profileDocUrl(who.project, who.uid), true);
+    const sid = p.status === 200 ? spaceOfProfile(p.json) : null;
+    if (sid) v = memberFromStatus((await get(spaceMemberUrl(who.project, sid, who.uid))).status);
+    else if (p.status !== 200 && p.status !== 404 && memberFromStatus(p.status) === 'unknown') v = 'unknown';
   }
-  const v = memberFromStatus(status);
   if (v === 'unknown') return null;
   memberCache.set(key, v === 'member', v === 'member' ? MEMBER_TTL_MS.member : MEMBER_TTL_MS.denied);
   return v === 'member';

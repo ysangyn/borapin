@@ -255,6 +255,8 @@ export interface Access {
   names?: Record<string, string>;
   /** 메일 → 관계 (부부·연인·가족·친구·친지·그 밖에) */
   relations?: Record<string, Relation>;
+  /** 메일 → uid (우리 공간이 아닌 공간에서만: 구성원 문서에서) */
+  uids?: Record<string, string>;
 }
 export type Relation = 'spouse' | 'partner' | 'family' | 'friend' | 'relative' | 'other';
 
