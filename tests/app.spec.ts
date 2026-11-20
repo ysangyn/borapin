@@ -203,7 +203,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(p2.getByTestId('headline')).toBeVisible({ timeout: 20_000 });
     // 설정: 함께 쓰는 사람은 나 하나(관리자). 우리 공간 사람은 보이지 않고, 새 공간 열어 주기는 주인에게만
     await p2.goto('/space');
-    await expect(p2.getByText('sister@example.com')).toBeVisible();
+    await expect(p2.getByText('sister@example.com', { exact: true })).toBeVisible();
     await expect(p2.getByText('파랑새', { exact: true }).first()).toBeVisible();
     await expect(p2.getByText(OWNER)).toHaveCount(0);
     await expect(p2.getByText('관리자', { exact: true }).first()).toBeVisible();
