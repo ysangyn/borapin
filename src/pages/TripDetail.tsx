@@ -29,6 +29,7 @@ import { isOffline } from '../lib/writes';
 import { placeLabel, placeLong, placeParam, tripMapMode } from '../lib/geo';
 import { tripTabs, type TripTab } from '../lib/stage';
 import type { PlaceRec, Trip } from '../lib/types';
+import { soloText } from '../lib/solo';
 
 export default function TripDetail() {
   const { id } = useParams();
@@ -325,7 +326,7 @@ function VisitedTab({ trip, recs }: { trip: Trip; recs: PlaceRec[] | null }) {
           </span>
         </div>
         {recs && recs.length === 0 ? (
-          <div className="small muted">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요. 또 가고 싶은 곳은 평가로 남겨요.</div>
+          <div className="small muted">기억에 남은 맛집·카페·명소를 {soloText('둘의 ', '')}한 줄 평과 함께 남겨 보세요. 또 가고 싶은 곳은 평가로 남겨요.</div>
         ) : (
           <div className="list">{(recs ?? []).map((r) => <PlaceRecRow key={r.id} rec={r} />)}</div>
         )}

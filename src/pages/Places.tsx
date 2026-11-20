@@ -6,6 +6,7 @@ import { usePlaces } from '../lib/data';
 import { normalizeQuery, placeLong, placeParam } from '../lib/geo';
 import { KINDS } from '../lib/placeRecs';
 import type { PlaceKind } from '../lib/types';
+import { soloText } from '../lib/solo';
 
 /** 우리 장소 모아 보기: 또 갈래요·종류로 거르고 지역별로 묶는다 */
 export default function Places() {
@@ -49,7 +50,7 @@ export default function Places() {
         {places && places.length === 0 && (
           <div className="empty">
             <b>아직 남긴 장소가 없어요</b>
-            <span className="small">기억에 남은 맛집·카페·명소를 둘의 한 줄 평과 함께 남겨 보세요.<br />지도에서 그 지역을 누르면 모아서 보여 드려요.</span>
+            <span className="small">기억에 남은 맛집·카페·명소를 {soloText('둘의 ', '')}한 줄 평과 함께 남겨 보세요.<br />지도에서 그 지역을 누르면 모아서 보여 드려요.</span>
             <Link to="/places/new" className="btn sm">장소 남기기</Link>
           </div>
         )}

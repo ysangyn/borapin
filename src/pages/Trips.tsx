@@ -15,6 +15,7 @@ import type { Trip } from '../lib/types';
 import { whenSortKey } from '../lib/dates';
 import { times } from '../lib/ko';
 import { isMemberName } from '../lib/members';
+import { soloText, spaceWord } from '../lib/solo';
 
 type Filter = 'all' | 'kr' | 'abroad';
 
@@ -79,7 +80,7 @@ export default function Trips() {
 
   return (
     <>
-      <TopBar title="여행" right={<Link to="/space" aria-label="우리 공간"><Avatars /></Link>} />
+      <TopBar title="여행" right={<Link to="/space" aria-label={spaceWord()}><Avatars /></Link>} />
       <div className="page" style={{ paddingTop: 4 }}>
         <div style={{ position: 'relative' }}>
           <span style={{ position: 'absolute', left: 12, top: 13, color: 'var(--ink3)' }}><Icon name="search" size={18} stroke={2} /></span>
@@ -103,7 +104,7 @@ export default function Trips() {
               <span className="trip-tile planned"><Icon name="calendar" size={20} stroke={2.2} /></span>
               <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{ fontWeight: 500 }}>여행 계획하기</span>
-                <span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에서 둘이 고르기</span>
+                <span className="tiny muted">어디 갈지 몰라도 · 후보 3곳에서 {soloText('둘이 고르기', '고르기')}</span>
               </span>
             </Link>
           )}
@@ -173,7 +174,7 @@ export default function Trips() {
           <span style={{ flex: 1 }}>
             <b>맛집·명소</b>
             <span className="tiny muted" style={{ display: 'block' }}>
-              {recs?.length ? `${recs.length}곳 · 또 갈래요 ${recs.filter((r) => r.verdict === 'again').length}곳` : '맛집·카페·볼거리를 둘의 한 줄 평과 함께'}
+              {recs?.length ? `${recs.length}곳 · 또 갈래요 ${recs.filter((r) => r.verdict === 'again').length}곳` : `맛집·카페·볼거리를 ${soloText('둘의 ', '')}한 줄 평과 함께`}
             </span>
           </span>
           <Icon name="chev" size={18} />

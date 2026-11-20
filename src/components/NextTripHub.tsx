@@ -193,7 +193,7 @@ function TodayAsk({ place: anchorPlace, wish }: { place: Place; wish: Wish | nul
           <div className="hub-answer mine"><span className="tiny muted">나</span><span className="hub-answer-text">{mine.text}</span>{canSave && <button className="link-btn" onClick={() => saveToWish(mine.text)}>메모에 넣기</button>}</div>
           {opened ? others.map(([u, a]) => (
             <div key={u} className="hub-answer" data-testid="hub-answer-other"><span className="tiny muted">{a.name}</span><span className="hub-answer-text">{a.text}</span>{canSave && <button className="link-btn" onClick={() => saveToWish(a.text)}>메모에 넣기</button>}</div>
-          )) : (
+          )) : need <= 1 ? null : (
             <div className="hub-answer locked" data-testid="hub-ask-waiting"><Icon name="lock" size={14} /><span className="tiny muted">상대가 답하면 서로의 답이 열려요</span></div>
           )}
         </div>

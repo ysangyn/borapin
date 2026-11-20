@@ -44,7 +44,7 @@ export function spaceTitle(names = memberNames()): string {
 /** 모두가 원하는지 (둘 이상일 때만 의미가 있다) */
 export const everyoneWants = (wantedBy: string[] | undefined) => list.length >= 2 && list.every((m) => (wantedBy ?? []).includes(m.name));
 /** '둘 다 원해요' / '모두 원해요' */
-export const everyoneLabel = () => (list.length === 2 ? '둘 다 원해요' : '모두 원해요');
+export const everyoneLabel = () => (list.length === 1 ? '꼭 가고 싶어요' : list.length === 2 ? '둘 다 원해요' : '모두 원해요');
 
 /** 공간의 관계 한마디: 둘이고 둘 다(또는 한쪽이) 부부면 '부부', 아니면 가장 많은 관계. 아무것도 없으면 null */
 export function spaceRelation(): Relation | null {

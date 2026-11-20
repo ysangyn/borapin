@@ -7,6 +7,7 @@ import { IDLE_MS, isTextField, shouldApplyUpdate, type GateState, type Moment } 
 import { busyCount, useToast } from './ui';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RestArt } from './Scene';
+import { spaceWord } from '../lib/solo';
 
 /**
  * 화면을 그리다 난 오류: 흰 화면 대신 다시 시도할 수 있는 안내.
@@ -34,7 +35,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey?: s
       <div className="center-screen" role="alert">
         <RestArt />
         <b style={{ fontSize: 18 }}>이 화면을 여는 중에 문제가 생겼어요</b>
-        <span className="small muted">기록은 안전해요. 다시 열어 보고, 계속되면 우리 공간 › 문제 신고로 알려 주세요.</span>
+        <span className="small muted">기록은 안전해요. 다시 열어 보고, 계속되면 {spaceWord()} › 문제 신고로 알려 주세요.</span>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn ghost" onClick={() => this.setState({ error: null })}>다시 시도</button>
           <button className="btn" onClick={() => location.assign('/')}>홈으로</button>

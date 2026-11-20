@@ -19,6 +19,7 @@ import { shareAnyhow } from '../lib/kakao';
 import { formatWhen } from '../lib/dates';
 import { josaOnly, withRo } from '../lib/ko';
 import type { Place } from '../lib/types';
+import { isSolo } from '../lib/solo';
 
 /**
  * 여행 계획하기 ①: 어디를 몰라도 조건만 고르면 후보 3곳.
@@ -40,7 +41,7 @@ export default function Planner() {
   const [when, setWhen] = useState<WhenKind>('nextweekend');
   const [start, setStart] = useState('');
   const [nights, setNights] = useState(1);
-  const [who, setWho] = useState<string | null>('둘이');
+  const [who, setWho] = useState<string | null>(() => (isSolo() ? '혼자' : '둘이'));
   const [scope, setScope] = useState<PlanConds['scope']>('kr');
   const [busy, setBusy] = useState(false);
   const conds: PlanConds = { when, start: when === 'pick' ? start : undefined, nights, who, scope };
@@ -110,7 +111,7 @@ export default function Planner() {
             <section className="planner-q">
               <div className="planner-label">누구와</div>
               <div className="chips">
-                {['둘이', '부모님', '아이', '친구'].map((w) => <button key={w} type="button" className={'chip' + (who === w ? ' on' : '')} aria-pressed={who === w} onClick={() => setWho(w)}>{w}</button>)}
+                {(isSolo() ? ['혼자', '둘이', '친구', '부모님', '아이'] : ['둘이', '부모님', '아이', '친구']).map((w) => <button key={w} type="button" className={'chip' + (who === w ? ' on' : '')} aria-pressed={who === w} onClick={() => setWho(w)}>{w}</button>)}
               </div>
             </section>
             <section className="planner-q">
@@ -243,7 +244,7 @@ export function PlanPick() {
             <button className="btn ghost" onClick={reroll} data-testid="plan-reroll"><Icon name="dice" size={16} />다른 후보</button>
           </div>
         )}
-        <div className="tiny muted" style={{ textAlign: 'center' }}>둘 다 같은 곳을 고르면 '여기로 정해요'가 떠요. 정하면 갈 예정 여행이 생기고, 날짜·숙소·갈 곳·동선을 차례로 같이 정해요.</div>
+        <div className="tiny muted" style={{ textAlign: 'center' }}>{need > 1 ? '모두 같은 곳을 고르면' : '마음에 드는 곳을 고르면'} '여기로 정해요'가 떠요. 정하면 갈 예정 여행이 생기고, 날짜·숙소·갈 곳·동선을 차례로 같이 정해요.</div>
       </div>
     </>
   );

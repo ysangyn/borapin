@@ -69,10 +69,10 @@ test('혼자 쓰는 공간: 주요 화면에 둘이 쓴다는 말이 없다', as
     await page.waitForLoadState('load');
     await check(route);
   }
+  // 모은 말 목록을 먼저 (실패해도 어디에 무엇이 남았는지 한 번에 보이게)
+  expect.soft(found, found.join('\n')).toEqual([]);
   // 설정의 제목
   await page.goto('/space');
   await expect(page.getByText('내 공간', { exact: true }).first()).toBeVisible();
-
-  expect(found, found.join('\n')).toEqual([]);
   await ctx.close();
 });

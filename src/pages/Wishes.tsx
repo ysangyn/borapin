@@ -16,6 +16,7 @@ import { everyoneLabel } from '../lib/members';
 import NewsDigest from '../components/NewsDigest';
 import { quickWish } from '../lib/wishActions';
 import { festivalPeriod, upcomingFestivals, useFestivals } from '../lib/festivals';
+import { isSolo } from '../lib/solo';
 
 /**
  * 가고 싶은 곳: 둘의 버킷리스트.
@@ -101,7 +102,7 @@ export default function Wishes() {
             <img src="/art/bora-think.webp" alt="" aria-hidden="true" width={360} height={675} decoding="async" />
             <span>
               <b style={{ display: 'block', fontSize: 17, marginBottom: 4 }}>가고 싶은 곳 3곳만 담아볼까요?</b>
-              <span className="small muted">지도에서 지역을 누르거나, 아래 추천과 여행지 뽑기로 담을 수 있어요. 상대가 담은 곳에 하트를 누르면 '{everyoneLabel()}'가 돼요.</span>
+              <span className="small muted">지도에서 지역을 누르거나, 아래 추천과 여행지 뽑기로 담을 수 있어요. {isSolo() ? '꼭 가고 싶은 곳엔 하트를 눌러 두세요.' : <>상대가 담은 곳에 하트를 누르면 '{everyoneLabel()}'가 돼요.</>}</span>
             </span>
           </div>
         )}

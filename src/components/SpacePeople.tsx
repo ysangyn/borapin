@@ -7,6 +7,7 @@ import { leaveSpace, removeFromSpace, renameMeInSpace } from '../lib/spaceMember
 import { shareAnyhow } from '../lib/kakao';
 import { withJosa } from '../lib/ko';
 import type { Relation } from '../lib/types';
+import { isSolo } from '../lib/solo';
 
 /** 초대 링크 한 줄: 보내기·지우기 */
 function InviteRow({ code, title, expiresAt, sender, onDelete }: { code: string; title: string; expiresAt: number; sender: string; onDelete: () => Promise<void> }) {
@@ -48,7 +49,7 @@ export function SpacePeople() {
   return (
     <>
       <section>
-        <div className="label" style={{ padding: '0 4px 6px' }}>함께 쓰는 사람</div>
+        <div className="label" style={{ padding: '0 4px 6px' }}>{isSolo() ? '이 공간을 쓰는 사람' : '함께 쓰는 사람'}</div>
         <div className="setting-group">
           {access.allowed.map((e) => (
             <div key={e} className="setting-row">

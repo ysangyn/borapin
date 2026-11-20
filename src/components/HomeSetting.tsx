@@ -6,6 +6,7 @@ import { roundHome } from '../lib/placeApps';
 import { lookupGeo } from '../lib/placeLookup';
 import { REGION_BY_CODE, regionLong } from '../lib/geo';
 import type { Place } from '../lib/types';
+import { soloText } from '../lib/solo';
 
 /** 우리 공간 › 우리 집: 시·군(필수) + 동네(선택). 기본은 약 500m로 반올림해 저장 */
 export default function HomeSetting() {
@@ -59,7 +60,7 @@ export default function HomeSetting() {
               <button className="btn ghost" style={{ flex: 1 }} onClick={() => setEdit(false)}>그대로 두기</button>
               <button className="btn" style={{ flex: 1 }} disabled={!where || busy} onClick={save} data-testid="home-save">{busy ? '찾는 중…' : '정하기'}</button>
             </div>
-            <span className="tiny muted">우리 집 위치는 함께 쓰는 사람만 봐요. 공유 링크·엑셀·물어보기에는 넣지 않아요.</span>
+            <span className="tiny muted">{soloText('우리 집 위치는 함께 쓰는 사람만 봐요.', '집 위치는 이 공간에서만 보여요.')} 공유 링크·엑셀·물어보기에는 넣지 않아요.</span>
           </div>
         )}
       </div>

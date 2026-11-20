@@ -33,6 +33,7 @@ import { formatWhen } from '../lib/dates';
 import { COUNTRY_BY_ID, placeLabel } from '../lib/geo';
 import { spaceTitle, toneOf } from '../lib/members';
 import { times } from '../lib/ko';
+import { spaceWord } from '../lib/solo';
 
 export default function Home() {
   const { trips } = useTrips();
@@ -72,7 +73,7 @@ export default function Home() {
     <>
       <div className="topbar">
         <span className="brand"><Logo />보라핀</span>
-        <Link to="/space" aria-label="우리 공간"><Avatars size={34} /></Link>
+        <Link to="/space" aria-label={spaceWord()}><Avatars size={34} /></Link>
       </div>
       <div className="page" style={{ paddingTop: 4 }}>
         <div className={'home-head' + (stage?.kind === 'during' ? ' compact' : '')}>

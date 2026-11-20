@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useState } from 'react';
+import { spaceWord } from '../lib/solo';
 
 /**
  * 투어·티켓 찾기: 단추 하나. 누르면 지도 앱 고르기와 같은 작은 창에서 세 곳 중 하나를 고른다.
@@ -33,7 +34,7 @@ export default function TourPick({ city }: { city: string }) {
         <div className="map-choice-backdrop" onClick={() => setOpen(false)} data-testid="tour-choice">
           <div className="map-choice card" role="dialog" aria-label={`${city} 투어·티켓 찾기`} onClick={(e) => e.stopPropagation()}>
             <b className="jua" style={{ fontSize: 19 }}>{city} 투어·티켓</b>
-            <span className="tiny muted">어디서 찾아볼까요? 우리 공간에서 한 곳을 정해 둘 수 있어요.</span>
+            <span className="tiny muted">어디서 찾아볼까요? {spaceWord()}에서 한 곳을 정해 둘 수 있어요.</span>
             {(Object.keys(TOUR_SITES) as TourSite[]).map((k) => (
               <a key={k} className="btn line block" href={TOUR_SITES[k].url(city)} target="_blank" rel="noreferrer" onClick={() => setOpen(false)}>{TOUR_SITES[k].name}</a>
             ))}

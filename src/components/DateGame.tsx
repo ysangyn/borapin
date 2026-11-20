@@ -7,6 +7,7 @@ import { patchTrip } from '../lib/data';
 import { SEASON_LABEL } from '../lib/dates';
 import type { Season, Trip } from '../lib/types';
 import { dailyShuffle } from '../lib/wishes';
+import { soloText } from '../lib/solo';
 
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
 const label = (g: { y?: number; s?: Season }) => [g.y ? `${g.y}` : '', g.s ? SEASON_LABEL[g.s] : ''].filter(Boolean).join(' ') || '모르겠어요';
@@ -34,7 +35,7 @@ export default function DateGame({ trips }: { trips: Trip[] }) {
   const others = Object.entries(guesses).filter(([k]) => k !== me);
 
   // 내 답만 고친다 (상대 답을 덮어쓰지 않게)
-  const answer = () => patchTrip(pick.id, { [`guesses.${me}`]: { ...(y ? { y } : {}), ...(s ? { s } : {}) } }).then(() => toast('답했어요. 상대도 답하면 서로 비교해 봐요'), () => toast('저장하지 못했어요'));
+  const answer = () => patchTrip(pick.id, { [`guesses.${me}`]: { ...(y ? { y } : {}), ...(s ? { s } : {}) } }).then(() => toast(soloText('답했어요. 상대도 답하면 서로 비교해 봐요', '답했어요')), () => toast('저장하지 못했어요'));
   const decide = (g: { y?: number; s?: Season }) =>
     patchTrip(pick.id, { when: g.s && g.y ? { p: 'season', y: g.y, s: g.s } : g.s ? { p: 'season', s: g.s } : g.y ? { p: 'year', y: g.y } : { p: 'unknown' }, guesses: {}, dateGameDone: true }).then(() => toast('날짜를 정했어요'), () => toast('저장하지 못했어요'));
 

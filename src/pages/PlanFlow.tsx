@@ -29,6 +29,7 @@ import { placeLabel, REGION_BY_CODE } from '../lib/geo';
 import { flowerOf, flowerSrc } from '../lib/flowers';
 import { memberNames, toneOf } from '../lib/members';
 import type { PlanItem, Trip, When } from '../lib/types';
+import { isSolo } from '../lib/solo';
 
 /**
  * 계획 이어가기: 여행지를 정한 뒤 다섯 걸음 — 언제 · 어디서 자요 · 같이 찾아 담기 · 동선 정리 · 기대 한 줄.
@@ -81,7 +82,7 @@ export default function PlanFlow() {
         </div>
         <div>
           <h1 className="jua flow-q">{TITLE[step]}</h1>
-          <p className="flow-sub">{SUB[step]}</p>
+          <p className="flow-sub">{step === 'pick' && isSolo() ? '마음에 드는 곳에 하트' : SUB[step]}</p>
         </div>
         {step === 'when' && <WhenStep trip={trip} onNext={() => go(nextOf('when'), 'when')} />}
         {step === 'stay' && <StayStep trip={trip} onNext={() => go(nextOf('stay'), 'stay')} />}

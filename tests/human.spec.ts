@@ -326,7 +326,7 @@ test.describe('사람처럼 쓰기', () => {
     const trip = await page.evaluate(() => document.querySelector<HTMLAnchorElement>('a[href^="/trips/"]')?.getAttribute('href'));
     for (const route of ['/', '/trips', ...(trip ? [trip] : []), '/record', '/map', '/wishes', '/places', '/memories', '/ask', '/space', '/admin', '/credits']) {
       // 앱이 같은 주소로 한 번 더 옮기면(로그인 직후 등) 사파리는 앞 이동을 끊는다 → 한 번 더
-      await page.goto(route).catch(async (e) => { if (!/interrupted by another navigation/.test(String(e))) throw e; await page.waitForLoadState('load'); await page.goto(route); });
+      await page.goto(route).catch(async (e) => { if (!/interrupted by another navigation|Frame load interrupted/.test(String(e))) throw e; await page.waitForLoadState('load'); await page.goto(route); });
       await page.waitForLoadState('load');
       await page.waitForTimeout(900);
       await check(route);
