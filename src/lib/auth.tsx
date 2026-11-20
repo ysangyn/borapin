@@ -17,7 +17,7 @@ import { auth, db, OWNER_EMAIL, SPACE_ID, setSpaceId, USE_EMULATOR } from './fir
 import { accessFromMembers, type SpaceMember } from './spaceAccess';
 import type { Access, Relation } from './types';
 import { setMembers } from './members';
-import { ensureMembership } from './membershipSync';
+import { ensureMembership, membershipKnown } from './membershipSync';
 export { memberNames } from './members';
 
 type State =
@@ -77,11 +77,14 @@ async function bootstrapIfOwner(user: User) {
   if (!snap.exists()) {
     await setDoc(accessRef, { allowed: [OWNER_EMAIL], admins: [OWNER_EMAIL], updatedAt: serverTimestamp() });
   }
+}
+
+/** 주인 계정: 우리 공간 문서가 없으면 만든다 (구성원 문서가 생긴 뒤에야 읽힌다) */
+async function ensureMainSpace(user: User) {
+  if (user.email !== OWNER_EMAIL) return;
   const spaceRef = doc(db, 'spaces', 'main');
   const s = await getDoc(spaceRef);
-  if (!s.exists()) {
-    await setDoc(spaceRef, { name: '보라 & 영상', createdAt: serverTimestamp(), v: 1 });
-  }
+  if (!s.exists()) await setDoc(spaceRef, { name: '보라 & 영상', createdAt: serverTimestamp(), v: 1 });
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -107,6 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (auth.currentUser?.uid !== user.uid) return;
       const startMain = () => {
         setSpaceId('main');
+        let confirmed = false; // 이번에 열려 있는 동안 서버에서 내 구성원 문서를 확인했나
+        let shown = false; // 이미 화면을 열었나 (그 뒤에 문서를 새로 만들었다면 끊긴 구독을 다시 잇는다)
         unsubAccess = onSnapshot(
           doc(db, 'config', 'access'),
           (snap) => {
@@ -120,9 +125,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const isOwner = email === OWNER_EMAIL;
             if (verdict === 'denied') return setState({ status: 'denied', user });
             const admin = isOwner || access.admins.includes(email);
-            setState({ status: 'ready', user, access, isAdmin: admin });
-            // 새 문에 쓸 내 구성원 문서·별명 문서를 미리 만들어 둔다 (서버가 확인해 준 목록일 때만, 화면은 그대로)
-            if (!snap.metadata.fromCache) void ensureMembership(user, { name: nameOf(email), isAdmin: admin, relation: access.relations?.[email] });
+            // 우리 공간은 내 구성원 문서가 있어야 읽힌다 (규칙). 없으면 스스로 만들고 들어간다
+            const info = { name: nameOf(email), isAdmin: admin, relation: access.relations?.[email] };
+            const open = () => { shown = true; setState({ status: 'ready', user, access, isAdmin: admin }); };
+            const check = async () => {
+              const r = await ensureMembership(user, info);
+              if (auth.currentUser?.uid !== user.uid) return r;
+              if (r !== 'failed') {
+                confirmed = true;
+                void ensureMainSpace(user).catch((e) => console.warn('space setup failed', e));
+                // 화면을 연 뒤에 문서가 새로 생겼다: 그 사이 '권한 없음'으로 끊긴 구독을 다시 잇는다
+                if (r === 'created' && shown) location.reload();
+              }
+              return r;
+            };
+            const offline = snap.metadata.fromCache;
+            // 이 폰에서 이미 만들어 둔 적이 있으면 바로 연다. 서버와 이어져 있으면 뒤에서 한 번 확인한다
+            if (confirmed || membershipKnown(user, info)) {
+              open();
+              if (!confirmed && !offline) void check();
+              return;
+            }
+            // 오프라인: 만들 수 없다. 폰에 받아 둔 기록으로 열고, 이어지면 이 구독이 다시 불려 그때 만든다
+            if (offline) return open();
+            void check().then((r) => {
+              if (auth.currentUser?.uid !== user.uid) return;
+              if (r === 'failed') { if (!shown) setState({ status: 'error', user, message: '연결이 불안정해 기록을 불러오지 못했어요.' }); }
+              else open();
+            });
           },
           (e) => {
             // 권한 문제일 때만 '초대되지 않음', 나머지(무료 한도·연결)는 다시 시도할 수 있게

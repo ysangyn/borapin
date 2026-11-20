@@ -287,6 +287,13 @@ export async function setAccessList(field: 'allowed' | 'admins', email: string, 
       updatedAt: serverTimestamp(),
     }),
   );
+  // 뺄 때는 그 사람의 구성원 문서도 지운다 (목록에서 빠진 순간 이미 못 들어온다. 이건 뒷정리)
+  if (field === 'allowed' && !add) await removeMainMemberDocs(email).catch((e) => console.warn('member doc cleanup skipped', e));
+}
+
+async function removeMainMemberDocs(email: string) {
+  const found = await getDocs(query(collection(db, 'spaces', 'main', 'members'), where('email', '==', email.toLowerCase().trim())));
+  await Promise.all(found.docs.map((d) => deleteDoc(d.ref)));
 }
 
 /** 함께 쓰는 사람 넣기 (부를 이름도 함께). 메일에 점이 있어 이름은 FieldPath로 쓴다 */
