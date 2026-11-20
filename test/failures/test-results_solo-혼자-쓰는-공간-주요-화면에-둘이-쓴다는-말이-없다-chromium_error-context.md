@@ -12,77 +12,139 @@
 # Error details
 
 ```
-Error: expect(locator).toBeVisible() failed
+Error: /plan: '둘이' · 언제·며칠·누구와만 고르면 가고 싶은 곳·제철·축제를 섞어 후보 3곳을 골라 드려요. 둘이 같은 곳을 고르면 정해져요.
+/plan: '둘이' · 둘이
 
-Locator: getByText('내 공간', { exact: true }).first()
-Expected: visible
-Timeout: 15000ms
-Error: element(s) not found
+expect(received).toEqual(expected) // deep equality
 
-Call log:
-  - Expect "toBeVisible" getByText('내 공간', { exact: true }).first() with timeout 15000ms
-  - waiting for getByText('내 공간', { exact: true }).first()
+- Expected  - 1
++ Received  + 4
 
+- Array []
++ Array [
++   "/plan: '둘이' · 언제·며칠·누구와만 고르면 가고 싶은 곳·제철·축제를 섞어 후보 3곳을 골라 드려요. 둘이 같은 곳을 고르면 정해져요.",
++   "/plan: '둘이' · 둘이",
++ ]
 ```
 
+# Page snapshot
+
 ```yaml
-- button "뒤로"
-- text: 우리 공간 혼 혼자 함께 다닌 여행 0번 · 핀 0개 혼자로 들어와 있어요 · solo@example.com 각자 계정으로 들어와도 같은 기록을 함께 봐요 함께 쓰는 사람 혼자 관리자
-- button "내 이름 바꾸기": 이름 바꾸기
-- text: solo@example.com 초대 링크 링크를 받은 사람이 로그인하면 이 공간에 들어와요. 7일 동안, 한 번만 쓸 수 있어요.
-- textbox "초대 이름":
-  - /placeholder: "부를 이름 (선택, 예: 남편)"
-- combobox "초대할 사람과의 관계":
-  - option "관계" [selected]
-  - option "부부"
-  - option "연인"
-  - option "가족"
-  - option "친구"
-  - option "친지"
-  - option "그 밖에"
-- button "초대 링크 만들기"
-- text: 우리 집
-- button "우리 집 정하기 가고 싶은 곳까지 가는 길을 바로 열 수 있어요"
-- text: 화면
-- button "밝게" [pressed]
-- button "어둡게"
-- button "자동"
-- text: 이 기기에만 적용돼요. '자동'은 폰·컴퓨터의 밝기 설정을 따라요. 장소를 누르면 열 지도
-- button "네이버지도" [pressed]
-- button "카카오맵"
-- button "누를 때마다 고르기"
-- text: 이 폰에만 적용돼요. 축제·볼거리·먹거리는 '자세히 보기'도 함께 나와요. 투어·티켓 찾을 곳
-- button "누를 때마다 고르기" [pressed]
-- button "마이리얼트립"
-- button "KKday"
-- button "클룩"
-- text: 이 폰에만 적용돼요. 해외 도시의 가고 싶은 곳·예정 여행 준비 탭에 단추가 나와요. 백업
-- button "엑셀로 내려받기 여행 · 맛집·명소 · 가고 싶은 곳 · 여행정보 (시트 4개)"
-- link "사진 훑어보기 고른 사진을 폰 안에서만 읽어 사진·여행·중복·모르는 사진 수를 보여 줘요":
-  - /url: /desk
-- button "여행 목록 내보내기 PC 사진함이 사진을 여행별로 나눌 때 써요 (다녀온 여행만, JSON)"
-- button "백업 파일 내려받기 모든 기록·일정·글 (사진 파일은 빼고) · 여행 0건"
-- button "문제 신고 이상한 점을 알려 주시면 고칠게요"
-- button "로그아웃"
-- link "이용약관":
-  - /url: /terms
-- text: ·
-- link "개인정보 처리방침":
-  - /url: /privacy
-- text: ·
-- link "출처와 버전":
-  - /url: /credits
-- navigation "주 메뉴":
-  - link "홈":
-    - /url: /
-  - link "여행":
-    - /url: /trips
-  - button "남기기"
-  - link "지도":
-    - /url: /map
-  - link "피드":
-    - /url: /feed
-- status
+- generic [active] [ref=f30e1]:
+  - generic [ref=f30e2]:
+    - generic [ref=f30e3]:
+      - generic [ref=f30e4]:
+        - generic [ref=f30e6]:
+          - button "뒤로" [ref=f30e7] [cursor=pointer]
+          - generic [ref=f30e10]: 내 공간
+        - generic [ref=f30e11]:
+          - generic [ref=f30e12]:
+            - generic "혼자" [ref=f30e13]: 혼
+            - generic [ref=f30e15]:
+              - generic [ref=f30e16]: 혼자
+              - generic [ref=f30e17]: 다닌 여행 0번 · 핀 0개
+              - generic [ref=f30e18]: 혼자로 들어와 있어요 · solo@example.com
+              - generic [ref=f30e19]: 짝이나 가족을 초대하면 같은 기록을 함께 봐요
+          - generic [ref=f30e20]:
+            - generic [ref=f30e21]: 이 공간을 쓰는 사람
+            - generic [ref=f30e27]:
+              - text: 혼자
+              - generic [ref=f30e28]: 관리자
+              - button "내 이름 바꾸기" [ref=f30e29] [cursor=pointer]: 이름 바꾸기
+              - generic [ref=f30e30]: solo@example.com
+          - generic [ref=f30e31]:
+            - generic [ref=f30e32]: 초대 링크
+            - generic [ref=f30e35]:
+              - generic [ref=f30e36]: 링크를 받은 사람이 로그인하면 이 공간에 들어와요. 7일 동안, 한 번만 쓸 수 있어요.
+              - generic [ref=f30e37]:
+                - textbox "초대 이름" [ref=f30e38]:
+                  - /placeholder: "부를 이름 (선택, 예: 남편)"
+                - combobox "초대할 사람과의 관계" [ref=f30e39]:
+                  - option "관계" [selected]
+                  - option "부부"
+                  - option "연인"
+                  - option "가족"
+                  - option "친구"
+                  - option "친지"
+                  - option "그 밖에"
+              - button "초대 링크 만들기" [ref=f30e40] [cursor=pointer]
+          - generic [ref=f30e43]:
+            - generic [ref=f30e44]: 우리 집
+            - button "우리 집 정하기 가고 싶은 곳까지 가는 길을 바로 열 수 있어요" [ref=f30e46] [cursor=pointer]:
+              - generic [ref=f30e50]:
+                - text: 우리 집 정하기
+                - generic [ref=f30e51]: 가고 싶은 곳까지 가는 길을 바로 열 수 있어요
+          - generic [ref=f30e54]:
+            - generic [ref=f30e55]: 화면
+            - generic [ref=f30e56]:
+              - generic [ref=f30e57]:
+                - button "밝게" [pressed] [ref=f30e58] [cursor=pointer]
+                - button "어둡게" [ref=f30e59] [cursor=pointer]
+                - button "자동" [ref=f30e60] [cursor=pointer]
+              - generic [ref=f30e61]: 이 기기에만 적용돼요. '자동'은 폰·컴퓨터의 밝기 설정을 따라요.
+          - generic [ref=f30e62]:
+            - generic [ref=f30e63]: 장소를 누르면 열 지도
+            - generic [ref=f30e64]:
+              - generic [ref=f30e65]:
+                - button "네이버지도" [pressed] [ref=f30e66] [cursor=pointer]
+                - button "카카오맵" [ref=f30e67] [cursor=pointer]
+                - button "누를 때마다 고르기" [ref=f30e68] [cursor=pointer]
+              - generic [ref=f30e69]: 이 폰에만 적용돼요. 축제·볼거리·먹거리는 '자세히 보기'도 함께 나와요.
+          - generic [ref=f30e70]:
+            - generic [ref=f30e71]: 투어·티켓 찾을 곳
+            - generic [ref=f30e72]:
+              - generic [ref=f30e73]:
+                - button "누를 때마다 고르기" [pressed] [ref=f30e74] [cursor=pointer]
+                - button "마이리얼트립" [ref=f30e75] [cursor=pointer]
+                - button "KKday" [ref=f30e76] [cursor=pointer]
+                - button "클룩" [ref=f30e77] [cursor=pointer]
+              - generic [ref=f30e78]: 이 폰에만 적용돼요. 해외 도시의 가고 싶은 곳·예정 여행 준비 탭에 단추가 나와요.
+          - generic [ref=f30e79]:
+            - generic [ref=f30e80]: 백업
+            - generic [ref=f30e81]:
+              - button "엑셀로 내려받기 여행 · 맛집·명소 · 가고 싶은 곳 · 여행정보 (시트 4개)" [ref=f30e82] [cursor=pointer]:
+                - generic [ref=f30e86]:
+                  - text: 엑셀로 내려받기
+                  - generic [ref=f30e87]: 여행 · 맛집·명소 · 가고 싶은 곳 · 여행정보 (시트 4개)
+              - link "사진 훑어보기 고른 사진을 폰 안에서만 읽어 사진·여행·중복·모르는 사진 수를 보여 줘요" [ref=f30e90] [cursor=pointer]:
+                - /url: /desk
+                - generic [ref=f30e94]:
+                  - text: 사진 훑어보기
+                  - generic [ref=f30e95]: 고른 사진을 폰 안에서만 읽어 사진·여행·중복·모르는 사진 수를 보여 줘요
+              - button "여행 목록 내보내기 PC 사진함이 사진을 여행별로 나눌 때 써요 (다녀온 여행만, JSON)" [ref=f30e98] [cursor=pointer]:
+                - generic [ref=f30e102]:
+                  - text: 여행 목록 내보내기
+                  - generic [ref=f30e103]: PC 사진함이 사진을 여행별로 나눌 때 써요 (다녀온 여행만, JSON)
+              - button "백업 파일 내려받기 모든 기록·일정·글 (사진 파일은 빼고) · 여행 0건" [ref=f30e106] [cursor=pointer]:
+                - generic [ref=f30e110]:
+                  - text: 백업 파일 내려받기
+                  - generic [ref=f30e111]: 모든 기록·일정·글 (사진 파일은 빼고) · 여행 0건
+          - button "문제 신고 이상한 점을 알려 주시면 고칠게요" [ref=f30e115] [cursor=pointer]:
+            - generic [ref=f30e119]:
+              - text: 문제 신고
+              - generic [ref=f30e120]: 이상한 점을 알려 주시면 고칠게요
+          - button "로그아웃" [ref=f30e122] [cursor=pointer]
+          - generic [ref=f30e127]:
+            - link "이용약관" [ref=f30e128] [cursor=pointer]:
+              - /url: /terms
+            - text: ·
+            - link "개인정보 처리방침" [ref=f30e129] [cursor=pointer]:
+              - /url: /privacy
+            - text: ·
+            - link "출처와 버전" [ref=f30e130] [cursor=pointer]:
+              - /url: /credits
+      - navigation "주 메뉴" [ref=f30e131]:
+        - link "홈" [ref=f30e132] [cursor=pointer]:
+          - /url: /
+        - link "여행" [ref=f30e135] [cursor=pointer]:
+          - /url: /trips
+        - button "남기기" [ref=f30e138] [cursor=pointer]
+        - link "지도" [ref=f30e141] [cursor=pointer]:
+          - /url: /map
+        - link [ref=f30e144] [cursor=pointer]:
+          - /url: /feed
+    - status
+  - iframe [aria-hidden] [ref=f30e148]
 ```
 
 # Test source
@@ -159,12 +221,12 @@ Call log:
   69 |     await page.waitForLoadState('load');
   70 |     await check(route);
   71 |   }
-  72 |   // 설정의 제목
-  73 |   await page.goto('/space');
-> 74 |   await expect(page.getByText('내 공간', { exact: true }).first()).toBeVisible();
-     |                                                                 ^ Error: expect(locator).toBeVisible() failed
-  75 | 
-  76 |   expect(found, found.join('\n')).toEqual([]);
+  72 |   // 모은 말 목록을 먼저 (실패해도 어디에 무엇이 남았는지 한 번에 보이게)
+> 73 |   expect.soft(found, found.join('\n')).toEqual([]);
+     |                                        ^ Error: /plan: '둘이' · 언제·며칠·누구와만 고르면 가고 싶은 곳·제철·축제를 섞어 후보 3곳을 골라 드려요. 둘이 같은 곳을 고르면 정해져요.
+  74 |   // 설정의 제목
+  75 |   await page.goto('/space');
+  76 |   await expect(page.getByText('내 공간', { exact: true }).first()).toBeVisible();
   77 |   await ctx.close();
   78 | });
   79 | 
