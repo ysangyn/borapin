@@ -963,3 +963,274 @@ describe('여러 공간 4걸음: 우리 공간의 문 = 옛 목록 + 구성원 �
     await assertFails(getDoc(T(db)));
   });
 });
+
+// 여러 공간 5걸음 (docs/design/SPACES-PUBLIC.md 4절): 모임 — 고른 가게만 가족·친구와 나누기
+describe('5걸음: 모임 (circles)', () => {
+  const DAY = 24 * 3600 * 1000;
+  const C1 = 'CircleFamily01234567'; // 보라가 방장, 캐롤이 구성원, 데이브(공간 없음)가 손님
+  const NEWC = 'CircleNew01234567890';
+  const dave = () => as2.dave();
+  const carol = () => as2.carol();
+  const erin = () => env.authenticatedContext('erin', { email: 'erin@example.com', email_verified: true }).firestore() as unknown as Firestore;
+  const daveUnverified = () => env.authenticatedContext('dave', { email: DAVE, email_verified: false }).firestore() as unknown as Firestore;
+  const CM = (db: Firestore, cid: string, uid: string) => doc(db, `circles/${cid}/members/${uid}`);
+  const CI = (db: Firestore, code: string) => doc(db, 'circleInvites', code);
+  const IT = (db: Firestore, cid: string, id: string) => doc(db, `circles/${cid}/items/${id}`);
+  const PH = (db: Firestore, cid: string, id: string) => doc(db, `circles/${cid}/photos/${id}`);
+  const cm = (uid: string, over: Record<string, unknown> = {}) => ({ uid, role: 'member', nick: '별명', via: 'seed-code-000', v: 1, ...over });
+  const cinv = (by: string, over: Record<string, unknown> = {}) => ({ by, circleId: C1, expiresAt: Date.now() + 7 * DAY, v: 1, ...over });
+  const item = (uid: string, key: string, over: Record<string, unknown> = {}) => ({ key, name: '소금빵집', kind: 'food', by: { uid, nick: '별명' }, spaceId: null, v: 1, ...over });
+  const photo = (uid: string, over: Record<string, unknown> = {}) => ({ by: uid, spaceId: null, itemId: `k1_${uid}`, data: Bytes.fromUint8Array(new Uint8Array([1, 2, 3])), w: 10, h: 10, v: 1, ...over });
+  const make = (db: Firestore, uid: string, cid = NEWC, o: { circle?: boolean; member?: boolean; mine?: boolean; role?: string; createdBy?: string } = {}) => {
+    const b = writeBatch(db);
+    if (o.circle !== false) b.set(doc(db, 'circles', cid), { name: '대학 친구', createdBy: o.createdBy ?? uid, v: 1 });
+    if (o.member !== false) b.set(CM(db, cid, uid), cm(uid, { role: o.role ?? 'host', via: 'host' }));
+    if (o.mine) b.set(doc(db, `users/${uid}/circles/${cid}`), { name: '대학 친구', v: 1 });
+    return b.commit();
+  };
+  const join = (db: Firestore, uid: string, code: string, o: { cid?: string; mark?: boolean; member?: boolean; role?: string; markAs?: string; mine?: boolean } = {}) => {
+    const b = writeBatch(db);
+    if (o.mark !== false) b.update(CI(db, code), { usedBy: o.markAs ?? uid, usedAt: 2 });
+    if (o.member !== false) b.set(CM(db, o.cid ?? C1, uid), cm(uid, { role: o.role ?? 'member', via: code }));
+    if (o.mine) b.set(doc(db, `users/${uid}/circles/${o.cid ?? C1}`), { name: '처가 가족', v: 1 });
+    return b.commit();
+  };
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      await setDoc(doc(db, 'profiles/bora'), { nick: '보라', spaceId: 'main', v: 1 });
+      await setDoc(doc(db, 'profiles/owner'), { nick: '영상', spaceId: 'main', v: 1 });
+      await setDoc(doc(db, 'spaces/sp2/members/carol'), memberDoc('carol', CAROL, { role: 'admin', name: '캐롤', via: 'invite-code-1' }));
+      await setDoc(doc(db, 'profiles/carol'), { nick: '캐롤', spaceId: 'sp2', v: 1 });
+      await setDoc(doc(db, 'circles', C1), { name: '처가 가족', createdBy: 'bora', v: 1 });
+      await setDoc(CM(db, C1, 'bora'), cm('bora', { role: 'host', via: 'host', nick: '보라' }));
+      await setDoc(CM(db, C1, 'carol'), cm('carol', { nick: '캐롤' }));
+      await setDoc(CM(db, C1, 'dave'), cm('dave', { nick: '데이브' }));
+      await setDoc(IT(db, C1, 'k100_bora'), item('bora', 'k100', { spaceId: 'main', line: '빵이 짭짤' }));
+      await setDoc(IT(db, C1, 'k200_carol'), item('carol', 'k200', { spaceId: 'sp2' }));
+      await setDoc(IT(db, C1, 'k300_dave'), item('dave', 'k300'));
+      await setDoc(PH(db, C1, 'ph-bora-1'), photo('bora', { spaceId: 'main', itemId: 'k100_bora' }));
+      await setDoc(PH(db, C1, 'ph-dave-1'), photo('dave', { itemId: 'k300_dave' }));
+      await setDoc(CI(db, 'circle-code-001'), cinv('bora'));
+      await setDoc(CI(db, 'circle-code-old'), cinv('bora', { expiresAt: Date.now() - 1000 }));
+    });
+  });
+
+  test('모임 만들기: 자기 공간이 있는 사람이 모임 문서 + 내 방장 문서를 한 묶음으로', async () => {
+    await assertSucceeds(make(carol(), 'carol', NEWC, { mine: true }));
+    await assertSucceeds(getDoc(doc(carol(), 'circles', NEWC)));
+    await assertSucceeds(getDoc(doc(carol(), `users/carol/circles/${NEWC}`)));
+    // 우리 공간 사람도
+    await assertSucceeds(make(as.owner(), 'owner', 'CircleOwner012345678'));
+  });
+  test('모임 만들기의 빈틈: 손님(공간 없음)·한쪽만·남의 이름·이미 있는 모임은 막힌다', async () => {
+    await assertFails(make(dave(), 'dave'));
+    await assertFails(make(erin(), 'erin'));
+    await assertFails(make(carol(), 'carol', NEWC, { member: false }));
+    await assertFails(make(carol(), 'carol', NEWC, { circle: false }));
+    await assertFails(make(carol(), 'carol', NEWC, { role: 'member' }));
+    await assertFails(make(carol(), 'carol', NEWC, { createdBy: 'bora' }));
+    await assertFails(make(carol(), 'carol', 'short'));
+    // 있는 모임에 방장으로 끼어들기 · 모임 문서 덮어쓰기
+    await assertFails(setDoc(CM(as.owner(), C1, 'owner'), cm('owner', { role: 'host', via: 'host' })));
+    await assertFails(make(as.owner(), 'owner', C1));
+    await assertFails(setDoc(doc(carol(), 'circles', C1), { name: '뺏기', createdBy: 'carol', v: 1 }));
+    // 모양
+    const bad = (data: Record<string, unknown>) => { const db = carol(); const b = writeBatch(db); b.set(doc(db, 'circles', NEWC), data); b.set(CM(db, NEWC, 'carol'), cm('carol', { role: 'host', via: 'host' })); return b.commit(); };
+    await assertFails(bad({ name: '', createdBy: 'carol', v: 1 }));
+    await assertFails(bad({ name: 'x'.repeat(21), createdBy: 'carol', v: 1 }));
+    await assertFails(bad({ name: '모임', createdBy: 'carol', extra: 1, v: 1 }));
+  });
+
+  test('읽기: 모임 사람만 (모임 문서·구성원·걸린 가게·사진). 밖의 사람은 주인이라도 못 본다', async () => {
+    for (const db of [as.bora(), carol(), dave()]) {
+      await assertSucceeds(getDoc(doc(db, 'circles', C1)));
+      await assertSucceeds(getDocs(collection(db, `circles/${C1}/members`)));
+      await assertSucceeds(getDocs(collection(db, `circles/${C1}/items`)));
+      await assertSucceeds(getDoc(PH(db, C1, 'ph-bora-1')));
+    }
+    for (const db of [as.owner(), erin(), as.stranger(), as.anon(), daveUnverified()]) {
+      await assertFails(getDoc(doc(db, 'circles', C1)));
+      await assertFails(getDocs(collection(db, `circles/${C1}/members`)));
+      await assertFails(getDoc(CM(db, C1, 'bora')));
+      await assertFails(getDocs(collection(db, `circles/${C1}/items`)));
+      await assertFails(getDoc(IT(db, C1, 'k100_bora')));
+      await assertFails(getDoc(PH(db, C1, 'ph-bora-1')));
+      await assertFails(getDocs(collection(db, `circles/${C1}/photos`)));
+    }
+    await assertFails(getDocs(collection(as.bora(), 'circles')));
+  });
+
+  test('모임에 든다고 서로의 공간이 보이지는 않는다 (손님은 어느 공간도, 보라핀 사람들 것도 못 본다)', async () => {
+    await assertFails(getDoc(T(carol())));
+    await assertFails(getDoc(T(dave())));
+    await assertFails(getDocs(collection(dave(), 'spaces/main/places')));
+    await assertFails(getDoc(doc(as.bora(), 'spaces/sp2/members/carol')));
+    await assertFails(getDoc(doc(dave(), 'config/flags')));
+    await assertFails(getDoc(doc(dave(), 'config/access')));
+    await assertFails(getDoc(doc(dave(), 'profiles/bora')));
+  });
+
+  test('초대장: 방장만 만든다. 코드를 아는 로그인한 사람이 하나씩 읽고, 목록은 만든 사람만', async () => {
+    await assertSucceeds(setDoc(CI(as.bora(), 'boramade-circle-1'), cinv('bora', { circleName: '처가 가족' })));
+    await assertFails(setDoc(CI(carol(), 'carolmade-circle-1'), cinv('carol')));
+    await assertFails(setDoc(CI(dave(), 'davemade-circle-1'), cinv('dave')));
+    await assertFails(setDoc(CI(as.owner(), 'ownermade-circle-1'), cinv('owner')));
+    await assertFails(setDoc(CI(as.bora(), 'boramade-circle-2'), cinv('carol')));
+    await assertFails(setDoc(CI(as.bora(), 'boramade-circle-3'), cinv('bora', { expiresAt: Date.now() + 30 * DAY })));
+    await assertFails(setDoc(CI(as.bora(), 'boramade-circle-4'), cinv('bora', { usedBy: 'bora' })));
+    await assertFails(setDoc(CI(as.bora(), 'boramade-circle-5'), cinv('bora', { circleId: 'NoSuchCircle01234567' })));
+    await assertFails(setDoc(CI(as.bora(), 'boramade-circle-6'), cinv('bora', { email: BORA })));
+    await assertSucceeds(getDoc(CI(erin(), 'circle-code-001')));
+    await assertFails(getDoc(CI(as.anon(), 'circle-code-001')));
+    await assertSucceeds(getDocs(query(collection(as.bora(), 'circleInvites'), where('by', '==', 'bora'))));
+    await assertFails(getDocs(query(collection(carol(), 'circleInvites'), where('by', '==', 'bora'))));
+    await assertFails(getDocs(query(collection(carol(), 'circleInvites'), where('circleId', '==', C1))));
+    await assertFails(getDocs(collection(as.owner(), 'circleInvites')));
+    await assertFails(deleteDoc(CI(carol(), 'circle-code-001')));
+    await assertSucceeds(deleteDoc(CI(as.bora(), 'circle-code-001')));
+  });
+
+  test('들어오기: 초대장 표시 + 내 구성원 문서를 한 묶음으로. 공간 없는 사람도 손님으로 들어온다', async () => {
+    await assertSucceeds(join(erin(), 'erin', 'circle-code-001', { mine: true }));
+    await assertSucceeds(getDocs(collection(erin(), `circles/${C1}/items`)));
+    await assertSucceeds(setDoc(IT(erin(), C1, 'k900_erin'), item('erin', 'k900')));
+    // 손님은 여전히 공간도 없고 모임을 만들지도 못한다
+    await assertFails(getDoc(T(erin())));
+    await assertFails(make(erin(), 'erin'));
+    // 같은 초대장은 한 번만
+    await assertFails(join(as.owner(), 'owner', 'circle-code-001'));
+  });
+  test('들어오기의 빈틈: 표시 없이·기한 지난·다른 모임·방장 자리·남의 이름·표시만은 통째로 막힌다', async () => {
+    await assertFails(join(erin(), 'erin', 'circle-code-001', { mark: false }));
+    await assertFails(join(erin(), 'erin', 'circle-code-001', { member: false }));
+    await assertFails(join(erin(), 'erin', 'circle-code-old'));
+    await assertFails(join(erin(), 'erin', 'circle-code-001', { role: 'host' }));
+    await assertFails(join(erin(), 'erin', 'circle-code-001', { markAs: 'bora' }));
+    await assertFails(join(erin(), 'erin', 'no-such-code-0001'));
+    await assertFails(join(daveUnverified(), 'dave', 'circle-code-001'));
+    // 다른 모임의 초대장으로
+    await assertSucceeds(make(carol(), 'carol'));
+    await assertFails(join(erin(), 'erin', 'circle-code-001', { cid: NEWC }));
+    // 남의 구성원 문서
+    const db = erin(); const b = writeBatch(db);
+    b.update(CI(db, 'circle-code-001'), { usedBy: 'erin', usedAt: 2 });
+    b.set(CM(db, C1, 'frank'), cm('frank', { via: 'circle-code-001' }));
+    await assertFails(b.commit());
+    // 공간 초대장·우리 공간 옛 초대 코드로는 모임에 못 들어온다
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const adb = ctx.firestore() as unknown as Firestore;
+      await setDoc(doc(adb, 'spaceInvites/space-code-0001'), { by: CAROL, spaceId: 'sp2', role: 'member', expiresAt: Date.now() + DAY, v: 1 });
+    });
+    await assertFails(join(erin(), 'erin', 'space-code-0001'));
+    await assertFails(setDoc(CM(erin(), C1, 'erin'), cm('erin', { via: 'space-code-0001' })));
+    await assertFails(getDoc(doc(erin(), 'circles', C1)));
+  });
+
+  test('구성원 문서: 자기 별명만 고친다. 역할·남의 것은 못 고친다. 메일 칸은 넣지 못한다', async () => {
+    await assertSucceeds(updateDoc(CM(dave(), C1, 'dave'), { nick: '데이브2' }));
+    await assertFails(updateDoc(CM(dave(), C1, 'dave'), { role: 'host' }));
+    await assertFails(updateDoc(CM(dave(), C1, 'dave'), { uid: 'bora' }));
+    await assertFails(updateDoc(CM(dave(), C1, 'dave'), { via: 'host' }));
+    await assertFails(updateDoc(CM(dave(), C1, 'dave'), { email: DAVE }));
+    await assertFails(updateDoc(CM(dave(), C1, 'dave'), { nick: '' }));
+    await assertFails(updateDoc(CM(dave(), C1, 'dave'), { nick: '가'.repeat(11) }));
+    await assertFails(updateDoc(CM(dave(), C1, 'carol'), { nick: '바꿔치기' }));
+    await assertFails(updateDoc(CM(as.bora(), C1, 'carol'), { role: 'host' }));
+    await assertFails(updateDoc(CM(as.bora(), C1, 'bora'), { role: 'member' }));
+  });
+
+  test('걸기: 자기 것만 (문서 이름 끝이 내 uid, by.uid가 나). 메모·함께 간 사람 같은 칸은 못 넣는다', async () => {
+    await assertSucceeds(setDoc(IT(carol(), C1, 'n555_carol'), item('carol', 'n555', { spaceId: 'sp2', tag: '빵집', lat: 37.6, lng: 126.8, region: { t: 'kr', code: '41285' }, verdict: 'meh', line: '별로였어요', photos: ['a', 'b'], placeKey: 'n555' })));
+    await assertSucceeds(setDoc(IT(dave(), C1, 'k301_dave'), item('dave', 'k301')));
+    await assertSucceeds(updateDoc(IT(as.bora(), C1, 'k100_bora'), { line: '다시 가도 좋아요' }));
+    const db = dave();
+    await assertFails(setDoc(IT(db, C1, 'k302_bora'), item('bora', 'k302'))); // 남의 이름으로
+    await assertFails(setDoc(IT(db, C1, 'k302_bora'), item('dave', 'k302')));
+    await assertFails(setDoc(IT(db, C1, 'k302_dave'), item('bora', 'k302')));
+    await assertFails(setDoc(IT(db, C1, 'k303_dave'), item('dave', 'k302'))); // 열쇠와 문서 이름이 다름
+    await assertFails(updateDoc(IT(db, C1, 'k100_bora'), { line: '남의 것 고치기' }));
+    await assertFails(setDoc(IT(db, C1, 'k100_bora'), item('dave', 'k100')));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { spaceId: 'main' }))); // 들지 않은 공간 이름
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { memo: '비밀 메모' })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { companions: ['누구'] })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { email: DAVE })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { name: '' })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { name: 'x'.repeat(81) })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { kind: 'secret' })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { line: 'x'.repeat(201) })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { photos: ['1', '2', '3', '4', '5'] })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { lat: 'x' })));
+    await assertFails(setDoc(IT(db, C1, 'k304_dave'), item('dave', 'k304', { verdict: 'best' })));
+    // 모임 밖 사람은 못 건다
+    await assertFails(setDoc(IT(erin(), C1, 'k900_erin'), item('erin', 'k900')));
+    await assertFails(setDoc(IT(as.owner(), C1, 'k900_owner'), item('owner', 'k900', { spaceId: 'main' })));
+  });
+
+  test('내리기: 본인, 같은 공간 사람(짝), 방장. 그 밖의 구성원은 남의 것을 못 내린다', async () => {
+    await assertFails(deleteDoc(IT(dave(), C1, 'k200_carol')));
+    await assertFails(deleteDoc(IT(carol(), C1, 'k300_dave')));
+    await assertFails(deleteDoc(IT(carol(), C1, 'k100_bora')));
+    await assertFails(deleteDoc(IT(as.owner(), C1, 'k100_bora'))); // 같은 공간이어도 모임 밖이면 못 내린다
+    await assertSucceeds(deleteDoc(IT(dave(), C1, 'k300_dave')));
+    await assertSucceeds(deleteDoc(IT(as.bora(), C1, 'k200_carol'))); // 방장
+    // 짝: 주인이 모임에 들어오면 보라(같은 공간)가 건 것을 내릴 수 있다
+    await assertSucceeds(join(as.owner(), 'owner', 'circle-code-001'));
+    await assertSucceeds(deleteDoc(IT(as.owner(), C1, 'k100_bora')));
+  });
+
+  test('사진 사본: 구성원이 자기 것만 올리고(220KB까지), 고치지 못하고, 본인·짝·방장이 지운다', async () => {
+    await assertSucceeds(setDoc(PH(dave(), C1, 'ph-dave-2'), photo('dave')));
+    await assertFails(setDoc(PH(dave(), C1, 'ph-dave-3'), photo('bora')));
+    await assertFails(setDoc(PH(dave(), C1, 'ph-dave-3'), photo('dave', { spaceId: 'main' })));
+    await assertFails(setDoc(PH(dave(), C1, 'ph-dave-3'), photo('dave', { data: Bytes.fromUint8Array(new Uint8Array(220001)) })));
+    await assertFails(setDoc(PH(dave(), C1, 'ph-dave-3'), photo('dave', { lat: 37.5 })));
+    await assertFails(setDoc(PH(dave(), C1, 'ph-dave-3'), photo('dave', { data: 'text' })));
+    await assertFails(updateDoc(PH(dave(), C1, 'ph-dave-1'), { w: 20 }));
+    await assertFails(setDoc(PH(erin(), C1, 'ph-erin-1'), photo('erin')));
+    await assertFails(deleteDoc(PH(carol(), C1, 'ph-dave-1')));
+    await assertSucceeds(deleteDoc(PH(dave(), C1, 'ph-dave-1')));
+    await assertSucceeds(deleteDoc(PH(as.bora(), C1, 'ph-dave-2')));
+  });
+
+  test('나가기·내보내기: 구성원은 스스로 나가고, 방장은 남을 내보낸다. 나가면 바로 못 본다', async () => {
+    await assertFails(deleteDoc(CM(dave(), C1, 'carol')));
+    await assertFails(deleteDoc(CM(as.owner(), C1, 'dave')));
+    await assertFails(deleteDoc(CM(as.bora(), C1, 'bora'))); // 방장은 모임이 있는 동안 못 나간다
+    await assertSucceeds(deleteDoc(CM(dave(), C1, 'dave')));
+    await assertFails(getDocs(collection(dave(), `circles/${C1}/items`)));
+    await assertFails(setDoc(IT(dave(), C1, 'k305_dave'), item('dave', 'k305')));
+    await assertFails(setDoc(CM(dave(), C1, 'dave'), cm('dave')));
+    await assertSucceeds(deleteDoc(CM(as.bora(), C1, 'carol')));
+    await assertFails(getDoc(doc(carol(), 'circles', C1)));
+    // 나간 사람이 남긴 것은 방장이 내린다
+    await assertSucceeds(deleteDoc(IT(as.bora(), C1, 'k300_dave')));
+  });
+
+  test('모임 고치기·없애기: 방장만. 이름만 고치고 만든 사람은 못 바꾼다', async () => {
+    await assertSucceeds(updateDoc(doc(as.bora(), 'circles', C1), { name: '처가 식구' }));
+    await assertFails(updateDoc(doc(as.bora(), 'circles', C1), { createdBy: 'carol' }));
+    await assertFails(updateDoc(doc(as.bora(), 'circles', C1), { name: '' }));
+    await assertFails(updateDoc(doc(carol(), 'circles', C1), { name: '뺏기' }));
+    await assertFails(deleteDoc(doc(carol(), 'circles', C1)));
+    await assertFails(deleteDoc(doc(as.owner(), 'circles', C1)));
+    // 없앨 때: 모임 문서와 내 방장 문서를 함께
+    const db = as.bora(); const b = writeBatch(db);
+    b.delete(doc(db, 'circles', C1)); b.delete(CM(db, C1, 'bora'));
+    await assertSucceeds(b.commit());
+    await assertFails(getDocs(collection(as.bora(), `circles/${C1}/items`)));
+  });
+
+  test('내 모임 목록(users/{uid}/circles): 자기 것만 읽고 쓴다. 들지 않은 모임은 적지 못한다', async () => {
+    await assertSucceeds(setDoc(doc(dave(), `users/dave/circles/${C1}`), { name: '처가 가족', v: 1 }));
+    await assertSucceeds(getDocs(collection(dave(), 'users/dave/circles')));
+    await assertSucceeds(deleteDoc(doc(dave(), `users/dave/circles/${C1}`)));
+    await assertFails(setDoc(doc(erin(), `users/erin/circles/${C1}`), { name: '처가 가족', v: 1 }));
+    await assertFails(setDoc(doc(dave(), `users/carol/circles/${C1}`), { name: 'x', v: 1 }));
+    await assertFails(getDocs(collection(carol(), 'users/dave/circles')));
+    await assertFails(getDocs(collection(as.owner(), 'users/dave/circles')));
+    await assertFails(setDoc(doc(dave(), `users/dave/circles/${C1}`), { name: 'x', email: DAVE, v: 1 }));
+    await assertFails(setDoc(doc(dave(), 'users/dave'), { anything: 1 }));
+  });
+});
