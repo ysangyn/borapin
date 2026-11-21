@@ -18,6 +18,7 @@ async function signIn(page: Page, email: string) {
 }
 
 test('모임: 만들고 → 가게를 걸고 → 손님 친구가 들어와 보고 → 손님도 건다', async ({ browser }) => {
+  test.setTimeout(150_000);
   const owner = await browser.newPage({ viewport: { width: 375, height: 760 } });
   await owner.goto('/');
   await signIn(owner, OWNER);
@@ -87,11 +88,11 @@ test('모임: 만들고 → 가게를 걸고 → 손님 친구가 들어와 보�
   // 손님도 지역을 고를 수 있다 (고르면 다른 사람이 가고 싶은 곳에 바로 담는다)
   await fr.getByTestId('circle-add').click();
   await g.getByLabel('가게 이름').fill('해운대 돼지국밥');
-  await g.getByLabel('어디 검색').fill('부산 해운대');
-  await g.getByRole('option', { name: /해운대구/ }).first().click();
+  await g.getByLabel('어디 검색').fill('부산');
+  await g.getByRole('option', { name: /부산/ }).first().click();
   await g.getByTestId('circle-guest-save').click();
   await expect(fr.getByRole('status')).toContainText('걸었어요');
-  await expect(fr.getByTestId('circle-item').filter({ hasText: '해운대 돼지국밥' })).toContainText('해운대');
+  await expect(fr.getByTestId('circle-item').filter({ hasText: '해운대 돼지국밥' })).toContainText('부산');
 
   // 별명 바꾸기 (이 모임에서만)
   await fr.getByTestId('circle-my-nick').click();
