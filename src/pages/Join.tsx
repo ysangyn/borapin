@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { logOut, useRecheckAuth } from '../lib/auth';
 import { clearPendingInvite, joinByInvite, joinSpaceInvite, readAnyInvite, type AnyInvite, type JoinResult } from '../lib/invites';
 import { withRo } from '../lib/ko';
+import CircleJoin from './CircleJoin';
 import type { User } from 'firebase/auth';
 
 /** 초대 링크로 들어오기: 로그인은 됐지만 아직 멤버가 아닐 때 보이는 화면 */
@@ -10,7 +11,7 @@ export default function Join({ code, user }: { code: string; user: User }) {
   const [found, setFound] = useState<AnyInvite | undefined>(undefined);
   const [state, setState] = useState<'idle' | 'busy' | JoinResult>('idle');
   useEffect(() => { readAnyInvite(code).then(setFound, () => setFound(null)); }, [code]);
-  const invite = found === undefined ? undefined : found?.invite ?? null;
+  const invite = found === undefined ? undefined : found && found.kind !== 'circle' ? found.invite : null;
   const space = found?.kind === 'space' ? found.invite : null;
 
   const go = async () => {
@@ -23,6 +24,7 @@ export default function Join({ code, user }: { code: string; user: User }) {
       location.replace('/welcome');
     }
   };
+  if (found?.kind === 'circle') return <CircleJoin code={code} invite={found.invite} user={user} guest fallbackNick="" />;
   const bad = invite === null || (invite && invite.expiresAt < Date.now()) || state === 'expired' || state === 'missing' || state === 'used';
   return (
     <div className="center-screen" data-testid="join">

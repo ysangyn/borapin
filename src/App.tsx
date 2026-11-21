@@ -1,13 +1,15 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useAuth } from './lib/auth';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import type { User } from 'firebase/auth';
+import { nameOf, useAuth } from './lib/auth';
 import { DataProvider } from './lib/store';
 import { BottomNav, Spinner, useToast } from './components/ui';
 import { ErrorBoundary, ScrollManager, StatusBanner } from './components/system';
 import { RestArt } from './components/Scene';
 import { Denied, Login, VerifyEmail } from './pages/Login';
 import Join from './pages/Join';
-import { clearPendingInvite, pendingInvite, rememberInviteFromUrl } from './lib/invites';
+import { clearPendingInvite, pendingInvite, readAnyInvite, rememberInviteFromUrl, type AnyInvite } from './lib/invites';
+import { hasAnyCircle } from './lib/circles';
 import Home from './pages/Home';
 import { preloadCheer } from './lib/celebrate';
 
@@ -39,6 +41,9 @@ const Ask = lazy(() => import('./pages/Ask'));
 const Admin = lazy(() => import('./pages/Admin'));
 const SharedTripPage = lazy(() => import('./pages/SharedTripPage'));
 const Legal = lazy(() => import('./pages/Legal'));
+const CirclesHome = lazy(() => import('./pages/Circles').then((m) => ({ default: m.CirclesHome })));
+const CirclePage = lazy(() => import('./pages/Circles').then((m) => ({ default: m.CirclePage })));
+const CircleJoin = lazy(() => import('./pages/CircleJoin'));
 
 export default function App() {
   const auth = useAuth();
@@ -82,7 +87,8 @@ export default function App() {
     // 초대 링크로 온 사람: 들어가기 화면 (아니면 '초대되지 않은 계정')
     const code = rememberInviteFromUrl() ?? pendingInvite();
     if (code) return <div className="app"><Join code={code} user={auth.user} /></div>;
-    return <div className="app"><Denied email={auth.user.email} /></div>;
+    // 모임에만 든 손님: 모임 화면만 (아니면 '초대되지 않은 계정')
+    return <GuestGate user={auth.user} />;
   }
   if (auth.status === 'verify') return <div className="app"><VerifyEmail email={auth.user.email} /></div>;
   if (auth.status === 'error')
@@ -133,6 +139,8 @@ export default function App() {
               <Route path="/here" element={<HerePage />} />
               <Route path="/places/:id" element={<PlaceEdit />} />
               <Route path="/join/:code" element={<AlreadyIn />} />
+              <Route path="/circles" element={<CirclesHome />} />
+              <Route path="/circles/:id" element={<CirclePage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
@@ -178,8 +186,35 @@ function hideNavFor(path: string) {
 }
 
 /** 이미 함께 쓰는 사람이 초대 링크를 열었을 때 */
+/** 이미 들어온 사람이 초대 링크를 열었을 때: 모임 초대장이면 모임 들어가기, 아니면 '이미 함께 쓰고 있어요' */
 function AlreadyIn() {
   const toast = useToast();
-  useEffect(() => { clearPendingInvite(); toast('이미 함께 쓰고 있어요'); }, [toast]);
+  const auth = useAuth();
+  const { code = '' } = useParams();
+  const [found, setFound] = useState<AnyInvite | undefined>(undefined);
+  useEffect(() => { readAnyInvite(code).then(setFound, () => setFound(null)); }, [code]);
+  const circle = found?.kind === 'circle';
+  useEffect(() => { if (found !== undefined && !circle) { clearPendingInvite(); toast('이미 함께 쓰고 있어요'); } }, [found, circle, toast]);
+  if (found === undefined) return <Spinner />;
+  if (found?.kind === 'circle' && auth.status === 'ready') return <CircleJoin code={code} invite={found.invite} user={auth.user} guest={false} fallbackNick={nameOf(auth.user.email)} />;
   return <Navigate to="/" replace />;
+}
+
+/** 공간이 없는 계정: 모임에 들어 있으면 손님 화면, 아니면 '초대되지 않은 계정' */
+function GuestGate({ user }: { user: User }) {
+  const [has, setHas] = useState<boolean | null>(null);
+  useEffect(() => { hasAnyCircle(user.uid).then(setHas, () => setHas(false)); }, [user.uid]);
+  if (has === null) return <div className="app"><Spinner /></div>;
+  if (!has) return <div className="app"><Denied email={user.email} /></div>;
+  return (
+    <div className="app no-nav">
+      <Suspense fallback={<Spinner />}>
+        <Routes>
+          <Route path="/circles" element={<CirclesHome guestUser={user} />} />
+          <Route path="/circles/:id" element={<CirclePage guestUser={user} />} />
+          <Route path="*" element={<Navigate to="/circles" replace />} />
+        </Routes>
+      </Suspense>
+    </div>
+  );
 }

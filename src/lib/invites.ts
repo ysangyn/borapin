@@ -3,6 +3,7 @@ import type { User } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { db, SPACE_ID } from './firebase';
 import { newSpaceId } from './spaceAccess';
+import { readCircleInvite, type CircleInvite } from './circles';
 
 /**
  * 초대 링크 (서버 없이): 관리자가 코드를 만들면 /join/코드 링크가 생긴다.
@@ -135,11 +136,13 @@ export function useMySpaceInvites(user: User | null, role: 'admin' | 'member'): 
   return list;
 }
 
-/** 링크의 코드가 어느 초대인지: 공간 초대장 먼저, 없으면 우리 공간의 옛 초대 */
-export type AnyInvite = { kind: 'space'; invite: SpaceInvite } | { kind: 'main'; invite: Invite } | null;
+/** 링크의 코드가 어느 초대인지: 공간 초대장 → 모임 초대장 → 우리 공간의 옛 초대 */
+export type AnyInvite = { kind: 'space'; invite: SpaceInvite } | { kind: 'circle'; invite: CircleInvite } | { kind: 'main'; invite: Invite } | null;
 export async function readAnyInvite(code: string): Promise<AnyInvite> {
   const s = await getDoc(doc(db, 'spaceInvites', code)).catch(() => null);
   if (s?.exists()) return { kind: 'space', invite: s.data() as SpaceInvite };
+  const c = await readCircleInvite(code).catch(() => null);
+  if (c) return { kind: 'circle', invite: c };
   const m = await readInvite(code).catch(() => null);
   return m ? { kind: 'main', invite: m } : null;
 }

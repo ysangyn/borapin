@@ -95,6 +95,11 @@ export default function MyMaps() {
     <>
       <TopBar back title="내 지도" right={<Link to={`/places/new${region ? `?region=${placeParam(region)}` : ''}`} className="btn sm" data-testid="mymaps-add"><Icon name="plus" size={16} stroke={2.4} />담기</Link>} />
       <div className="page mymaps" data-testid="mymaps">
+        <Link to="/circles" className="setting-row card white" style={{ textDecoration: 'none' }} data-testid="mymaps-circles">
+          <span className="ico"><Icon name="users" size={17} /></span>
+          <span style={{ flex: 1 }}><b>모임</b><div className="tiny muted">가족·친구와 고른 가게만 나눠요</div></span>
+          <Icon name="chev" size={16} />
+        </Link>
         {/* 지역 */}
         {regions.length > 1 && (
           <div className="chips" role="tablist" aria-label="지역" data-testid="mymaps-regions">

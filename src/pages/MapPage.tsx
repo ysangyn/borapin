@@ -37,6 +37,7 @@ export default function MapPage() {
           <button role="tab" aria-selected={mode === 'kr'} className={mode === 'kr' ? 'on' : ''} onClick={() => { setMode('kr'); setSel(null); }}>국내</button>
           <button role="tab" aria-selected={mode === 'world'} className={mode === 'world' ? 'on' : ''} onClick={() => { setMode('world'); setSel(null); }}>세계</button>
           <Link role="tab" aria-selected={false} to="/maps" data-testid="map-mymaps">내 지도</Link>
+          <Link role="tab" aria-selected={false} to="/circles" data-testid="map-circles">모임</Link>
         </div>
         {stats && (
           <div className="chips" data-testid="map-stats">
