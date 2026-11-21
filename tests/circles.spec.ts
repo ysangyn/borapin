@@ -84,6 +84,31 @@ test('모임: 만들고 → 가게를 걸고 → 손님 친구가 들어와 보�
   await expect(fr.getByRole('status')).toContainText('걸었어요');
   await expect(fr.getByTestId('circle-item')).toHaveCount(2);
 
+  // 손님도 지역을 고를 수 있다 (고르면 다른 사람이 가고 싶은 곳에 바로 담는다)
+  await fr.getByTestId('circle-add').click();
+  await g.getByLabel('가게 이름').fill('해운대 돼지국밥');
+  await g.getByLabel('어디 검색').fill('부산 해운대');
+  await g.getByRole('option', { name: /해운대구/ }).first().click();
+  await g.getByTestId('circle-guest-save').click();
+  await expect(fr.getByRole('status')).toContainText('걸었어요');
+  await expect(fr.getByTestId('circle-item').filter({ hasText: '해운대 돼지국밥' })).toContainText('해운대');
+
+  // 별명 바꾸기 (이 모임에서만)
+  await fr.getByTestId('circle-my-nick').click();
+  await fr.getByTestId('circle-nick-edit').getByLabel('이 모임에서 쓸 별명').fill('민지짱');
+  await fr.getByTestId('circle-nick-save').click();
+  await expect(fr.getByRole('status')).toContainText('별명을 바꿨어요');
+  await expect(fr.getByTestId('circle-people')).toContainText('민지짱');
+
+  // 내가 건 가게에 사진 걸기 (사람처럼: 가게를 누르면 사진 칸이 열린다)
+  const noodle = fr.getByTestId('circle-item').filter({ hasText: '민지네 단골 국수' });
+  await noodle.click();
+  await expect(noodle.getByTestId('circle-photos')).toBeVisible();
+  await noodle.getByTestId('circle-photo-file').setInputFiles('tests/fixtures/photo-noexif.jpg');
+  await expect(fr.getByRole('status')).toContainText('사진을 걸었어요', { timeout: 20_000 });
+  await expect(noodle.getByTestId('circle-photo')).toHaveCount(1);
+  await shot(fr, '43-circle-photo');
+
   // 손님은 우리 여행 기록·홈에 들어가지 못한다 (어디로 가도 모임으로)
   await fr.goto('/trips');
   await expect(fr).toHaveURL(/\/circles$/);
@@ -92,9 +117,28 @@ test('모임: 만들고 → 가게를 걸고 → 손님 친구가 들어와 보�
   await expect(fr.getByText('모임빵집')).toHaveCount(0);
   await ctx.close();
 
+  // 주인 홈: 마지막으로 본 뒤 친구가 건 가게 두 곳이 '새 가게'로
+  await owner.goto('/');
+  await expect(owner.getByTestId('circle-news')).toContainText('대학 친구 모임에 새 가게 2곳', { timeout: 20_000 });
+  await owner.getByTestId('circle-news').click();
+  await expect(owner.getByTestId('circle-page')).toBeVisible();
   // 주인 화면에 친구가 건 가게가 보이고, 가고 싶은 곳에 담을 수 있다
-  await owner.reload();
-  await expect(owner.getByTestId('circle-item')).toHaveCount(2, { timeout: 20_000 });
+  await expect(owner.getByTestId('circle-item')).toHaveCount(3, { timeout: 20_000 });
+  await expect(owner.getByTestId('circle-people')).toContainText('민지짱');
+  // 친구가 건 사진이 보인다
+  const nood = owner.getByTestId('circle-item').filter({ hasText: '민지네 단골 국수' });
+  await nood.click();
+  await expect(nood.getByTestId('circle-photo')).toHaveCount(1, { timeout: 20_000 });
+  // 지역을 고른 가게는 바로 담긴다
+  await owner.getByTestId('circle-item').filter({ hasText: '해운대 돼지국밥' }).getByTestId('circle-want').click();
+  await expect(owner.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
+  // 다시 홈: 이제 본 뒤라 새 가게 줄이 없다
+  await owner.goto('/');
+  await expect(owner.getByTestId('place-search')).toBeVisible();
+  await owner.waitForTimeout(1500);
+  await expect(owner.getByTestId('circle-news')).toHaveCount(0);
+  await owner.goto('/circles');
+  await owner.getByTestId('circle-row').first().click();
   const theirs = owner.getByTestId('circle-item').filter({ hasText: '민지네 단골 국수' });
   await expect(theirs).toContainText('면이 쫄깃해요');
   await shot(owner, '42-circle-both');

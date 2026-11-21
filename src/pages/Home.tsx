@@ -35,6 +35,8 @@ import { spaceTitle, toneOf } from '../lib/members';
 import { times } from '../lib/ko';
 import { spaceWord } from '../lib/solo';
 import PlaceSearch from '../components/PlaceSearch';
+import { useCircleNews, useMyCircles } from '../lib/circles';
+import { useAuth } from '../lib/auth';
 
 export default function Home() {
   const { trips } = useTrips();
@@ -48,6 +50,9 @@ export default function Home() {
   const [sel, setSel] = useState<Place | null>(null);
   const [q, setQ] = useState('');
   const nav = useNavigate();
+  const auth = useAuth();
+  const myUid = auth.status === 'ready' ? auth.user.uid : null;
+  const circleNews = useCircleNews(myUid, useMyCircles(myUid));
   const stats = useMemo(() => (trips ? computeStats(trips) : null), [trips]);
   const toast = useToast();
   const planned = useMemo(() => (trips ? upcomingTrips(trips) : []), [trips]);
@@ -88,6 +93,14 @@ export default function Home() {
         </div>
         {/* 어디든 찾아보기: 고르면 큰 지도에서 그 지역 창이 열린다 (사용자 의견 11-21) */}
         <PlaceSearch onPick={(p) => nav(`/map?sel=${placeParam(p)}`)} />
+        {/* 모임에 남이 새로 건 가게 (마지막으로 본 뒤) */}
+        {circleNews.map((c) => (
+          <Link key={c.id} to={`/circles/${c.id}`} className="card white circle-news" data-testid="circle-news">
+            <Icon name="users" size={18} />
+            <span><b>{c.name}</b> 모임에 새 가게 {c.count}곳</span>
+            <Icon name="chev" size={16} />
+          </Link>
+        ))}
 
         {/* 단계 카드는 그 여행의 사진·글 개수만 서버에서 센다 (사진·글 전체 구독 없음) */}
         {stage && <StageCard key={stage.trip.id} stage={stage} />}

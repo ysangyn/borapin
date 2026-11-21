@@ -3,13 +3,14 @@
  * 규칙은 firestore.rules '모임'. 사람 수·가게 수·모임 수 한도는 규칙이 셀 수 없어 여기서 지킨다 (CIRCLE_LIMITS).
  */
 import type { User } from 'firebase/auth';
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { addDoc, Bytes, collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, query, serverTimestamp, setDoc, Timestamp, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { shrinkSmall } from './photos';
 import { useEffect, useState } from 'react';
 import { db } from './firebase';
 import { SPACE_ID } from './space';
 import { CIRCLE_LIMITS, circleItemFromPlace, circleItemId, itemKeyOf, newCircleId, type CircleItem } from './circleItems';
 import type { JoinResult } from './invites';
-import type { PlaceRec } from './types';
+import type { Place, PlaceRec } from './types';
 
 export interface Circle { id: string; name: string; createdBy: string }
 export interface CircleMember { uid: string; role: 'host' | 'member'; nick: string; via: string }
@@ -182,12 +183,81 @@ export async function deleteCircle(cid: string, uid: string) {
 }
 
 /** 손님이 이름만 적어 걸기 (원본 기록이 없다). 열쇠는 'g' + 무작위 */
-export async function hangGuestPlace(cid: string, user: User, nick: string, p: { name: string; kind: PlaceRec['kind']; verdict: PlaceRec['verdict']; line: string }, current: number) {
+export async function hangGuestPlace(cid: string, user: User, nick: string, p: { name: string; kind: PlaceRec['kind']; verdict: PlaceRec['verdict']; line: string; region?: Place | null }, current: number) {
   if (current >= CIRCLE_LIMITS.items) throw new Error(`한 모임에 가게는 ${CIRCLE_LIMITS.items}곳까지 걸 수 있어요`);
   const key = `g${randomCode(12).replace(/[^a-z0-9]/g, '')}`;
   await setDoc(doc(itemsCol(cid), circleItemId(key, user.uid)), {
     key, name: p.name.trim().slice(0, 80), kind: p.kind,
     ...(p.verdict ? { verdict: p.verdict } : {}), ...(p.line.trim() ? { line: p.line.trim().slice(0, 200) } : {}),
+    ...(p.region ? { region: p.region } : {}),
     by: { uid: user.uid, nick: (nick.trim() || '나').slice(0, 10) }, spaceId: null, at: serverTimestamp(), v: 1,
   });
+}
+
+
+// ---------- 별명 (자기 것만, 1~10자: 규칙 validCircleMember) ----------
+export const setMyNick = (cid: string, uid: string, nick: string) =>
+  updateDoc(doc(db, 'circles', cid, 'members', uid), { nick: nick.trim().slice(0, 10), updatedAt: serverTimestamp() });
+
+// ---------- 모임 사진: 걸린 가게마다 (모임 안 사람만 보고, 건 사람이나 방장이 내린다) ----------
+export interface CirclePhoto { id: string; by: string; itemId: string; url: string; w?: number; h?: number }
+const photosCol = (cid: string) => collection(db, 'circles', cid, 'photos');
+
+export async function addCirclePhoto(cid: string, user: User, guest: boolean, itemId: string, file: File): Promise<void> {
+  const { blob, w, h } = await shrinkSmall(file);
+  await addDoc(photosCol(cid), {
+    by: user.uid, spaceId: guest ? null : SPACE_ID, itemId, w, h, at: serverTimestamp(), v: 1,
+    data: Bytes.fromUint8Array(new Uint8Array(await blob.arrayBuffer())),
+  });
+}
+export const deleteCirclePhoto = (cid: string, id: string) => deleteDoc(doc(photosCol(cid), id));
+
+/** 가게 하나의 모임 사진 (열려 있을 때만 받는다) */
+export function useCirclePhotos(cid: string | undefined, itemId: string | null): CirclePhoto[] | null {
+  const [list, setList] = useState<CirclePhoto[] | null>(null);
+  useEffect(() => {
+    if (!cid || !itemId) { setList(null); return; }
+    let urls: string[] = [];
+    const un = onSnapshot(query(photosCol(cid), where('itemId', '==', itemId), limit(12)), (s) => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+      urls = [];
+      setList(s.docs.map((d) => {
+        const x = d.data() as { by: string; itemId: string; data: Bytes; w?: number; h?: number };
+        const url = URL.createObjectURL(new Blob([x.data.toUint8Array() as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' }));
+        urls.push(url);
+        return { id: d.id, by: x.by, itemId: x.itemId, url, w: x.w, h: x.h };
+      }));
+    }, () => setList([]));
+    return () => { un(); urls.forEach((u) => URL.revokeObjectURL(u)); };
+  }, [cid, itemId]);
+  return list;
+}
+
+// ---------- 홈: '모임에 새 가게 n곳' (마지막으로 본 뒤 남이 건 것) ----------
+const seenKey = (cid: string) => `borapin.circleSeen.${cid}`;
+export function markCircleSeen(cid: string): void {
+  try { localStorage.setItem(seenKey(cid), String(Date.now())); } catch { /* 저장 못 해도 괜찮다 */ }
+}
+function seenAt(cid: string): number | null {
+  try { const v = Number(localStorage.getItem(seenKey(cid))); return Number.isFinite(v) && v > 0 ? v : null; } catch { return null; }
+}
+
+/** 모임마다 새 가게 수. 처음 보는 모임은 지금부터 센다 (옛 가게를 모두 '새'로 보이지 않게) */
+export function useCircleNews(uid: string | null | undefined, circles: { id: string; name: string }[] | null): { id: string; name: string; count: number }[] {
+  const [news, setNews] = useState<{ id: string; name: string; count: number }[]>([]);
+  const ids = (circles ?? []).map((c) => c.id).join(',');
+  useEffect(() => {
+    if (!uid || !circles?.length) { setNews([]); return; }
+    let on = true;
+    void Promise.all(circles.slice(0, CIRCLE_LIMITS.myCircles).map(async (c) => {
+      const seen = seenAt(c.id);
+      if (seen == null) { markCircleSeen(c.id); return { ...c, count: 0 }; }
+      const s = await getDocs(query(itemsCol(c.id), where('at', '>', Timestamp.fromMillis(seen)), limit(50))).catch(() => null);
+      const count = s ? s.docs.filter((d) => (d.data() as CircleItem).by?.uid !== uid).length : 0;
+      return { ...c, count };
+    })).then((r) => on && setNews(r.filter((x) => x.count > 0)));
+    return () => { on = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid, ids]);
+  return news;
 }

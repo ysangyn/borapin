@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { Icon, TopBar, useToast } from '../components/ui';
@@ -6,6 +6,7 @@ import StreetMap, { type StreetPin } from '../components/StreetMap';
 import { logOut, nameOf, useAuth } from '../lib/auth';
 import { CIRCLE_LIMITS, mineFirst } from '../lib/circleItems';
 import {
+  addCirclePhoto, deleteCirclePhoto, markCircleSeen, setMyNick, useCirclePhotos,
   createCircle, createCircleInvite, deleteCircle, deleteCircleInvite, forgetCircle, hangGuestPlace, hangPlace, kickFromCircle, leaveCircle,
   renameCircle, takeDown, useCircle, useCircleInvites, useMyCircles, type CircleItemDoc,
 } from '../lib/circles';
@@ -16,7 +17,9 @@ import { withJosa } from '../lib/ko';
 import { KIND_COLOR } from '../lib/placeMaps';
 import { KIND_LABEL, KINDS, VERDICT_LABEL, VERDICTS } from '../lib/placeRecs';
 import { SPACE_ID } from '../lib/space';
-import type { PlaceKind, Verdict } from '../lib/types';
+import type { Place, PlaceKind, Verdict } from '../lib/types';
+import PlacePicker from '../components/PlacePicker';
+import { placeLabel } from '../lib/geo';
 
 /** 지금 화면을 쓰는 사람: 공간이 있는 사람(ready) 또는 모임만 든 손님 */
 function useWho(guestUser?: User | null): { user: User | null; guest: boolean; nick: string } {
@@ -93,6 +96,9 @@ export function CirclePage({ guestUser }: { guestUser?: User | null }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [manage, setManage] = useState(false);
+  const [nickEdit, setNickEdit] = useState<string | null>(null);
+  // 홈의 '모임에 새 가게 n곳'은 여기를 본 뒤부터 센다
+  useEffect(() => { if (id && circle && circle !== 'gone') markCircleSeen(id); }, [id, circle, items?.length]);
   const me = members?.find((m) => m.uid === user?.uid);
   const host = me?.role === 'host';
   const nickOf = useMemo(() => Object.fromEntries((members ?? []).map((m) => [m.uid, m.nick])), [members]);
@@ -120,8 +126,18 @@ export function CirclePage({ guestUser }: { guestUser?: User | null }) {
       <TopBar back backTo="/circles" title={circle.name} right={<button className="btn sm ghost" onClick={() => setManage((x) => !x)} data-testid="circle-manage">{manage ? '닫기' : '사람·설정'}</button>} />
       <div className="page" data-testid="circle-page">
         <div className="chips" data-testid="circle-people">
-          {members.map((m) => <span key={m.uid} className="chip">{m.nick}{m.role === 'host' ? ' · 방장' : ''}{m.uid === user.uid ? ' (나)' : ''}</span>)}
+          {members.map((m) => m.uid === user.uid
+            ? <button key={m.uid} type="button" className="chip on" onClick={() => setNickEdit(nickEdit === null ? m.nick : null)} aria-expanded={nickEdit !== null} data-testid="circle-my-nick">{m.nick}{m.role === 'host' ? ' · 방장' : ''} (나) <Icon name="edit" size={12} /></button>
+            : <span key={m.uid} className="chip">{m.nick}{m.role === 'host' ? ' · 방장' : ''}</span>)}
         </div>
+        {nickEdit !== null && (
+          <div style={{ display: 'flex', gap: 6 }} data-testid="circle-nick-edit">
+            <input className="input" style={{ flex: 1 }} value={nickEdit} maxLength={10} onChange={(e) => setNickEdit(e.target.value)} aria-label="이 모임에서 쓸 별명" />
+            <button className="btn sm" disabled={!nickEdit.trim() || nickEdit.trim() === me?.nick} data-testid="circle-nick-save" onClick={async () => {
+              try { await setMyNick(id, user.uid, nickEdit); toast('별명을 바꿨어요'); setNickEdit(null); } catch { toast('별명을 바꾸지 못했어요'); }
+            }}>바꾸기</button>
+          </div>
+        )}
 
         {manage && <CircleManage cid={id} name={circle.name} user={user} host={host} members={members} invites={invites} onLeft={() => nav('/circles', { replace: true })} />}
 
@@ -144,7 +160,9 @@ export function CirclePage({ guestUser }: { guestUser?: User | null }) {
                   <b>{nickOf[it.by.uid] ?? it.by.nick}</b>
                   {it.verdict ? <span className={'tag' + (it.verdict === 'again' ? ' violet' : '')} style={{ marginLeft: 6 }}>{VERDICT_LABEL[it.verdict]}</span> : null}
                   {it.line ? <span> · {it.line}</span> : null}
+                  {it.region ? <span className="tiny muted"> · {placeLabel(it.region)}</span> : null}
                 </div>
+                {picked === it.id && <CircleItemPhotos cid={id} itemId={it.id} user={user} guest={guest} host={host} />}
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   {!guest && it.by.uid !== user.uid && (
                     <button className="btn sm soft" data-testid="circle-want" onClick={async (e) => {
@@ -278,6 +296,7 @@ function GuestHang({ cid, user, nick, count, onClose }: { cid: string; user: Use
   const [kind, setKind] = useState<PlaceKind>('food');
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [line, setLine] = useState('');
+  const [region, setRegion] = useState<Place | null>(null);
   const [busy, setBusy] = useState(false);
   return (
     <div className="arrive-scrim" onClick={onClose}>
@@ -287,15 +306,52 @@ function GuestHang({ cid, user, nick, count, onClose }: { cid: string; user: Use
         <div className="chips">{KINDS.map((k) => <button key={k.k} type="button" className={'chip' + (kind === k.k ? ' on' : '')} aria-pressed={kind === k.k} onClick={() => setKind(k.k)}>{k.label}</button>)}</div>
         <div className="chips">{VERDICTS.map((v) => <button key={v.v} type="button" className={'chip' + (verdict === v.v ? ' on' : '')} aria-pressed={verdict === v.v} onClick={() => setVerdict(verdict === v.v ? null : v.v)}>{v.label}</button>)}</div>
         <input className="input" placeholder="한 줄 (선택)" maxLength={200} value={line} onChange={(e) => setLine(e.target.value)} aria-label="한 줄" />
+        <span className="small muted">어느 지역이에요? (선택 · 고르면 다른 사람이 가고 싶은 곳에 바로 담을 수 있어요)</span>
+        <PlacePicker value={region ? [region] : []} onChange={(v) => setRegion(v.length ? v[v.length - 1] : null)} />
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn ghost" style={{ flex: 1 }} onClick={onClose}>그만두기</button>
           <button className="btn" style={{ flex: 1 }} disabled={busy || !name.trim()} data-testid="circle-guest-save" onClick={async () => {
             setBusy(true);
-            try { await hangGuestPlace(cid, user, nick, { name, kind, verdict, line }, count); toast(`${withJosa(name.trim(), '을/를')} 걸었어요`); onClose(); } catch (e) { toast(e instanceof Error && /까지/.test(e.message) ? e.message : '걸지 못했어요'); }
+            try { await hangGuestPlace(cid, user, nick, { name, kind, verdict, line, region }, count); toast(`${withJosa(name.trim(), '을/를')} 걸었어요`); onClose(); } catch (e) { toast(e instanceof Error && /까지/.test(e.message) ? e.message : '걸지 못했어요'); }
             setBusy(false);
           }}>걸기</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** 고른 가게의 모임 사진: 모임 사람 누구나 걸고, 건 사람·방장·같은 공간 사람이 내린다 (규칙 canTakeDown) */
+function CircleItemPhotos({ cid, itemId, user, guest, host }: { cid: string; itemId: string; user: User; guest: boolean; host: boolean }) {
+  const photos = useCirclePhotos(cid, itemId);
+  const toast = useToast();
+  const file = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="circle-photos" data-testid="circle-photos" onClick={(e) => e.stopPropagation()}>
+      {photos?.map((p) => (
+        <figure key={p.id} data-testid="circle-photo">
+          <img src={p.url} alt="모임 사진" loading="lazy" />
+          {(p.by === user.uid || host) && (
+            <button type="button" className="circle-photo-x" aria-label="사진 내리기" onClick={async () => {
+              try { await deleteCirclePhoto(cid, p.id); toast('사진을 내렸어요'); } catch { toast('사진을 내리지 못했어요'); }
+            }}><Icon name="x" size={14} /></button>
+          )}
+        </figure>
+      ))}
+      {(photos?.length ?? 0) < 12 && (
+        <button type="button" className="circle-photo-add" disabled={busy} onClick={() => file.current?.click()} data-testid="circle-photo-add">
+          <Icon name="camera" size={18} /><span className="tiny">{busy ? '거는 중…' : '사진 걸기'}</span>
+        </button>
+      )}
+      <input ref={file} type="file" accept="image/*" hidden data-testid="circle-photo-file" onChange={async (e) => {
+        const f = e.target.files?.[0];
+        e.target.value = '';
+        if (!f) return;
+        setBusy(true);
+        try { await addCirclePhoto(cid, user, guest, itemId, f); toast('사진을 걸었어요'); } catch (err) { toast(err instanceof Error && /사진/.test(err.message) ? err.message : '사진을 걸지 못했어요'); }
+        setBusy(false);
+      }} />
     </div>
   );
 }

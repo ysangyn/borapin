@@ -1973,3 +1973,12 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .first-days { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .first-days li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.5; }
 .first-days li b { font-size: 13px; color: var(--ink2); }
+
+/* 모임 사진 (가게를 고르면 펼쳐짐) */
+.circle-photos { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.circle-photos figure { position: relative; margin: 0; width: 84px; height: 84px; border-radius: 12px; overflow: hidden; background: var(--page); }
+.circle-photos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.circle-photo-x { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 13px; border: 0; background: rgba(23, 20, 43, .6); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.circle-photo-add { width: 84px; height: 84px; border-radius: 12px; border: 1.5px dashed var(--edge); background: transparent; color: var(--ink2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+.circle-news { display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: var(--ink); text-decoration: none; }
+.circle-news span { flex: 1; min-width: 0; font-size: 14px; }
