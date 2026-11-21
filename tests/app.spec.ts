@@ -1227,7 +1227,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('trip-row')).toHaveCount(before - 1);
   });
 
-  test('지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게)', async ({ page }) => {
+  test('지역 창의 볼거리를 누르면 알아보기 창에서 가고 싶어요 (아내 의견: 지도보다 사진·소개·후기)', async ({ page }) => {
     await signIn(page, OWNER);
     // 기록이 많이 쌓인 뒤라 홈은 지도가 아래로 밀려 있다: 큰 지도에서 누른다
     await page.goto('/map');
@@ -1235,20 +1235,32 @@ test.describe.serial('보라핀 1단계', () => {
     await tapLngLat(page, 129.06, 35.2);
     const sheet = page.getByTestId('region-sheet');
     await expect(sheet.getByTestId('sheet-title')).toHaveText('부산');
-    const item = sheet.getByTestId('region-info').locator('.tap-item').first();
-    const name = (await item.innerText()).trim();
+    // 볼거리는 사진 카드: 누르면 지도보다 먼저 '알아보기' 창 (사진·소개·후기·영상, 지도는 맨 아래 접어서) — 아내 의견 11-21
+    const item = sheet.getByTestId('explore-card').first();
+    const name = (await item.locator('.explore-name').innerText()).trim();
     await item.click();
-    const dlg = page.getByTestId('map-choice');
+    const dlg = page.getByTestId('spot-detail');
     await expect(dlg).toContainText(name);
-    await dlg.getByTestId('map-choice-wish').click();
+    await expect(dlg.getByTestId('spot-reviews')).toHaveAttribute('href', /search\.naver\.com.*where=blog/);
+    await expect(dlg.getByTestId('spot-videos')).toHaveAttribute('href', /youtube\.com\/results/);
+    // 지도는 처음엔 접혀 있다
+    await expect(dlg.getByTestId('spot-show-map')).toBeVisible();
+    await dlg.getByTestId('spot-wish').click();
     await expect(page.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
+    await expect(dlg.getByTestId('spot-wish')).toHaveText(/담겨 있어요/);
+    await expect(dlg.getByTestId('spot-wish')).toBeDisabled();
+    await shot(page, '30-spot-detail-wish');
+    // 먹거리 카드도 같은 창 (음식이면 '맛집 찾기'가 더 있다)
+    await dlg.getByRole('button', { name: '닫기' }).click();
     await expect(dlg).toHaveCount(0);
-    // 다시 누르면 '담겨 있어요'
-    await item.click();
-    await expect(dlg.getByTestId('map-choice-wish')).toHaveText(/담겨 있어요/);
-    await expect(dlg.getByTestId('map-choice-wish')).toBeDisabled();
-    await shot(page, '30-map-choice-wish');
-    await dlg.getByRole('button', { name: '그대로 두기' }).click();
+    const food = sheet.getByTestId('explore-food').first();
+    if (await food.count()) {
+      await food.click();
+      await expect(dlg).toContainText('먹거리');
+      await expect(dlg.getByRole('link', { name: /맛집 찾기/ })).toBeVisible();
+      await shot(page, '30b-food-detail');
+      await dlg.getByRole('button', { name: '닫기' }).click();
+    }
     await page.goto('/wishes');
     await expect(page.getByTestId('wish-card').filter({ hasText: '부산' })).toContainText(name);
     // 우리 공간: 투어·티켓 찾을 곳 (기본은 누를 때마다 고르기, 한 곳으로 정할 수 있음)

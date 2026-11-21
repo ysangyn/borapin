@@ -16,6 +16,7 @@
 import { parseShareDoc, previewHtml } from './mapPreview';
 import { find } from './find';
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
+import { about } from './about';
 import { nearby, spot } from './nearby';
 import { parseKakaoNear } from './kakaoParse';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
@@ -301,7 +302,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isSpot = req.method === 'GET' && url.pathname === '/spot';
     const isFind = req.method === 'GET' && url.pathname === '/find';
     const isShops = req.method === 'GET' && url.pathname === '/shops';
-    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isAbout = req.method === 'GET' && url.pathname === '/about';
+    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && !isAbout && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -377,6 +379,18 @@ async function handle(req: Request, env: Env): Promise<Response> {
       const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
       try {
         const r = await spot(env.DATA_GO_KR_KEY, name, Number.isFinite(lat) ? lat : undefined, Number.isFinite(lng) ? lng : undefined);
+        return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 502); }
+    }
+    // 어떤 곳·어떤 음식인지 여러 이름을 한 번에 (위키백과 요약, 7일 캐시) — 지역 창 하나에 한 번
+    if (isAbout) {
+      const rl5 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl5.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const names = (url.searchParams.get('names') ?? '').split('|').map((x) => x.trim().slice(0, 40)).filter(Boolean);
+      const area = (url.searchParams.get('area') ?? '').trim().slice(0, 30);
+      if (!names.length) return json({ error: 'empty' }, 400);
+      try {
+        const r = await about(names, area);
         return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
       } catch { return json({ error: 'upstream' }, 502); }
     }

@@ -1,5 +1,6 @@
 /** 지금 여기 근처 관광지: 관광공사 부르기·캐시 (풀이 함수는 nearbyParse.ts — 앱 시험이 그쪽만 읽는다) */
 import { aboutOf, firstLine, introOf, parseNearby, pickSpot, type NearbyItem } from './nearbyParse';
+import { tourImages } from './aboutParse';
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2';
 async function call(key: string, op: string, p: Record<string, string>) {
@@ -44,19 +45,22 @@ export async function nearby(key: string, lat: number, lng: number): Promise<Res
 export async function spot(key: string, name: string, lat?: number, lng?: number): Promise<Response> {
   const head = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=604800' };
   const cache = caches.default;
-  const ck = new Request(`https://cache.borapin/spot?${encodeURIComponent(name)}&${lat?.toFixed(3) ?? ''},${lng?.toFixed(3) ?? ''}`);
+  const ck = new Request(`https://cache.borapin/spot2?${encodeURIComponent(name)}&${lat?.toFixed(3) ?? ''},${lng?.toFixed(3) ?? ''}`);
   const hit = await cache.match(ck);
   if (hit) return hit;
   const found = pickSpot(await call(key, 'searchKeyword2', { keyword: name, numOfRows: '10', pageNo: '1', arrange: 'O' }), lat, lng);
   let out: Record<string, unknown> = {};
   if (found) {
-    const [common, intro] = await Promise.all([
+    const [common, intro, images] = await Promise.all([
       call(key, 'detailCommon2', { contentId: found.id }).catch(() => null),
       call(key, 'detailIntro2', { contentId: found.id, contentTypeId: found.type }).catch(() => null),
+      // 사진 여러 장 (한 장만으로는 가고 싶은지 알기 어렵다 · 아내 의견 11-21)
+      call(key, 'detailImage2', { contentId: found.id, imageYN: 'Y', numOfRows: '10', pageNo: '1' }).catch(() => null),
     ]);
     const c = ((common as { response?: { body?: { items?: { item?: Record<string, unknown>[] } } } } | null)?.response?.body?.items?.item ?? [])[0] ?? {};
     const tel = typeof c.tel === 'string' && /^[0-9-]{7,}$/.test(c.tel.trim()) ? c.tel.trim() : undefined;
-    out = { ...aboutOf(c.overview), ...introOf(intro), addr: found.addr, tel, img: found.img, type: found.type };
+    const imgs = tourImages(images).filter((u) => u !== found.img);
+    out = { ...aboutOf(c.overview), ...introOf(intro), addr: found.addr, tel, img: found.img, ...(imgs.length ? { imgs } : {}), type: found.type };
   }
   const res = new Response(JSON.stringify(out), { headers: head });
   await cache.put(ck, res.clone());

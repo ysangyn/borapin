@@ -1924,3 +1924,23 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 /* 나라를 고른 뒤 그 나라의 도시 칩 */
 .city-pick { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 16px; background: var(--violet-wash, #F1F0FB); }
 .city-pick .chip svg { margin-right: 2px; }
+
+/* 지역 창 '알아보기' (11-21): 볼거리·먹거리·맛집 사진 카드, 알아보기 창 사진 넘겨 보기 */
+.explore-row { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.explore-head { display: flex; align-items: baseline; gap: 8px; }
+.explore-head b { font-size: 14px; color: var(--ink); }
+.explore-head span { font-size: 11px; color: var(--ink3); }
+.explore-card { width: 120px; }
+.explore-card .tour-pic, .explore-card img { width: 120px; }
+.explore-card img { height: 90px; }
+.explore-ph { display: flex; align-items: center; justify-content: center; width: 120px; height: 90px; border-radius: 10px; background: var(--mist2, #EEE9FB); color: var(--violet, #4B48B8); font-size: 30px; font-family: var(--jua, inherit); }
+.explore-name { font-size: 12.5px; font-weight: 600; }
+.explore-sub { font-size: 11px !important; font-weight: 400; color: var(--ink3); white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
+.region-foot { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--edge); }
+.spot-gallery { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -2px; }
+.spot-gallery::-webkit-scrollbar { display: none; }
+.spot-gallery img { flex: 0 0 86%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; scroll-snap-align: start; background: var(--mist2, #EEE9FB); }
+.spot-gallery img:only-child { flex-basis: 100%; }
+.spot-gallery-empty { aspect-ratio: 4 / 3; border-radius: 14px; background: var(--mist2, #EEE9FB); }
+.spot-voices { display: flex; flex-wrap: wrap; gap: 6px; }
+.spot-more-places { display: flex; flex-direction: column; gap: 6px; }

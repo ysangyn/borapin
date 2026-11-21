@@ -42,7 +42,10 @@ export function here(): Promise<{ lat: number; lng: number } | { error: string }
 }
 
 /** 관광지 하나 자세히 (뒷단 /spot, 관광공사): 소개·이용 시간·쉬는 날·주소·전화. 못 받으면 null */
-export interface SpotInfo { short?: string; full?: string; time?: string; rest?: string; parking?: string; addr?: string; tel?: string; img?: string }
+export interface SpotInfo { short?: string; full?: string; time?: string; rest?: string; parking?: string; addr?: string; tel?: string; img?: string; imgs?: string[] }
+
+/** 어떤 곳·어떤 음식인지 (위키백과 요약): 이름 → 소개·사진·문서 주소 */
+export interface AboutInfo { title: string; short: string; img?: string; url?: string }
 export async function fetchSpot(user: User | null, name: string, lat?: number | null, lng?: number | null): Promise<SpotInfo | null> {
   if (!aiAvailable() || !user) return null;
   try {
@@ -52,4 +55,25 @@ export async function fetchSpot(user: User | null, name: string, lat?: number | 
     if (!r.ok) return null;
     return (await r.json()) as SpotInfo;
   } catch { return null; }
+}
+
+/** 여러 이름을 한 번에 '어떤 곳·어떤 음식인지' (뒷단 /about, 7일 캐시). 지역 창 하나에 한 번만 부른다 */
+const aboutMemo = new Map<string, Promise<Record<string, AboutInfo>>>();
+export function fetchAbout(user: User | null, names: string[], area: string): Promise<Record<string, AboutInfo>> {
+  const list = [...new Set(names.map((n) => n.trim()).filter(Boolean))].slice(0, 12);
+  if (!aiAvailable() || !user || !list.length) return Promise.resolve({});
+  const k = `${area}|${list.join('|')}`;
+  let p = aboutMemo.get(k);
+  if (!p) {
+    p = (async () => {
+      try {
+        const token = await user.getIdToken();
+        const r = await fetch(`${ASK_URL}/about?area=${encodeURIComponent(area)}&names=${encodeURIComponent(list.join('|'))}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(15000) });
+        if (!r.ok) { aboutMemo.delete(k); return {}; }
+        return ((await r.json()) as { items?: Record<string, AboutInfo> }).items ?? {};
+      } catch { aboutMemo.delete(k); return {}; }
+    })();
+    aboutMemo.set(k, p);
+  }
+  return p;
 }
