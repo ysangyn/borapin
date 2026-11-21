@@ -39,14 +39,14 @@ Call log:
       - generic [ref=e10]:
         - generic [ref=e11]: 다음 주말 · 1박 2일 · 둘이 · 내가 고른 조건
         - article [ref=e13]:
-          - generic [ref=e14]: 강원 동해시
+          - generic [ref=e14]: 강원 고성군
           - generic [ref=e16]:
             - list [ref=e17]:
               - listitem [ref=e18]: · 영상이 가고 싶다고 한 곳
-              - listitem [ref=e19]: · KTX 동해역 5km · 양양공항 71km
+              - listitem [ref=e19]: · 양양공항 42km
             - group [ref=e20]:
               - generic "기본 정보 ▾" [ref=e21] [cursor=pointer]
-            - button "동해시 고르기" [ref=e23] [cursor=pointer]:
+            - button "고성군 고르기" [ref=e23] [cursor=pointer]:
               - generic [ref=e27]: 여기 고르기
         - generic [ref=e28]:
           - button "같이 고르자고 보내기" [ref=e29] [cursor=pointer]
