@@ -16,7 +16,7 @@ import { refFromNearbyId, type PlaceRef } from './placeRef';
  * 상가정보와 못 맞췄을 때 카카오 이름을 이름 칸에 채워 둘지 (사람이 고칠 수 있음).
  * 상가정보 활용 신청이 승인되어 매칭이 돌기 시작하면 false로 바꾼다 — docs/ROADMAP.md '지금 여기 카카오 정책'
  */
-export const KAKAO_NAME_UNTIL_MATCH = true;
+export const KAKAO_NAME_UNTIL_MATCH = false; // 11-22 상가정보 활용 승인·확인(resultCode 00) → 끔
 
 export type Pos = { lat: number; lng: number };
 export type Pick = { name: string; kind: PlaceKind; tag: string; pos: Pos | null; addr?: string; ref?: PlaceRef | null };

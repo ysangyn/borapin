@@ -120,7 +120,7 @@ export default function HerePage() {
                 ))}
                 {matching && <span className="small muted" aria-live="polite">가게 정보를 맞춰 보는 중…</span>}
                 {items.length > shown && <button className="link-btn" onClick={() => setShown(shown + 5)}>더 보기</button>}
-                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'kakao' ? '카카오맵 장소 정보' : '한국관광공사 관광정보'}</span>}
+                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'kakao' ? '카카오맵 장소 정보 · 남길 때는 소상공인시장진흥공단 상가정보' : '한국관광공사 관광정보'}</span>}
               </div>
             )}
             <form className="here-own" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) choose({ name: typed.trim(), ...guessKind(typed, null), pos }); }}>
