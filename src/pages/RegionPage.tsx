@@ -28,6 +28,9 @@ import { usePhotos } from '../lib/photos';
 import PhotoImg from '../components/PhotoImg';
 import { times } from '../lib/ko';
 import type { PlaceRec } from '../lib/types';
+import FirstTime from '../components/FirstTime';
+import { firstPlanFor } from '../lib/firstTime';
+import { useWorld } from '../lib/world';
 
 /**
  * 지역 한 장 (/region/:param?tab=): 한 지역의 모든 것이 한 곳에.
@@ -118,9 +121,13 @@ function Glance({ place, s, onTab }: { place: ReturnType<typeof parsePlaceParam>
   const empty = !s.recs.length && !s.done.length && !s.planned.length && !s.wish;
   const kinds = useMemo(() => { const m = new Map<string, number>(); for (const r of s.recs) { const k = themeOf(r); m.set(k, (m.get(k) ?? 0) + 1); } return themesOrder([...m.keys()]).map((k) => ({ k, n: m.get(k)!, color: KIND_COLOR[s.recs.find((r) => themeOf(r) === k)!.kind] })); }, [s.recs]);
   const name = placeLabel(place);
+  const world = useWorld();
+  const firstTime = place.t === 'country' && s.done.length === 0 && !!firstPlanFor(world, place);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="region-glance">
-      {empty && (
+      {/* 처음 가 보는 나라·도시: 사진·알아 둘 것·보통 이렇게 다녀요 (사용자 의견 11-21) */}
+      {firstTime && <FirstTime place={place} />}
+      {empty && !firstTime && (
         <div className="card art-row">
           <img src="/art/bora-think.webp" alt="" aria-hidden="true" width={120} height={225} decoding="async" />
           <span><b style={{ display: 'block', fontSize: 17 }}>{emptyLine('glance', name).title}</b><span className="small muted" style={{ display: 'block', marginTop: 4 }}>{emptyLine('glance', name).sub}</span></span>

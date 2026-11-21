@@ -1229,6 +1229,30 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('trip-row')).toHaveCount(before - 1);
   });
 
+  test('처음 가 보는 나라: 브루나이 한 장 → 4박 5일 → 이 일정으로 계획하기 → 여행 일정에 곳마다 들어간다 (사용자 의견 11-21)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/region/country:BRN');
+    const ft = page.getByTestId('first-time');
+    await expect(ft).toBeVisible();
+    await expect(ft).toContainText('브루나이');
+    await expect(ft.getByTestId('first-facts')).toContainText('무비자 30일');
+    await expect(ft.getByTestId('first-facts')).toContainText('술을 팔지 않아요');
+    await expect(ft.getByTestId('first-days').locator('li')).toHaveCount(3);
+    await ft.getByTestId('first-4').click();
+    await expect(ft.getByTestId('first-days').locator('li')).toHaveCount(5);
+    await shot(page, '32-first-time-brunei');
+    // 대표 볼거리를 누르면 알아보기 창
+    await ft.getByTestId('first-see').first().click();
+    await expect(page.getByTestId('spot-detail')).toBeVisible();
+    await page.getByTestId('spot-detail').click({ position: { x: 5, y: 5 } });
+    await ft.getByTestId('first-plan').click();
+    await expect(page).toHaveURL(/\/plan\?place=country.*first=4/);
+    await page.getByTestId('planner-make').click();
+    await expect(page).toHaveURL(/\/trips\/[A-Za-z0-9]+\?tab=plan/);
+    await expect(page.getByText('울루 템부롱 국립공원').first()).toBeVisible();
+    await expect(page.getByText('캄퐁 아에르').first()).toBeVisible();
+  });
+
   test('어디든 찾아보기: 홈에서 서산을 찾으면 큰 지도에서 서산 창이 열리고, 지도에서 교토를 찾으면 세계로 (사용자 의견 11-21)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/');
