@@ -106,6 +106,7 @@ function Credits() {
       <p>NASA POWER 월별 기후값 (NASA Langley Research Center)</p>
       <p>지역 축제·관광지·무장애 정보와 관광지 사진: 한국관광공사 TourAPI (공공누리 제1유형). 매일 받아 씁니다.</p>
       <p>지금 여기에서 남긴 가게의 이름·주소·자리: 소상공인시장진흥공단 상가(상권)정보(공공데이터포털). 근처 가게 목록은 카카오맵 장소 정보를 그때그때 보여 주기만 하고 저장하지 않아요.</p>
+      <p>해외에서 '지금 여기'의 근처 식당·카페: OpenStreetMap Overpass API (© OpenStreetMap 기여자, <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">ODbL</a>).</p>
       <p>지역 알아보기의 영상: YouTube. 누르면 YouTube에서 열려요.</p>
       <p>여행경보·입국허가요건: 외교부 해외안전여행(공공데이터포털). 매일 받아 씁니다. 떠나기 전 0404.go.kr에서 확인하세요.</p>
       <p>환율: 한국수출입은행 현재환율(매매기준율). 매일 받아 씁니다.</p>

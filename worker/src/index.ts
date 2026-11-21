@@ -19,6 +19,7 @@ import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { about } from './about';
 import { nearby, spot } from './nearby';
 import { parseKakaoNear } from './kakaoParse';
+import { overpassQuery, parseOsmNear } from './osmParse';
 import { matchStore, parseStores, storeUrl } from './storeMatch';
 import { parseVideos, videoQuery, videosUrl } from './youtube';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
@@ -361,12 +362,28 @@ async function handle(req: Request, env: Env): Promise<Response> {
     // 지금 여기 근처 음식점·카페 (카카오 로컬, 키는 Worker 비밀값 KAKAO_REST_KEY).
     // 카카오 정책상 결과를 저장해 다시 쓰지 않으므로 캐시하지 않는다. 200m 안에 다섯이 안 되면 500m까지
     if (isShops) {
-      if (!env.KAKAO_REST_KEY) return json({ error: 'no key' }, 503);
       const rl4 = await env.PER_USER.limit({ key: who.uid });
       if (!rl4.success) return json({ error: 'too many requests', retry: 60 }, 429);
       const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad position' }, 400);
-      if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) return json({ items: [], outside: true });
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return json({ error: 'bad position' }, 400);
+      // 해외: 오픈스트리트맵 (ODbL, 열쇠 없음). 같은 자리(약 100m 칸)는 하루 캐시 — 공개 Overpass 서버에 부담을 덜 준다
+      if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) {
+        const cache = caches.default;
+        const ck = new Request(`https://cache.borapin/osm?${lat.toFixed(3)},${lng.toFixed(3)}`);
+        const hit = await cache.match(ck);
+        if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+        const ask = (radius: number) => fetch('https://overpass-api.de/api/interpreter', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' }, body: `data=${encodeURIComponent(overpassQuery(lat, lng, radius))}` })
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`overpass ${r.status}`))));
+        try {
+          let items = parseOsmNear(await ask(300), lat, lng);
+          if (items.length < 5) items = parseOsmNear(await ask(800), lat, lng);
+          const res = json({ items: items.slice(0, 20), source: 'osm' });
+          res.headers.set('cache-control', 'public, max-age=86400');
+          await cache.put(ck, res.clone());
+          return res;
+        } catch { return json({ error: 'upstream' }, 502); }
+      }
+      if (!env.KAKAO_REST_KEY) return json({ error: 'no key' }, 503);
       const get = (code: string, radius: number) => fetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=${code}&x=${lng.toFixed(6)}&y=${lat.toFixed(6)}&radius=${radius}&sort=distance&size=15`, { headers: { authorization: `KakaoAK ${env.KAKAO_REST_KEY}` } })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`kakao ${r.status}`))));
       try {

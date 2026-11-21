@@ -3,7 +3,7 @@ import { aiAvailable, ASK_URL } from './ask/url';
 
 /** 지금 여기 근처 관광지 (뒷단 /nearby, 관광공사 자료). 뒷단이 없거나(에뮬레이터·비밀값 없음) 실패하면 null */
 export interface NearbyItem { id: string; name: string; kind: 'food' | 'cafe' | 'sight' | 'stay' | 'shop' | 'etc'; type: string; dist: number; walk: number; lat: number; lng: number; img?: string; addr?: string; line?: string }
-export type NearbyResult = { items: NearbyItem[]; outside?: boolean } | null;
+export type NearbyResult = { items: NearbyItem[]; outside?: boolean; source?: 'kakao' | 'osm' } | null;
 
 export async function fetchNearby(user: User | null, lat: number, lng: number): Promise<NearbyResult> {
   if (!aiAvailable() || !user) return null;
@@ -16,7 +16,7 @@ export async function fetchNearby(user: User | null, lat: number, lng: number): 
 }
 
 /** '걸어서 3분' · '120m' */
-/** 지금 여기 근처 음식점·카페 (카카오, 서버 /shops). 키가 없거나 실패하면 null → 관광공사 목록으로 */
+/** 지금 여기 근처 음식점·카페 (서버 /shops: 국내는 카카오, 해외는 오픈스트리트맵). 키가 없거나 실패하면 null → 관광공사 목록으로 */
 export async function fetchShops(user: User | null, lat: number, lng: number): Promise<NearbyResult> {
   if (!aiAvailable() || !user) return null;
   try {

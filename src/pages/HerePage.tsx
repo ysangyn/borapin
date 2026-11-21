@@ -35,7 +35,7 @@ export default function HerePage() {
   const [msg, setMsg] = useState('지금 위치를 찾는 중…');
   const [items, setItems] = useState<NearbyItem[] | null>(null);
   const [shown, setShown] = useState(5);
-  const [source, setSource] = useState<'kakao' | 'tour' | null>(null);
+  const [source, setSource] = useState<'kakao' | 'osm' | 'tour' | null>(null);
   const [pick, setPick] = useState<Pick | null>(null);
   const [typed, setTyped] = useState('');
   const [verdict, setVerdict] = useState<Verdict | null>(null);
@@ -54,12 +54,12 @@ export default function HerePage() {
       setRegion(await locate(p.lng, p.lat).catch(() => null));
       if (!on) return;
       setMsg('근처를 찾는 중…');
-      // 동네 가게는 카카오(음식점·카페)가 먼저, 안 되면 관광공사(관광지·음식점)
+      // 동네 가게는 카카오(해외는 오픈스트리트맵) 음식점·카페가 먼저, 안 되면 관광공사(관광지·음식점)
       const user = auth.status === 'ready' ? auth.user : null;
       const shops = await fetchShops(user, p.lat, p.lng);
       const r = shops?.items.length ? shops : await fetchNearby(user, p.lat, p.lng);
       if (!on) return;
-      setSource(shops?.items.length ? 'kakao' : r?.items.length ? 'tour' : null);
+      setSource(shops?.items.length ? (shops.source === 'osm' ? 'osm' : 'kakao') : r?.items.length ? 'tour' : null);
       const list = r && !r.outside ? r.items.filter((x) => x.kind !== 'stay') : [];
       setItems(list);
       setMsg(list.length ? '여기예요?' : '근처 가게 목록은 못 받았어요 · 가게 이름을 적어 주세요');
@@ -120,7 +120,7 @@ export default function HerePage() {
                 ))}
                 {matching && <span className="small muted" aria-live="polite">가게 정보를 맞춰 보는 중…</span>}
                 {items.length > shown && <button className="link-btn" onClick={() => setShown(shown + 5)}>더 보기</button>}
-                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'kakao' ? '카카오맵 장소 정보 · 남길 때는 소상공인시장진흥공단 상가정보' : '한국관광공사 관광정보'}</span>}
+                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'osm' ? '© OpenStreetMap 기여자' : source === 'kakao' ? '카카오맵 장소 정보 · 남길 때는 소상공인시장진흥공단 상가정보' : '한국관광공사 관광정보'}</span>}
               </div>
             )}
             <form className="here-own" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) choose({ name: typed.trim(), ...guessKind(typed, null), pos }); }}>

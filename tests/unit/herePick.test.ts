@@ -38,3 +38,12 @@ test('관광공사 목록(공공데이터)은 그대로 남겨도 된다', () =>
   assert.deepEqual(p.pos, { lat: 37.78, lng: 128.88 });
   assert.equal(p.ref, null);
 });
+
+test('해외 오픈스트리트맵 목록(ODbL)은 이름·주소·자리를 남겨도 된다 (출처 표시)', () => {
+  const osm: NearbyItem = { id: 'on101', name: '이치란 교토 가와라마치점', kind: 'food', type: '라멘', dist: 0, walk: 1, lat: 35.0116, lng: 135.7681, addr: '河原町通 12' };
+  const p = pickFromItem(osm, { lat: 35.01, lng: 135.76 }, null, false);
+  assert.equal(p.name, '이치란 교토 가와라마치점');
+  assert.deepEqual(p.pos, { lat: 35.0116, lng: 135.7681 });
+  assert.equal(p.addr, '河原町通 12');
+  assert.equal(p.ref, null);
+});
