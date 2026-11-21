@@ -58,9 +58,11 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const [busy, setBusy] = useState(false);
   const here = useMemo(() => tripsAtPlace(trips, samePlace(place)), [trips, place]);
   const done = here.filter((t) => t.status === 'done');
-  const name = place.t === 'kr' ? regionLong(place.code) : COUNTRY_BY_ID.get(place.id)?.name ?? place.id;
+  const countryName = place.t === 'country' ? COUNTRY_BY_ID.get(place.id)?.name ?? place.id : '';
+  // 도시를 찾아 열었으면 도시 이름 (교토 · 일본). 지도에서 나라를 눌렀으면 나라 이름
+  const name = place.t === 'kr' ? regionLong(place.code) : place.city ? `${place.city} · ${countryName}` : countryName;
   const visits = (place.t === 'kr' ? stats?.cellVisits.get(place.code) : stats?.countryVisits.get(place.id)) ?? 0;
-  const placeParam = place.t === 'kr' ? `kr:${place.code}` : `country:${place.id}`;
+  const placeParam = place.t === 'kr' ? `kr:${place.code}` : `country:${place.id}${place.city ? `:${encodeURIComponent(place.city)}` : ''}`;
 
   // 시트가 열려 있으면 알림을 위로 올려 버튼을 가리지 않게
   useEffect(() => {
