@@ -79,8 +79,8 @@ jobs:
           if [ -n "$KAKAO_REST_KEY" ]; then printf '%s' "$KAKAO_REST_KEY" | npx wrangler secret put KAKAO_REST_KEY >/dev/null 2>&1 && echo "카카오 키: 넣음" | tee -a worker-output.txt || echo "카카오 키: 넣기 실패" | tee -a worker-output.txt; else echo "카카오 키: 없음" | tee -a worker-output.txt; fi
           if [ -n "$YOUTUBE_API_KEY" ]; then printf '%s' "$YOUTUBE_API_KEY" | npx wrangler secret put YOUTUBE_API_KEY >/dev/null 2>&1 && echo "유튜브 키: 넣음" | tee -a worker-output.txt || echo "유튜브 키: 넣기 실패" | tee -a worker-output.txt; else echo "유튜브 키: 없음 (영상은 유튜브 검색 링크로)" | tee -a worker-output.txt; fi
           # 열쇠가 실제로 되는지: 결과 코드만 남긴다 (열쇠 값은 남기지 않음)
-          if [ -n "$DATA_GO_KR_KEY" ]; then C=$(curl -s -G "https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRadius" --data-urlencode "serviceKey=$DATA_GO_KR_KEY" -d radius=100 -d cx=126.9780 -d cy=37.5665 -d type=json -d numOfRows=1 | grep -o '"resultCode":"[0-9]*"' | head -1); echo "상가정보: ${C:-응답 없음 (활용 신청 승인 전일 수 있음)}" | tee -a worker-output.txt; fi
-          if [ -n "$YOUTUBE_API_KEY" ]; then N=$(curl -s -G "https://www.googleapis.com/youtube/v3/search" --data-urlencode "key=$YOUTUBE_API_KEY" -d part=id -d type=video -d maxResults=2 --data-urlencode "q=강릉 여행" | grep -c '"videoId"'); echo "유튜브: 영상 ${N}개 받음" | tee -a worker-output.txt; fi
+          if [ -n "$DATA_GO_KR_KEY" ]; then C=$(curl -s -G "https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRadius" --data-urlencode "serviceKey=$DATA_GO_KR_KEY" -d radius=100 -d cx=126.9780 -d cy=37.5665 -d type=json -d numOfRows=1 | grep -o '"resultCode":"[0-9]*"' | head -1 || true); echo "상가정보: ${C:-응답 없음 (활용 신청 승인 전일 수 있음)}" | tee -a worker-output.txt; fi
+          if [ -n "$YOUTUBE_API_KEY" ]; then N=$(curl -s -G "https://www.googleapis.com/youtube/v3/search" --data-urlencode "key=$YOUTUBE_API_KEY" -d part=id -d type=video -d maxResults=2 --data-urlencode "q=강릉 여행" | grep -c '"videoId"' || true); echo "유튜브: 영상 ${N}개 받음" | tee -a worker-output.txt; fi
           set -x
           URL=$(grep -o 'https://[a-z0-9.-]*workers.dev' deploy-output.txt | head -1)
           test -n "$URL"
