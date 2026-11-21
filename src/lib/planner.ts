@@ -112,6 +112,8 @@ export function planCandidates(c: PlanConds, d: PlannerData, now = new Date(), s
     if (w.priority) add(w.place, '', 4 - w.priority, `${w.priority}순위`);
   }
   // 2. 그 달에 좋은 국내 (안 가본 곳 먼저), 축제가 겹치면 더
+  // 점수가 모자란 곳은 따로 두었다가, 철 맞은 곳이 적은 달(12~2월 등)에 세 곳을 채우는 데 쓴다
+  const spare: { place: Place; title: string; score: number; why: string[] }[] = [];
   if (c.scope !== 'world') {
     const list = dailyShuffle(krCandidates({ scope: 'kr', unvisitedOnly: false, theme: null, stats: d.stats, info: d.info, wishes: [] }), `plan-${ymdOf(now)}`);
     for (const k of list) {
@@ -124,6 +126,7 @@ export function planCandidates(c: PlanConds, d: PlannerData, now = new Date(), s
       if (fest) { score += 4; why.push(`그때 축제: ${fest.t} (${festivalPeriod(fest)})`); }
       if (!visited) { score += 1; why.push('아직 안 가본 곳'); }
       if (score >= 3) for (const r of why) add(k.place, placeLabel(k.place), score / why.length, r);
+      else if (score > 0) spare.push({ place: k.place, title: placeLabel(k.place), score, why });
     }
   }
   // 3. 해외 도시 (기간이 되면)
@@ -134,6 +137,11 @@ export function planCandidates(c: PlanConds, d: PlannerData, now = new Date(), s
       if (!fitsLength(p)) continue;
       add(p, `${w.city}`, w.best.includes(month) ? 3 : 1.5, w.best.includes(month) ? `${month}월에 좋아요 · ${w.why}` : w.line);
     }
+  }
+  // 후보가 모자라면 (가고 싶은 곳이 없고 철 맞은 곳이 적은 달) 안 가 본 곳으로 채운다 — 같은 광역 나누기가 돌 만큼
+  for (const sp of spare) {
+    if (pool.size >= n * 2 + 1) break;
+    for (const r of sp.why) add(sp.place, sp.title, sp.score / sp.why.length, r);
   }
   // 누구와: 부모님이면 많이 걷는 곳 낮게
   if (c.who === '부모님') for (const cand of pool.values()) { const w = cityFor(d.world, cand.place); if (w && w.walk === 3) cand.score -= 2; }
