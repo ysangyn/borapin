@@ -1227,6 +1227,29 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('trip-row')).toHaveCount(before - 1);
   });
 
+  test('어디든 찾아보기: 홈에서 서산을 찾으면 큰 지도에서 서산 창이 열리고, 지도에서 교토를 찾으면 세계로 (사용자 의견 11-21)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/');
+    const box = page.getByTestId('place-search').first();
+    await box.getByLabel('지역 찾기').fill('서산');
+    await box.getByRole('option', { name: /서산시/ }).first().click();
+    await expect(page).toHaveURL(/\/map\?sel=kr%3A|\/map\?sel=kr:/);
+    const sheet = page.getByTestId('region-sheet');
+    await expect(sheet.getByTestId('sheet-title')).toContainText('서산');
+    await expect(sheet.getByTestId('region-info')).toBeVisible();
+    await shot(page, '31-search-seosan');
+    // 지도 화면에서: 교토 (도시) → 세계 지도의 일본 교토 창
+    await sheet.getByRole('button', { name: '닫기' }).first().click();
+    const mbox = page.getByTestId('place-search');
+    await mbox.getByLabel('지역 찾기').fill('교토');
+    await mbox.getByLabel('지역 찾기').press('Enter');
+    await expect(page.getByRole('tab', { name: '세계' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('교토');
+    // 초성으로도 찾는다
+    await mbox.getByLabel('지역 찾기').fill('ㄱㄹ');
+    await expect(mbox.getByRole('option', { name: /강릉/ }).first()).toBeVisible();
+  });
+
   test('지역 창의 볼거리를 누르면 알아보기 창에서 가고 싶어요 (아내 의견: 지도보다 사진·소개·후기)', async ({ page }) => {
     await signIn(page, OWNER);
     // 기록이 많이 쌓인 뒤라 홈은 지도가 아래로 밀려 있다: 큰 지도에서 누른다

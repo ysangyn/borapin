@@ -1944,3 +1944,11 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .spot-gallery-empty { aspect-ratio: 4 / 3; border-radius: 14px; background: var(--mist2, #EEE9FB); }
 .spot-voices { display: flex; flex-wrap: wrap; gap: 6px; }
 .spot-more-places { display: flex; flex-direction: column; gap: 6px; }
+
+/* 어디든 찾아보기 (홈·지도, 11-21) */
+.place-search { position: relative; }
+.place-search .input { padding-left: 40px; height: 46px; border-radius: 999px; }
+.place-search-ico { position: absolute; left: 14px; top: 14px; color: var(--ink3); pointer-events: none; }
+.place-search-results { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 40; background: var(--card); border: 1.5px solid var(--edge); border-radius: 16px; box-shadow: 0 10px 24px rgba(23, 20, 43, .14); overflow: hidden; }
+.map-top .place-search { pointer-events: auto; max-width: 520px; }
+.map-top .place-search .input { box-shadow: 0 4px 14px rgba(23, 20, 43, .12); border-color: transparent; }

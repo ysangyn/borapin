@@ -30,10 +30,11 @@ import { DraftNudge } from '../components/NextTripHub';
 import PendingWishesCard from '../components/PendingWishesCard';
 import MyMapsCard from '../components/MyMapsCard';
 import { formatWhen } from '../lib/dates';
-import { COUNTRY_BY_ID, placeLabel } from '../lib/geo';
+import { COUNTRY_BY_ID, placeLabel, placeParam } from '../lib/geo';
 import { spaceTitle, toneOf } from '../lib/members';
 import { times } from '../lib/ko';
 import { spaceWord } from '../lib/solo';
+import PlaceSearch from '../components/PlaceSearch';
 
 export default function Home() {
   const { trips } = useTrips();
@@ -85,6 +86,8 @@ export default function Home() {
           </div>
           <img className="home-bora" src="/art/bora-face.webp" alt="" width={80} height={80} decoding="async" />
         </div>
+        {/* 어디든 찾아보기: 고르면 큰 지도에서 그 지역 창이 열린다 (사용자 의견 11-21) */}
+        <PlaceSearch onPick={(p) => nav(`/map?sel=${placeParam(p)}`)} />
 
         {/* 단계 카드는 그 여행의 사진·글 개수만 서버에서 센다 (사진·글 전체 구독 없음) */}
         {stage && <StageCard key={stage.trip.id} stage={stage} />}
