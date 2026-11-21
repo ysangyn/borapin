@@ -37,6 +37,8 @@ async function expectMapDrawn(page: Page) {
 /** 지도 위 경도·위도 지점을 누른다 */
 async function tapLngLat(page: Page, lng: number, lat: number) {
   const project = () => page.evaluate(([x, y]) => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([x, y]), [lng, lat] as [number, number]);
+  // 사람처럼: 지도가 화면 아래에 걸쳐 있으면 먼저 지도까지 내린다 (홈 위에 찾기 칸이 생겨 지도가 내려갔다)
+  await page.getByTestId('map').first().scrollIntoViewIfNeeded();
   const box = await page.getByTestId('map').first().boundingBox();
   if (!box) throw new Error('지도가 없어요');
   let pt = await project();
