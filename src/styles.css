@@ -1952,3 +1952,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .place-search-results { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 40; background: var(--card); border: 1.5px solid var(--edge); border-radius: 16px; box-shadow: 0 10px 24px rgba(23, 20, 43, .14); overflow: hidden; }
 .map-top .place-search { pointer-events: auto; max-width: 520px; }
 .map-top .place-search .input { box-shadow: 0 4px 14px rgba(23, 20, 43, .12); border-color: transparent; }
+
+/* 알아보기 창의 유튜브 영상 줄 (16:9 썸네일, 제목 두 줄) */
+.spot-videos-strip { display: flex; flex-direction: column; gap: 6px; }
+.video-card { width: 168px; }
+.video-card img { width: 168px; height: 94px; }
+.video-card span:not(.tiny) { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }

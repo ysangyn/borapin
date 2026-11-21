@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../lib/auth';
 import { useHome } from '../lib/home';
-import { fetchSpot, type AboutInfo, type SpotInfo } from '../lib/nearby';
+import { fetchSpot, fetchVideos, type AboutInfo, type SpotInfo, type VideoItem } from '../lib/nearby';
 import { straightKm } from '../lib/placeApps';
 import { foodPlaceUrl, reviewUrl, videoUrl, type Row } from '../lib/explore';
 import { MapAppButton, useWishItem } from './MapChoice';
@@ -41,6 +41,16 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
   const [more, setMore] = useState(false);
   const [map, setMap] = useState(false);
   const food = spot.kind === 'food';
+  const [videos, setVideos] = useState<VideoItem[] | null>(null);
+  useEffect(() => {
+    let on = true;
+    setVideos(null);
+    // 유튜브 영상 몇 개를 창 안에 (열쇠가 없거나 실패하면 null → 아래 '영상으로 보기' 링크만)
+    const nm = spot.kind === 'food' ? spot.name.split('/')[0].trim() : spot.name;
+    void fetchVideos(auth.status === 'ready' ? auth.user : null, nm, spot.area, spot.kind === 'food' ? 'food' : 'sight').then((v) => on && setVideos(v));
+    return () => { on = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spot.name, spot.kind]);
   useEffect(() => {
     let on = true;
     setInfo(undefined); setMore(false); setMap(false);
@@ -84,9 +94,24 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
         )}
 
         {/* 사람들 이야기: 다녀온 사람의 말과 영상이 '가 보고 싶다'를 가장 빨리 만든다 */}
+        {!!videos?.length && (
+          <div className="spot-videos-strip" data-testid="spot-video-strip">
+            <span className="small" style={{ fontWeight: 600 }}>영상으로 미리 보기</span>
+            <div className="tour-strip">
+              {videos.slice(0, 6).map((v) => (
+                <a key={v.id} className="tour-card video-card" href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener noreferrer" data-testid="spot-video">
+                  <img src={v.thumb} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                  <span>{v.title}</span>
+                  <span className="tiny muted">{v.channel}</span>
+                </a>
+              ))}
+            </div>
+            <span className="tiny muted">YouTube에서 열려요</span>
+          </div>
+        )}
         <div className="spot-voices" data-testid="spot-voices">
           <a className="btn sm soft" href={reviewUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-reviews">다녀온 사람들 후기</a>
-          <a className="btn sm soft" href={videoUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-videos">영상으로 보기</a>
+          <a className="btn sm soft" href={videoUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-videos">{videos?.length ? '영상 더 보기' : '영상으로 보기'}</a>
           {food && <a className="btn sm soft" href={foodPlaceUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer">{searchName} 맛집 찾기</a>}
         </div>
 

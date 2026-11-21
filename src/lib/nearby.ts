@@ -77,3 +77,29 @@ export function fetchAbout(user: User | null, names: string[], area: string): Pr
   }
   return p;
 }
+
+/** 카카오에서 고른 한 곳 → 상가정보의 같은 가게 (worker /match). 못 찾거나 실패하면 null */
+export async function fetchStoreMatch(user: User | null, name: string, lat: number, lng: number): Promise<import('./herePick').StoreMatch | null> {
+  if (!user || !aiAvailable()) return null;
+  try {
+    const token = await user.getIdToken();
+    const r = await fetch(`${ASK_URL}/match?name=${encodeURIComponent(name.slice(0, 80))}&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(6000) });
+    if (!r.ok) return null;
+    const j = (await r.json()) as { match?: import('./herePick').StoreMatch | null };
+    const m = j.match;
+    return m && typeof m.name === 'string' && Number.isFinite(m.lat) && Number.isFinite(m.lng) ? m : null;
+  } catch { return null; }
+}
+
+export interface VideoItem { id: string; title: string; channel: string; at: string; thumb: string }
+/** 유튜브 영상 몇 개 (worker /videos, 7일 캐시). 열쇠가 없거나 실패하면 null → 화면은 유튜브 검색 링크 */
+export async function fetchVideos(user: User | null, name: string, area: string, kind: 'food' | 'sight'): Promise<VideoItem[] | null> {
+  if (!user || !aiAvailable()) return null;
+  try {
+    const token = await user.getIdToken();
+    const r = await fetch(`${ASK_URL}/videos?name=${encodeURIComponent(name.slice(0, 40))}&area=${encodeURIComponent(area.slice(0, 20))}&kind=${kind}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return null;
+    const j = (await r.json()) as { items?: VideoItem[] };
+    return Array.isArray(j.items) ? j.items.filter((v) => /^[A-Za-z0-9_-]{11}$/.test(v.id) && /^https:\/\/i\.ytimg\.com\//.test(v.thumb)) : null;
+  } catch { return null; }
+}
