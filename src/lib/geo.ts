@@ -33,6 +33,10 @@ export const COUNTRY_BY_ID = new Map(COUNTRIES.map((c) => [c.id, c]));
 /** 해외 주요 도시 (나라, 이름, 영문, 다른 이름들…). 검색에서 '청도'→'칭다오 · 중국'처럼 바로 뜨게 */
 export interface City { country: string; name: string; en: string; aliases: string[] }
 export const CITIES: City[] = (citiesData as string[][]).map(([country, name, en, ...aliases]) => ({ country, name, en, aliases }));
+const CITIES_BY_COUNTRY = new Map<string, string[]>();
+for (const c of CITIES) CITIES_BY_COUNTRY.set(c.country, [...(CITIES_BY_COUNTRY.get(c.country) ?? []), c.name]);
+/** 나라의 도시 이름들 (자료에 적힌 순서 = 많이 가는 순) */
+export const citiesOf = (countryId: string): string[] => CITIES_BY_COUNTRY.get(countryId) ?? [];
 export const CONTINENTS = ['아시아', '유럽', '북아메리카', '남아메리카', '아프리카', '오세아니아'];
 
 export function regionLabel(code: string): string {

@@ -265,12 +265,39 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '04-detail');
   });
 
+  test('세계 여행: 나라를 고르면 도시를 여러 곳 고를 수 있다 (대만 → 타이베이·타이중)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/record');
+    await pickPlace(page, '대만', '대만');
+    const chips = page.getByTestId('city-chips');
+    await expect(chips).toContainText('타이베이');
+    await expect(chips).toContainText('가오슝');
+    await page.getByTestId('city-타이베이').click();
+    await page.getByTestId('city-타이중').click();
+    await expect(page.getByRole('button', { name: /타이베이 빼기/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /타이중 빼기/ })).toBeVisible();
+    // '나라만' 칸은 도시 칸으로 바뀌었다
+    await expect(page.getByRole('button', { name: /^대만 빼기$/ })).toHaveCount(0);
+    // 다시 누르면 뺀다. 도시가 다 빠지면 다시 '나라만'
+    await page.getByTestId('city-타이중').click();
+    await page.getByTestId('city-타이베이').click();
+    await expect(page.getByRole('button', { name: /대만 빼기/ })).toHaveCount(1);
+    await shot(page, '05b-world-cities');
+  });
+
   test('해외 여행 기록 (도시, 계절만)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/record');
     await pickPlace(page, '일본', '일본');
-    await page.getByPlaceholder(/도시/).fill('교토');
+    // 나라를 고르면 그 나라의 도시가 칩으로 나온다
+    await expect(page.getByTestId('city-chips')).toBeVisible();
+    await page.getByTestId('city-교토').click();
+    await expect(page.getByTestId('city-교토')).toHaveAttribute('aria-pressed', 'true');
+    // 목록에 없는 도시는 직접 적는다
+    await page.getByPlaceholder('목록에 없으면 직접 적기').fill('가나자와');
     await page.getByRole('button', { name: '도시 넣기' }).click();
+    await expect(page.getByRole('button', { name: /가나자와 빼기/ })).toBeVisible();
+    await page.getByRole('button', { name: /가나자와 빼기/ }).click();
     await page.getByRole('button', { name: '계절', exact: true }).click();
     await page.getByLabel('연도').selectOption('2025');
     await page.getByRole('button', { name: '가을' }).click();

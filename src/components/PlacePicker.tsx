@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { searchPlaces, placeLong, COUNTRY_BY_ID } from '../lib/geo';
+import { searchPlaces, placeLong, citiesOf, COUNTRY_BY_ID } from '../lib/geo';
 import type { Place } from '../lib/types';
 import { Icon } from './ui';
 
@@ -17,16 +17,25 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
   const add = (p: Place) => {
     if (!value.some((v) => samePlace(v, p))) onChange([...value, p]);
     setQ('');
-    if (p.t === 'country' && !p.city) setCityFor(p.id);
+    if (p.t === 'country') setCityFor(p.id);
   };
   const remove = (i: number) => onChange(value.filter((_, j) => j !== i));
-  const addCity = () => {
-    if (!cityFor || !city.trim()) return;
-    const without = value.filter((v) => !(v.t === 'country' && v.id === cityFor && !v.city));
-    const p: Place = { t: 'country', id: cityFor, city: city.trim() };
-    if (!without.some((v) => samePlace(v, p))) onChange([...without, p]);
+  /** 도시를 넣으면 '나라만' 칸은 도시 칸으로 바뀐다. 이미 있는 도시를 다시 누르면 뺀다 (도시 칩) */
+  const addCity = (name = city) => {
+    if (!cityFor || !name.trim()) return;
+    const p: Place = { t: 'country', id: cityFor, city: name.trim() };
+    if (value.some((v) => samePlace(v, p))) {
+      const rest = value.filter((v) => !samePlace(v, p));
+      // 그 나라의 도시가 하나도 안 남으면 다시 '나라만'으로
+      onChange(rest.some((v) => v.t === 'country' && v.id === cityFor) ? rest : [...rest, { t: 'country', id: cityFor }]);
+    } else {
+      const without = value.filter((v) => !(v.t === 'country' && v.id === cityFor && !v.city));
+      onChange([...without, p]);
+    }
     setCity('');
   };
+  const known = cityFor ? citiesOf(cityFor) : [];
+  const picked = (name: string) => value.some((v) => v.t === 'country' && v.id === cityFor && v.city === name);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -69,11 +78,23 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
           ))}
         </div>
       )}
+      {cityFor && known.length > 0 && (
+        <div className="city-pick" data-testid="city-chips">
+          <span className="tiny muted">{COUNTRY_BY_ID.get(cityFor)?.name}의 어느 도시예요? (여러 곳 골라도 돼요)</span>
+          <div className="chips">
+            {known.map((n) => (
+              <button key={n} type="button" className={'chip' + (picked(n) ? ' on' : '')} aria-pressed={picked(n)} onClick={() => addCity(n)} data-testid={`city-${n}`}>
+                {picked(n) ? <Icon name="check" size={13} stroke={2.6} /> : null}{n}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {cityFor && (
         <div style={{ display: 'flex', gap: 6 }}>
           <input
             className="input"
-            placeholder={`${COUNTRY_BY_ID.get(cityFor)?.name ?? ''}의 도시 (선택, 예: 교토)`}
+            placeholder={known.length ? '목록에 없으면 직접 적기' : `${COUNTRY_BY_ID.get(cityFor)?.name ?? ''}의 도시 (선택, 예: 교토)`}
             aria-label="도시 이름"
             value={city}
             onChange={(e) => setCity(e.target.value)}
@@ -84,7 +105,7 @@ export default function PlacePicker({ value, onChange }: { value: Place[]; onCha
               }
             }}
           />
-          <button type="button" className="btn soft sm" style={{ height: 46 }} onClick={addCity}>도시 넣기</button>
+          <button type="button" className="btn soft sm" style={{ height: 46 }} onClick={() => addCity()}>도시 넣기</button>
         </div>
       )}
     </div>

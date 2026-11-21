@@ -1920,3 +1920,7 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .home-head.compact .headline br { display: none; }
 .home-head.compact .small { display: none; }
 .home-head.compact .home-bora { width: 44px; height: 44px; box-shadow: 2px 2px 0 var(--line2); }
+
+/* 나라를 고른 뒤 그 나라의 도시 칩 */
+.city-pick { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 16px; background: var(--violet-wash, #F1F0FB); }
+.city-pick .chip svg { margin-right: 2px; }
