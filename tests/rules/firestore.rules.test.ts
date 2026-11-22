@@ -13,7 +13,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { Bytes, FieldPath, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, type Firestore } from 'firebase/firestore';
+import { Bytes, FieldPath, Timestamp, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch, type Firestore } from 'firebase/firestore';
 
 const OWNER = 'ysangyn@gmail.com';
 const BORA = 'bora@example.com';
@@ -1343,6 +1343,16 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await bad({ kind: 'secret' });
     await bad({ photos: ['1', '2', '3'] });
     await bad({ tag: 'x'.repeat(21) });
+    // 올린 시각은 남기지 않는다: '지금 여기'에서 바로 공개하면 '이 사람이 지금 이 가게에 있다'가 보인다 (달까지만)
+    await bad({ at: Timestamp.now() });
+    await bad({ updatedAt: Timestamp.now() });
+    // 지역은 보라핀 지역 모양만 (국내 칸 번호 / 나라·도시)
+    await bad({ region: { t: 'kr', code: '41285', note: '우리 집 근처' } });
+    await bad({ region: { t: 'kr', code: 41285 } });
+    await bad({ region: { t: 'home', code: '41285' } });
+    await bad({ region: { t: 'country', id: 'JPN', city: 'x'.repeat(41) } });
+    await assertSucceeds(setDoc(R(db, 'k301_bora'), rev('bora', 'k301', 'main', { region: { t: 'country', id: 'JPN', city: '교토' } })));
+    await assertFails(updateDoc(R(db, 'k100_bora'), { updatedAt: Timestamp.now() }));
   });
 
   test('가리기: 마을 주인만 가리고 푼다. 쓴 사람은 처음부터 가려진 채로 올리거나 스스로 풀 수 없다', async () => {
@@ -1382,6 +1392,7 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { data: Bytes.fromUint8Array(new Uint8Array(220001)) })));
     await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { lat: 37.5 })));
     await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { takenAt: 1 })));
+    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { at: Timestamp.now() }))); // 올린 시각도 남기지 않는다
     await assertFails(setDoc(PP(dave(), 'pp-dave-1'), pphoto('dave', 'main')));
     await assertFails(updateDoc(PP(as.bora(), 'pp-bora-1'), { w: 20 }));
     await assertFails(getDocs(collection(carol(), 'pubPhotos')));
