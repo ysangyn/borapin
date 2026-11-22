@@ -511,8 +511,16 @@ service cloud.firestore {
     // - 가리기(hidden)는 마을 주인만. 가려진 평은 쓴 사람과 주인만 본다
     function pubReviewPath(id) { return /databases/$(database)/documents/pubReviews/$(id); }
     function flagsPath() { return /databases/$(database)/documents/config/flags; }
+    // 보라핀 지역 모양: 국내 칸 { t: 'kr', code } 또는 나라·도시 { t: 'country', id, city? }
+    function validRegion(r) {
+      return r is map
+        && ((r.keys().hasOnly(['t', 'code']) && r.t == 'kr' && r.code is string && r.code.size() <= 10)
+          || (r.keys().hasOnly(['t', 'id', 'city']) && r.keys().hasAll(['t', 'id']) && r.t == 'country'
+              && r.id is string && r.id.size() <= 4 && (!('city' in r) || (r.city is string && r.city.size() <= 40))));
+    }
+    // 올린 시각(at·updatedAt)은 두지 않는다: '지금 여기'에서 바로 공개하면 '이 사람이 지금 이 가게에 있다'가 보인다. 달(month)까지만
     function validPubReview(d, id) {
-      return d.keys().hasOnly(['placeKey', 'name', 'kind', 'region', 'tag', 'verdict', 'line', 'nick', 'uid', 'spaceId', 'month', 'photos', 'hidden', 'hiddenReason', 'hiddenAt', 'at', 'updatedAt', 'v'])
+      return d.keys().hasOnly(['placeKey', 'name', 'kind', 'region', 'tag', 'verdict', 'line', 'nick', 'uid', 'spaceId', 'month', 'photos', 'hidden', 'hiddenReason', 'hiddenAt', 'v'])
         && d.keys().hasAll(['placeKey', 'name', 'kind', 'verdict', 'line', 'nick', 'uid', 'spaceId', 'month', 'hidden', 'v'])
         && d.placeKey is string && d.placeKey.matches('^[kn][0-9]{1,40}$')
         && d.uid == request.auth.uid
@@ -520,7 +528,7 @@ service cloud.firestore {
         && d.spaceId is string && inSpace(d.spaceId)
         && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
         && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
-        && (!('region' in d) || (d.region is map && d.region.size() <= 4))
+        && (!('region' in d) || validRegion(d.region))
         && (!('tag' in d) || (d.tag is string && d.tag.size() <= 20))
         && d.verdict in ['again', 'once']
         && d.line is string && d.line.size() <= 200
@@ -556,7 +564,7 @@ service cloud.firestore {
       allow get: if isUser();
       allow list: if signedIn() && (resource.data.uid == request.auth.uid || isOwner());
       allow create: if isUser()
-        && request.resource.data.keys().hasOnly(['uid', 'spaceId', 'reviewId', 'data', 'w', 'h', 'at', 'v'])
+        && request.resource.data.keys().hasOnly(['uid', 'spaceId', 'reviewId', 'data', 'w', 'h', 'v'])
         && request.resource.data.keys().hasAll(['uid', 'spaceId', 'reviewId', 'data', 'v'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.spaceId is string && inSpace(request.resource.data.spaceId)
