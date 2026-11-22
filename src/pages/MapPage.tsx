@@ -11,6 +11,7 @@ import { useWishFlags } from '../lib/wishFlags';
 import { usePlaceSpots } from '../lib/placeSpots';
 import { CONTINENTS, parsePlaceParam } from '../lib/geo';
 import type { Place } from '../lib/types';
+import PlaceSearch from '../components/PlaceSearch';
 
 export default function MapPage() {
   const { trips } = useTrips();
@@ -20,6 +21,7 @@ export default function MapPage() {
   const initial = useMemo(() => parsePlaceParam(sp.get('sel'))[0] ?? null, [sp]);
   const [mode, setMode] = useState<MapMode>(initial?.t === 'country' ? 'world' : 'kr');
   const [sel, setSel] = useState<Place | null>(initial);
+  const [fly, setFly] = useState<Place | null>(initial);
   const flags = useWishFlags(wishes, trips);
   const spots = usePlaceSpots(recs ?? null);
   const mem = useTripMemories(trips);
@@ -29,8 +31,8 @@ export default function MapPage() {
   return (
     <div className="map-full" style={{ bottom: 'calc(var(--nav-h) + var(--safe-b))' }}>
       <MapView
-        mode={mode} stats={stats} garden={plants} height="100%" legend selected={sel} onSelect={(p) => setSel(p)} flags={flags} spots={spots} flyTo={initial}
-        controlsTop={112} legendBottom={sel ? 300 : 14} className="full"
+        mode={mode} stats={stats} garden={plants} height="100%" legend selected={sel} onSelect={(p) => setSel(p)} flags={flags} spots={spots} flyTo={fly}
+        controlsTop={164} legendBottom={sel ? 300 : 14} className="full"
       />
       <div className="map-top">
         <div className="seg dark floating" role="tablist" style={{ alignSelf: 'flex-start', borderRadius: 14 }}>
@@ -39,6 +41,7 @@ export default function MapPage() {
           <Link role="tab" aria-selected={false} to="/maps" data-testid="map-mymaps">내 지도</Link>
           <Link role="tab" aria-selected={false} to="/circles" data-testid="map-circles">모임</Link>
         </div>
+        <PlaceSearch className="floating" onPick={(p) => { setMode(p.t === 'country' ? 'world' : 'kr'); setSel(p); setFly(p); }} />
         {stats && (
           <div className="chips" data-testid="map-stats">
             {mode === 'kr' ? (

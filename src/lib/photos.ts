@@ -231,3 +231,15 @@ export function takenLabel(p: Photo): string {
   const { y, m, d } = ymd(p.taken);
   return `${y}.${m}.${d} ${p.taken.slice(11, 16)}${p.takenGuess ? ' (추정)' : ''}`;
 }
+
+/** 모임에 거는 작은 사진: 규칙 한도(220KB)보다 넉넉히 작게, 긴 변 1200px부터 줄인다 */
+export async function shrinkSmall(file: File, maxBytes = 200 * 1024): Promise<{ blob: Blob; w: number; h: number }> {
+  const bmp = await decode(file);
+  try {
+    for (const [side, q] of [[1200, 0.78], [1000, 0.72], [800, 0.68], [640, 0.62]] as [number, number][]) {
+      const r = await encode(bmp, side, q);
+      if (r.blob.size <= maxBytes) return r;
+    }
+    throw new Error('사진이 너무 커요. 다른 사진으로 해 볼까요?');
+  } finally { bmp.close?.(); }
+}

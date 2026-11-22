@@ -37,6 +37,8 @@ async function expectMapDrawn(page: Page) {
 /** 지도 위 경도·위도 지점을 누른다 */
 async function tapLngLat(page: Page, lng: number, lat: number) {
   const project = () => page.evaluate(([x, y]) => (window as unknown as { __map: { project: (l: [number, number]) => { x: number; y: number } } }).__map.project([x, y]), [lng, lat] as [number, number]);
+  // 사람처럼: 지도가 화면 아래에 걸쳐 있으면 먼저 지도까지 내린다 (홈 위에 찾기 칸이 생겨 지도가 내려갔다)
+  await page.getByTestId('map').first().scrollIntoViewIfNeeded();
   const box = await page.getByTestId('map').first().boundingBox();
   if (!box) throw new Error('지도가 없어요');
   let pt = await project();
@@ -265,12 +267,39 @@ test.describe.serial('보라핀 1단계', () => {
     await shot(page, '04-detail');
   });
 
+  test('세계 여행: 나라를 고르면 도시를 여러 곳 고를 수 있다 (대만 → 타이베이·타이중)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/record');
+    await pickPlace(page, '대만', '대만');
+    const chips = page.getByTestId('city-chips');
+    await expect(chips).toContainText('타이베이');
+    await expect(chips).toContainText('가오슝');
+    await page.getByTestId('city-타이베이').click();
+    await page.getByTestId('city-타이중').click();
+    await expect(page.getByRole('button', { name: /타이베이 빼기/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /타이중 빼기/ })).toBeVisible();
+    // '나라만' 칸은 도시 칸으로 바뀌었다
+    await expect(page.getByRole('button', { name: /^대만 빼기$/ })).toHaveCount(0);
+    // 다시 누르면 뺀다. 도시가 다 빠지면 다시 '나라만'
+    await page.getByTestId('city-타이중').click();
+    await page.getByTestId('city-타이베이').click();
+    await expect(page.getByRole('button', { name: /대만 빼기/ })).toHaveCount(1);
+    await shot(page, '05b-world-cities');
+  });
+
   test('해외 여행 기록 (도시, 계절만)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/record');
     await pickPlace(page, '일본', '일본');
-    await page.getByPlaceholder(/도시/).fill('교토');
+    // 나라를 고르면 그 나라의 도시가 칩으로 나온다
+    await expect(page.getByTestId('city-chips')).toBeVisible();
+    await page.getByTestId('city-교토').click();
+    await expect(page.getByTestId('city-교토')).toHaveAttribute('aria-pressed', 'true');
+    // 목록에 없는 도시는 직접 적는다
+    await page.getByPlaceholder('목록에 없으면 직접 적기').fill('가나자와');
     await page.getByRole('button', { name: '도시 넣기' }).click();
+    await expect(page.getByRole('button', { name: /가나자와 빼기/ })).toBeVisible();
+    await page.getByRole('button', { name: /가나자와 빼기/ }).click();
     await page.getByRole('button', { name: '계절', exact: true }).click();
     await page.getByLabel('연도').selectOption('2025');
     await page.getByRole('button', { name: '가을' }).click();
@@ -1200,7 +1229,54 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('trip-row')).toHaveCount(before - 1);
   });
 
-  test('지역 창의 볼거리를 눌러 바로 가고 싶어요 (아내 의견: 일일이 검색 안 해도 되게)', async ({ page }) => {
+  test('처음 가 보는 나라: 브루나이 한 장 → 4박 5일 → 이 일정으로 계획하기 → 여행 일정에 곳마다 들어간다 (사용자 의견 11-21)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/region/country:BRN');
+    const ft = page.getByTestId('first-time');
+    await expect(ft).toBeVisible();
+    await expect(ft).toContainText('브루나이');
+    await expect(ft.getByTestId('first-facts')).toContainText('무비자 30일');
+    await expect(ft.getByTestId('first-facts')).toContainText('술을 팔지 않아요');
+    await expect(ft.getByTestId('first-days').locator('li')).toHaveCount(3);
+    await ft.getByTestId('first-4').click();
+    await expect(ft.getByTestId('first-days').locator('li')).toHaveCount(5);
+    await shot(page, '32-first-time-brunei');
+    // 대표 볼거리를 누르면 알아보기 창
+    await ft.getByTestId('first-see').first().click();
+    await expect(page.getByTestId('spot-detail')).toBeVisible();
+    await page.getByTestId('spot-detail').click({ position: { x: 5, y: 5 } });
+    await ft.getByTestId('first-plan').click();
+    await expect(page).toHaveURL(/\/plan\?place=country.*first=4/);
+    await page.getByTestId('planner-make').click();
+    await expect(page).toHaveURL(/\/trips\/[A-Za-z0-9]+\?tab=plan/);
+    await expect(page.getByText('울루 템부롱 국립공원').first()).toBeVisible();
+    await expect(page.getByText('캄퐁 아에르').first()).toBeVisible();
+  });
+
+  test('어디든 찾아보기: 홈에서 서산을 찾으면 큰 지도에서 서산 창이 열리고, 지도에서 교토를 찾으면 세계로 (사용자 의견 11-21)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/');
+    const box = page.getByTestId('place-search').first();
+    await box.getByLabel('지역 찾기').fill('서산');
+    await box.getByRole('option', { name: /서산시/ }).first().click();
+    await expect(page).toHaveURL(/\/map\?sel=kr%3A|\/map\?sel=kr:/);
+    const sheet = page.getByTestId('region-sheet');
+    await expect(sheet.getByTestId('sheet-title')).toContainText('서산');
+    await expect(sheet.getByTestId('region-info')).toBeVisible();
+    await shot(page, '31-search-seosan');
+    // 지도 화면에서: 교토 (도시) → 세계 지도의 일본 교토 창
+    await sheet.getByRole('button', { name: '닫기' }).first().click();
+    const mbox = page.getByTestId('place-search');
+    await mbox.getByLabel('지역 찾기').fill('교토');
+    await mbox.getByLabel('지역 찾기').press('Enter');
+    await expect(page.getByRole('tab', { name: '세계' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('교토');
+    // 초성으로도 찾는다
+    await mbox.getByLabel('지역 찾기').fill('ㄱㄹ');
+    await expect(mbox.getByRole('option', { name: /강릉/ }).first()).toBeVisible();
+  });
+
+  test('지역 창의 볼거리를 누르면 알아보기 창에서 가고 싶어요 (아내 의견: 지도보다 사진·소개·후기)', async ({ page }) => {
     await signIn(page, OWNER);
     // 기록이 많이 쌓인 뒤라 홈은 지도가 아래로 밀려 있다: 큰 지도에서 누른다
     await page.goto('/map');
@@ -1208,20 +1284,32 @@ test.describe.serial('보라핀 1단계', () => {
     await tapLngLat(page, 129.06, 35.2);
     const sheet = page.getByTestId('region-sheet');
     await expect(sheet.getByTestId('sheet-title')).toHaveText('부산');
-    const item = sheet.getByTestId('region-info').locator('.tap-item').first();
-    const name = (await item.innerText()).trim();
+    // 볼거리는 사진 카드: 누르면 지도보다 먼저 '알아보기' 창 (사진·소개·후기·영상, 지도는 맨 아래 접어서) — 아내 의견 11-21
+    const item = sheet.getByTestId('explore-card').first();
+    const name = (await item.locator('.explore-name').innerText()).trim();
     await item.click();
-    const dlg = page.getByTestId('map-choice');
+    const dlg = page.getByTestId('spot-detail');
     await expect(dlg).toContainText(name);
-    await dlg.getByTestId('map-choice-wish').click();
+    await expect(dlg.getByTestId('spot-reviews')).toHaveAttribute('href', /search\.naver\.com.*where=blog/);
+    await expect(dlg.getByTestId('spot-videos')).toHaveAttribute('href', /youtube\.com\/results/);
+    // 지도는 처음엔 접혀 있다
+    await expect(dlg.getByTestId('spot-show-map')).toBeVisible();
+    await dlg.getByTestId('spot-wish').click();
     await expect(page.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
+    await expect(dlg.getByTestId('spot-wish')).toHaveText(/담겨 있어요/);
+    await expect(dlg.getByTestId('spot-wish')).toBeDisabled();
+    await shot(page, '30-spot-detail-wish');
+    // 먹거리 카드도 같은 창 (음식이면 '맛집 찾기'가 더 있다)
+    await dlg.getByRole('button', { name: '닫기' }).click();
     await expect(dlg).toHaveCount(0);
-    // 다시 누르면 '담겨 있어요'
-    await item.click();
-    await expect(dlg.getByTestId('map-choice-wish')).toHaveText(/담겨 있어요/);
-    await expect(dlg.getByTestId('map-choice-wish')).toBeDisabled();
-    await shot(page, '30-map-choice-wish');
-    await dlg.getByRole('button', { name: '그대로 두기' }).click();
+    const food = sheet.getByTestId('explore-food').first();
+    if (await food.count()) {
+      await food.click();
+      await expect(dlg).toContainText('먹거리');
+      await expect(dlg.getByRole('link', { name: /맛집 찾기/ })).toBeVisible();
+      await shot(page, '30b-food-detail');
+      await dlg.getByRole('button', { name: '닫기' }).click();
+    }
     await page.goto('/wishes');
     await expect(page.getByTestId('wish-card').filter({ hasText: '부산' })).toContainText(name);
     // 우리 공간: 투어·티켓 찾을 곳 (기본은 누를 때마다 고르기, 한 곳으로 정할 수 있음)

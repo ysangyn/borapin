@@ -16,8 +16,12 @@
 import { parseShareDoc, previewHtml } from './mapPreview';
 import { find } from './find';
 import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
+import { about } from './about';
 import { nearby, spot } from './nearby';
 import { parseKakaoNear } from './kakaoParse';
+import { overpassQuery, parseOsmNear } from './osmParse';
+import { matchStore, parseStores, storeUrl } from './storeMatch';
+import { parseVideos, videoQuery, videosUrl } from './youtube';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
 import { checkPayload, MEMBER_TTL_MS, memberDocUrl, memberFromStatus, profileDocUrl, RateCounter, spaceMemberUrl, spaceOfProfile, TtlCache, type TokenPayload } from './guard';
 
@@ -32,6 +36,8 @@ export interface Env {
   DATA_GO_KR_KEY?: string;
   /** 카카오 REST API 키 (카카오맵 사용 설정 ON·무료 쿼터 앱): CI가 wrangler secret으로 넣는다. 없으면 /shops는 503 */
   KAKAO_REST_KEY?: string;
+  /** 유튜브 Data API v3 키 (API 제한만, 웹사이트 제한 없음): CI가 wrangler secret으로. 없으면 /videos는 503 */
+  YOUTUBE_API_KEY?: string;
 }
 
 const CORS = {
@@ -301,7 +307,10 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isSpot = req.method === 'GET' && url.pathname === '/spot';
     const isFind = req.method === 'GET' && url.pathname === '/find';
     const isShops = req.method === 'GET' && url.pathname === '/shops';
-    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isAbout = req.method === 'GET' && url.pathname === '/about';
+    const isMatch = req.method === 'GET' && url.pathname === '/match';
+    const isVideos = req.method === 'GET' && url.pathname === '/videos';
+    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && !isAbout && !isMatch && !isVideos && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -353,12 +362,28 @@ async function handle(req: Request, env: Env): Promise<Response> {
     // 지금 여기 근처 음식점·카페 (카카오 로컬, 키는 Worker 비밀값 KAKAO_REST_KEY).
     // 카카오 정책상 결과를 저장해 다시 쓰지 않으므로 캐시하지 않는다. 200m 안에 다섯이 안 되면 500m까지
     if (isShops) {
-      if (!env.KAKAO_REST_KEY) return json({ error: 'no key' }, 503);
       const rl4 = await env.PER_USER.limit({ key: who.uid });
       if (!rl4.success) return json({ error: 'too many requests', retry: 60 }, 429);
       const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad position' }, 400);
-      if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) return json({ items: [], outside: true });
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return json({ error: 'bad position' }, 400);
+      // 해외: 오픈스트리트맵 (ODbL, 열쇠 없음). 같은 자리(약 100m 칸)는 하루 캐시 — 공개 Overpass 서버에 부담을 덜 준다
+      if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) {
+        const cache = caches.default;
+        const ck = new Request(`https://cache.borapin/osm?${lat.toFixed(3)},${lng.toFixed(3)}`);
+        const hit = await cache.match(ck);
+        if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+        const ask = (radius: number) => fetch('https://overpass-api.de/api/interpreter', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' }, body: `data=${encodeURIComponent(overpassQuery(lat, lng, radius))}` })
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`overpass ${r.status}`))));
+        try {
+          let items = parseOsmNear(await ask(300), lat, lng);
+          if (items.length < 5) items = parseOsmNear(await ask(800), lat, lng);
+          const res = json({ items: items.slice(0, 20), source: 'osm' });
+          res.headers.set('cache-control', 'public, max-age=86400');
+          await cache.put(ck, res.clone());
+          return res;
+        } catch { return json({ error: 'upstream' }, 502); }
+      }
+      if (!env.KAKAO_REST_KEY) return json({ error: 'no key' }, 503);
       const get = (code: string, radius: number) => fetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=${code}&x=${lng.toFixed(6)}&y=${lat.toFixed(6)}&radius=${radius}&sort=distance&size=15`, { headers: { authorization: `KakaoAK ${env.KAKAO_REST_KEY}` } })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`kakao ${r.status}`))));
       try {
@@ -366,6 +391,43 @@ async function handle(req: Request, env: Env): Promise<Response> {
         if (items.length < 5) items = parseKakaoNear(await Promise.all([get('FD6', 500), get('CE7', 500)]));
         return json({ items: items.slice(0, 15), source: 'kakao' });
       } catch { return json({ error: 'upstream' }, 502); }
+    }
+    // 카카오에서 고른 한 곳 → 상가정보(공공데이터)의 같은 가게. 카카오 이름·위치는 이 요청 안에서 맞춰 보는 데만 쓰고
+    // 캐시·로그에 남기지 않는다 (카카오 정책, docs/kakao-devtalk-question.md). 상가정보 활용 신청 전이면 match: null
+    if (isMatch) {
+      if (!env.DATA_GO_KR_KEY) return json({ match: null, ready: false });
+      const rl6 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl6.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const name = (url.searchParams.get('name') ?? '').trim().slice(0, 80);
+      const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
+      if (!name || !Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad request' }, 400);
+      const r = await fetch(storeUrl(env.DATA_GO_KR_KEY, lat, lng), { cf: { cacheTtl: 0 } }).catch(() => null);
+      const j = r && r.ok ? await r.json().catch(() => null) : null;
+      const ready = !!j && (j as { header?: { resultCode?: string } }).header?.resultCode === '00';
+      const m = matchStore(name, lat, lng, parseStores(j));
+      return json({ match: m, ready });
+    }
+    // 유튜브 영상 (지역 창의 알아보기). 같은 말은 7일 캐시 — 하루 무료 한도(검색 100번쯤)를 지킨다
+    if (isVideos) {
+      if (!env.YOUTUBE_API_KEY) return json({ error: 'no key' }, 503);
+      const rl7 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl7.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const name = (url.searchParams.get('name') ?? '').trim().slice(0, 40);
+      const area = (url.searchParams.get('area') ?? '').trim().slice(0, 20);
+      const kind = url.searchParams.get('kind') === 'food' ? 'food' : 'sight';
+      if (!name) return json({ error: 'empty' }, 400);
+      const q = videoQuery(name, area, kind);
+      const cache = caches.default;
+      const key = new Request(`https://cache.borapin/videos?q=${encodeURIComponent(q)}`);
+      const hit = await cache.match(key);
+      if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+      const r = await fetch(videosUrl(env.YOUTUBE_API_KEY, q)).catch(() => null);
+      if (!r || !r.ok) return json({ error: 'upstream' }, 502);
+      const items = parseVideos(await r.json().catch(() => null));
+      const res = json({ items, q });
+      res.headers.set('cache-control', `public, max-age=${items.length ? 7 * 86400 : 86400}`);
+      await cache.put(key, res.clone());
+      return res;
     }
     // 관광지 하나 자세히 (관광공사, 7일 캐시)
     if (isSpot) {
@@ -377,6 +439,18 @@ async function handle(req: Request, env: Env): Promise<Response> {
       const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
       try {
         const r = await spot(env.DATA_GO_KR_KEY, name, Number.isFinite(lat) ? lat : undefined, Number.isFinite(lng) ? lng : undefined);
+        return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 502); }
+    }
+    // 어떤 곳·어떤 음식인지 여러 이름을 한 번에 (위키백과 요약, 7일 캐시) — 지역 창 하나에 한 번
+    if (isAbout) {
+      const rl5 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl5.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      const names = (url.searchParams.get('names') ?? '').split('|').map((x) => x.trim().slice(0, 40)).filter(Boolean);
+      const area = (url.searchParams.get('area') ?? '').trim().slice(0, 30);
+      if (!names.length) return json({ error: 'empty' }, 400);
+      try {
+        const r = await about(names, area);
         return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
       } catch { return json({ error: 'upstream' }, 502); }
     }

@@ -80,3 +80,12 @@ test('버그(써 보기 360px 캡처): 이유 글 조사 — "영상가 가고 �
   assert.ok(reasons.includes('영상이 가고 싶다고 한 곳'), reasons.join(' / '));
   assert.ok(reasons.includes('보라가 가고 싶다고 한 곳'), reasons.join(' / '));
 });
+
+test('어느 날에 골라도 후보는 3곳 (CI 44916350581: 11-22 일요일에 다음 주말 1박 국내 → 1곳만 나왔다)', () => {
+  // 가고 싶은 곳이 없고 철 맞은 곳이 적은 달에도, 안 가 본 곳으로 채운다
+  for (const day of [new Date(2026, 10, 22, 0, 30), new Date(2026, 11, 20, 10), new Date(2027, 0, 10, 10), new Date(2027, 1, 7, 10)]) {
+    const list = planCandidates(C({}), base, day);
+    assert.equal(list.length, 3, `${day.toDateString()}: ${list.map((c) => c.title).join(',')}`);
+    for (const c of list) assert.ok(c.reasons.length > 0, `${c.title}에 고른 까닭이 없다`);
+  }
+});

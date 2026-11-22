@@ -20,6 +20,8 @@ import { formatWhen } from '../lib/dates';
 import { josaOnly, withRo } from '../lib/ko';
 import type { Place } from '../lib/types';
 import { isSolo } from '../lib/solo';
+import { firstPlanFor, planItems, roughPlan } from '../lib/firstTime';
+import { addPlans } from '../lib/tripExtras';
 
 /**
  * 여행 계획하기 ①: 어디를 몰라도 조건만 고르면 후보 3곳.
@@ -40,7 +42,9 @@ export default function Planner() {
   const wishGone = !!wishId && !!wishes && !wish;
   const [when, setWhen] = useState<WhenKind>('nextweekend');
   const [start, setStart] = useState('');
-  const [nights, setNights] = useState(1);
+  // '처음 가 보는 나라'의 '이 일정으로 계획하기'에서 오면 ?first=2|4 (그 일정을 여행 일정으로 넣는다)
+  const first = sp.get('first') === '4' ? 4 : sp.get('first') === '2' ? 2 : null;
+  const [nights, setNights] = useState(first ?? 1);
   const [who, setWho] = useState<string | null>(() => (isSolo() ? '혼자' : '둘이'));
   const [scope, setScope] = useState<PlanConds['scope']>('kr');
   const [busy, setBusy] = useState(false);
@@ -67,6 +71,13 @@ export default function Planner() {
     try {
       const tripId = await createTrip({ title: `${placeLabel(fixed)} ${nights === 0 ? '나들이' : '여행'}`, kind: nights === 0 ? 'outing' : 'trip', status: 'planned', when: whenOf(conds), places: [fixed], companions: memberNames(), memo: '', tags: [], source: 'app' }, auth.user);
       if (wish) await updateWish(wish.id, { tripId }).catch(() => undefined);
+      const fp = first ? firstPlanFor(data.world, fixed) : null;
+      if (fp && first) {
+        await addPlans(tripId, planItems(fp.plan ?? roughPlan(fp.city), first, range?.start ?? null)).catch(() => undefined);
+        toast(`${placeLabel(fixed)} 여행을 만들고 일정을 넣었어요`);
+        nav(`/trips/${tripId}?tab=plan`, { replace: true });
+        return;
+      }
       // 뼈대 대신 계획 이어가기 다섯 걸음으로 (담은 곳으로 일정을 채운다)
       toast(`${placeLabel(fixed)} ${nights === 0 ? '나들이를' : '여행을'} 만들었어요`);
       nav(`/trips/${tripId}/plan-next`, { replace: true });

@@ -3,6 +3,7 @@ import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { Feature, FeatureCollection, MultiLineString, Polygon, MultiPolygon } from 'geojson';
 import { REGION_BY_CODE } from './geo';
 import type { Place } from './types';
+import { nearestCity } from './cityPos';
 
 // ---------- 경계 데이터는 한 번만 불러온다 ----------
 let geoPromise: Promise<{ kr: FeatureCollection; krMesh: MultiLineString; world: FeatureCollection }> | null = null;
@@ -79,5 +80,7 @@ export async function locate(lng: number, lat: number): Promise<Place | null> {
     }
     return best ? { t: 'kr', code: best } : null;
   }
-  return { t: 'country', id };
+  // 해외: 그 나라의 가까운 도시(60km 안)로 묶는다 — '일본'이 아니라 '교토'
+  const city = nearestCity(id, lat, lng);
+  return city ? { t: 'country', id, city } : { t: 'country', id };
 }

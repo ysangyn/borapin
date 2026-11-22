@@ -3,19 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar, useBusy, useToast } from '../components/ui';
 import { useAuth, displayName } from '../lib/auth';
 import { createPlace, useTrips } from '../lib/data';
-import { fetchNearby, fetchShops, here, walkText, type NearbyItem } from '../lib/nearby';
+import { fetchNearby, fetchShops, fetchStoreMatch, here, walkText, type NearbyItem } from '../lib/nearby';
+import { KAKAO_NAME_UNTIL_MATCH, pickFromItem, type Pick, type Pos } from '../lib/herePick';
 import { locate } from '../lib/geodata';
 import { useHome } from '../lib/home';
 import { tripStage } from '../lib/stage';
 import { placeLabel } from '../lib/geo';
 import { withJosa } from '../lib/ko';
 import { guessKind } from '../lib/hereKinds';
-import { refFromNearbyId, type PlaceRef } from '../lib/placeRef';
+import { refFromNearbyId } from '../lib/placeRef';
 import { KindTagPicker, VerdictPicker } from '../components/KindTagPicker';
-import type { Place, PlaceKind, Verdict } from '../lib/types';
+import type { Place, Verdict } from '../lib/types';
 
-type Pos = { lat: number; lng: number };
-type Pick = { name: string; kind: PlaceKind; tag: string; pos: Pos | null; addr?: string; ref?: PlaceRef | null };
 
 
 /**
@@ -36,7 +35,7 @@ export default function HerePage() {
   const [msg, setMsg] = useState('지금 위치를 찾는 중…');
   const [items, setItems] = useState<NearbyItem[] | null>(null);
   const [shown, setShown] = useState(5);
-  const [source, setSource] = useState<'kakao' | 'tour' | null>(null);
+  const [source, setSource] = useState<'kakao' | 'osm' | 'tour' | null>(null);
   const [pick, setPick] = useState<Pick | null>(null);
   const [typed, setTyped] = useState('');
   const [verdict, setVerdict] = useState<Verdict | null>(null);
@@ -55,12 +54,12 @@ export default function HerePage() {
       setRegion(await locate(p.lng, p.lat).catch(() => null));
       if (!on) return;
       setMsg('근처를 찾는 중…');
-      // 동네 가게는 카카오(음식점·카페)가 먼저, 안 되면 관광공사(관광지·음식점)
+      // 동네 가게는 카카오(해외는 오픈스트리트맵) 음식점·카페가 먼저, 안 되면 관광공사(관광지·음식점)
       const user = auth.status === 'ready' ? auth.user : null;
       const shops = await fetchShops(user, p.lat, p.lng);
       const r = shops?.items.length ? shops : await fetchNearby(user, p.lat, p.lng);
       if (!on) return;
-      setSource(shops?.items.length ? 'kakao' : r?.items.length ? 'tour' : null);
+      setSource(shops?.items.length ? (shops.source === 'osm' ? 'osm' : 'kakao') : r?.items.length ? 'tour' : null);
       const list = r && !r.outside ? r.items.filter((x) => x.kind !== 'stay') : [];
       setItems(list);
       setMsg(list.length ? '여기예요?' : '근처 가게 목록은 못 받았어요 · 가게 이름을 적어 주세요');
@@ -72,6 +71,17 @@ export default function HerePage() {
   const where: Place | null = region ?? trip?.places[0] ?? (home ? { t: 'kr', code: home.code } : null);
 
   const choose = (p: Pick) => { setPick(p); setVerdict(null); setLine(''); };
+  const [matching, setMatching] = useState(false);
+  // 목록에서 고르기: 카카오 항목이면 상가정보(공공데이터)의 같은 가게를 찾아 그 이름·주소·자리를 쓴다 (카카오 정책)
+  const chooseItem = async (it: NearbyItem) => {
+    if (matching) return;
+    const user = auth.status === 'ready' ? auth.user : null;
+    if (!refFromNearbyId(it.id)) return choose(pickFromItem(it, pos, null, KAKAO_NAME_UNTIL_MATCH));
+    setMatching(true);
+    const m = await fetchStoreMatch(user, it.name, it.lat, it.lng);
+    setMatching(false);
+    choose(pickFromItem(it, pos, m, KAKAO_NAME_UNTIL_MATCH));
+  };
   const save = async () => {
     if (!pick || auth.status !== 'ready' || saving) return;
     const name = pick.name.trim();
@@ -103,13 +113,14 @@ export default function HerePage() {
             {!!items?.length && (
               <div className="here-list" data-testid="here-list">
                 {items.slice(0, shown).map((it) => (
-                  <button key={it.id} type="button" className="here-item" onClick={() => choose({ name: it.name, ...guessKind(`${it.name} ${it.type}`, it.kind), pos: { lat: it.lat, lng: it.lng }, addr: it.addr, ref: refFromNearbyId(it.id) })} data-testid="here-item">
+                  <button key={it.id} type="button" className="here-item" disabled={matching} onClick={() => void chooseItem(it)} data-testid="here-item">
                     {it.img ? <img src={it.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className="here-noimg" aria-hidden="true" />}
                     <span className="here-copy"><b>{it.name}</b><span className="tiny muted">{it.type} · {walkText(it)}</span></span>
                   </button>
                 ))}
+                {matching && <span className="small muted" aria-live="polite">가게 정보를 맞춰 보는 중…</span>}
                 {items.length > shown && <button className="link-btn" onClick={() => setShown(shown + 5)}>더 보기</button>}
-                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'kakao' ? '카카오맵 장소 정보' : '한국관광공사 관광정보'}</span>}
+                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'osm' ? '© OpenStreetMap 기여자' : source === 'kakao' ? '카카오맵 장소 정보 · 남길 때는 소상공인시장진흥공단 상가정보' : '한국관광공사 관광정보'}</span>}
               </div>
             )}
             <form className="here-own" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) choose({ name: typed.trim(), ...guessKind(typed, null), pos }); }}>
@@ -125,7 +136,7 @@ export default function HerePage() {
           <div className="here-form" data-testid="here-form">
             <label className="field">
               <span className="label">이름</span>
-              <input className="input" value={pick.name} onChange={(e) => setPick({ ...pick, name: e.target.value })} maxLength={80} data-testid="here-name" />
+              <input className="input" value={pick.name} onChange={(e) => setPick({ ...pick, name: e.target.value })} maxLength={80} placeholder="가게 이름을 적어 주세요" autoFocus={!pick.name} data-testid="here-name" />
             </label>
             {/* 종류·꼬리표·다시 간다면: '맛집·카페 담기'와 같은 부품 */}
             <KindTagPicker kind={pick.kind} tag={pick.tag} onKind={(k) => setPick((x) => x && { ...x, kind: k })} onTag={(t) => setPick((x) => x && { ...x, tag: t })} area={where ? placeLabel(where) : '우리 동네'} />
