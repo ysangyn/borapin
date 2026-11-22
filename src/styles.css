@@ -2038,3 +2038,13 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .sheet-block-head b { font-size: 15px; display: inline-flex; align-items: center; gap: 5px; }
 .sheet-block-head b .mark { font-size: 15px; }
 .sheet-block .empty-line { font-size: 13px; color: var(--ink3); }
+
+/* 알아보기 창: 사진 아래 한 줄 소개, 정보 칩, 세 줄 접기 (사용자 의견 11-22) */
+.spot-head { display: flex; flex-direction: column; gap: 4px; }
+.spot-lead { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); font-weight: 500; }
+.spot-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.spot-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--mist); font-size: 13px; color: var(--ink); }
+.spot-chip i { font-style: normal; color: var(--ink3); font-size: 12px; }
+.spot-body p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink2, var(--ink)); }
+.spot-body .clamp3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.spot-body .link-btn { margin-top: 2px; }

@@ -8,6 +8,7 @@ import { foodPlaceUrl, reviewUrl, videoUrl, type Row } from '../lib/explore';
 import { MapAppButton, useWishItem } from './MapChoice';
 import MiniStreet from './MiniStreet';
 import { withRo } from '../lib/ko';
+import { bodyAfterLead, chipValue, leadLine } from '../lib/spotText';
 import type { Place } from '../lib/types';
 
 /**
@@ -66,7 +67,15 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
   const pics = [...new Set([spot.img, info?.img, ...(info?.imgs ?? []), spot.about?.img].filter((x): x is string => !!x))].slice(0, 9);
   const [bad, setBad] = useState<Set<string>>(new Set());
   const shown = pics.filter((p) => !bad.has(p));
-  const intro = info?.short ? { text: more && info.full ? info.full : info.short, full: !!info.full, src: '한국관광공사' } : spot.about?.short ? { text: spot.about.short, full: false, src: '위키백과' } : null;
+  // 사진 아래 한 줄 소개 + 본문은 세 줄까지 접어서 '더 보기' (사용자 의견 11-22: 가독성·집중)
+  const introText = info?.full || info?.short || spot.about?.short || '';
+  const lead = leadLine(introText);
+  const body = bodyAfterLead(introText, lead);
+  const chips = info ? [
+    info.time && { k: '시간', v: chipValue(info.time) },
+    info.rest && { k: '쉬는 날', v: chipValue(info.rest) },
+    info.parking && { k: '주차', v: chipValue(info.parking, 10) },
+  ].filter((x): x is { k: string; v: string } => !!x && !!x.v) : [];
   const searchName = food ? spot.name.split('/')[0].trim() : spot.name;
   return createPortal(
     <div className="map-choice-backdrop" onClick={onClose} data-testid="spot-detail">
@@ -79,18 +88,24 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
           </div>
         ) : info === undefined ? <div className="spot-gallery-empty" aria-hidden="true" /> : null}
         {shown.length > 1 && <span className="tiny muted" style={{ marginTop: -6 }}>사진 {shown.length}장 · 옆으로 넘겨 보세요</span>}
-        <div>
+        <div className="spot-head">
           <b className="jua" style={{ fontSize: 22 }}>{spot.name}</b>
+          {lead && <p className="spot-lead" data-testid="spot-lead">{lead}</p>}
           <span className="tiny muted" style={{ display: 'block' }}>
             {food ? `${spot.area} 먹거리` : spot.area}{km != null && km >= 1 ? ` · 우리 집에서 직선 ${km}km` : ''}{spot.crowd && spot.crowd !== '보통' ? ` · 요즘 ${spot.crowd}` : ''}
           </span>
         </div>
+        {chips.length > 0 && (
+          <div className="spot-chips" data-testid="spot-chips">
+            {chips.map((c) => <span key={c.k} className="spot-chip"><i>{c.k}</i>{c.v}</span>)}
+          </div>
+        )}
         {info === undefined && !spot.about && <span className="small muted">소개를 찾는 중…</span>}
-        {intro && (
-          <p className="small" style={{ margin: 0, lineHeight: 1.65 }} data-testid="spot-intro">
-            {intro.text}
-            {intro.full && <button className="link-btn" style={{ marginLeft: 4 }} onClick={() => setMore(!more)}>{more ? '접기' : '더보기'}</button>}
-          </p>
+        {body && (
+          <div className="spot-body" data-testid="spot-intro">
+            <p className={more ? '' : 'clamp3'}>{body}</p>
+            {body.length > 90 && <button type="button" className="link-btn" onClick={() => setMore(!more)} data-testid="spot-more">{more ? '접기' : '더 보기'}</button>}
+          </div>
         )}
 
         {/* 사람들 이야기: 다녀온 사람의 말과 영상이 '가 보고 싶다'를 가장 빨리 만든다 */}
@@ -110,13 +125,13 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
           </div>
         )}
         <div className="spot-voices" data-testid="spot-voices">
-          <a className="btn sm soft" href={reviewUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-reviews">다녀온 사람들 후기</a>
-          <a className="btn sm soft" href={videoUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-videos">{videos?.length ? '영상 더 보기' : '영상으로 보기'}</a>
+          <a className="btn sm soft" href={reviewUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-reviews">네이버 블로그 후기 보기 ↗</a>
+          <a className="btn sm soft" href={videoUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer" data-testid="spot-videos">{videos?.length ? '유튜브 영상 더 보기 ↗' : '유튜브 영상 보기 ↗'}</a>
           {food && <a className="btn sm soft" href={foodPlaceUrl(spot.area, searchName)} target="_blank" rel="noopener noreferrer">{searchName} 맛집 찾기</a>}
         </div>
 
         {info && (info.time || info.rest || info.addr || info.tel || info.parking) && (
-          <dl className="city-facts spot-facts">
+          <dl className="city-facts spot-facts" aria-label="이용 안내">
             {info.time && <div><dt>이용 시간</dt><dd>{info.time}</dd></div>}
             {info.rest && <div><dt>쉬는 날</dt><dd>{info.rest}</dd></div>}
             {info.parking && <div><dt>주차</dt><dd>{info.parking}</dd></div>}
@@ -139,7 +154,7 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
           </div>
         )}
 
-        <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} disabled={wished || !!wi.saving} onClick={() => void wi.add(spot.place, spot.name, wishKind)} data-testid="spot-wish">{wished ? '♥ 담겨 있어요' : '♡ 가고 싶어요'}</button>
+        <button type="button" className={'btn block ' + (wished ? 'line' : 'coral-soft')} disabled={wished || !!wi.saving} onClick={() => void wi.add(spot.place, spot.name, wishKind)} data-testid="spot-wish">{wished ? '♥ 가고 싶은 곳에 있어요' : '♡ 가고 싶어요'}</button>
 
         {/* 지도는 맨 아래, 필요할 때 펼친다 */}
         {!food && (

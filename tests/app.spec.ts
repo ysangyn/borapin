@@ -1304,12 +1304,14 @@ test.describe.serial('보라핀 1단계', () => {
     const dlg = page.getByTestId('spot-detail');
     await expect(dlg).toContainText(name);
     await expect(dlg.getByTestId('spot-reviews')).toHaveAttribute('href', /search\.naver\.com.*where=blog/);
+    // 밖으로 나가는 단추는 어디로 가는지 이름에 (사용자 의견 11-22)
+    await expect(dlg.getByTestId('spot-reviews')).toHaveText('네이버 블로그 후기 보기 ↗');
     await expect(dlg.getByTestId('spot-videos')).toHaveAttribute('href', /youtube\.com\/results/);
     // 지도는 처음엔 접혀 있다
     await expect(dlg.getByTestId('spot-show-map')).toBeVisible();
     await dlg.getByTestId('spot-wish').click();
     await expect(page.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
-    await expect(dlg.getByTestId('spot-wish')).toHaveText(/담겨 있어요/);
+    await expect(dlg.getByTestId('spot-wish')).toHaveText(/가고 싶은 곳에 있어요/);
     await expect(dlg.getByTestId('spot-wish')).toBeDisabled();
     await shot(page, '30-spot-detail-wish');
     // 먹거리 카드도 같은 창 (음식이면 '맛집 찾기'가 더 있다)
