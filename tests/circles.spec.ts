@@ -57,6 +57,8 @@ test('모임: 만들고 → 가게를 걸고 → 손님 친구가 들어와 보�
   const url = (await owner.getByTestId('circle-invite-row').first().getByTestId('invite-url').textContent())!.trim();
   expect(url).toMatch(/\/join\/[a-z0-9]{8,}$/);
   await shot(owner, '40-circle-owner');
+  // 주인은 모임 화면을 떠나 있다 (열어 둔 채면 친구가 건 가게를 바로 본 것으로 친다)
+  await owner.goto('/trips');
 
   // 보라핀을 처음 쓰는 친구: 링크 → 로그인 → 모임에 들어가기 → 손님 화면
   const ctx = await browser.newContext({ locale: 'ko-KR', viewport: { width: 375, height: 760 } });
