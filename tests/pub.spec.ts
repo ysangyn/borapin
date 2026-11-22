@@ -81,6 +81,8 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   await owner.getByTestId('place-edit').click();
   await owner.getByRole('button', { name: '별로' }).click();
   await owner.getByTestId('place-save').click();
+  // 사람처럼: '고쳤어요'를 보고 나서 다른 화면으로 (저장 안에서 공개 사본도 거둔다)
+  await expect(owner.getByRole('status')).toContainText('고쳤어요');
   await owner.goto('/space');
   await expect(owner.getByTestId('my-pubs')).toContainText('아직 없어요', { timeout: 20_000 });
   await owner.close();
