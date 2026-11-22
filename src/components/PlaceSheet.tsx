@@ -8,7 +8,7 @@ import { displayName, useAuth } from '../lib/auth';
 import { useMapChoice } from './MapChoice';
 import { memberNames } from '../lib/members';
 import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
-import { COUNTRY_BY_ID, placeLabel, regionLong } from '../lib/geo';
+import { citiesOf, COUNTRY_BY_ID, placeLabel, regionLong } from '../lib/geo';
 import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
 import PlaceRecRow from './PlaceRecRow';
 import { recsAt } from '../lib/placeRecs';
@@ -33,13 +33,15 @@ const samePlace = (sel: Place) => (p: Place) =>
   sel.t === 'kr' ? p.t === 'kr' && p.code === sel.code : p.t === 'country' && p.id === sel.id;
 
 /** 지도에서 지역을 누르면 뜨는 아래 시트: 그곳 기록 보기 + 바로 핀 꽂기 */
-export default function PlaceSheet({ place, trips, stats, wishes = [], recs = [], onClose }: {
+export default function PlaceSheet({ place, trips, stats, wishes = [], recs = [], onClose, onPlace }: {
   place: Place;
   trips: Trip[];
   stats: Stats | null;
   wishes?: Wish[];
   recs?: PlaceRec[];
   onClose: () => void;
+  /** 나라 창에서 도시를 고르면 그 도시 창으로 (지도는 나라로 칠해도 기록은 도시로, 사용자 의견 11-22) */
+  onPlace?: (p: Place) => void;
 }) {
   const nav = useNavigate();
   const seasons = useSeasons();
@@ -128,6 +130,18 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
         <div>
           <Link to={`/region/${placeParam}`} className="jua" style={{ fontSize: 28, lineHeight: 1.1, color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }} data-testid="sheet-title">{name}<Icon name="chev" size={18} /></Link>
           <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600, display: 'block', marginTop: 3 }} data-testid="sheet-region">{(place.t === 'kr' ? name.split(' ').pop() : place.city ?? name.split(' · ')[0])} 자세히 보기 · 볼거리·먹거리·우리 기록 ›</Link>
+          {place.t === 'country' && !place.city && onPlace && citiesOf(place.id).length > 0 && (() => {
+            const been = new Set(trips.filter((t) => t.status === 'done').flatMap((t) => t.places).filter((p) => p.t === 'country' && p.id === place.id && p.city).map((p) => (p as { city: string }).city));
+            const list = [...new Set([...been, ...citiesOf(place.id)])].slice(0, 12);
+            return (
+              <div className="sheet-cities" data-testid="sheet-cities">
+                <span className="tiny muted">어느 도시예요? 도시로 남기면 그 도시 정보가 함께 보여요</span>
+                <div className="chips" style={{ gap: 6 }}>
+                  {list.map((c) => <button key={c} type="button" className={'chip' + (been.has(c) ? ' soft-on' : '')} onClick={() => onPlace({ t: 'country', id: place.id, city: c })} data-testid={`sheet-city-${c}`}>{been.has(c) ? '✓ ' : ''}{c}</button>)}
+                </div>
+              </div>
+            );
+          })()}
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           {fests.length > 0 && (
             <div className="sheet-fests" data-testid="sheet-festivals">

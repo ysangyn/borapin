@@ -1996,3 +1996,9 @@ button.chip::before, .btn.sm::before, .icon-btn::before, .seg button::before, bu
 .explore-li b { font-size: 14.5px; }
 .explore-li span { font-size: 12.5px; color: var(--ink3); line-height: 1.4; }
 .explore-li .tour-heart { position: static; flex: 0 0 auto; }
+.sheet-cities { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 4px; }
+
+/* 세계 지도: 다녀온 도시 이름 (점 + 작은 글씨) */
+.city-label { font-size: 11px; font-weight: 700; color: var(--ink); background: rgba(255, 255, 255, .82); padding: 1px 6px 1px 12px; border-radius: 8px; position: relative; pointer-events: none; white-space: nowrap; }
+.city-label::before { content: ''; position: absolute; left: 3px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 3px; background: var(--v3, #5b3fd0); }
+[data-theme="dark"] .city-label { background: rgba(23, 20, 43, .78); }

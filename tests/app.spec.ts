@@ -1271,6 +1271,13 @@ test.describe.serial('보라핀 1단계', () => {
     await mbox.getByLabel('지역 찾기').press('Enter');
     await expect(page.getByRole('tab', { name: '세계' })).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('교토');
+    // 나라를 고르면 '어느 도시예요?' 칩 → 도시 창으로 (지도는 나라로 칠해도 기록은 도시로)
+    await mbox.getByLabel('지역 찾기').fill('일본');
+    await mbox.getByLabel('지역 찾기').press('Enter');
+    await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('일본');
+    await page.getByTestId('sheet-cities').getByTestId('sheet-city-오사카').click();
+    await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('오사카');
+    await expect(page.getByTestId('quick-pin')).toContainText('다녀왔어요');
     // 초성으로도 찾는다
     await mbox.getByLabel('지역 찾기').fill('ㄱㄹ');
     await expect(mbox.getByRole('option', { name: /강릉/ }).first()).toBeVisible();

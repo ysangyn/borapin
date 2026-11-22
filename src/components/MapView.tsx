@@ -14,6 +14,7 @@ import { washColor } from './gardenPatterns';
 import { flowerOf, flowerSrc } from '../lib/flowers';
 import type { Plant } from '../lib/garden';
 import { toneOf } from '../lib/members';
+import { cityPos } from '../lib/cityPos';
 
 // v6는 워커 파일을 자기 옆에서 찾는데, 번들되면 그 자리에 파일이 없다 → 주소를 직접 알려 준다.
 maplibregl.setWorkerUrl(workerUrl);
@@ -363,6 +364,28 @@ export default function MapView({ mode, stats, height = 300, cooperative, contro
       // 우리나라는 세계 지도에서 나라 칸 하나로 (전체 보기면 국내 기록이 있을 때, 여행 하나면 그 여행에 국내 곳이 있을 때)
       if (focus ? focus.some((p) => p.t === 'kr') : stats.cellVisits.size || stats.cellPlanned.size) map.setFeatureState({ source: 'world', id: 'KOR' }, { visits: 1 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats, ready, focusKey, mode]);
+
+  // 다녀온 도시 이름: 세계 지도에서 나라는 칸으로 칠하고, 다녀온 도시는 이름을 살짝 띄운다 (사용자 의견 11-22)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const ms: maplibregl.Marker[] = [];
+    if (mode === 'world' && stats) {
+      const focusSet = focus ? new Set(focus.map((p) => (p.t === 'kr' ? p.code : p.id))) : null;
+      for (const key of stats.cities) {
+        const pos = cityPos(key);
+        const [cid, city] = key.split(':');
+        if (!pos || (focusSet && !focusSet.has(cid))) continue;
+        const el = document.createElement('div');
+        el.className = 'city-label';
+        el.textContent = city;
+        el.setAttribute('aria-hidden', 'true');
+        ms.push(new maplibregl.Marker({ element: el, anchor: 'left', offset: [4, 0] }).setLngLat([pos[1], pos[0]]).addTo(map));
+      }
+    }
+    return () => ms.forEach((m) => m.remove());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats, ready, focusKey, mode]);
 

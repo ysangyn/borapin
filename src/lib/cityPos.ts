@@ -27,3 +27,6 @@ export function nearestCity(countryId: string, lat: number, lng: number, maxKm =
   }
   return best;
 }
+
+/** '나라:도시' 열쇠의 자리 [위도, 경도] (지도에 다녀온 도시 이름을 띄울 때) */
+export const cityPos = (key: string): [number, number] | null => POS[key] ?? null;
