@@ -22,16 +22,17 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   const owner = await browser.newPage({ viewport: { width: 375, height: 760 } });
   await owner.goto('/');
   await signIn(owner, OWNER);
-  await owner.goto('/trips');
-  await owner.getByText('강릉시 여행', { exact: true }).click();
-  await owner.getByTestId('trip-places').getByRole('link', { name: '+ 맛집·카페 남기기' }).click();
+  await owner.goto('/places/new?region=kr:51150');
   // 네이버 공유 글(장소 번호가 있는 주소)로 담은 가게만 공개할 수 있다
   await owner.getByLabel('네이버지도 공유 글').fill('[네이버지도]\n경포 소금빵\n강원 강릉시 난설헌로 1\nhttps://map.naver.com/p/entry/place/1234567');
   await owner.getByLabel('영상 한 줄 평').fill('소금빵이 짭짤해요');
   await owner.getByRole('button', { name: '또 갈래요' }).click();
   await owner.getByTestId('place-save').click();
-  await owner.getByTestId('trip-places').getByTestId('places-summary').click();
-  await owner.getByTestId('trip-visited').getByTestId('place-rec').filter({ hasText: '경포 소금빵' }).first().click();
+  // 저장 뒤 '몇 번째로 좋았나' 묻는 창이 뜰 수 있다. 저장이 서버에 닿을 틈을 두고 장소 목록으로
+  await expect(owner.getByTestId('place-save')).toHaveCount(0, { timeout: 15_000 }).catch(() => undefined);
+  await owner.waitForTimeout(2500);
+  await owner.goto('/places');
+  await owner.getByTestId('place-rec').filter({ hasText: '경포 소금빵' }).first().click();
   await expect(owner.getByTestId('pub-row')).toBeVisible();
   const placeUrl = owner.url();
 
