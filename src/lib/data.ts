@@ -188,6 +188,8 @@ export async function moveSomedayToWishes(trips: Trip[], wishes: Wish[], user: U
   return { moved, kept };
 }
 
+const pubSync = (p: Promise<void>) => Promise.race([p, new Promise<void>((r) => setTimeout(r, 4000))]);
+
 // ---------- 우리 장소 ----------
 export async function createPlace(input: PlaceRecInput, user: User): Promise<string> {
   const ref = doc(placesCol());
@@ -208,7 +210,8 @@ export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecI
   syncMapShareAfterWrite(opened, input);
   // 보라핀 사람들에게 공개한 사본이 있으면 따라 고치거나(별로·가고 싶어요면) 거둔다
   const uid = auth.currentUser?.uid;
-  if (uid) void syncMyPub({ ...opened, ...input, id } as PlaceRec, uid, me, placeKey(opened));
+  // 저장이 끝나기 전에 사본도 맞춘다 (곧바로 앱을 닫아도 '별로'로 바꾼 평이 공개에 남지 않게). 연결이 없으면 4초만 기다린다
+  if (uid) await pubSync(syncMyPub({ ...opened, ...input, id } as PlaceRec, uid, me, placeKey(opened)));
 }
 /** 링크에서 가져온 사진·자리만 조용히 채우기 (이미 있는 값은 건드리지 않는다) */
 /** 가고 싶어요 → 다녀왔어요 (여행에 묶으면서). 평가·한 줄 평은 나중에 가게 화면에서 */
@@ -225,7 +228,7 @@ export async function reviewPlace(id: string, tripId: string, me: string, verdic
   syncShareAfterWrite(tripId);
   const uid = auth.currentUser?.uid;
   const cached = await getDocFromCache(doc(placesCol(), id)).then((s) => (s.exists() ? ({ id, ...(s.data() as Omit<PlaceRec, 'id'>) }) : null), () => null);
-  if (uid && cached) void syncMyPub(cached, uid, me);
+  if (uid && cached) await pubSync(syncMyPub(cached, uid, me));
 }
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
   const f = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined && v !== null && v !== ''));
@@ -241,7 +244,7 @@ export async function deletePlace(id: string) {
   // 공개한 사본도 거둔다
   const uid = auth.currentUser?.uid;
   const key = was ? placeKey(was) : null;
-  if (uid && key) void syncMyPub(null, uid, '', key);
+  if (uid && key) await pubSync(syncMyPub(null, uid, '', key));
 }
 /** 지운 장소 되돌리기 (createdAt을 지켜 피드·정렬 자리도 돌아온다) */
 export async function restorePlace(p: PlaceRec) {

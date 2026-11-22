@@ -204,9 +204,9 @@ test.describe('사람처럼 쓰기', () => {
     await expect(sheet.getByTestId('sheet-title')).toContainText('전주');
     // 가장 많이 쓰는 버튼은 창을 열자마자 보여야 한다 (스크롤해야 보이면 안 됨)
     await expect(sheet.getByTestId('quick-pin')).toBeInViewport({ ratio: 1 });
-    // 단추 '핀 꽂기' → 알림 '핀을 꽂았어요'. 가고 싶은 곳 담기는 하트가 아니라 핀 모양 '담기'
-    await expect(sheet.getByTestId('quick-pin')).toContainText('핀 꽂기');
-    await expect(sheet.getByTestId('sheet-wish').or(sheet.getByTestId('sheet-wished'))).toContainText(/담기|담겼어요/);
+    // 핀 = 다녀온 곳('다녀왔어요 · 핀 꽂기' → 알림 '핀을 꽂았어요'), ♡ = 가고 싶어요 (사용자 의견 11-22: 둘 다 핀이라 헷갈렸다)
+    await expect(sheet.getByTestId('quick-pin')).toContainText('다녀왔어요 · 핀 꽂기');
+    await expect(sheet.getByTestId('sheet-wish').or(sheet.getByTestId('sheet-wished'))).toContainText(/가고 싶어요|담겼어요/);
     await sheet.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
     // 아래로 끌어서 닫기 (손잡이를 잡고 200px 내림)

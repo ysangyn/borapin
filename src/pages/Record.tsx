@@ -40,6 +40,7 @@ export default function Record() {
   const previews = useMemo(() => pending.map((f) => URL.createObjectURL(f)), [pending]);
   useEffect(() => () => previews.forEach((u) => URL.revokeObjectURL(u)), [previews]);
   const fileInput = useRef<HTMLInputElement>(null);
+  const whenScrolled = useRef(false);
   const uploader = useUploader();
   const flags = useFlags();
   const { trips } = useTrips();
@@ -207,9 +208,9 @@ export default function Record() {
 
   return (
     <>
-      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? '기록 고치기' : status === 'planned' ? '갈 여행 적어 두기' : '기록 남기기'} />
+      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? (status === 'planned' ? '갈 여행 고치기' : '기록 고치기') : status === 'planned' ? '갈 여행 적어 두기' : '기록 남기기'} />
       <div className="page" style={{ paddingTop: 4, gap: 20 }}>
-        <div className="small muted" style={{ marginTop: -8 }}>어디와 언제만 있으면 남길 수 있어요.</div>
+        <div className="small muted" style={{ marginTop: -8 }}>{sp.get('focus') === 'when' ? '아래 \'언제\'에서 갈 날짜를 골라 주세요.' : '어디와 언제만 있으면 남길 수 있어요.'}</div>
 
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
           <div className="seg-labeled"><span className="tiny muted">종류</span>
@@ -246,7 +247,7 @@ export default function Record() {
         </div>
 
         <div className="field">
-          <span className="label">언제<span className="req">*</span> <span className="muted small">(대략이어도 돼요)</span></span>
+          <span className="label" id="when-field" ref={(el) => { if (el && sp.get('focus') === 'when' && !whenScrolled.current) { whenScrolled.current = true; setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300); } }}>{status === 'planned' ? '언제 가요' : '언제'}<span className="req">*</span> <span className="muted small">(대략이어도 돼요)</span></span>
           <div className="chips">
             {PRECISIONS.map((x) => (
               <button key={x.p} type="button" aria-pressed={when.p === x.p} className={'chip' + (when.p === x.p ? ' on' : '')} onClick={() => setP(x.p)}>{x.label}</button>

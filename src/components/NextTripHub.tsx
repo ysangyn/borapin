@@ -102,7 +102,8 @@ function NextTripHero({ trip, more, wishes }: { trip: Trip; more: Trip[]; wishes
           ))}
         </div>
       )}
-      {undated && <Link to={`/trips/${trip.id}/edit`} className="btn soft block" data-testid="hub-set-date">날짜 정하기</Link>}
+      {/* 어느 여행의 날짜인지 단추에 적는다 (사용자 의견 11-22: 아래 다른 여행 카드 밑에 있어 무엇의 날짜인지 몰랐다) */}
+      {undated && <Link to={`/trips/${trip.id}/edit?focus=when`} className="btn soft block" data-testid="hub-set-date">{trip.title} 날짜 정하기</Link>}
     </div>
   );
 }
