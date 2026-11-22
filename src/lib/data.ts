@@ -32,6 +32,8 @@ import { syncMapShareAfterWrite } from './placeMapData';
 import type { PackItem, PlaceRec, PlaceRecInput, Trip, TripInput, Wish, WishInput, Relation, Verdict } from './types';
 import { somedayToWishes } from './someday';
 import { whenSortKey } from './dates';
+import { syncMyPub } from './pub';
+import { placeKey } from './placeRef';
 
 const sp = (name: string) => collection(db, 'spaces', SPACE_ID, name);
 const tripsCol = () => sp('trips');
@@ -204,6 +206,9 @@ export async function updatePlace(id: string, opened: PlaceRec, input: PlaceRecI
   // 여행을 옮겼으면 두 여행의 사본 모두
   syncShareAfterWrite(opened.tripId, input.tripId);
   syncMapShareAfterWrite(opened, input);
+  // 보라핀 사람들에게 공개한 사본이 있으면 따라 고치거나(별로·가고 싶어요면) 거둔다
+  const uid = auth.currentUser?.uid;
+  if (uid) void syncMyPub({ ...opened, ...input, id } as PlaceRec, uid, me, placeKey(opened));
 }
 /** 링크에서 가져온 사진·자리만 조용히 채우기 (이미 있는 값은 건드리지 않는다) */
 /** 가고 싶어요 → 다녀왔어요 (여행에 묶으면서). 평가·한 줄 평은 나중에 가게 화면에서 */
@@ -218,6 +223,9 @@ export async function reviewPlace(id: string, tripId: string, me: string, verdic
   if (line && me) edits.push({ path: ['reviews', me], value: line });
   await patchEdits(doc(placesCol(), id), withReviewBy(edits, me, auth.currentUser?.uid));
   syncShareAfterWrite(tripId);
+  const uid = auth.currentUser?.uid;
+  const cached = await getDocFromCache(doc(placesCol(), id)).then((s) => (s.exists() ? ({ id, ...(s.data() as Omit<PlaceRec, 'id'>) }) : null), () => null);
+  if (uid && cached) void syncMyPub(cached, uid, me);
 }
 export async function enrichPlace(id: string, fields: { photoUrl?: string; lat?: number; lng?: number }) {
   const f = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined && v !== null && v !== ''));
@@ -230,6 +238,10 @@ export async function deletePlace(id: string) {
   await queued(deleteDoc(ref));
   syncShareAfterWrite(was?.tripId);
   syncMapShareAfterWrite(was);
+  // 공개한 사본도 거둔다
+  const uid = auth.currentUser?.uid;
+  const key = was ? placeKey(was) : null;
+  if (uid && key) void syncMyPub(null, uid, '', key);
 }
 /** 지운 장소 되돌리기 (createdAt을 지켜 피드·정렬 자리도 돌아온다) */
 export async function restorePlace(p: PlaceRec) {

@@ -14,6 +14,7 @@ import { lookupLink } from '../lib/placeLookup';
 import { memberNames, toneOf } from '../lib/members';
 import type { PlaceRec, Trip } from '../lib/types';
 import CircleHangRow from './CircleHangRow';
+import { PubRow, PubVoices } from './PubRow';
 
 /**
  * 장소 보기: 사진(있으면) → 이름·종류·평가 → 주소 → 지도 앱 바로가기 → 자리 그림 → 여행 → 둘의 한 줄 평 → 메모.
@@ -118,7 +119,10 @@ export default function PlaceView({ rec, trip, onEdit, onRemove, onEnrich }: {
           ))}
         </section>
 
+        <PubVoices rec={rec} />
+
         <CircleHangRow rec={rec} />
+        <PubRow rec={rec} trip={trip} />
 
         {rec.memo && (
           <section className="pv-memo card white">

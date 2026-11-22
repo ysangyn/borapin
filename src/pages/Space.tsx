@@ -12,6 +12,7 @@ import { useSeasons } from '../lib/seasons';
 import { loadTravelInfo } from '../lib/travelinfo';
 import { OWNER_EMAIL, SPACE_ID } from '../lib/firebase';
 import { NewSpaceSetting, SpacePeople } from '../components/SpacePeople';
+import { FlagBox, MyPubs } from '../components/PubSettings';
 import { isOffline } from '../lib/writes';
 import { localDate } from '../lib/dates';
 import type { Photo } from '../lib/types';
@@ -244,6 +245,9 @@ export default function Space() {
           </>
         )}
         {SPACE_ID === 'main' && (user.email ?? '').toLowerCase() === OWNER_EMAIL && <NewSpaceSetting />}
+
+        <MyPubs />
+        <FlagBox />
 
         <HomeSetting />
 
