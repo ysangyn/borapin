@@ -1,38 +1,35 @@
 import { useTripMemories } from '../lib/gardenCounts';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import TripRow from './TripRow';
 import RegionInfo from './RegionInfo';
-import { Icon, useToast } from './ui';
+import { Icon } from './ui';
 import { displayName, useAuth } from '../lib/auth';
 import { useMapChoice } from './MapChoice';
-import { memberNames } from '../lib/members';
-import { createTrip, deleteTrip, tripsAtPlace, type Stats } from '../lib/data';
+import { tripsAtPlace, type Stats } from '../lib/data';
 import { citiesOf, COUNTRY_BY_ID, placeLabel, regionLong } from '../lib/geo';
 import type { Place, PlaceRec, Trip, Wish } from '../lib/types';
 import PlaceRecRow from './PlaceRecRow';
 import { recsAt } from '../lib/placeRecs';
 import { leftItems, recNames, samePlace as samePlaceW } from '../lib/wishes';
-import { quickWish } from '../lib/wishActions';
 import { garden, growHint, plantLine } from '../lib/garden';
 import { useSwipeDown } from '../lib/swipe';
 import { flowerOf, flowerSrc } from '../lib/flowers';
 import { monthsLabel, seasonFor, useSeasons } from '../lib/seasons';
-import { celebrate, whatsNew } from '../lib/celebrate';
 import { photoForPlace } from '../lib/media';
 import { ScenicPhoto } from './Scene';
 import { times } from '../lib/ko';
 import { festivalPeriod, isOngoing, upcomingFestivals, useFestivals } from '../lib/festivals';
-import { quickTripInput } from '../lib/tripActions';
 import NewsStrip from './NewsStrip';
 import CountryCities from './CountryCities';
+import BeenWant from './BeenWant';
 
 const recsHere = (recs: PlaceRec[], p: Place) => recsAt(recs, p);
 
 const samePlace = (sel: Place) => (p: Place) =>
   sel.t === 'kr' ? p.t === 'kr' && p.code === sel.code : p.t === 'country' && p.id === sel.id;
 
-/** 지도에서 지역을 누르면 뜨는 아래 시트: 그곳 기록 보기 + 바로 핀 꽂기 */
+/** 지도에서 지역을 누르면 뜨는 아래 시트: 다녀온 기록 / 가고 싶어요 두 칸 + 아래 두 단추 */
 export default function PlaceSheet({ place, trips, stats, wishes = [], recs = [], onClose, onPlace }: {
   place: Place;
   trips: Trip[];
@@ -43,7 +40,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   /** 나라 창에서 도시를 고르면 그 도시 창으로 (지도는 나라로 칠해도 기록은 도시로, 사용자 의견 11-22) */
   onPlace?: (p: Place) => void;
 }) {
-  const nav = useNavigate();
   const seasons = useSeasons();
   const festData = useFestivals();
   const fests = place.t === 'kr' ? upcomingFestivals(festData, place.code, new Date(), 120).slice(0, 2) : [];
@@ -56,13 +52,15 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
   const plant = useMemo(() => (place.t === 'kr' ? garden(trips, recs, mem).get(place.code) : undefined), [place, trips, recs, mem]);
   const flower = flowerOf(place);
   const hint = growHint(plant, auth.status === 'ready' ? displayName(auth.user) : '');
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
   const here = useMemo(() => tripsAtPlace(trips, samePlace(place)), [trips, place]);
   const done = here.filter((t) => t.status === 'done');
+  const planned = here.filter((t) => t.status !== 'done');
+  const allRecs = recsHere(recs, place);
+  const beenRecs = allRecs.filter((r) => r.status !== 'want');
+  const wantRecs = allRecs.filter((r) => r.status === 'want');
   const countryName = place.t === 'country' ? COUNTRY_BY_ID.get(place.id)?.name ?? place.id : '';
   // 도시를 찾아 열었으면 도시 이름 (교토 · 일본). 지도에서 나라를 눌렀으면 나라 이름
-  const name = place.t === 'kr' ? regionLong(place.code) : place.city ? `${place.city} · ${countryName}` : countryName;
+  const name = place.t === 'kr' ? regionLong(place.code) : place.city ? place.city : countryName;
   const visits = (place.t === 'kr' ? stats?.cellVisits.get(place.code) : stats?.countryVisits.get(place.id)) ?? 0;
   const placeParam = place.t === 'kr' ? `kr:${place.code}` : `country:${place.id}${place.city ? `:${encodeURIComponent(place.city)}` : ''}`;
 
@@ -76,33 +74,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       window.removeEventListener('keydown', esc);
     };
   }, [onClose]);
-
-  const quickPin = async () => {
-    if (auth.status !== 'ready' || busy) return;
-    setBusy(true);
-    try {
-      const input = quickTripInput(place, memberNames());
-      const news = whatsNew(trips, [...trips, { ...input, id: 'new', v: 1 }]);
-      const id = await createTrip(input, auth.user);
-      if (news) celebrate();
-      toast(`${placeLabel(place)}에 핀을 꽂았어요${news ? ` · ${news}` : ''}`, { label: '되돌리기', onClick: () => void deleteTrip(id) });
-    } catch (e) {
-      console.warn(e);
-      toast('저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const addWish = async () => {
-    if (auth.status !== 'ready') return;
-    try {
-      const { id, already } = await quickWish(place, auth.user, wishes);
-      toast(already ? '이미 담겨 있어요' : '가고 싶은 곳에 담았어요', { label: '메모 쓰기', onClick: () => nav(`/wishes/${id}`) });
-    } catch {
-      toast('담지 못했어요. 다시 해 주세요');
-    }
-  };
 
   // 핀을 꽂아 횟수가 늘면 도장이 '쾅' 찍힌다
   const [stamped, setStamped] = useState(false);
@@ -128,6 +99,12 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       )}
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
+          {place.t === 'country' && place.city && (
+            <div className="sheet-crumb" data-testid="sheet-crumb">
+              {onPlace ? <button type="button" onClick={() => onPlace({ t: 'country', id: place.id })}>{countryName}</button> : <span>{countryName}</span>}
+              <span aria-hidden="true">›</span><span>{place.city}</span>
+            </div>
+          )}
           <Link to={`/region/${placeParam}`} className="jua" style={{ fontSize: 28, lineHeight: 1.1, color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }} data-testid="sheet-title">{name}<Icon name="chev" size={18} /></Link>
           <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600, display: 'block', marginTop: 3 }} data-testid="sheet-region">{(place.t === 'kr' ? name.split(' ').pop() : place.city ?? name.split(' · ')[0])} 자세히 보기 · 볼거리·먹거리·우리 기록 ›</Link>
           {place.t === 'country' && !place.city && onPlace && citiesOf(place.id).length > 0 && (() => {
@@ -154,9 +131,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
               ))}
             </div>
           )}
-          <div className="hand" style={{ fontSize: 18, color: visits ? 'var(--violet)' : 'var(--ink3)', lineHeight: 1.1, marginTop: 2 }}>
-            {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '한 번 다녀왔어요' : here.length ? '갈 예정이에요' : '아직 안 가본 곳'}
-          </div>
           {(plant || flower) && (
             <div className="plant-line" data-testid="plant-line">
               <img src={flowerSrc(flower?.icon ?? 'wild', plant ? '' : '-gray')} alt="" width={26} height={26} />
@@ -167,11 +141,6 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
                 {hint && <span className="tiny muted" style={{ display: 'block' }}>{hint}</span>}
               </span>
             </div>
-          )}
-          {wish && visits > 0 && left.length > 0 && (
-            <Link to={`/wishes/${wish.id}`} className="leftover-line tiny" data-testid="sheet-left">
-              못 가 본 곳 {left.length} · {left.slice(0, 3).join(', ')}{left.length > 3 ? ' …' : ''}
-            </Link>
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 'none' }}>
@@ -186,47 +155,49 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       {place.t === 'kr' && <NewsStrip place={place} />}
       {place.t === 'country' && <CountryCities place={place} wishes={wishes} />}
 
-      {here.length > 0 && (
-        <div className="list" style={{ marginTop: 4 }}>
-          {here.slice(0, 3).map((t) => <TripRow key={t.id} trip={t} />)}
-          {here.length > 3 && <Link to={`/trips?q=${encodeURIComponent(placeLabel(place))}`} className="small" style={{ padding: '6px 0', fontWeight: 500 }}>{here.length - 3}건 더 보기</Link>}
+      {/* 다녀온 기록 / 가고 싶어요를 칸으로 나눈다 (사용자 의견 11-22: 둘의 구획이 흐렸다) */}
+      <section className="sheet-block" data-testid="sheet-been-block">
+        <div className="sheet-block-head">
+          <b><Icon name="pin" size={16} />다녀온 기록</b>
+          {beenRecs.length > 0 && <Link to={`/region/${placeParam}?tab=places`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-mymap">맛집·명소 모두 보기</Link>}
         </div>
-      )}
-
-      <div className="sheet-recs">
-        <div className="row-between" style={{ alignItems: 'center' }}>
-          <span className="small" style={{ fontWeight: 600 }}>맛집·명소{recsHere(recs, place).length ? ` · ${recsHere(recs, place).length}` : ''}</span>
-          <span style={{ display: 'flex', gap: 12 }}>
-            {recsHere(recs, place).length > 0 && <Link to={`/region/${placeParam}?tab=places`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-mymap">모두 보기</Link>}
-            <Link to={`/places/new?region=${placeParam}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-place-new">+ 담기</Link>
-          </span>
+        <div className="hand" style={{ fontSize: 18, color: visits ? 'var(--violet)' : 'var(--ink3)', lineHeight: 1.1 }}>
+          {visits >= 2 ? `${times(visits)} 다녀왔어요` : visits === 1 ? '한 번 다녀왔어요' : '아직 안 가본 곳'}
         </div>
-        {recsHere(recs, place).slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
-      </div>
+        {done.length > 0 && (
+          <div className="list">
+            {done.slice(0, 3).map((t) => <TripRow key={t.id} trip={t} />)}
+            {done.length > 3 && <Link to={`/trips?q=${encodeURIComponent(placeLabel(place))}`} className="small" style={{ padding: '6px 0', fontWeight: 500 }}>{done.length - 3}건 더 보기</Link>}
+          </div>
+        )}
+        {beenRecs.length > 0 && <span className="small" style={{ fontWeight: 600 }}>다녀온 맛집·명소 · {beenRecs.length}</span>}
+        {beenRecs.slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
+      </section>
 
-      <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
-        <span style={{ flex: 1 }}>핀은 다녀온 곳(날짜 없이 표시만), ♡는 가고 싶은 곳이에요</span>
-      </div>
+      <section className="sheet-block" data-testid="sheet-want-block">
+        <div className="sheet-block-head">
+          <b><span className="mark" aria-hidden="true" style={{ color: '#d9534f' }}>{wish ? '♥' : '♡'}</span>가고 싶어요</b>
+          {wish && <Link to={`/wishes/${wish.id}`} className="small" style={{ fontWeight: 500 }} data-testid="sheet-wish-memo">메모 보기</Link>}
+        </div>
+        {!wish && !planned.length && !wantRecs.length && <span className="empty-line">아직 없어요 · 아래 ♡ 가고 싶어요로 남겨요</span>}
+        {wish && <span className="small">가고 싶은 곳에 있어요{wish.months?.length ? ` · ${monthsLabel(wish.months)}` : ''}</span>}
+        {wish && visits > 0 && left.length > 0 && (
+          <Link to={`/wishes/${wish.id}`} className="leftover-line tiny" data-testid="sheet-left">
+            못 가 본 곳 {left.length} · {left.slice(0, 3).join(', ')}{left.length > 3 ? ' …' : ''}
+          </Link>
+        )}
+        {planned.length > 0 && (
+          <div className="list">
+            {planned.slice(0, 2).map((t) => <TripRow key={t.id} trip={t} />)}
+          </div>
+        )}
+        {wantRecs.length > 0 && <span className="small" style={{ fontWeight: 600 }}>가고 싶은 맛집·명소 · {wantRecs.length}</span>}
+        {wantRecs.slice(0, 3).map((r) => <PlaceRecRow key={r.id} rec={r} />)}
+      </section>
       </div>
       {/* 가장 많이 쓰는 버튼은 창 아래에 늘 보이게 (내용이 길어도 스크롤 밖) */}
       <div className="sheet-actions">
-        <button className="btn" style={{ flex: 1.15 }} disabled={busy || auth.status !== 'ready'} onClick={quickPin} data-testid="quick-pin">
-          <Icon name="plus" size={17} stroke={2.4} />
-          {busy ? '꽂는 중…' : done.length ? '또 다녀왔어요 · 핀 꽂기' : '다녀왔어요 · 핀 꽂기'}
-        </button>
-        <Link to={`/record?place=${placeParam}`} className="btn soft" style={{ flex: 1 }}>자세히 기록</Link>
-        {/* 핀 = 다녀온 곳, ♡ = 가고 싶은 곳 (사용자 의견 11-22: 둘 다 핀이라 헷갈렸다) */}
-        {wish ? (
-          <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 66, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10.5 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
-            <span aria-hidden="true" style={{ fontSize: 19, lineHeight: 1 }}>♥</span>
-            담겼어요
-          </Link>
-        ) : (
-          <button className="btn coral-soft" style={{ width: 66, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10.5 }} onClick={addWish} aria-label="가고 싶은 곳에 담기" data-testid="sheet-wish">
-            <Icon name="heart" size={20} stroke={2.2} />
-            가고 싶어요
-          </button>
-        )}
+        <BeenWant place={place} trips={trips} wishes={wishes} againCount={done.length} inline />
       </div>
     </div>
   );

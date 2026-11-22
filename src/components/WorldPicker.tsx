@@ -107,7 +107,7 @@ export function CityRow({ w, month, onAdd }: { w: WorldCity; month: number | nul
           </span>
         </span>
       </div>
-      <button className="btn sm coral" onClick={onAdd} data-testid="world-add"><Icon name="heart" size={15} stroke={2.2} />담기</button>
+      <button className="btn sm coral" onClick={onAdd} data-testid="world-add"><Icon name="heart" size={15} stroke={2.2} />가고 싶어요</button>
     </div>
   );
 }

@@ -26,7 +26,7 @@ export default function MyMapsCard() {
     <div className="card white mymaps-card" data-testid="mymaps-card">
       <span className="mymaps-card-head">
         <Link to="/maps" className="jua" style={{ color: 'inherit' }}>내 지도 <span className="muted" style={{ fontSize: 13, fontFamily: 'inherit', fontWeight: 400 }}>{total}곳</span></Link>
-        <Link to="/places/new" className="btn sm" data-testid="mymaps-card-add"><Icon name="plus" size={14} stroke={2.4} />담기</Link>
+        <Link to="/places/new" className="btn sm" data-testid="mymaps-card-add"><Icon name="plus" size={14} stroke={2.4} />가게 남기기</Link>
       </span>
       <div className="chips" style={{ marginTop: 2 }}>
         {themed.slice(0, 5).map((m) => (

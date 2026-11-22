@@ -417,7 +417,9 @@ test('써 보기: 폰으로 메뉴를 하나씩', async ({ browser }) => {
   await step(page, 'map-sheet-visited', async () => { await page.goto('/map?sel=kr:51150'); await page.getByTestId('region-sheet').waitFor(); });
   await step(page, 'map-sheet-visited-scroll', async () => { await page.getByTestId('region-sheet').evaluate((e) => e.scrollBy(0, 600)); });
   await step(page, 'map-sheet-new', async () => { await page.goto('/map?sel=kr:46910'); await page.getByTestId('region-sheet').waitFor(); });
-  await step(page, 'map-sheet-wish', async () => { await page.getByTestId('region-sheet').getByRole('button', { name: /가고 싶어요|담기/ }).first().click(); log(`  · 알림: ${await toastText(page)}`); });
+  await step(page, 'map-sheet-been-menu', async () => { await page.getByTestId('region-sheet').getByTestId('sheet-been').click(); });
+  await step(page, 'map-sheet-want-menu', async () => { await page.getByTestId('region-sheet').getByTestId('sheet-want').click(); });
+  await step(page, 'map-sheet-wish', async () => { await page.getByTestId('region-sheet').getByTestId('sheet-wish').or(page.getByTestId('region-sheet').getByTestId('sheet-wished')).first().click(); log(`  · 알림: ${await toastText(page)}`); });
   await step(page, 'map-world', async () => { await page.goto('/map'); await page.getByRole('tab', { name: '세계' }).first().click(); });
   await step(page, 'map-sheet-country', async () => { await page.goto('/map?sel=country:JPN'); await page.getByTestId('region-sheet').waitFor(); });
 

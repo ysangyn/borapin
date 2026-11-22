@@ -161,7 +161,7 @@ test.describe('사람처럼 쓰기', () => {
     const page = await phone(browser);
     await googleSignIn(page);
     await page.getByRole('button', { name: '남기기', exact: true }).click();
-    await page.getByRole('menuitem', { name: /여행 기록 남기기/ }).click();
+    await page.getByRole('menuitem', { name: /다녀온 여행/ }).click();
     // 단추 말과 알림 말이 같은 동사: '기록 남기기' → '기록했어요'
     await expect(page.getByTestId('save')).toHaveText('기록 남기기');
     // 장소: 한 글자씩 쳐서 찾기
@@ -203,11 +203,16 @@ test.describe('사람처럼 쓰기', () => {
     const sheet = page.getByTestId('region-sheet');
     await expect(sheet.getByTestId('sheet-title')).toContainText('전주');
     // 가장 많이 쓰는 버튼은 창을 열자마자 보여야 한다 (스크롤해야 보이면 안 됨)
-    await expect(sheet.getByTestId('quick-pin')).toBeInViewport({ ratio: 1 });
-    // 핀 = 다녀온 곳('다녀왔어요 · 핀 꽂기' → 알림 '핀을 꽂았어요'), ♡ = 가고 싶어요 (사용자 의견 11-22: 둘 다 핀이라 헷갈렸다)
-    await expect(sheet.getByTestId('quick-pin')).toContainText('다녀왔어요 · 핀 꽂기');
-    await expect(sheet.getByTestId('sheet-wish').or(sheet.getByTestId('sheet-wished'))).toContainText(/가고 싶어요|담겼어요/);
-    await sheet.getByTestId('quick-pin').click();
+    // 말은 둘뿐: 📍 다녀왔어요 / ♡ 가고 싶어요 (사용자 의견 11-22: 담기·핀·기록이 섞여 뭘 눌러야 할지 몰랐다)
+    await expect(sheet.getByTestId('sheet-been')).toBeInViewport({ ratio: 1 });
+    await expect(sheet.getByTestId('sheet-been')).toHaveText(/다녀왔어요/);
+    await expect(sheet.getByTestId('sheet-want')).toHaveText(/가고 싶어요/);
+    // 다녀왔어요 → 얼마나 남길지 고른다: 핀만 꽂기 / 다녀온 여행 / 다녀온 가게·명소
+    await sheet.getByTestId('sheet-been').click();
+    const menu = sheet.getByTestId('been-menu');
+    await expect(menu.getByRole('menuitem')).toHaveText([/핀만 꽂기|핀 하나 더 꽂기/, /다녀온 여행 남기기/, /다녀온 가게·명소 남기기/]);
+    await expect(menu.getByTestId('quick-pin')).toBeInViewport({ ratio: 1 });
+    await menu.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('핀을 꽂았어요');
     // 아래로 끌어서 닫기 (손잡이를 잡고 200px 내림)
     // 사파리(WebKit)는 new Touch()를 막아서, 손가락 자리만 담은 터치 이벤트를 만들어 보낸다 (앱은 touches[0].clientY만 읽음)
@@ -596,7 +601,10 @@ test.describe('사람처럼 쓰기', () => {
     await signIn(page);
     // 날짜는 앱(한국 시간) 기준으로: CI 서버는 UTC라 자정 무렵이면 하루가 어긋난다
     const ymd = new Date(Date.now() + 5 * 86400000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-    await page.goto('/record?status=planned');
+    // 갈 여행을 만드는 길은 '여행 계획하기' 하나: 곳·날을 이미 정했으면 '이미 정했어요'로 바로 적는다 (사용자 의견 11-22)
+    await page.goto('/plan');
+    await page.getByTestId('planner-decided').click();
+    await expect(page).toHaveURL(/\/record\?status=planned/);
     await page.getByLabel('어디 검색').fill('속초');
     await page.getByRole('option', { name: /속초시/ }).first().click();
     await page.getByLabel('제목').fill('속초 단풍 여행');

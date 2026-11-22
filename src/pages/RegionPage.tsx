@@ -1,3 +1,4 @@
+import BeenWant from '../components/BeenWant';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Icon, TopBar, useToast } from '../components/ui';
@@ -82,9 +83,7 @@ export default function RegionPage() {
       </div>
       <div className="region-actions" data-testid="region-actions">
         <div className="card white region-actions-bar">
-          <Link to={`/places/new?region=${pp}&status=want`} className="btn coral" style={{ flex: 1.15 }} data-testid="region-add-want">♥ 가게 담기</Link>
-          <Link to={`/record?place=${pp}`} className="btn line" style={{ flex: 1 }}>기록 남기기</Link>
-          <Link to={`/plan?place=${pp}`} className="btn line" style={{ flex: 1 }}>여기로 계획</Link>
+          <BeenWant place={place} trips={trips} wishes={wishes} againCount={s.done.length} />
         </div>
       </div>
     </>

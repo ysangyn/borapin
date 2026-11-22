@@ -230,7 +230,7 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await page.goto('/');
   await expect(page.getByTestId('map').first()).toHaveAttribute('data-features', /^[1-9]\d*$/, { timeout: 20_000 });
   await snap(page, 'm01-home');
-  // 맛집 지도로 가는 문: 홈 '내 지도' 카드(동네별 칩) → + 메뉴 첫 줄 '맛집·카페 담기' → 지역은 우리 집 동네가 기본
+  // 맛집 지도로 가는 문: 홈 '내 지도' 카드(동네별 칩) → + 메뉴 '가고 싶어요' → 지역은 우리 집 동네가 기본
   await expect(page.getByTestId('mymaps-card')).toBeVisible();
   await expect(page.getByTestId('mymaps-card-chip').first()).toContainText(/강릉시 (카페|맛집)/);
   // + 단추 = 어디?: 우리 집·자주 가는 곳 칩 → 지역 한 장 / 공유 글 붙여 넣기 → 가게 담기 / 바로 가기 세 줄
@@ -256,9 +256,9 @@ test('가득 찬 화면 · 휴대폰', async ({ browser }) => {
   await expect(page.getByText('경남 통영시').first()).toBeVisible(); // 주소에서 지역을 알아서
   await page.goto('/');
   await page.getByRole('button', { name: '남기기' }).click();
-  // 첫 줄은 '지금 여기 남기기'(오늘 간 가게를 바로), 다음이 맛집·카페 담기(링크·이름으로)
-  await expect(page.getByTestId('plus-sheet').getByRole('menuitem').first()).toContainText('지금 여기 남기기');
-  await expect(page.getByTestId('plus-sheet').getByRole('menuitem').nth(1)).toContainText('맛집·카페 담기');
+  // 바로 가기 네 줄: 지금 여기 남기기 · 다녀온 여행 · 가고 싶어요 · 여행 계획하기 (말은 다녀왔어요/가고 싶어요 둘뿐, 사용자 의견 11-22)
+  const items = page.getByTestId('plus-sheet').getByRole('menuitem');
+  await expect(items).toHaveText([/지금 여기 남기기/, /다녀온 여행/, /가고 싶어요/, /여행 계획하기/]);
   await page.getByTestId('plus-place').click();
   await expect(page.getByTestId('region-auto')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('고양시').first()).toBeVisible();

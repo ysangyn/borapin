@@ -253,7 +253,7 @@ test.describe.serial('보라핀 1단계', () => {
   test('국내 여행 기록 (초성 검색, 연도만)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.getByRole('button', { name: '남기기', exact: true }).click();
-    await page.getByRole('menuitem', { name: /여행 기록 남기기/ }).click();
+    await page.getByRole('menuitem', { name: /다녀온 여행/ }).click();
     await pickPlace(page, 'ㄱㄹ', '강릉시');
     await page.getByRole('button', { name: '몇 년', exact: true }).click();
     await page.getByLabel('연도').selectOption('2024');
@@ -352,6 +352,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(info).toContainText('해운대구');
     await shot(page, '09a-region-info');
     await info.getByRole('button', { name: '접기' }).click();
+    await sheet.getByTestId('sheet-been').click();
     await sheet.getByTestId('quick-pin').click();
     await expect(page.getByRole('status')).toContainText('부산에 핀을 꽂았어요');
     await expect(sheet).toContainText('다녀왔어요');
@@ -361,6 +362,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(sheet).toContainText('아직 안 가본 곳');
     await expect(sheet.getByTestId('trip-row')).toHaveCount(0);
     // 다시 꽂아 둔다
+    await sheet.getByTestId('sheet-been').click();
     await sheet.getByTestId('quick-pin').click();
     await expect(sheet.getByTestId('trip-row')).toHaveCount(1);
     // 꽃 지도: 핀만 꽂아도 고장 꽃 따라 보랏빛으로 물들기 시작 (지도 칸 자료에 물빛 색이 들어가고, 시트에 한 줄)
@@ -412,7 +414,7 @@ test.describe.serial('보라핀 1단계', () => {
     // 비어 있으면 홈에 이번 달 추천 3곳
     const homeWishes = page.getByTestId('home-wishes');
     await expect(homeWishes).toContainText('가고 싶은 곳 3곳만 담아볼까요?');
-    await expect(homeWishes.getByRole('button', { name: '담기' })).toHaveCount(3);
+    await expect(homeWishes.getByRole('button', { name: '가고 싶어요' })).toHaveCount(3);
     await expectMapDrawn(page);
     // 추천지 이름을 누르면 지도의 지역 창이 열려 자세히 보고 바로 기록할 수 있다
     const firstPick = homeWishes.getByTestId('pick-detail').first();
@@ -421,7 +423,10 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page).toHaveURL(/\/map\?sel=/);
     // 창 제목은 '전북 순창'처럼 시·군을 뗀 이름: 앞 두 글자(지역 이름 첫머리)로 맞춰 본다
     await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText(pickName.split(' ').pop()!.slice(0, 2));
-    await expect(page.getByTestId('region-sheet').getByRole('link', { name: '자세히 기록' })).toBeVisible();
+    // 말은 둘뿐: 다녀왔어요 → 핀만 / 다녀온 여행 / 다녀온 가게 (사용자 의견 11-22)
+    await page.getByTestId('region-sheet').getByTestId('sheet-been').click();
+    await expect(page.getByTestId('region-sheet').getByRole('menuitem', { name: /다녀온 여행 남기기/ })).toHaveAttribute('href', /\/record\?place=kr:/);
+    await page.getByTestId('region-sheet').getByTestId('sheet-been').click();
     // 오늘의 추천 사진 카드에도 자세히·계획하기 (추천은 안 가 본 곳이라 기록 대신 계획)
     await page.goto('/');
     await expect(page.getByTestId('month-pick-detail')).toBeVisible();
@@ -433,6 +438,7 @@ test.describe.serial('보라핀 1단계', () => {
     await tapLngLat(page, 126.55, 33.38);
     const sheet = page.getByTestId('region-sheet');
     await expect(sheet.getByTestId('sheet-title')).toHaveText('제주');
+    await sheet.getByTestId('sheet-want').click();
     await sheet.getByTestId('sheet-wish').click();
     await expect(page.getByRole('status')).toContainText('가고 싶은 곳에 담았어요');
     await page.getByRole('button', { name: '메모 쓰기' }).click();
@@ -1277,7 +1283,7 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('일본');
     await page.getByTestId('sheet-cities').getByTestId('sheet-city-오사카').click();
     await expect(page.getByTestId('region-sheet').getByTestId('sheet-title')).toContainText('오사카');
-    await expect(page.getByTestId('quick-pin')).toContainText('다녀왔어요');
+    await expect(page.getByTestId('sheet-been')).toContainText('다녀왔어요');
     // 초성으로도 찾는다
     await mbox.getByLabel('지역 찾기').fill('ㄱㄹ');
     await expect(mbox.getByRole('option', { name: /강릉/ }).first()).toBeVisible();

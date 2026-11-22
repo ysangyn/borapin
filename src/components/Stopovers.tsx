@@ -55,7 +55,7 @@ export default function Stopovers({ destCode, trip }: { destCode: string; trip?:
             </Link>
             <span className="stopover-acts">
               {touch() && <a className="stopover-btn" href={nav} aria-label={`${r.name} 들러 내비로 열기`}>내비</a>}
-              <button className="stopover-btn" onClick={() => void add(s.code)} aria-label={`${r.name} 가고 싶은 곳에 담기`}>담기</button>
+              <button className="stopover-btn" onClick={() => void add(s.code)} aria-label={`${r.name} 가고 싶어요`}>♡ 가고 싶어요</button>
             </span>
           </div>
         );

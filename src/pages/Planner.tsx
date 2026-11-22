@@ -102,6 +102,12 @@ export default function Planner() {
             <span><b>어디 갈지 몰라도 돼요</b><span className="small muted">언제·며칠·누구와만 고르면 가고 싶은 곳·제철·축제를 섞어 후보 3곳을 골라 드려요. {isSolo() ? '마음에 드는 곳을 고르면 정해져요.' : '둘이 같은 곳을 고르면 정해져요.'}</span></span>
           </div>
         )}
+        {/* 갈 여행을 만드는 길은 여기 하나 (사용자 의견 11-22: 기록 화면의 '갈 여행'과 겹쳤다). 곳·날을 이미 정했으면 바로 적기 */}
+        {!fixed && (
+          <Link to="/record?status=planned" className="record-to-place" data-testid="planner-decided">
+            <Icon name="calendar" size={16} /><span><b>어디·언제 이미 정했어요</b><span className="tiny muted">추천 없이 갈 여행을 바로 적어 둬요</span></span><Icon name="chev" size={14} />
+          </Link>
+        )}
         {wishGone && <div className="small muted" role="status">그 가고 싶은 곳은 이미 빠졌어요. 조건으로 골라 볼게요.</div>}
         <section className="planner-q">
           <div className="planner-label">언제</div>

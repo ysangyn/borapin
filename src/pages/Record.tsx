@@ -218,12 +218,12 @@ export default function Record() {
             <button role="radio" aria-checked={kind === 'trip'} className={kind === 'trip' ? 'on' : ''} onClick={() => setKind('trip')}>여행</button>
             <button role="radio" aria-checked={kind === 'outing'} className={kind === 'outing' ? 'on' : ''} onClick={() => setKind('outing')}>나들이</button>
           </div></div>
-          {/* 다녀왔는지·갈 건지는 단추 글 자체가 이름이라 작은 제목을 따로 두지 않는다 ('언제'는 아래 날짜 칸 하나만) */}
-          <div className="seg-labeled" style={{ justifyContent: 'flex-end' }}>
+          {/* 새로 남길 때는 다녀온 여행만 (갈 여행은 '여행 계획하기' 한 길로, 사용자 의견 11-22). 고칠 때만 바꿀 수 있다: 갈 여행을 다녀왔으면 '다녀온 여행'으로 */}
+          {editing && <div className="seg-labeled" style={{ justifyContent: 'flex-end' }}>
           <div className="seg" role="radiogroup" aria-label="다녀온 여행 또는 갈 여행">
             <button role="radio" aria-checked={status === 'done'} className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀온 여행</button>
             <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 여행</button>
-          </div></div>
+          </div></div>}
         </div>
 
         {/* '갈 여행'은 이미 정한 곳·날을 적어 두는 것. 어디로 갈지 고르는 중이면 '여행 계획하기'(추천) — 둘이 헷갈리지 않게 (사용자 의견 11-22) */}
@@ -235,8 +235,8 @@ export default function Record() {
 
         {/* 여기는 '여행 한 번'을 남기는 곳: 식당·카페 한 곳만이면 그쪽으로 (헷갈리지 않게 맨 위에) */}
         {!editing && (
-          <Link to={`/places/new${places.length ? `?region=${placeParam(places[places.length - 1])}` : ''}`} className="record-to-place" data-testid="record-to-place">
-            <Icon name="heart" size={16} /><span><b>맛집·카페 한 곳만 남기나요?</b><span className="tiny muted">여기는 여행 기록이에요. 가게 하나는 '맛집·카페 담기'에서 한 줄 평·순위와 함께 남겨요</span></span><Icon name="chev" size={14} />
+          <Link to={`/places/new?status=been${places.length ? `&region=${placeParam(places[places.length - 1])}` : ''}`} className="record-to-place" data-testid="record-to-place">
+            <Icon name="heart" size={16} /><span><b>맛집·카페 한 곳만 남기나요?</b><span className="tiny muted">여기는 여행 기록이에요. 가게 하나는 '다녀온 가게·명소 남기기'에서 한 줄 평과 함께 남겨요</span></span><Icon name="chev" size={14} />
           </Link>
         )}
 

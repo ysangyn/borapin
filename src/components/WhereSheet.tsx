@@ -10,7 +10,7 @@ import { dday } from '../lib/dates';
 import type { Place } from '../lib/types';
 
 /**
- * + 단추 = '어디?': 지역을 고르면 그 지역 한 장(/region/…)이 열리고 거기서 담기·기록·계획을 한다.
+ * + 단추 = '어디?': 지역을 고르면 그 지역 한 장(/region/…)이 열리고 거기서 다녀왔어요·가고 싶어요를 남긴다.
  * 지도 앱 '공유' 글을 붙여 넣으면 가게 담기로 바로 (주소에서 지역·동네를 알아서). 아래엔 바로 가기 세 줄.
  */
 export default function WhereSheet({ onClose }: { onClose: () => void }) {
@@ -48,7 +48,7 @@ export default function WhereSheet({ onClose }: { onClose: () => void }) {
     <div className="plus-sheet where-sheet" role="dialog" aria-label="어디예요?" onClick={(e) => e.stopPropagation()} data-testid="plus-sheet">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 8px 0' }}>
         <span className="jua" style={{ fontSize: 24 }}>어디예요?</span>
-        <span className="small muted">지역을 고르면 그 지역 한 장에서 담기·기록·계획을 해요</span>
+        <span className="small muted">지역을 고르면 그곳에서 다녀왔어요·가고 싶어요를 남겨요</span>
       </div>
       <label className="where-search">
         <Icon name="search" size={18} />
@@ -82,9 +82,10 @@ export default function WhereSheet({ onClose }: { onClose: () => void }) {
       <div className="where-quick" role="menu" aria-label="바로 가기">
         {/* 가장 자주 쓸 것: 오늘 간 가게를 지금 자리로 바로 — 한 줄 넓게 */}
         <NavLink to="/here" role="menuitem" className="here-big" data-testid="plus-here"><Icon name="pin" size={20} /><span><b>지금 여기 남기기</b><small>오늘 간 가게·카페를 지금 자리로 바로</small></span></NavLink>
-        <NavLink to="/places/new" role="menuitem" className="plus-item sm" data-testid="plus-place"><Icon name="heart" size={18} /><span><b>맛집·카페 담기</b></span></NavLink>
-        <NavLink to="/record" role="menuitem" className="plus-item sm"><Icon name="pin" size={18} /><span><b>여행 기록 남기기</b></span></NavLink>
-        <NavLink to="/plan" role="menuitem" className="plus-item sm"><Icon name="calendar" size={18} /><span><b>여행 계획하기</b></span></NavLink>
+        {/* 말은 둘뿐: 다녀왔어요(핀) / 가고 싶어요(♡). 계획은 한 길(/plan) — 사용자 의견 11-22: 남기는 곳이 여기저기 겹쳤다 */}
+        <NavLink to="/record" role="menuitem" className="plus-item sm" data-testid="plus-record"><Icon name="pin" size={18} /><span><b>다녀온 여행</b></span></NavLink>
+        <NavLink to="/places/new?status=want" role="menuitem" className="plus-item sm" data-testid="plus-place"><Icon name="heart" size={18} /><span><b>가고 싶어요</b></span></NavLink>
+        <NavLink to="/plan" role="menuitem" className="plus-item sm" data-testid="plus-plan"><Icon name="calendar" size={18} /><span><b>여행 계획하기</b></span></NavLink>
       </div>
     </div>
   );
