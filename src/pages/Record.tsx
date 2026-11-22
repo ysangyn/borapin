@@ -162,8 +162,8 @@ export default function Record() {
         const wishId = sp.get('wish');
         if (wishId) await updateWish(wishId, { tripId: newId }).catch((e) => console.warn(e));
         if (news) celebrate();
-        // 단추 말과 맞춘다: '기록 남기기' → '기록했어요', '계획 남기기' → '계획을 남겼어요'
-        const did = status === 'planned' ? '계획을 남겼어요' : '기록했어요';
+        // 단추 말과 맞춘다: '기록 남기기' → '기록했어요', '갈 여행 적어 두기' → '갈 여행을 적어 뒀어요'
+        const did = status === 'planned' ? '갈 여행을 적어 뒀어요' : '기록했어요';
         if (pending.length) {
           const block = await uploadBlocker(flags);
           if (block) toast(`${did} · 사진은 못 올렸어요: ${block}`);
@@ -207,7 +207,7 @@ export default function Record() {
 
   return (
     <>
-      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? '기록 고치기' : status === 'planned' ? '계획 남기기' : '기록 남기기'} />
+      <TopBar back backTo={editing && id ? `/trips/${id}` : '/'} confirmLeave={dirty} title={editing ? '기록 고치기' : status === 'planned' ? '갈 여행 적어 두기' : '기록 남기기'} />
       <div className="page" style={{ paddingTop: 4, gap: 20 }}>
         <div className="small muted" style={{ marginTop: -8 }}>어디와 언제만 있으면 남길 수 있어요.</div>
 
@@ -219,11 +219,18 @@ export default function Record() {
           </div></div>
           {/* 다녀왔는지·갈 건지는 단추 글 자체가 이름이라 작은 제목을 따로 두지 않는다 ('언제'는 아래 날짜 칸 하나만) */}
           <div className="seg-labeled" style={{ justifyContent: 'flex-end' }}>
-          <div className="seg" role="radiogroup" aria-label="다녀왔어요 또는 갈 거예요">
-            <button role="radio" aria-checked={status === 'done'} className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀왔어요</button>
-            <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 거예요</button>
+          <div className="seg" role="radiogroup" aria-label="다녀온 여행 또는 갈 여행">
+            <button role="radio" aria-checked={status === 'done'} className={status === 'done' ? 'on' : ''} onClick={() => setStatus('done')}>다녀온 여행</button>
+            <button role="radio" aria-checked={status === 'planned'} className={status === 'planned' ? 'on' : ''} onClick={() => setStatus('planned')}>갈 여행</button>
           </div></div>
         </div>
+
+        {/* '갈 여행'은 이미 정한 곳·날을 적어 두는 것. 어디로 갈지 고르는 중이면 '여행 계획하기'(추천) — 둘이 헷갈리지 않게 (사용자 의견 11-22) */}
+        {!editing && status === 'planned' && (
+          <Link to="/plan" className="record-to-place" data-testid="record-to-plan">
+            <Icon name="calendar" size={16} /><span><b>어디로 갈지 아직 고르는 중인가요?</b><span className="tiny muted">여기는 정한 여행을 적어 두는 곳이에요. '여행 계획하기'에서 날짜와 함께 갈 사람에 맞는 곳을 추천받을 수 있어요.</span></span><Icon name="chev" size={14} />
+          </Link>
+        )}
 
         {/* 여기는 '여행 한 번'을 남기는 곳: 식당·카페 한 곳만이면 그쪽으로 (헷갈리지 않게 맨 위에) */}
         {!editing && (
@@ -293,7 +300,7 @@ export default function Record() {
             ))}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <input className="input" aria-label="함께 간 사람 이름" placeholder="함께 간 사람 이름 (엄마, 동생…)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addName(); } }} />
+            <input className="input" aria-label={status === 'planned' ? '함께 갈 사람 이름' : '함께 간 사람 이름'} placeholder={status === 'planned' ? '함께 갈 사람 이름 (엄마, 동생…)' : '함께 간 사람 이름 (엄마, 동생…)'} value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addName(); } }} />
             <button type="button" className="btn soft sm" style={{ height: 46 }} onClick={addName}>추가</button>
           </div>
         </div>
@@ -360,7 +367,7 @@ export default function Record() {
 
         {uploader.queue.length > 0 && <div className="small muted" role="status">사진 올리는 중 {uploader.queue.filter((q) => q.pct >= 1).length}/{uploader.queue.length}…</div>}
         <button className="btn block" disabled={!canSave} onClick={save} data-testid="save">
-          {saving ? (editing ? '저장 중…' : '남기는 중…') : editing ? '고친 내용 저장' : toWish ? '가고 싶은 곳에 담기' : status === 'planned' ? '계획 남기기' : '기록 남기기'}
+          {saving ? (editing ? '저장 중…' : '남기는 중…') : editing ? '고친 내용 저장' : toWish ? '가고 싶은 곳에 담기' : status === 'planned' ? '갈 여행 적어 두기' : '기록 남기기'}
         </button>
         {!places.length && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">어디를 하나 이상 골라 주세요</div>}
         {places.length > 0 && !whenOk && <div className="tiny muted" style={{ textAlign: 'center', marginTop: -10 }} data-testid="save-hint">언제인지 골라 주세요 · 모르면 '몰라요'를 눌러요</div>}

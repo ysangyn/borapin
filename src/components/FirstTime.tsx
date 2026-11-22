@@ -17,7 +17,7 @@ import type { Place } from '../lib/types';
  * 사진 → 한 줄 → 알아 둘 것 넷 → 대표 볼거리 → 보통 이렇게 다녀요(2박 3일·4박 5일) → 이 일정으로 계획하기 → 영상 → 여행기.
  * 일정은 손으로 쓴 자료가 먼저, 없으면 도시 자료로 짠 뼈대 (AI 없음, 비용 없음).
  */
-export default function FirstTime({ place }: { place: Place }) {
+export default function FirstTime({ place, again = false }: { place: Place; again?: boolean }) {
   const auth = useAuth();
   const world = useWorld();
   const [nights, setNights] = useState<2 | 4>(2);
@@ -42,12 +42,12 @@ export default function FirstTime({ place }: { place: Place }) {
   const photo = photoForPlace(cityPlace) ?? photoForPlace(place);
   const asOf = world?.updated ? `${Number(world.updated.slice(5, 7))}월` : '';
   return (
-    <div className="card white first-time" data-testid="first-time">
-      {photo && <ScenicPhoto photo={photo} className="first-photo" label="bottom" />}
+    <div className="card white first-time" data-testid={again ? 'city-again' : 'first-time'}>
+      {photo && !again && <ScenicPhoto photo={photo} className="first-photo" label="bottom" />}
       <div className="first-body">
         <div className="first-title">
           <b className="jua">{place.t === 'country' && place.city ? `${place.city} · ${country}` : country}</b>
-          <span className="tiny muted">처음 가 보는 곳</span>
+          <span className="tiny muted">{again ? '다시 간다면' : '처음 가 보는 곳'}</span>
         </div>
         <p className="small" style={{ margin: 0, lineHeight: 1.6 }}>{city.line}</p>
 

@@ -602,10 +602,11 @@ test.describe('사람처럼 쓰기', () => {
     await page.getByLabel('제목').fill('속초 단풍 여행');
     await page.getByRole('button', { name: '날짜', exact: true }).click();
     await page.getByLabel('시작 날짜').fill(ymd);
-    // 갈 거예요로 남기면 단추는 '계획 남기기', 알림은 '계획을 남겼어요'
-    await expect(page.getByTestId('save')).toHaveText('계획 남기기');
+    // 갈 여행으로 남기면 단추는 '갈 여행 적어 두기', 알림은 '갈 여행을 적어 뒀어요', 여행 계획하기(추천)로 가는 길도 보인다
+    await expect(page.getByTestId('save')).toHaveText('갈 여행 적어 두기');
+    await expect(page.getByTestId('record-to-plan')).toBeVisible();
     await page.getByTestId('save').click();
-    await expect(page.getByRole('status')).toContainText('계획을 남겼어요');
+    await expect(page.getByRole('status')).toContainText('갈 여행을 적어 뒀어요');
     await expect(page.getByTestId('trip-title')).toHaveText('속초 단풍 여행');
     await page.goto('/');
     const card = page.getByTestId('stage-card');

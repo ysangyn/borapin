@@ -122,7 +122,8 @@ function Glance({ place, s, onTab }: { place: ReturnType<typeof parsePlaceParam>
   const kinds = useMemo(() => { const m = new Map<string, number>(); for (const r of s.recs) { const k = themeOf(r); m.set(k, (m.get(k) ?? 0) + 1); } return themesOrder([...m.keys()]).map((k) => ({ k, n: m.get(k)!, color: KIND_COLOR[s.recs.find((r) => themeOf(r) === k)!.kind] })); }, [s.recs]);
   const name = placeLabel(place);
   const world = useWorld();
-  const firstTime = place.t === 'country' && s.done.length === 0 && !!firstPlanFor(world, place);
+  const cityInfo = place.t === 'country' && !!firstPlanFor(world, place);
+  const firstTime = cityInfo && s.done.length === 0;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="region-glance">
       {/* 처음 가 보는 나라·도시: 사진·알아 둘 것·보통 이렇게 다녀요 (사용자 의견 11-21) */}
@@ -194,6 +195,8 @@ function Glance({ place, s, onTab }: { place: ReturnType<typeof parsePlaceParam>
           </div>
         </div>
       )}
+      {/* 다녀온 나라·도시도 그곳 정보는 보이게: 우리 기록 아래에 '다시 간다면' (사용자 의견 11-22: 하코다테를 누르면 아무 정보가 없다) */}
+      {cityInfo && !firstTime && <FirstTime place={place} again />}
     </div>
   );
 }

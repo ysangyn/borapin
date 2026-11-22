@@ -127,7 +127,7 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       <div className="row-between" style={{ alignItems: 'flex-start' }}>
         <div>
           <Link to={`/region/${placeParam}`} className="jua" style={{ fontSize: 28, lineHeight: 1.1, color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }} data-testid="sheet-title">{name}<Icon name="chev" size={18} /></Link>
-          <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600, display: 'block', marginTop: 3 }} data-testid="sheet-region">맛집·명소·여행 한눈에 보기 ›</Link>
+          <Link to={`/region/${placeParam}`} className="tiny" style={{ fontWeight: 600, display: 'block', marginTop: 3 }} data-testid="sheet-region">{(place.t === 'kr' ? name.split(' ').pop() : place.city ?? name.split(' · ')[0])} 자세히 보기 · 볼거리·먹거리·우리 기록 ›</Link>
           {season && <div className="tiny" style={{ color: '#b4472c', fontWeight: 600 }}>가기 좋은 때 {monthsLabel(season.m)}{season.why ? ` · ${season.why}` : ''}{season.at ? ` (${season.at} 기준)` : ''}</div>}
           {fests.length > 0 && (
             <div className="sheet-fests" data-testid="sheet-festivals">
@@ -191,26 +191,26 @@ export default function PlaceSheet({ place, trips, stats, wishes = [], recs = []
       </div>
 
       <div className="tiny muted" style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10 }}>
-        <span style={{ flex: 1 }}>'핀 꽂기'는 날짜 없이 다녀온 표시만 해요</span>
+        <span style={{ flex: 1 }}>핀은 다녀온 곳(날짜 없이 표시만), ♡는 가고 싶은 곳이에요</span>
       </div>
       </div>
       {/* 가장 많이 쓰는 버튼은 창 아래에 늘 보이게 (내용이 길어도 스크롤 밖) */}
       <div className="sheet-actions">
         <button className="btn" style={{ flex: 1.15 }} disabled={busy || auth.status !== 'ready'} onClick={quickPin} data-testid="quick-pin">
           <Icon name="plus" size={17} stroke={2.4} />
-          {busy ? '꽂는 중…' : done.length ? '핀 하나 더 꽂기' : '핀 꽂기'}
+          {busy ? '꽂는 중…' : done.length ? '또 다녀왔어요 · 핀 꽂기' : '다녀왔어요 · 핀 꽂기'}
         </button>
         <Link to={`/record?place=${placeParam}`} className="btn soft" style={{ flex: 1 }}>자세히 기록</Link>
-        {/* 담기(가고 싶은 곳)는 핀 모양: 하트는 '마음'(나도 원해요·좋아요)에만 쓴다 */}
+        {/* 핀 = 다녀온 곳, ♡ = 가고 싶은 곳 (사용자 의견 11-22: 둘 다 핀이라 헷갈렸다) */}
         {wish ? (
-          <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 52, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fillRule="evenodd" d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21zM12 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" /></svg>
+          <Link to={`/wishes/${wish.id}`} className="btn coral-soft" style={{ width: 66, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10.5 }} aria-label="가고 싶은 곳에 담겨 있어요" data-testid="sheet-wished">
+            <span aria-hidden="true" style={{ fontSize: 19, lineHeight: 1 }}>♥</span>
             담겼어요
           </Link>
         ) : (
-          <button className="btn coral-soft" style={{ width: 52, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10 }} onClick={addWish} aria-label="가고 싶은 곳에 담기" data-testid="sheet-wish">
-            <Icon name="pin" size={20} stroke={2.2} />
-            담기
+          <button className="btn coral-soft" style={{ width: 66, padding: 0, flexDirection: 'column', gap: 0, fontSize: 10.5 }} onClick={addWish} aria-label="가고 싶은 곳에 담기" data-testid="sheet-wish">
+            <Icon name="heart" size={20} stroke={2.2} />
+            가고 싶어요
           </button>
         )}
       </div>

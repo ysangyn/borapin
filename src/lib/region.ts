@@ -19,8 +19,10 @@ export interface RegionSummary {
   wish: Wish | null;
 }
 export function summarize(place: Place, recs: PlaceRec[], trips: Trip[], wishes: Wish[]): RegionSummary {
-  const mine = recs.filter((r) => samePlace(r.region, place));
-  const here = trips.filter((t) => t.places.some((p) => samePlace(p, place)));
+  // 도시 화면에서는 그 도시 것만 센다 (나라만 꽂은 '일본 여행'이 하코다테 '다녀옴'이 되지 않게). 나라 화면은 도시 것까지
+  const inside = (x: Place) => (place.t === 'country' && place.city ? x.t === 'country' && x.id === place.id && x.city === place.city : samePlace(x, place));
+  const mine = recs.filter((r) => inside(r.region));
+  const here = trips.filter((t) => t.places.some(inside));
   const byDate = (a: Trip, b: Trip) => ((b.when.y ?? 0) * 10000 + (b.when.m ?? 0) * 100 + (b.when.d ?? 0)) - ((a.when.y ?? 0) * 10000 + (a.when.m ?? 0) * 100 + (a.when.d ?? 0));
   return {
     recs: mine,

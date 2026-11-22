@@ -81,6 +81,29 @@ export default function RegionInfo({ code }: { code: string }) {
       {kind && heart(name, kind)}
     </span>
   );
+  // 사진이 있는 곳은 카드 줄로 앞에, 사진이 없는 곳은 큰 글자 네모 대신 '이름 · 한 줄' 작은 줄로 (사용자 의견 11-22)
+  type Item = { name: string; img?: string; sub?: string; tap: () => void; kind: 'spot' | 'food' | null };
+  const rows = (items: Item[], testid: string) => {
+    const pics = items.filter((x) => x.img);
+    const rest = items.filter((x) => !x.img);
+    return (
+      <>
+        {pics.length > 0 && <div className="tour-strip">{pics.map((x) => card(x.name, x.img, x.sub, x.tap, x.kind, testid))}</div>}
+        {rest.length > 0 && (
+          <div className="explore-list">
+            {rest.map((x) => (
+              <span key={x.name} className="explore-li">
+                <button type="button" onClick={x.tap} data-testid={testid}>
+                  <b>{x.name}</b>{x.sub && <span>{x.sub}</span>}
+                </button>
+                {x.kind && heart(x.name, x.kind)}
+              </span>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  };
   const firstLine = (a?: AboutInfo) => a?.short.split(/(?<=[.!?])\s/)[0]?.replace(/^.*?(은|는|이란)\s/, '').slice(0, 40);
 
   return (
@@ -96,17 +119,13 @@ export default function RegionInfo({ code }: { code: string }) {
       {spots.length > 0 && (
         <section className="explore-row" data-testid="explore-spots">
           <div className="explore-head"><b>볼거리</b><span>누르면 사진·소개·후기</span></div>
-          <div className="tour-strip">
-            {spots.map((c) => card(c.name, c.img ?? about[c.name]?.img, c.img ? undefined : firstLine(about[c.name]), () => openSpot(c), 'spot', 'explore-card'))}
-          </div>
+          {rows(spots.map((c) => ({ name: c.name, img: c.img ?? about[c.name]?.img, sub: firstLine(about[c.name]), tap: () => openSpot(c), kind: 'spot' as const })), 'explore-card')}
         </section>
       )}
       {foods.length > 0 && (
         <section className="explore-row" data-testid="explore-foods">
           <div className="explore-head"><b>먹거리</b><span>어떤 음식인지 · 어디서 먹는지</span></div>
-          <div className="tour-strip">
-            {foods.map((f) => card(f, about[f]?.img, firstLine(about[f]), () => openFood(f), 'food', 'explore-food'))}
-          </div>
+          {rows(foods.map((f) => ({ name: f, img: about[f]?.img, sub: firstLine(about[f]), tap: () => openFood(f), kind: 'food' as const })), 'explore-food')}
         </section>
       )}
       {shops.length > 0 && (
