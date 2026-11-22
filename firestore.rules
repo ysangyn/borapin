@@ -503,6 +503,103 @@ service cloud.firestore {
       allow delete: if signedIn() && (resource.data.by == request.auth.uid || circleHost(resource.data.circleId));
     }
 
+    // ================= 보라핀 사람들에게 공개 (docs/design/SPACES-PUBLIC.md 5절) =================
+    // 내가 고른 가게 평의 사본. 보는 사람은 '보라핀 사람'(어느 공간이든 지금 구성원인 사람)뿐이고 인터넷에는 나오지 않는다.
+    // - 한 사람이 한 가게에 한 건: 문서 이름 = 가게 번호_내 uid. 가게 번호(카카오 k…, 네이버 n…)가 있는 가게만
+    // - '또 갈래요 / 한 번이면 충분'만 공개한다. '별로'는 공개하지 않는다
+    // - 메일·위경도·메모·정확한 날짜 칸은 없다 (달까지만). 칸은 hasOnly로 못박는다
+    // - 가리기(hidden)는 마을 주인만. 가려진 평은 쓴 사람과 주인만 본다
+    function pubReviewPath(id) { return /databases/$(database)/documents/pubReviews/$(id); }
+    function flagsPath() { return /databases/$(database)/documents/config/flags; }
+    // 보라핀 지역 모양: 국내 칸 { t: 'kr', code } 또는 나라·도시 { t: 'country', id, city? }
+    function validRegion(r) {
+      return r is map
+        && ((r.keys().hasOnly(['t', 'code']) && r.t == 'kr' && r.code is string && r.code.size() <= 10)
+          || (r.keys().hasOnly(['t', 'id', 'city']) && r.keys().hasAll(['t', 'id']) && r.t == 'country'
+              && r.id is string && r.id.size() <= 4 && (!('city' in r) || (r.city is string && r.city.size() <= 40))));
+    }
+    // 올린 시각(at·updatedAt)은 두지 않는다: '지금 여기'에서 바로 공개하면 '이 사람이 지금 이 가게에 있다'가 보인다. 달(month)까지만
+    function validPubReview(d, id) {
+      return d.keys().hasOnly(['placeKey', 'name', 'kind', 'region', 'tag', 'verdict', 'line', 'nick', 'uid', 'spaceId', 'month', 'photos', 'hidden', 'hiddenReason', 'hiddenAt', 'v'])
+        && d.keys().hasAll(['placeKey', 'name', 'kind', 'verdict', 'line', 'nick', 'uid', 'spaceId', 'month', 'hidden', 'v'])
+        && d.placeKey is string && d.placeKey.matches('^[kn][0-9]{1,40}$')
+        && d.uid == request.auth.uid
+        && id == d.placeKey + '_' + request.auth.uid
+        && d.spaceId is string && inSpace(d.spaceId)
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
+        && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
+        && (!('region' in d) || validRegion(d.region))
+        && (!('tag' in d) || (d.tag is string && d.tag.size() <= 20))
+        && d.verdict in ['again', 'once']
+        && d.line is string && d.line.size() <= 200
+        && d.nick is string && d.nick.size() >= 1 && d.nick.size() <= 10
+        && d.month is string && d.month.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
+        && (!('photos' in d) || (d.photos is list && d.photos.size() <= 2))
+        && d.hidden is bool
+        && d.v == 1;
+    }
+    match /pubReviews/{id} {
+      // 목록은 '가려지지 않은 것'(hidden == false)이나 '내 것'(uid == 나)으로 물어야 한다. 주인은 모두
+      allow read: if isUser()
+        && (resource.data.hidden == false || resource.data.uid == request.auth.uid || isOwner());
+      allow create: if isUser() && validPubReview(request.resource.data, id)
+        && request.resource.data.hidden == false
+        && !('hiddenReason' in request.resource.data) && !('hiddenAt' in request.resource.data);
+      allow update: if
+        // 쓴 사람: 내용을 고친다. 가림 상태는 못 바꾼다
+        (isUser() && resource.data.uid == request.auth.uid && validPubReview(request.resource.data, id)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['hidden', 'hiddenReason', 'hiddenAt']))
+        // 마을 주인: 가리기·풀기만. 내용은 못 고친다
+        || (isOwner()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden', 'hiddenReason', 'hiddenAt'])
+          && request.resource.data.hidden is bool
+          && (!('hiddenReason' in request.resource.data) || (request.resource.data.hiddenReason is string && request.resource.data.hiddenReason.size() <= 100)));
+      // 거두기: 본인, 같은 공간 사람(짝), 마을 주인
+      allow delete: if signedIn()
+        && (resource.data.uid == request.auth.uid || isOwner() || inSpace(resource.data.spaceId));
+    }
+
+    // 공개 사진 사본 (작게 다시 그린 것). 위경도·찍은 시각 칸은 없다. 하나씩만 읽는다
+    match /pubPhotos/{id} {
+      allow get: if isUser();
+      allow list: if signedIn() && (resource.data.uid == request.auth.uid || isOwner());
+      allow create: if isUser()
+        && request.resource.data.keys().hasOnly(['uid', 'spaceId', 'reviewId', 'data', 'w', 'h', 'v'])
+        && request.resource.data.keys().hasAll(['uid', 'spaceId', 'reviewId', 'data', 'v'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.spaceId is string && inSpace(request.resource.data.spaceId)
+        // 내 평에 붙는 사진만 (평 문서 이름 = 가게 번호_내 uid)
+        && request.resource.data.reviewId is string && request.resource.data.reviewId.size() <= 120
+        && request.resource.data.reviewId.matches('^[kn][0-9]{1,40}_.+$')
+        && request.resource.data.reviewId.split('_').size() == 2
+        && request.resource.data.reviewId.split('_')[1] == request.auth.uid
+        && request.resource.data.data is bytes && request.resource.data.data.size() <= 220000
+        && (!('w' in request.resource.data) || request.resource.data.w is int)
+        && (!('h' in request.resource.data) || request.resource.data.h is int)
+        && request.resource.data.v == 1
+        // 주인이 공개 사진 올리기를 멈췄으면 못 올린다 (저장 공간 한도를 지키는 스위치)
+        && !(exists(flagsPath()) && get(flagsPath()).data.get('pubPhotosPaused', false) == true);
+      allow update: if false;
+      allow delete: if signedIn()
+        && (resource.data.uid == request.auth.uid || isOwner() || inSpace(resource.data.spaceId));
+    }
+
+    // 신고: 보라핀 사람이 한 평에 한 번 (문서 이름 = 평 이름_내 uid). 고칠 수 없다. 읽고 지우는 건 마을 주인만
+    match /pubFlags/{id} {
+      allow create: if isUser()
+        && request.resource.data.keys().hasOnly(['reviewId', 'uid', 'reason', 'note', 'at', 'v'])
+        && request.resource.data.keys().hasAll(['reviewId', 'uid', 'reason', 'v'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.reviewId is string
+        && id == request.resource.data.reviewId + '_' + request.auth.uid
+        && request.resource.data.reason in ['privacy', 'wrong', 'rude', 'ad', 'other']
+        && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 200))
+        && exists(pubReviewPath(request.resource.data.reviewId))
+        && request.resource.data.v == 1;
+      allow update: if false;
+      allow read, delete: if isOwner();
+    }
+
     // 내 모임 목록: 내가 든 모임을 찾는 길 (모임은 목록으로 못 읽는다). 자기 것만, 들어 있는 모임만 적는다
     match /users/{uid}/circles/{cid} {
       allow read: if signedIn() && request.auth.uid == uid;
