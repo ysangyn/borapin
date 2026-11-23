@@ -1262,8 +1262,14 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
       await setDoc(R(db, 'k100_bora'), rev('bora', 'k100', 'main', { nick: '보라' }));
       await setDoc(R(db, 'k100_carol'), rev('carol', 'k100', 'sp2', { nick: '캐롤', verdict: 'once', line: '한 번이면 돼요' }));
       await setDoc(R(db, 'k200_carol'), rev('carol', 'k200', 'sp2', { nick: '캐롤', hidden: true, hiddenReason: '얼굴이 나온 사진' }));
-      await setDoc(PP(db, 'pp-bora-1'), pphoto('bora', 'main'));
-      await setDoc(PP(db, 'pp-carol-1'), pphoto('carol', 'sp2', { reviewId: 'k100_carol' }));
+      // 사진이 붙은 평: 사진 이름은 평 이름_0 · _1 둘뿐이고, 평의 photos 목록과 늘 맞는다
+      await setDoc(R(db, 'k400_bora'), rev('bora', 'k400', 'main', { nick: '보라', photos: ['k400_bora_0'] }));
+      await setDoc(PP(db, 'k400_bora_0'), pphoto('bora', 'main', { reviewId: 'k400_bora' }));
+      await setDoc(R(db, 'k400_carol'), rev('carol', 'k400', 'sp2', { nick: '캐롤', photos: ['k400_carol_0', 'k400_carol_1'] }));
+      await setDoc(PP(db, 'k400_carol_0'), pphoto('carol', 'sp2', { reviewId: 'k400_carol' }));
+      await setDoc(PP(db, 'k400_carol_1'), pphoto('carol', 'sp2', { reviewId: 'k400_carol' }));
+      await setDoc(R(db, 'k500_carol'), rev('carol', 'k500', 'sp2', { nick: '캐롤', hidden: true, hiddenReason: '얼굴이 나온 사진', photos: ['k500_carol_0'] }));
+      await setDoc(PP(db, 'k500_carol_0'), pphoto('carol', 'sp2', { reviewId: 'k500_carol' }));
       await setDoc(F(db, 'k100_bora_carol'), flag('carol', 'k100_bora'));
     });
   });
@@ -1280,7 +1286,7 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     for (const db of [dave(), as.stranger(), as.anon(), unverified]) {
       await assertFails(getDoc(R(db, 'k100_bora')));
       await assertFails(getDocs(query(collection(db, 'pubReviews'), where('placeKey', '==', 'k100'), where('hidden', '==', false))));
-      await assertFails(getDoc(PP(db, 'pp-bora-1')));
+      await assertFails(getDoc(PP(db, 'k400_bora_0')));
     }
   });
   test('읽기: 가려진 평은 쓴 사람과 마을 주인만 본다. 가려진 것까지 긁는 목록은 막힌다', async () => {
@@ -1302,7 +1308,7 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
   });
 
   test('공개하기: 한 사람이 한 가게에 한 건 (문서 이름 = 가게 번호_내 uid), 자기 공간 이름으로, 고칠 수 있다', async () => {
-    await assertSucceeds(setDoc(R(as.bora(), 'n555_bora'), rev('bora', 'n555', 'main', { tag: '빵집', photos: ['a', 'b'] })));
+    await assertSucceeds(setDoc(R(as.bora(), 'n555_bora'), rev('bora', 'n555', 'main', { tag: '빵집' })));
     await assertSucceeds(setDoc(R(carol(), 'k300_carol'), rev('carol', 'k300', 'sp2', { verdict: 'once', line: '' })));
     await assertSucceeds(updateDoc(R(as.bora(), 'k100_bora'), { line: '고친 평', verdict: 'once' }));
   });
@@ -1383,30 +1389,113 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertSucceeds(deleteDoc(R(as.owner(), 'k200_carol'))); // 주인
   });
 
-  test('공개 사진: 자기 것만 올리고(220KB까지, 위경도 칸 없음), 고치지 못하고, 본인·짝·주인이 지운다', async () => {
-    await assertSucceeds(getDoc(PP(carol(), 'pp-bora-1')));
-    await assertSucceeds(setDoc(PP(as.bora(), 'pp-bora-2'), pphoto('bora', 'main')));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('carol', 'main')));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'sp2')));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { reviewId: 'k100_carol' })));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { data: Bytes.fromUint8Array(new Uint8Array(220001)) })));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { lat: 37.5 })));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { takenAt: 1 })));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-3'), pphoto('bora', 'main', { at: Timestamp.now() }))); // 올린 시각도 남기지 않는다
-    await assertFails(setDoc(PP(dave(), 'pp-dave-1'), pphoto('dave', 'main')));
-    await assertFails(updateDoc(PP(as.bora(), 'pp-bora-1'), { w: 20 }));
+  // ---- 공개 사진 (7걸음). 사진은 평과 한 묶음(batch)으로만 오간다 ----
+  const addPhoto = (db: Firestore, rid: string, slot: 0 | 1, uid: string, spaceId: string, before: string[], over: Record<string, unknown> = {}) => {
+    const b = writeBatch(db);
+    b.update(R(db, rid), { photos: [...before, `${rid}_${slot}`] });
+    b.set(PP(db, `${rid}_${slot}`), pphoto(uid, spaceId, { reviewId: rid, ...over }));
+    return b.commit();
+  };
+  test('공개 사진 읽기: 보라핀 사람은 가려지지 않은 평의 사진을 하나씩 본다. 긁어 가는 목록은 막힌다', async () => {
+    await assertSucceeds(getDoc(PP(carol(), 'k400_bora_0')));
+    await assertSucceeds(getDoc(PP(as.bora(), 'k400_carol_1')));
     await assertFails(getDocs(collection(carol(), 'pubPhotos')));
+    await assertFails(getDocs(query(collection(carol(), 'pubPhotos'), where('reviewId', '==', 'k400_bora'))));
     await assertSucceeds(getDocs(query(collection(as.bora(), 'pubPhotos'), where('uid', '==', 'bora'))));
-    await assertFails(deleteDoc(PP(carol(), 'pp-bora-1')));
-    await assertSucceeds(deleteDoc(PP(as.bora(), 'pp-bora-1')));
-    await assertSucceeds(deleteDoc(PP(as.owner(), 'pp-carol-1')));
   });
-  test('공개 사진 멈춤 스위치: 주인이 켜면 새 사진을 못 올린다 (평 글은 그대로)', async () => {
+  test('공개 사진 읽기: 가려진 평의 사진은 쓴 사람과 마을 주인만 본다 (이름을 맞혀도 못 본다)', async () => {
+    await assertFails(getDoc(PP(as.bora(), 'k500_carol_0')));
+    await assertSucceeds(getDoc(PP(carol(), 'k500_carol_0')));
+    await assertSucceeds(getDoc(PP(as.owner(), 'k500_carol_0')));
+    // 주인이 가리면 그때부터 남은 못 본다
+    await assertSucceeds(updateDoc(R(as.owner(), 'k400_bora'), { hidden: true, hiddenReason: '얼굴이 나온 사진' }));
+    await assertFails(getDoc(PP(carol(), 'k400_bora_0')));
+    await assertSucceeds(getDoc(PP(as.bora(), 'k400_bora_0')));
+  });
+  test('공개 사진 올리기: 내 평에, 평과 한 묶음으로, 둘째 칸까지', async () => {
+    await assertSucceeds(addPhoto(as.bora(), 'k400_bora', 1, 'bora', 'main', ['k400_bora_0']));
+    await assertSucceeds(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
+    // 평을 처음 공개하면서 사진도 같이
+    const b = writeBatch(carol());
+    b.set(R(carol(), 'k300_carol'), rev('carol', 'k300', 'sp2', { photos: ['k300_carol_1'] }));
+    b.set(PP(carol(), 'k300_carol_1'), pphoto('carol', 'sp2', { reviewId: 'k300_carol' }));
+    await assertSucceeds(b.commit());
+  });
+  test('공개 사진 올리기: 평 없이, 평 목록에 안 적고, 다른 이름으로는 못 올린다 (저장 공간을 몰래 못 쓴다)', async () => {
+    // 평에 적지 않고 사진만
+    await assertFails(setDoc(PP(as.bora(), 'k100_bora_0'), pphoto('bora', 'main', { reviewId: 'k100_bora' })));
+    // 없는 평에
+    await assertFails(setDoc(PP(as.bora(), 'k999_bora_0'), pphoto('bora', 'main', { reviewId: 'k999_bora' })));
+    // 정해진 이름(평 이름_0 · _1)이 아닌 것
+    for (const id of ['pp-bora-9', 'k100_bora_2', 'k100_bora_00', 'k100_bora']) {
+      const b = writeBatch(as.bora());
+      b.update(R(as.bora(), 'k100_bora'), { photos: [id] });
+      b.set(PP(as.bora(), id), pphoto('bora', 'main', { reviewId: 'k100_bora' }));
+      await assertFails(b.commit());
+    }
+    // 평 목록에 아무 글이나 넣기 (사진 없이 이름만, 긴 글, 같은 이름 두 번, 글이 아닌 것)
+    await assertFails(updateDoc(R(as.bora(), 'k100_bora'), { photos: ['k100_bora_0'] }));
+    await assertFails(updateDoc(R(as.bora(), 'k100_bora'), { photos: ['a', 'b'] }));
+    await assertFails(updateDoc(R(as.bora(), 'k100_bora'), { photos: ['x'.repeat(5000)] }));
+    await assertFails(updateDoc(R(as.bora(), 'k400_bora'), { photos: ['k400_bora_0', 'k400_bora_0'] }));
+    await assertFails(updateDoc(R(as.bora(), 'k400_bora'), { photos: [{ big: 'x'.repeat(5000) }] }));
+    await assertFails(setDoc(R(as.bora(), 'n555_bora'), rev('bora', 'n555', 'main', { photos: ['a', 'b'] })));
+    await assertSucceeds(updateDoc(R(as.bora(), 'k100_bora'), { photos: [] }));
+  });
+  test('공개 사진 올리기: 남의 평·남의 이름·다른 공간·큰 사진·위경도나 시각 칸은 막힌다', async () => {
+    await assertFails(addPhoto(as.bora(), 'k400_carol', 0, 'bora', 'main', []));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'carol', 'main', []));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'sp2', []));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', [], { data: Bytes.fromUint8Array(new Uint8Array(220001)) }));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', [], { data: 'AAAA' }));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', [], { lat: 37.5 }));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', [], { takenAt: 1 }));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', [], { at: Timestamp.now() })); // 올린 시각도 남기지 않는다
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', [], { w: 99999 }));
+    await assertFails(updateDoc(PP(as.bora(), 'k400_bora_0'), { w: 20 }));
+    await assertFails(updateDoc(PP(as.bora(), 'k400_bora_0'), { data: Bytes.fromUint8Array(new Uint8Array([9])) }));
+  });
+  test('공개 사진 지우기: 평 목록에서 빼면서 같이 지운다. 사진만 지우거나 목록에서만 빼지는 못한다', async () => {
+    await assertFails(deleteDoc(PP(as.bora(), 'k400_bora_0')));
+    await assertFails(updateDoc(R(as.bora(), 'k400_bora'), { photos: [] }));
+    const mk = (db: Firestore) => { const b = writeBatch(db); b.update(R(db, 'k400_bora'), { photos: [] }); b.delete(PP(db, 'k400_bora_0')); return b.commit(); };
+    await assertFails(mk(carol()));
+    await assertSucceeds(mk(as.bora()));
+    // 둘 중 하나만
+    const one = writeBatch(carol());
+    one.update(R(carol(), 'k400_carol'), { photos: ['k400_carol_1'] });
+    one.delete(PP(carol(), 'k400_carol_0'));
+    await assertSucceeds(one.commit());
+  });
+  test('공개 거두기: 평을 지울 땐 사진도 같이 지워야 한다 (본인·짝·주인). 사진이 남는 지우기는 막힌다', async () => {
+    await assertFails(deleteDoc(R(as.bora(), 'k400_bora')));
+    await assertFails(deleteDoc(R(as.owner(), 'k400_carol')));
+    const drop = (db: Firestore, rid: string, photos: string[]) => { const b = writeBatch(db); b.delete(R(db, rid)); photos.forEach((p) => b.delete(PP(db, p))); return b.commit(); };
+    await assertFails(drop(as.bora(), 'k400_carol', ['k400_carol_0', 'k400_carol_1']));
+    await assertFails(drop(carol(), 'k400_carol', ['k400_carol_0']));
+    await assertSucceeds(drop(as.owner(), 'k400_bora', ['k400_bora_0'])); // 주인이자 같은 공간 짝
+    await assertSucceeds(drop(carol(), 'k400_carol', ['k400_carol_0', 'k400_carol_1']));
+    await assertSucceeds(drop(as.owner(), 'k500_carol', ['k500_carol_0']));
+    await assertSucceeds(deleteDoc(R(as.bora(), 'k100_bora'))); // 사진 없는 평은 그냥 지운다
+  });
+  test('공개 사진: 쓴 사람이 글을 고쳐도 사진 목록은 그대로여야 한다. 가려진 평엔 새 사진을 못 붙인다는 건 아니다(쓴 사람은 고칠 수 있다)', async () => {
+    await assertSucceeds(updateDoc(R(as.bora(), 'k400_bora'), { line: '고친 평' }));
+    await assertFails(setDoc(R(as.bora(), 'k400_bora'), rev('bora', 'k400', 'main', { nick: '보라' }))); // 덮어쓰며 목록을 잃기
+    await assertSucceeds(setDoc(R(as.bora(), 'k400_bora'), rev('bora', 'k400', 'main', { nick: '보라', photos: ['k400_bora_0'] })));
+  });
+  test('공개 사진: 공간이 없는 사람·손님은 올리지도 보지도 못한다', async () => {
+    await assertFails(setDoc(PP(dave(), 'k100_dave_0'), pphoto('dave', 'main', { reviewId: 'k100_dave' })));
+    await assertFails(getDoc(PP(dave(), 'k400_bora_0')));
+    await assertFails(getDoc(PP(as.anon(), 'k400_bora_0')));
+  });
+  test('공개 사진 멈춤 스위치: 주인이 켜면 새 사진을 못 올린다 (평 글과 지우기는 그대로)', async () => {
     await assertSucceeds(setDoc(doc(as.owner(), 'config/flags'), { pubPhotosPaused: true }));
-    await assertFails(setDoc(PP(as.bora(), 'pp-bora-2'), pphoto('bora', 'main')));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
     await assertSucceeds(setDoc(R(as.bora(), 'k300_bora'), rev('bora', 'k300', 'main')));
+    const b = writeBatch(as.bora()); b.update(R(as.bora(), 'k400_bora'), { photos: [] }); b.delete(PP(as.bora(), 'k400_bora_0'));
+    await assertSucceeds(b.commit());
     await assertSucceeds(setDoc(doc(as.owner(), 'config/flags'), { pubPhotosPaused: false }));
-    await assertSucceeds(setDoc(PP(as.bora(), 'pp-bora-2'), pphoto('bora', 'main')));
+    await assertSucceeds(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
   });
 
   test('신고: 보라핀 사람이 한 평에 한 번, 고칠 수 없다. 읽고 지우는 건 마을 주인만', async () => {
