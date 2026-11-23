@@ -21,12 +21,23 @@ const MATCH_ERA_END = Date.UTC(2026, 10, 23, 3, 0);
 
 type Doc = { ref?: { src?: string; id?: string } | null; address?: string; lat?: number; lng?: number; createdAt?: Timestamp | null; name?: string; status?: string };
 
+// 11-12 ~ 11-20: 지금 여기가 카카오 번호(ref) 없이 이름·좌표·주소를 남기던 때 (placeRef 생기기 전)
+const HERE_START = Date.UTC(2026, 10, 12, 5, 0);
+const noRef = { inWindow: 0, withAddress: 0, posOnly: 0, nothing: 0 };
 const c = { places: 0, kakao: 0, kakaoNameEra: 0, matchEra: 0, after: 0, unknownTime: 0, withAddress: 0, withPos: 0, emptyName: 0, want: 0, spaces: new Set<string>() };
 const places = await db.collectionGroup('places').get();
 for (const d of places.docs) {
   if (!d.ref.path.startsWith('spaces/')) continue;
   c.places++;
   const x = d.data() as Doc;
+  if (!x.ref) {
+    const t = x.createdAt?.toMillis?.();
+    if (t != null && t >= HERE_START && t < MATCH_ERA_END) {
+      noRef.inWindow++;
+      const pos = Number.isFinite(x.lat) && Number.isFinite(x.lng);
+      if (x.address) noRef.withAddress++; else if (pos) noRef.posOnly++; else noRef.nothing++;
+    }
+  }
   if (x.ref?.src !== 'kakao') continue;
   c.kakao++;
   c.spaces.add(d.ref.path.split('/')[1]);
@@ -60,5 +71,7 @@ console.log(`  · 11-22 아침 ~ 11-23 고침 전 (카카오 값으로 찾은 �
 console.log(`  · 11-23 고침 뒤 (폰 위치로 찾은 상가정보 · 문제없음): ${c.after}건`);
 console.log(`  · 남긴 때를 모름: ${c.unknownTime}건`);
 console.log(`  · 주소가 있는 것 ${c.withAddress}건 · 좌표가 있는 것 ${c.withPos}건 · 이름이 빈 것 ${c.emptyName}건 · 가고 싶어요 ${c.want}건`);
+console.log(`가게 번호 없이 11-12 ~ 11-23 사이에 남긴 기록 ${noRef.inWindow}건 (그 무렵 지금 여기는 번호 없이 카카오 값을 남겼을 수 있음)`);
+console.log(`  · 주소까지 있는 것 ${noRef.withAddress}건 (카카오·관광공사 목록에서 고른 것) · 좌표만 ${noRef.posOnly}건 (이름을 적었거나 목록) · 둘 다 없음 ${noRef.nothing}건`);
 console.log(`공개 평 전체 ${pub.size}건 · 카카오 가게 것 ${pubKakao}건`);
 console.log(`모임에 건 가게 전체 ${circleItems}건 · 카카오 가게 것 ${circleKakao}건`);
