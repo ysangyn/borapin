@@ -74,3 +74,13 @@ export function freePhotoSlot(reviewId: string, have: readonly string[]): string
   for (let i = 0; i < PUB_PHOTO_MAX; i++) if (!have.includes(`${reviewId}_${i}`)) return `${reviewId}_${i}`;
   return null;
 }
+
+/** 지금 여기 목록의 '보라핀에서 n명이 또 갈래요': 가게 번호별로 '또 갈래요'만 센다. 내 것·이 폰에서 안 보기로 한 사람은 빼고 */
+export function againCounts(list: readonly { placeKey: string; uid: string; verdict: string }[], me: string, muted: ReadonlySet<string> = new Set()): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const r of list) {
+    if (r.verdict !== 'again' || r.uid === me || muted.has(r.uid)) continue;
+    m.set(r.placeKey, (m.get(r.placeKey) ?? 0) + 1);
+  }
+  return m;
+}

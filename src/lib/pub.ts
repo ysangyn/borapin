@@ -132,6 +132,24 @@ export function usePlacePubs(key: string | null): PubDoc[] | null {
   return list;
 }
 
+/** 지금 여기 목록: 보이는 가게들의 공개 평을 한 번에 (가게 번호 30개씩, 가려지지 않은 것만). 실패하면 빈 목록 */
+export function usePubsFor(keys: readonly string[]): PubDoc[] {
+  const [list, setList] = useState<PubDoc[]>([]);
+  const k = [...new Set(keys.filter((x) => /^[kn]\d{1,40}$/.test(x)))].sort().join(',');
+  useEffect(() => {
+    if (!k) { setList([]); return; }
+    let live = true;
+    const all = k.split(',');
+    const chunks: string[][] = [];
+    for (let i = 0; i < all.length; i += 30) chunks.push(all.slice(i, i + 30));
+    void Promise.all(chunks.map((c) => getDocs(query(col(), where('placeKey', 'in', c), where('hidden', '==', false), limit(200)))
+      .then((s) => s.docs.map((d) => ({ id: d.id, ...(d.data() as PubReview) })), () => [] as PubDoc[])))
+      .then((r) => { if (live) setList(r.flat()); });
+    return () => { live = false; };
+  }, [k]);
+  return list;
+}
+
 /** 내가 공개한 것 (가려진 것 포함) */
 export function useMyPubs(uid: string | null | undefined): PubDoc[] | null {
   const [list, setList] = useState<PubDoc[] | null>(null);

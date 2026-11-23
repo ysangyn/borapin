@@ -62,3 +62,16 @@ test('공개 사진 칸: 평 이름_0 · _1 둘뿐, 빈 칸부터', async () => 
   assert.equal(freePhotoSlot('k1_u', ['k1_u_1']), 'k1_u_0');
   assert.equal(freePhotoSlot('k1_u', ['k1_u_0', 'k1_u_1']), null);
 });
+
+test("지금 여기 '또 갈래요' 세기: 내 것·한 번이면 충분·안 보기 사람은 빼고 가게별로", async () => {
+  const { againCounts } = await import('../../src/lib/pubShape');
+  const m = againCounts([
+    { placeKey: 'k1', uid: 'a', verdict: 'again' },
+    { placeKey: 'k1', uid: 'b', verdict: 'again' },
+    { placeKey: 'k1', uid: 'me', verdict: 'again' },
+    { placeKey: 'k1', uid: 'c', verdict: 'once' },
+    { placeKey: 'k2', uid: 'x', verdict: 'again' },
+  ], 'me', new Set(['x']));
+  assert.equal(m.get('k1'), 2);
+  assert.equal(m.has('k2'), false);
+});

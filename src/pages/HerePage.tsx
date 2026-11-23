@@ -5,6 +5,8 @@ import { useAuth, displayName } from '../lib/auth';
 import { createPlace, useTrips } from '../lib/data';
 import { fetchNearby, fetchShops, fetchStores, here, walkText, type NearbyItem } from '../lib/nearby';
 import { matchStore, type Store } from '../lib/storeMatch';
+import { useMute, usePubsFor } from '../lib/pub';
+import { againCounts } from '../lib/pubShape';
 import { KAKAO_NAME_UNTIL_MATCH, pickFromItem, type Pick, type Pos } from '../lib/herePick';
 import { locate } from '../lib/geodata';
 import { useHome } from '../lib/home';
@@ -76,6 +78,10 @@ export default function HerePage() {
   const choose = (p: Pick) => { setPick(p); setVerdict(null); setLine(''); };
   const [matching, setMatching] = useState(false);
   const storesRef = useRef<Promise<Store[] | null> | null>(null);
+  // 보라핀 사람들이 '또 갈래요'로 공개한 가게면 목록에 살짝 표시 (보이는 줄만 묻는다)
+  const pubs = usePubsFor((items ?? []).slice(0, shown).map((x) => x.id));
+  const [mute] = useMute();
+  const again = againCounts(pubs.filter((p) => !mute.reviews.has(p.id)), auth.status === 'ready' ? auth.user.uid : '', mute.uids);
   // 목록에서 고르기: 카카오 항목이면 미리 받아 둔 상가정보와 비교해 같은 가게면 공공데이터의 이름·주소·자리를 쓴다 (카카오 정책)
   const chooseItem = async (it: NearbyItem) => {
     if (matching) return;
@@ -120,7 +126,7 @@ export default function HerePage() {
                 {items.slice(0, shown).map((it) => (
                   <button key={it.id} type="button" className="here-item" disabled={matching} onClick={() => void chooseItem(it)} data-testid="here-item">
                     {it.img ? <img src={it.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className="here-noimg" aria-hidden="true" />}
-                    <span className="here-copy"><b>{it.name}</b><span className="tiny muted">{it.type} · {walkText(it)}</span></span>
+                    <span className="here-copy"><b>{it.name}</b><span className="tiny muted">{it.type} · {walkText(it)}</span>{again.get(it.id) ? <span className="here-again" data-testid="here-again">♥ 보라핀에서 {again.get(it.id)}명이 또 갈래요</span> : null}</span>
                   </button>
                 ))}
                 {matching && <span className="small muted" aria-live="polite">가게 정보를 맞춰 보는 중…</span>}
