@@ -3,10 +3,11 @@
  * 원본(places)은 그대로, 사본만 pubReviews/{가게번호}_{내 uid}. 원본을 고치면 사본도 고치고, 지우거나 '별로'로 바꾸면 사본을 지운다.
  */
 import { useEffect, useState } from 'react';
-import { collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, query, setDoc, updateDoc, where, deleteField } from 'firebase/firestore';
+import { Bytes, collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, query, setDoc, updateDoc, where, deleteField, writeBatch } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { db, SPACE_ID } from './firebase';
-import { buildPub, monthOf, myLine, pubBlock, pubId, type PubReview } from './pubShape';
+import { buildPub, freePhotoSlot, monthOf, myLine, pubBlock, pubId, PUB_PHOTO_MAX, type PubReview } from './pubShape';
+import { shrinkSmall } from './photos';
 import { placeKey } from './placeRef';
 import type { PlaceRec, When } from './types';
 
@@ -24,10 +25,72 @@ export async function publishPlace(rec: PlaceRec, user: User, me: string, o: { n
   if (why) throw new Error(why);
   const key = placeKey(rec)!;
   const d = buildPub(rec, { uid: user.uid, nick: o.nick, spaceId: SPACE_ID, name: o.name, line: myLine(rec, me, user.uid), month: monthOf(rec, o.when) });
-  await setDoc(doc(col(), pubId(key, user.uid)), d);
+  // 다시 공개(고치기)할 때 걸어 둔 사진 목록은 지킨다 (규칙: 목록과 사진 문서는 늘 맞아야 한다)
+  const ref = doc(col(), pubId(key, user.uid));
+  const cur = (await getDoc(ref)).data() as PubReview | undefined;
+  await setDoc(ref, { ...d, ...(cur?.photos?.length ? { photos: cur.photos } : {}) });
   return key;
 }
-export const unpublish = (key: string, uid: string) => deleteDoc(doc(col(), pubId(key, uid)));
+
+/** 공개 거두기: 평과 그 사진을 한 묶음으로 지운다 (규칙이 사진만 남는 지우기를 막는다) */
+async function dropPub(id: string): Promise<void> {
+  const ref = doc(col(), id);
+  const cur = (await getDoc(ref)).data() as PubReview | undefined;
+  if (!cur) return;
+  const b = writeBatch(db);
+  b.delete(ref);
+  for (const p of cur.photos ?? []) b.delete(doc(db, 'pubPhotos', p));
+  await b.commit();
+}
+export const unpublish = (key: string, uid: string) => dropPub(pubId(key, uid));
+
+// ---------- 공개 사진 (평 하나에 2장까지. 원본과 다른 작은 사본: 다시 그려서 촬영 정보·자리·시각이 없다) ----------
+/** 사진 한 장 올리기: 평의 목록에 적는 것과 사진 문서를 한 묶음으로 */
+export async function addPubPhoto(pub: PubDoc, file: File): Promise<void> {
+  const have = pub.photos ?? [];
+  const pid = freePhotoSlot(pub.id, have);
+  if (!pid) throw new Error(`사진은 ${PUB_PHOTO_MAX}장까지 올릴 수 있어요`);
+  const { blob, w, h } = await shrinkSmall(file);
+  const b = writeBatch(db);
+  b.update(doc(col(), pub.id), { photos: [...have, pid] });
+  b.set(doc(db, 'pubPhotos', pid), { uid: pub.uid, spaceId: pub.spaceId, reviewId: pub.id, w, h, v: 1, data: Bytes.fromUint8Array(new Uint8Array(await blob.arrayBuffer())) });
+  await b.commit();
+}
+export async function removePubPhoto(pub: PubDoc, pid: string): Promise<void> {
+  const b = writeBatch(db);
+  b.update(doc(col(), pub.id), { photos: (pub.photos ?? []).filter((x) => x !== pid) });
+  b.delete(doc(db, 'pubPhotos', pid));
+  await b.commit();
+}
+/** 공개 사진 보기 (하나씩 읽는다). 못 읽는 것(가려짐·지워짐)은 빠진다 */
+export function usePubPhotos(ids: readonly string[] | undefined): { id: string; url: string; w?: number; h?: number }[] {
+  const [list, setList] = useState<{ id: string; url: string; w?: number; h?: number }[]>([]);
+  const key = (ids ?? []).join(',');
+  useEffect(() => {
+    if (!key) { setList([]); return; }
+    let live = true;
+    const urls: string[] = [];
+    void Promise.all(key.split(',').map(async (id) => {
+      try {
+        const s = await getDoc(doc(db, 'pubPhotos', id));
+        const x = s.data() as { data: Bytes; w?: number; h?: number } | undefined;
+        if (!x) return null;
+        const url = URL.createObjectURL(new Blob([x.data.toUint8Array() as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' }));
+        urls.push(url);
+        return { id, url, w: x.w, h: x.h };
+      } catch { return null; }
+    })).then((r) => { if (live) setList(r.filter((x): x is NonNullable<typeof x> => !!x)); else urls.forEach((u) => URL.revokeObjectURL(u)); });
+    return () => { live = false; urls.forEach((u) => URL.revokeObjectURL(u)); };
+  }, [key]);
+  return list;
+}
+/** 주인이 공개 사진 올리기를 멈췄는지 (config/flags) */
+export function usePubPhotosPaused(): boolean {
+  const [v, setV] = useState(false);
+  useEffect(() => onSnapshot(doc(db, 'config/flags'), (s) => setV((s.data() as { pubPhotosPaused?: boolean } | undefined)?.pubPhotosPaused === true), () => setV(false)), []);
+  return v;
+}
+export const setPubPhotosPaused = (on: boolean) => setDoc(doc(db, 'config/flags'), { pubPhotosPaused: on }, { merge: true });
 
 /** 내 공개 사본 (가게 화면의 '보여 줄 사람' 줄). undefined = 읽는 중, null = 공개 안 함 */
 export function useMyPub(key: string | null, uid: string | null | undefined): PubDoc | null | undefined {
@@ -47,7 +110,7 @@ export async function syncMyPub(rec: PlaceRec | null, uid: string, me: string, k
   try {
     const s = await getDoc(ref);
     if (!s.exists()) return;
-    if (!rec || pubBlock(rec)) { await deleteDoc(ref); return; }
+    if (!rec || pubBlock(rec)) { await dropPub(ref.id); return; }
     const cur = s.data() as PubReview;
     const next = buildPub(rec, { uid, nick: cur.nick, spaceId: cur.spaceId, name: cur.name, line: myLine(rec, me, uid), month: cur.month });
     const changed = (['verdict', 'line', 'kind', 'tag'] as const).filter((f) => (cur as unknown as Record<string, unknown>)[f] !== (next as unknown as Record<string, unknown>)[f]);

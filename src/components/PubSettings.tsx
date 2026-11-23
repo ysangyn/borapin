@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { OWNER_EMAIL } from '../lib/owner';
-import { dismissFlag, FLAG_REASONS, hidePub, readPub, unhidePub, unpublish, useFlags, useMyPubs, type PubDoc } from '../lib/pub';
+import { dismissFlag, FLAG_REASONS, hidePub, readPub, setPubPhotosPaused, unhidePub, unpublish, useFlags, useMyPubs, usePubPhotosPaused, type PubDoc } from '../lib/pub';
+import { PubPhotoStrip } from './PubRow';
 import { VERDICT_LABEL } from '../lib/placeRecs';
 import { useToast } from './ui';
 
@@ -22,7 +23,7 @@ export function MyPubs() {
           <div key={r.id} className="setting-row" data-testid="my-pub">
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="small" style={{ fontWeight: 600 }}>{r.name} <span className={`tag verdict v-${r.verdict}`}>{VERDICT_LABEL[r.verdict]}</span></div>
-              <div className="tiny muted ellipsis">{r.hidden ? `가려졌어요${r.hiddenReason ? ` · ${r.hiddenReason}` : ''}` : r.line || '한 줄 없이 평가만'}</div>
+              <div className="tiny muted ellipsis">{r.hidden ? `가려졌어요${r.hiddenReason ? ` · ${r.hiddenReason}` : ''}` : r.line || '한 줄 없이 평가만'}{r.photos?.length ? ` · 사진 ${r.photos.length}장` : ''}</div>
             </div>
             <button className="btn sm ghost" disabled={busy} onClick={async () => {
               setBusy(true);
@@ -50,6 +51,7 @@ export function FlagBox() {
   const toast = useToast();
   const owner = auth.status === 'ready' && (auth.user.email ?? '').toLowerCase() === OWNER_EMAIL;
   const flags = useFlags(owner);
+  const paused = usePubPhotosPaused();
   const [revs, setRevs] = useState<Record<string, PubDoc | null>>({});
   const ids = [...new Set((flags ?? []).map((f) => f.reviewId))];
   useEffect(() => {
@@ -69,6 +71,7 @@ export function FlagBox() {
             <div key={id} className="setting-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }} data-testid="flag-item">
               <div className="small"><b>{r ? `${r.name} · ${r.nick}` : r === null ? '지워진 평' : '읽는 중…'}</b>{r?.hidden ? ' (가려짐)' : ''}</div>
               {r?.line && <div className="small">{r.line}</div>}
+              <PubPhotoStrip ids={r?.photos} />
               <div className="tiny muted">{fs.map((f) => FLAG_REASONS[f.reason] + (f.note ? `: ${f.note}` : '')).join(' / ')}</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {r && !r.hidden && <button className="btn sm" data-testid="flag-hide" onClick={async () => {
@@ -82,6 +85,14 @@ export function FlagBox() {
             </div>
           );
         })}
+        {/* 저장 공간(무료 1GiB)이 차 가면 새 공개 사진만 멈춘다. 이미 올린 사진과 평 글은 그대로 */}
+        <label className="setting-row" data-testid="pub-photos-pause">
+          <span className="small" style={{ flex: 1 }}>공개 사진 올리기 멈추기<span className="tiny muted" style={{ display: 'block' }}>저장 공간이 모자랄 때 켜요. 이미 올린 사진은 그대로 보여요</span></span>
+          <input type="checkbox" checked={paused} onChange={async (e) => {
+            const on = e.target.checked;
+            try { await setPubPhotosPaused(on); toast(on ? '공개 사진 올리기를 멈췄어요' : '공개 사진 올리기를 다시 열었어요'); } catch { toast('바꾸지 못했어요'); }
+          }} />
+        </label>
       </div>
     </section>
   );

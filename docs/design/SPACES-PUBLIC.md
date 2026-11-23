@@ -227,7 +227,9 @@ circles/{모임}/photos/{이름}       사진 사본 (200KB 이하)
 pubReviews/{placeKey}_{uid}     한 사람이 한 가게에 한 건 (문서 이름으로 강제)
   placeKey, name(가게 이름 80자), region, kind, tag?, verdict('again'|'once'), line(200자),
   nick, uid, spaceId, month('2026-11'), photos[≤2 사진 사본 이름], hidden(false), at, v
-pubPhotos/{이름}                공개 사진 사본. data(200KB 이하 bytes), w, h, uid, spaceId, reviewId, v
+pubPhotos/{평 이름_0|_1}       공개 사진 사본. data(200KB 이하 bytes), w, h, uid, spaceId, reviewId, v
+                                (11-23) 이름은 두 칸뿐이고 평의 photos 목록과 늘 맞는다: 평과 한 묶음으로만 올리고 지운다.
+                                가려진 평의 사진은 쓴 사람·주인만 읽는다. 평을 지우면 사진도 같은 묶음에서 지워야 한다
 pubFlags/{reviewId}_{uid}       신고. reason(고르기), note(200자), at
 ```
 

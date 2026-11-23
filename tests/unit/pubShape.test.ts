@@ -54,3 +54,11 @@ test('가게별 모아 보기: 또 갈래요·한 번이면 충분 수 (가린 �
   assert.deepEqual(summarize([...list], new Set()), { again: 2, once: 1 });
   assert.deepEqual(summarize([...list], new Set(['a'])), { again: 1, once: 1 });
 });
+
+test('공개 사진 칸: 평 이름_0 · _1 둘뿐, 빈 칸부터', async () => {
+  const { freePhotoSlot } = await import('../../src/lib/pubShape');
+  assert.equal(freePhotoSlot('k1_u', []), 'k1_u_0');
+  assert.equal(freePhotoSlot('k1_u', ['k1_u_0']), 'k1_u_1');
+  assert.equal(freePhotoSlot('k1_u', ['k1_u_1']), 'k1_u_0');
+  assert.equal(freePhotoSlot('k1_u', ['k1_u_0', 'k1_u_1']), null);
+});

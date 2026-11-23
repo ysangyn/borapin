@@ -1,6 +1,7 @@
 /**
  * 6걸음: 보라핀 사람들에게 공개 (docs/design/SPACES-PUBLIC.md 5절)
  * 주인이 다녀온 가게 평을 공개 → 설정에 '나눈 평' → 보라가 같은 가게 화면에서 보고 신고 → 신고한 폰에선 바로 사라짐
+ * → 공개 사진 2장까지 올리고 지우기, 보라가 사진을 봄
  * → 주인 신고함에서 가리기 → 글쓴이 화면에 '가려졌어요' → '별로'로 바꾸면 공개 사본도 거둔다.
  * (app.spec 다음에 돈다: 주인·보라 계정, 강릉시 여행이 이미 있다)
  */
@@ -47,6 +48,20 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   await expect(owner.getByRole('status')).toContainText('공개했어요');
   await expect(owner.getByTestId('pub-on')).toHaveAttribute('aria-checked', 'true');
 
+  // 공개 사진: 2장까지 올리고, 지울 수 있다. 얼굴 사진은 올리지 말라는 안내가 같이 보인다
+  const mine = owner.getByTestId('pub-photos');
+  await expect(mine).toContainText('사람 얼굴이 나온 사진은 올리지 말아 주세요');
+  await mine.getByTestId('pub-photo-input').setInputFiles('tests/fixtures/photo-gangneung.jpg');
+  await expect(owner.getByRole('status')).toContainText('사진을 올렸어요', { timeout: 20_000 });
+  await expect(mine.getByTestId('pub-photo')).toHaveCount(1);
+  await mine.getByTestId('pub-photo-input').setInputFiles('tests/fixtures/photo-gangneung.jpg');
+  await expect(mine.getByTestId('pub-photo')).toHaveCount(2, { timeout: 20_000 });
+  await expect(mine.getByTestId('pub-photo-add')).toHaveCount(0); // 두 장이면 올리기 단추가 없다
+  await shot(owner, '50b-pub-photos');
+  await mine.getByTestId('pub-photo-remove').first().click();
+  await expect(owner.getByRole('status')).toContainText('사진을 지웠어요');
+  await expect(mine.getByTestId('pub-photo')).toHaveCount(1);
+
   // 설정: 나눈 평
   await owner.goto('/space');
   await expect(owner.getByTestId('my-pubs').getByTestId('my-pub')).toHaveCount(1);
@@ -60,6 +75,11 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   const voices = bora.getByTestId('pub-voices');
   await expect(voices).toContainText('소금빵이 짭짤해요', { timeout: 20_000 });
   await expect(voices).toContainText('또 갈래요 1명');
+  // 남이 올린 사진이 보이고, 누르면 크게
+  await expect(voices.getByTestId('pub-voice-photos').locator('img')).toHaveCount(1, { timeout: 20_000 });
+  await voices.getByTestId('pub-voice-photos').getByRole('button', { name: '사진 크게 보기' }).click();
+  await expect(bora.getByTestId('pub-photo-big')).toBeVisible();
+  await bora.getByTestId('pub-photo-big').getByRole('button', { name: '닫기' }).click();
   await shot(bora, '51-pub-voices');
   await voices.getByTestId('pub-flag').click();
   await voices.getByTestId('pub-flag-reasons').getByRole('button', { name: '광고' }).click();
@@ -71,6 +91,7 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   const box = owner.getByTestId('flag-box');
   await expect(box.getByTestId('flag-item')).toHaveCount(1, { timeout: 20_000 });
   await expect(box).toContainText('광고');
+  await expect(box.getByTestId('pub-voice-photos').locator('img')).toHaveCount(1, { timeout: 20_000 }); // 주인은 신고된 평의 사진도 보고 정한다
   await box.getByTestId('flag-hide').click();
   await expect(owner.getByRole('status')).toContainText('평을 가렸어요');
   await expect(box).toContainText('들어온 신고가 없어요');
@@ -85,6 +106,7 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   await expect(owner.getByRole('status')).toContainText('고쳤어요');
   await owner.goto('/space');
   await expect(owner.getByTestId('my-pubs')).toContainText('아직 없어요', { timeout: 20_000 });
+  // (평이 지워졌다 = 사진도 같은 묶음에서 지워졌다: 규칙이 사진이 남는 지우기를 막는다. tests/rules '공개 거두기')
   await owner.close();
   await bora.close();
 });

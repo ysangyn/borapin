@@ -67,3 +67,10 @@ export function summarize(list: readonly { uid: string; verdict: string }[], mut
   const l = list.filter((r) => !muted.has(r.uid));
   return { again: l.filter((r) => r.verdict === 'again').length, once: l.filter((r) => r.verdict === 'once').length };
 }
+
+/** 공개 사진은 평 하나에 두 칸 (firestore.rules pubPhotosOk): 사진 이름 = 평 이름_0 · 평 이름_1 */
+export const PUB_PHOTO_MAX = 2;
+export function freePhotoSlot(reviewId: string, have: readonly string[]): string | null {
+  for (let i = 0; i < PUB_PHOTO_MAX; i++) if (!have.includes(`${reviewId}_${i}`)) return `${reviewId}_${i}`;
+  return null;
+}
