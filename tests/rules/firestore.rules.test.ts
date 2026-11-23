@@ -1416,9 +1416,10 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertSucceeds(addPhoto(as.bora(), 'k400_bora', 1, 'bora', 'main', ['k400_bora_0']));
     await assertSucceeds(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
     // 평을 처음 공개하면서 사진도 같이
-    const b = writeBatch(carol());
-    b.set(R(carol(), 'k300_carol'), rev('carol', 'k300', 'sp2', { photos: ['k300_carol_1'] }));
-    b.set(PP(carol(), 'k300_carol_1'), pphoto('carol', 'sp2', { reviewId: 'k300_carol' }));
+    const c = carol(); // 한 묶음의 문서는 같은 연결에서 나와야 한다
+    const b = writeBatch(c);
+    b.set(R(c, 'k300_carol'), rev('carol', 'k300', 'sp2', { photos: ['k300_carol_1'] }));
+    b.set(PP(c, 'k300_carol_1'), pphoto('carol', 'sp2', { reviewId: 'k300_carol' }));
     await assertSucceeds(b.commit());
   });
   test('공개 사진 올리기: 평 없이, 평 목록에 안 적고, 다른 이름으로는 못 올린다 (저장 공간을 몰래 못 쓴다)', async () => {
@@ -1428,9 +1429,10 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertFails(setDoc(PP(as.bora(), 'k999_bora_0'), pphoto('bora', 'main', { reviewId: 'k999_bora' })));
     // 정해진 이름(평 이름_0 · _1)이 아닌 것
     for (const id of ['pp-bora-9', 'k100_bora_2', 'k100_bora_00', 'k100_bora']) {
-      const b = writeBatch(as.bora());
-      b.update(R(as.bora(), 'k100_bora'), { photos: [id] });
-      b.set(PP(as.bora(), id), pphoto('bora', 'main', { reviewId: 'k100_bora' }));
+      const d = as.bora();
+      const b = writeBatch(d);
+      b.update(R(d, 'k100_bora'), { photos: [id] });
+      b.set(PP(d, id), pphoto('bora', 'main', { reviewId: 'k100_bora' }));
       await assertFails(b.commit());
     }
     // 평 목록에 아무 글이나 넣기 (사진 없이 이름만, 긴 글, 같은 이름 두 번, 글이 아닌 것)
@@ -1462,9 +1464,10 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertFails(mk(carol()));
     await assertSucceeds(mk(as.bora()));
     // 둘 중 하나만
-    const one = writeBatch(carol());
-    one.update(R(carol(), 'k400_carol'), { photos: ['k400_carol_1'] });
-    one.delete(PP(carol(), 'k400_carol_0'));
+    const c = carol();
+    const one = writeBatch(c);
+    one.update(R(c, 'k400_carol'), { photos: ['k400_carol_1'] });
+    one.delete(PP(c, 'k400_carol_0'));
     await assertSucceeds(one.commit());
   });
   test('공개 거두기: 평을 지울 땐 사진도 같이 지워야 한다 (본인·짝·주인). 사진이 남는 지우기는 막힌다', async () => {
@@ -1492,7 +1495,8 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertSucceeds(setDoc(doc(as.owner(), 'config/flags'), { pubPhotosPaused: true }));
     await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
     await assertSucceeds(setDoc(R(as.bora(), 'k300_bora'), rev('bora', 'k300', 'main')));
-    const b = writeBatch(as.bora()); b.update(R(as.bora(), 'k400_bora'), { photos: [] }); b.delete(PP(as.bora(), 'k400_bora_0'));
+    const d = as.bora();
+    const b = writeBatch(d); b.update(R(d, 'k400_bora'), { photos: [] }); b.delete(PP(d, 'k400_bora_0'));
     await assertSucceeds(b.commit());
     await assertSucceeds(setDoc(doc(as.owner(), 'config/flags'), { pubPhotosPaused: false }));
     await assertSucceeds(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
