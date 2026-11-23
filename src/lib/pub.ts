@@ -160,6 +160,23 @@ export function useMyPubs(uid: string | null | undefined): PubDoc[] | null {
   return list;
 }
 
+// ---------- 공간 관리자의 공개 끄기 (spaces/{공간}.pubOff · 규칙이 새 공개·고치기·사진을 막는다) ----------
+export function useSpacePubOff(): boolean {
+  const [v, setV] = useState(false);
+  useEffect(() => onSnapshot(doc(db, 'spaces', SPACE_ID), (s) => setV((s.data() as { pubOff?: boolean } | undefined)?.pubOff === true), () => setV(false)), []);
+  return v;
+}
+/** 끄기: 먼저 스위치를 켜서 새 공개를 막고, 이 공간 사람들이 공개한 평과 사진을 모두 거둔다. 거둔 수를 돌려준다 */
+export async function turnSpacePubOff(): Promise<{ dropped: number; failed: number }> {
+  await updateDoc(doc(db, 'spaces', SPACE_ID), { pubOff: true });
+  const s = await getDocs(query(col(), where('spaceId', '==', SPACE_ID), limit(500)));
+  const r = await Promise.allSettled(s.docs.map((d) => dropPub(d.id)));
+  return { dropped: r.filter((x) => x.status === 'fulfilled').length, failed: r.filter((x) => x.status === 'rejected').length };
+}
+export const turnSpacePubOn = () => updateDoc(doc(db, 'spaces', SPACE_ID), { pubOff: false });
+/** 이 공간에서 지금 공개 중인 평 수 (관리자만 읽을 수 있다) */
+export const countSpacePubs = () => getDocs(query(col(), where('spaceId', '==', SPACE_ID), limit(500))).then((s) => s.size);
+
 // ---------- 신고 · 안 보기 ----------
 export const FLAG_REASONS = { privacy: '사람이 알아볼 수 있는 내용', wrong: '틀린 정보', rude: '거친 말', ad: '광고', other: '그 밖에' } as const;
 export type FlagReason = keyof typeof FLAG_REASONS;

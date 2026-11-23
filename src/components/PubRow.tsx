@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { displayName, useAuth } from '../lib/auth';
 import { placeKey } from '../lib/placeRef';
 import { myLine, monthOf, nameNeedsRetype, pubBlock, PUB_PHOTO_MAX, summarize } from '../lib/pubShape';
-import { addPubPhoto, FLAG_REASONS, flagPub, myPubNick, publishPlace, removePubPhoto, unpublish, useMute, useMyPub, usePlacePubs, usePubPhotos, usePubPhotosPaused, type FlagReason, type PubDoc } from '../lib/pub';
+import { addPubPhoto, FLAG_REASONS, flagPub, myPubNick, publishPlace, removePubPhoto, unpublish, useMute, useMyPub, usePlacePubs, usePubPhotos, usePubPhotosPaused, useSpacePubOff, type FlagReason, type PubDoc } from '../lib/pub';
 import { VERDICT_LABEL } from '../lib/placeRecs';
 import { useToast } from './ui';
 import type { PlaceRec, Trip } from '../lib/types';
@@ -20,8 +20,10 @@ export function PubRow({ rec, trip }: { rec: PlaceRec; trip: Trip | null }) {
   const mine = useMyPub(key, user?.uid);
   const [ask, setAsk] = useState<{ nick: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const off = useSpacePubOff();
   if (!user) return null;
-  const block = pubBlock(rec);
+  // 공간 관리자가 공개를 껐으면 새로 공개하지 못한다 (이미 공개된 것이 남아 있으면 거둘 수는 있다)
+  const block = off ? '이 공간은 관리자가 보라핀 사람들에게 공개하기를 꺼 두었어요' : pubBlock(rec);
   const on = !!mine;
   const retype = nameNeedsRetype(rec);
   const open = async () => setAsk({ nick: await myPubNick(user.uid, me), name: retype ? '' : rec.name });

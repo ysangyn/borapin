@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { OWNER_EMAIL } from '../lib/owner';
-import { dismissFlag, FLAG_REASONS, hidePub, readPub, setPubPhotosPaused, unhidePub, unpublish, useFlags, useMyPubs, usePubPhotosPaused, type PubDoc } from '../lib/pub';
+import { countSpacePubs, turnSpacePubOff, turnSpacePubOn, useSpacePubOff, dismissFlag, FLAG_REASONS, hidePub, readPub, setPubPhotosPaused, unhidePub, unpublish, useFlags, useMyPubs, usePubPhotosPaused, type PubDoc } from '../lib/pub';
 import { PubPhotoStrip } from './PubRow';
 import { VERDICT_LABEL } from '../lib/placeRecs';
 import { useToast } from './ui';
@@ -39,6 +39,52 @@ export function MyPubs() {
             toast(r.every((x) => x.status === 'fulfilled') ? '공개를 모두 거뒀어요' : '몇 곳은 거두지 못했어요. 다시 해 주세요');
             setBusy(false);
           }}><span className="small" style={{ color: 'var(--danger)' }}>모두 거두기</span></button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** 공간 관리자만: 이 공간의 공개 끄기. 끄면 이 공간 사람들이 공개한 평·사진을 모두 거두고, 새로 공개하지 못한다 */
+export function SpacePubSwitch() {
+  const auth = useAuth();
+  const toast = useToast();
+  const admin = auth.status === 'ready' && auth.isAdmin;
+  const off = useSpacePubOff();
+  const [ask, setAsk] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  if (!admin) return null;
+  return (
+    <section data-testid="space-pub-switch">
+      <div className="label" style={{ padding: '0 4px 6px' }}>우리 공간의 공개</div>
+      <div className="setting-group">
+        <div className="setting-row">
+          <span className="small" style={{ flex: 1 }}>{off ? '보라핀 사람들에게 공개하기를 꺼 두었어요' : '보라핀 사람들에게 공개할 수 있어요'}
+            <span className="tiny muted" style={{ display: 'block' }}>{off ? '이 공간 사람은 가게 평·사진을 새로 공개하지 못해요. 다른 사람이 공개한 평은 계속 볼 수 있어요' : '끄면 이 공간 사람 모두가 새로 공개하지 못하고, 지금까지 공개한 평·사진도 거둬요'}</span>
+          </span>
+          {off
+            ? <button className="btn sm ghost" disabled={busy} data-testid="space-pub-on" onClick={async () => {
+                setBusy(true);
+                try { await turnSpacePubOn(); toast('공개를 다시 켰어요'); } catch { toast('켜지 못했어요'); }
+                setBusy(false);
+              }}>다시 켜기</button>
+            : <button className="btn sm ghost" disabled={busy || ask !== null} data-testid="space-pub-off" onClick={async () => { setAsk(await countSpacePubs().catch(() => 0)); }}>공개 끄기</button>}
+        </div>
+        {ask !== null && !off && (
+          <div className="setting-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }} role="alertdialog" aria-label="공개 끄기 확인" data-testid="space-pub-confirm">
+            <span className="small">{ask > 0 ? `이 공간에서 공개한 평 ${ask}곳과 그 사진을 모두 거둬요. 다시 켜도 거둔 평은 돌아오지 않아요.` : '지금 공개한 평은 없어요. 끄면 이 공간 사람은 새로 공개하지 못해요.'}</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn sm ghost" style={{ flex: 1 }} disabled={busy} onClick={() => setAsk(null)}>그만두기</button>
+              <button className="btn sm" style={{ flex: 1 }} disabled={busy} data-testid="space-pub-off-go" onClick={async () => {
+                setBusy(true);
+                try {
+                  const r = await turnSpacePubOff();
+                  toast(r.failed ? `공개를 껐어요. ${r.failed}곳은 거두지 못했어요. 다시 해 주세요` : r.dropped ? `공개를 껐어요 · 평 ${r.dropped}곳을 거뒀어요` : '공개를 껐어요');
+                } catch { toast('끄지 못했어요'); }
+                setBusy(false); setAsk(null);
+              }}>{busy ? '끄는 중…' : '공개 끄기'}</button>
+            </div>
+          </div>
         )}
       </div>
     </section>

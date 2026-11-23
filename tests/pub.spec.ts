@@ -107,6 +107,21 @@ test('공개 평: 공개하기 → 나눈 평 → 보라가 보고 신고 → �
   await owner.goto('/space');
   await expect(owner.getByTestId('my-pubs')).toContainText('아직 없어요', { timeout: 20_000 });
   // (평이 지워졌다 = 사진도 같은 묶음에서 지워졌다: 규칙이 사진이 남는 지우기를 막는다. tests/rules '공개 거두기')
+
+  // 공간 관리자의 공개 끄기: 확인 → 끄면 구성원(보라)은 새로 공개하지 못한다 → 다시 켜기
+  const sw = owner.getByTestId('space-pub-switch');
+  await sw.getByTestId('space-pub-off').click();
+  await expect(sw.getByTestId('space-pub-confirm')).toContainText('새로 공개하지 못해요');
+  await shot(owner, '52-space-pub-off');
+  await sw.getByTestId('space-pub-off-go').click();
+  await expect(owner.getByRole('status')).toContainText('공개를 껐어요');
+  await expect(sw).toContainText('꺼 두었어요');
+  await bora.goto(new URL(placeUrl).pathname);
+  await expect(bora.getByTestId('pub-block')).toContainText('관리자가', { timeout: 20_000 });
+  await expect(bora.getByTestId('pub-on')).toBeDisabled();
+  await sw.getByTestId('space-pub-on').click();
+  await expect(owner.getByRole('status')).toContainText('공개를 다시 켰어요');
+  await expect(sw.getByTestId('space-pub-off')).toBeVisible();
   await owner.close();
   await bora.close();
 });

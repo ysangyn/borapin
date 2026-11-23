@@ -512,6 +512,11 @@ service cloud.firestore {
     function pubReviewPath(id) { return /databases/$(database)/documents/pubReviews/$(id); }
     function flagsPath() { return /databases/$(database)/documents/config/flags; }
     function pubPhotoPath(id) { return /databases/$(database)/documents/pubPhotos/$(id); }
+    // 공간 관리자가 그 공간의 공개를 껐는가 (spaces/{공간}.pubOff). 끄면 그 공간 사람은 새로 공개하거나 고치지 못한다. 거두기는 된다.
+    // 사진은 평의 목록을 고치는 묶음으로만 올라오므로(pubPhotosOk) 평 쪽에서 막으면 사진도 막힌다.
+    function spacePubOff(spaceId) {
+      return exists(spaceDocPath(spaceId)) && get(spaceDocPath(spaceId)).data.get('pubOff', false) == true;
+    }
     // 공개 사진은 평 하나에 두 칸뿐: 사진 이름 = 평 이름_0 · 평 이름_1. 아무 이름으로나 올려 저장 공간을 쓰지 못한다.
     // 평의 photos 목록과 사진 문서는 늘 맞아야 한다 (이 묶음이 끝난 뒤 모습으로 본다): 적힌 사진은 있고, 안 적힌 사진은 없다.
     // 그래서 사진은 평과 한 묶음(batch)으로만 올리고 지운다. 평에 안 걸린 사진, 사진 없는 이름은 생기지 않는다.
@@ -536,7 +541,9 @@ service cloud.firestore {
         && d.placeKey is string && d.placeKey.matches('^[kn][0-9]{1,40}$')
         && d.uid == request.auth.uid
         && id == d.placeKey + '_' + request.auth.uid
-        && d.spaceId is string && inSpace(d.spaceId)
+        // 내가 지금 쓰는 공간 이름으로만 (isUser가 그 공간의 구성원임을 이미 확인했다), 그 공간이 공개를 끄지 않았을 때만
+        && d.spaceId is string && d.spaceId == get(profilePath()).data.spaceId
+        && !spacePubOff(d.spaceId)
         && d.name is string && d.name.size() >= 1 && d.name.size() <= 80
         && d.kind in ['food', 'cafe', 'sight', 'stay', 'shop', 'etc']
         && (!('region' in d) || validRegion(d.region))
@@ -550,9 +557,11 @@ service cloud.firestore {
         && d.v == 1;
     }
     match /pubReviews/{id} {
-      // 목록은 '가려지지 않은 것'(hidden == false)이나 '내 것'(uid == 나)으로 물어야 한다. 주인은 모두
+      // 목록은 '가려지지 않은 것'(hidden == false)이나 '내 것'(uid == 나)으로 물어야 한다. 주인은 모두.
+      // 공간 관리자는 자기 공간 것(spaceId == 내 공간)을 가려진 것까지 모아 읽는다: 공개를 끌 때 모두 거두려고
       allow read: if isUser()
-        && (resource.data.hidden == false || resource.data.uid == request.auth.uid || isOwner());
+        && (resource.data.hidden == false || resource.data.uid == request.auth.uid || isOwner()
+          || spaceAdmin(resource.data.spaceId));
       allow create: if isUser() && validPubReview(request.resource.data, id)
         && request.resource.data.hidden == false
         && !('hiddenReason' in request.resource.data) && !('hiddenAt' in request.resource.data);
@@ -644,18 +653,21 @@ service cloud.firestore {
           && d.home.code is string && d.home.code.size() <= 10
           && d.home.lat is number && d.home.lat >= 33 && d.home.lat <= 39
           && d.home.lng is number && d.home.lng >= 124 && d.home.lng <= 132
-          && d.home.exact is bool));
+          && d.home.exact is bool))
+        && (!('pubOff' in d) || d.pubOff is bool);
     }
 
     match /spaces/{spaceId} {
       allow read: if inSpace(spaceId);
       allow update: if inSpace(spaceId) && validSpace(request.resource.data)
         // 만든 사람 칸은 바꾸지 못한다
-        && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null);
+        && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null)
+        // 공개 끄기(pubOff)는 공간 관리자만 켜고 끈다. 구성원은 그대로 둬야 한다
+        && (request.resource.data.get('pubOff', false) == resource.data.get('pubOff', false) || spaceAdmin(spaceId));
       // 만들기: 우리 공간은 예전대로. 새 공간은 같은 묶음에서 초대장으로 첫 관리자가 되는 사람만 (규칙 validInvitedMember)
       allow create: if validSpace(request.resource.data)
         && (
-          (spaceId == 'main' && isMember())
+          (spaceId == 'main' && isMember() && (request.resource.data.get('pubOff', false) == false || isAdmin()))
           || (spaceId != 'main' && signedIn()
             && !exists(memberPath(spaceId))
             && existsAfter(memberPath(spaceId))
