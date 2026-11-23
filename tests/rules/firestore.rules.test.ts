@@ -1248,6 +1248,7 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
   });
   const pphoto = (uid: string, spaceId: string, over: Record<string, unknown> = {}) => ({ uid, spaceId, reviewId: `k100_${uid}`, data: Bytes.fromUint8Array(new Uint8Array([1, 2, 3])), w: 10, h: 10, v: 1, ...over });
   const flag = (uid: string, reviewId: string, over: Record<string, unknown> = {}) => ({ reviewId, uid, reason: 'privacy', v: 1, ...over });
+  const expectIds = (snap: { docs: { id: string }[] }, ids: string[]) => assert.deepEqual(snap.docs.map((x) => x.id).sort(), [...ids].sort());
 
   beforeEach(async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
@@ -1500,6 +1501,61 @@ describe('6걸음: 공개 평 (pubReviews · pubPhotos · pubFlags)', () => {
     await assertSucceeds(b.commit());
     await assertSucceeds(setDoc(doc(as.owner(), 'config/flags'), { pubPhotosPaused: false }));
     await assertSucceeds(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
+  });
+
+  // ---- 공간 관리자의 공개 끄기 (spaces/{공간}.pubOff) ----
+  const seedSpaces = (over: Record<string, Record<string, unknown>> = {}) => env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore() as unknown as Firestore;
+    await setDoc(doc(db, 'spaces/main'), { name: '우리 집', v: 1, ...(over.main ?? {}) });
+    await setDoc(doc(db, 'spaces/sp2'), { name: '캐롤네', v: 1, ...(over.sp2 ?? {}) });
+  });
+  test('공개 끄기 스위치: 공간 관리자만 켜고 끈다. 구성원은 못 바꾸고, 다른 칸을 고칠 때도 그대로 둬야 한다', async () => {
+    await seedSpaces();
+    await assertFails(updateDoc(doc(as.bora(), 'spaces/main'), { pubOff: true }));
+    await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main'), { name: '보라네' })); // 다른 칸은 예전처럼
+    await assertFails(updateDoc(doc(carol(), 'spaces/main'), { pubOff: true })); // 남의 공간
+    await assertFails(updateDoc(doc(as.owner(), 'spaces/main'), { pubOff: 'yes' }));
+    await assertSucceeds(updateDoc(doc(as.owner(), 'spaces/main'), { pubOff: true }));
+    await assertFails(updateDoc(doc(as.bora(), 'spaces/main'), { pubOff: false })); // 구성원이 다시 켜기
+    await assertFails(updateDoc(doc(as.bora(), 'spaces/main'), { pubOff: deleteField() }));
+    await assertSucceeds(updateDoc(doc(as.bora(), 'spaces/main'), { name: '우리 집' }));
+    await assertSucceeds(updateDoc(doc(carol(), 'spaces/sp2'), { pubOff: true })); // 캐롤은 자기 공간 관리자
+    await assertSucceeds(updateDoc(doc(as.owner(), 'spaces/main'), { pubOff: false }));
+  });
+  test('공개를 끈 공간: 새로 공개하지도, 글을 고치지도, 사진을 붙이지도 못한다. 거두기는 된다. 다른 공간은 그대로', async () => {
+    await seedSpaces({ main: { pubOff: true } });
+    await assertFails(setDoc(R(as.bora(), 'k300_bora'), rev('bora', 'k300', 'main')));
+    await assertFails(setDoc(R(as.owner(), 'k300_owner'), rev('owner', 'k300', 'main'))); // 관리자 자신도
+    await assertFails(updateDoc(R(as.bora(), 'k100_bora'), { line: '고친 평' }));
+    await assertFails(addPhoto(as.bora(), 'k100_bora', 0, 'bora', 'main', []));
+    await assertFails(addPhoto(as.bora(), 'k400_bora', 1, 'bora', 'main', ['k400_bora_0']));
+    await assertSucceeds(setDoc(R(carol(), 'k300_carol'), rev('carol', 'k300', 'sp2')));
+    await assertSucceeds(getDoc(R(as.bora(), 'k100_carol'))); // 읽기는 그대로
+    const d = as.bora();
+    const b = writeBatch(d); b.delete(R(d, 'k400_bora')); b.delete(PP(d, 'k400_bora_0'));
+    await assertSucceeds(b.commit());
+    await assertSucceeds(deleteDoc(R(as.owner(), 'k100_bora'))); // 관리자가 구성원 것을 거둔다
+    // 다시 켜면 공개할 수 있다
+    await assertSucceeds(updateDoc(doc(as.owner(), 'spaces/main'), { pubOff: false }));
+    await assertSucceeds(setDoc(R(as.bora(), 'k300_bora'), rev('bora', 'k300', 'main')));
+  });
+  test('공개 끄기: 공간 관리자는 자기 공간의 공개 평을 모아 읽고(가려진 것까지) 거둔다. 구성원·다른 공간 관리자는 못 모은다', async () => {
+    await seedSpaces();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      // 캐롤네 구성원 erin의 가려진 평 (관리자 캐롤이 거둘 수 있어야 한다)
+      await setDoc(doc(db, 'spaces/sp2/members/erin'), memberDoc('erin', 'erin@example.com', { role: 'member', name: '에린', via: 'invite-code-2' }));
+      await setDoc(R(db, 'k700_erin'), rev('erin', 'k700', 'sp2', { hidden: true }));
+    });
+    const c = carol();
+    const got = await assertSucceeds(getDocs(query(collection(c, 'pubReviews'), where('spaceId', '==', 'sp2'))));
+    expectIds(got, ['k100_carol', 'k200_carol', 'k400_carol', 'k500_carol', 'k700_erin']);
+    await assertSucceeds(getDoc(R(c, 'k700_erin')));
+    await assertFails(getDocs(query(collection(c, 'pubReviews'), where('spaceId', '==', 'main'))));
+    await assertFails(getDocs(query(collection(as.bora(), 'pubReviews'), where('spaceId', '==', 'main'))));
+    const erin = env.authenticatedContext('erin', { email: 'erin@example.com', email_verified: true }).firestore() as unknown as Firestore;
+    await assertFails(getDocs(query(collection(erin, 'pubReviews'), where('spaceId', '==', 'sp2'))));
+    await assertSucceeds(deleteDoc(R(c, 'k700_erin')));
   });
 
   test('신고: 보라핀 사람이 한 평에 한 번, 고칠 수 없다. 읽고 지우는 건 마을 주인만', async () => {
