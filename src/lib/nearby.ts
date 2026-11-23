@@ -1,3 +1,4 @@
+import type { Store } from './storeMatch';
 import type { User } from 'firebase/auth';
 import { aiAvailable, ASK_URL } from './ask/url';
 
@@ -78,16 +79,18 @@ export function fetchAbout(user: User | null, names: string[], area: string): Pr
   return p;
 }
 
-/** 카카오에서 고른 한 곳 → 상가정보의 같은 가게 (worker /match). 못 찾거나 실패하면 null */
-export async function fetchStoreMatch(user: User | null, name: string, lat: number, lng: number): Promise<import('./herePick').StoreMatch | null> {
+/**
+ * 상가정보(공공데이터): 내 폰 위치 둘레 가게 목록 (worker /stores). 조회 조건은 폰 위치뿐 — 카카오 이름·좌표를 보내지 않는다
+ * (카카오 데브톡 답변 11-23). 못 받으면 null.
+ */
+export async function fetchStores(user: User | null, lat: number, lng: number): Promise<Store[] | null> {
   if (!user || !aiAvailable()) return null;
   try {
     const token = await user.getIdToken();
-    const r = await fetch(`${ASK_URL}/match?name=${encodeURIComponent(name.slice(0, 80))}&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(6000) });
+    const r = await fetch(`${ASK_URL}/stores?lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(6000) });
     if (!r.ok) return null;
-    const j = (await r.json()) as { match?: import('./herePick').StoreMatch | null };
-    const m = j.match;
-    return m && typeof m.name === 'string' && Number.isFinite(m.lat) && Number.isFinite(m.lng) ? m : null;
+    const j = (await r.json()) as { stores?: Store[] };
+    return Array.isArray(j.stores) ? j.stores.filter((m) => m && typeof m.name === 'string' && typeof m.id === 'string' && Number.isFinite(m.lat) && Number.isFinite(m.lng)) : null;
   } catch { return null; }
 }
 

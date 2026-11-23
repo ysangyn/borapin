@@ -6,8 +6,11 @@
 import { placeKey } from './placeRef';
 import type { PlaceRec, When } from './types';
 
-/** '지금 여기'가 카카오 이름 대신 상가정보 이름을 쓰기 시작한 때 (11-22 KST 아침). 그 전 카카오 번호 기록은 이름이 카카오에서 왔을 수 있다 */
-export const KAKAO_NAME_CUTOFF = Date.UTC(2026, 10, 21, 22, 0);
+/**
+ * '지금 여기'가 상가정보를 내 폰 위치로 받기 시작한 때 (11-23 KST 낮). 그 전 카카오 번호 기록은 이름이 카카오에서 왔거나
+ * 카카오 이름·좌표로 찾은 상가정보 값일 수 있다 (데브톡 답변 11-23: 둘 다 쓰면 안 됨) → 공개할 때 이름을 직접 다시 적는다
+ */
+export const KAKAO_NAME_CUTOFF = Date.UTC(2026, 10, 23, 3, 0);
 
 export const pubId = (key: string, uid: string) => `${key}_${uid}`;
 

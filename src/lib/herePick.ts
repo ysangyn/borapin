@@ -4,6 +4,7 @@
  * 카카오 정책 (데브톡 답변 2026): 로컬 API의 장소명·주소·좌표는 저장해 다시 쓸 수 없다. 사용자가 확인을 눌러도 같다.
  * 장소 ID와 카카오맵 링크는 저장해도 된다. 그래서
  *  - 카카오에서 고른 곳: 카카오 장소 번호 + 내 폰 위치. 이름·주소는 상가정보(공공데이터)와 맞으면 그 값.
+ *    상가정보는 내 폰 위치로 먼저 받고, 카카오 항목과는 폰 안에서 비교만 한다 (데브톡 답변 11-23: 카카오 값을 조회 조건으로 쓰지 말 것).
  *  - 관광공사 목록: 공공데이터라 그대로 남긴다.
  * docs/kakao-devtalk-question.md 참고.
  */
@@ -21,7 +22,8 @@ export const KAKAO_NAME_UNTIL_MATCH = false; // 11-22 상가정보 활용 승인
 export type Pos = { lat: number; lng: number };
 export type Pick = { name: string; kind: PlaceKind; tag: string; pos: Pos | null; addr?: string; ref?: PlaceRef | null };
 /** 소상공인시장진흥공단 상가(상권)정보에서 찾은 같은 가게 (worker/src/storeMatch.ts) */
-export interface StoreMatch { id: string; name: string; addr?: string; lat: number; lng: number }
+export type { Store as StoreMatch } from './storeMatch';
+import type { Store as StoreMatch } from './storeMatch';
 
 /**
  * @param kakaoNameOk 상가정보와 못 맞췄을 때 카카오 이름을 이름 칸에 채워 둘지.

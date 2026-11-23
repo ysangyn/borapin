@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseStores, matchStore, storeUrl } from '../../worker/src/storeMatch';
+import { parseStores, storeUrl } from '../../worker/src/storeMatch';
+// 같은 가게 비교는 폰 안에서 (카카오 값은 조회 조건으로 쓰지 않는다 — 데브톡 답변 11-23)
+import { matchStore } from '../../src/lib/storeMatch';
 
 // 소상공인시장진흥공단 상가(상권)정보 storeListInRadius 응답 모양 (body.items)
 const page = { header: { resultCode: '00', resultMsg: 'NORMAL SERVICE' }, body: { totalCount: 4, items: [
@@ -39,7 +41,7 @@ test('이름이 달라도, 이름이 같아도 너무 멀면 다른 가게로 �
   assert.equal(matchStore('정성식당', 37.7, 128.9, s), null);
 });
 
-test('부르는 주소: 반경 100m, json, 키는 그대로', () => {
+test('부르는 주소: 기본 반경 100m, json, 키는 그대로', () => {
   const u = new URL(storeUrl('K+EY/=', 37.123456789, 127.98765432));
   assert.equal(u.origin + u.pathname, 'https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRadius');
   assert.equal(u.searchParams.get('serviceKey'), 'K+EY/=');
@@ -47,4 +49,9 @@ test('부르는 주소: 반경 100m, json, 키는 그대로', () => {
   assert.equal(u.searchParams.get('cx'), '127.987654');
   assert.equal(u.searchParams.get('cy'), '37.123457');
   assert.equal(u.searchParams.get('type'), 'json');
+});
+
+test('지금 여기는 폰 위치 둘레 150m로 부른다', () => {
+  assert.equal(new URL(storeUrl('K', 37.5, 127)).searchParams.get('radius'), '100');
+  assert.equal(new URL(storeUrl('K', 37.5, 127, 150)).searchParams.get('radius'), '150');
 });

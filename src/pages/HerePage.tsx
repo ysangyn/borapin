@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TopBar, useBusy, useToast } from '../components/ui';
 import { useAuth, displayName } from '../lib/auth';
 import { createPlace, useTrips } from '../lib/data';
-import { fetchNearby, fetchShops, fetchStoreMatch, here, walkText, type NearbyItem } from '../lib/nearby';
+import { fetchNearby, fetchShops, fetchStores, here, walkText, type NearbyItem } from '../lib/nearby';
+import { matchStore, type Store } from '../lib/storeMatch';
 import { KAKAO_NAME_UNTIL_MATCH, pickFromItem, type Pick, type Pos } from '../lib/herePick';
 import { locate } from '../lib/geodata';
 import { useHome } from '../lib/home';
@@ -56,6 +57,8 @@ export default function HerePage() {
       setMsg('근처를 찾는 중…');
       // 동네 가게는 카카오(해외는 오픈스트리트맵) 음식점·카페가 먼저, 안 되면 관광공사(관광지·음식점)
       const user = auth.status === 'ready' ? auth.user : null;
+      // 상가정보(공공데이터)를 내 폰 위치로 먼저 받아 둔다 — 카카오 목록에서 고르면 폰 안에서 비교만 (데브톡 답변 11-23)
+      storesRef.current = fetchStores(user, p.lat, p.lng);
       const shops = await fetchShops(user, p.lat, p.lng);
       const r = shops?.items.length ? shops : await fetchNearby(user, p.lat, p.lng);
       if (!on) return;
@@ -72,13 +75,15 @@ export default function HerePage() {
 
   const choose = (p: Pick) => { setPick(p); setVerdict(null); setLine(''); };
   const [matching, setMatching] = useState(false);
-  // 목록에서 고르기: 카카오 항목이면 상가정보(공공데이터)의 같은 가게를 찾아 그 이름·주소·자리를 쓴다 (카카오 정책)
+  const storesRef = useRef<Promise<Store[] | null> | null>(null);
+  // 목록에서 고르기: 카카오 항목이면 미리 받아 둔 상가정보와 비교해 같은 가게면 공공데이터의 이름·주소·자리를 쓴다 (카카오 정책)
   const chooseItem = async (it: NearbyItem) => {
     if (matching) return;
     const user = auth.status === 'ready' ? auth.user : null;
     if (!refFromNearbyId(it.id)) return choose(pickFromItem(it, pos, null, KAKAO_NAME_UNTIL_MATCH));
     setMatching(true);
-    const m = await fetchStoreMatch(user, it.name, it.lat, it.lng);
+    const stores = (await (storesRef.current ?? (pos ? fetchStores(user, pos.lat, pos.lng) : Promise.resolve(null)))) ?? [];
+    const m = matchStore(it.name, it.lat, it.lng, stores);
     setMatching(false);
     choose(pickFromItem(it, pos, m, KAKAO_NAME_UNTIL_MATCH));
   };
@@ -120,7 +125,7 @@ export default function HerePage() {
                 ))}
                 {matching && <span className="small muted" aria-live="polite">가게 정보를 맞춰 보는 중…</span>}
                 {items.length > shown && <button className="link-btn" onClick={() => setShown(shown + 5)}>더 보기</button>}
-                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'osm' ? '© OpenStreetMap 기여자' : source === 'kakao' ? '카카오맵 장소 정보 · 남길 때는 소상공인시장진흥공단 상가정보' : '한국관광공사 관광정보'}</span>}
+                {source && <span className="tiny muted" style={{ textAlign: 'center' }}>{source === 'osm' ? '© OpenStreetMap 기여자' : source === 'kakao' ? '카카오맵 오픈 API · 남길 때는 소상공인시장진흥공단 상가정보' : '한국관광공사 관광정보'}</span>}
               </div>
             )}
             <form className="here-own" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) choose({ name: typed.trim(), ...guessKind(typed, null), pos }); }}>
