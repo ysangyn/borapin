@@ -5,6 +5,7 @@ import { countSpacePubs, turnSpacePubOff, turnSpacePubOn, useSpacePubOff, dismis
 import { PubPhotoStrip } from './PubRow';
 import { VERDICT_LABEL } from '../lib/placeRecs';
 import { useToast } from './ui';
+import { spaceWord } from '../lib/solo';
 
 /** 설정 '보라핀 사람들에게 나눈 것': 내가 공개한 평을 한눈에 보고 거둔다 (가려진 것도 까닭과 함께) */
 export function MyPubs() {
@@ -56,7 +57,7 @@ export function SpacePubSwitch() {
   if (!admin) return null;
   return (
     <section data-testid="space-pub-switch">
-      <div className="label" style={{ padding: '0 4px 6px' }}>우리 공간의 공개</div>
+      <div className="label" style={{ padding: '0 4px 6px' }}>{spaceWord()}의 공개</div>
       <div className="setting-group">
         <div className="setting-row">
           <span className="small" style={{ flex: 1 }}>{off ? '보라핀 사람들에게 공개하기를 꺼 두었어요' : '보라핀 사람들에게 공개할 수 있어요'}
