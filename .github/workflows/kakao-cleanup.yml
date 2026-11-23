@@ -1,0 +1,46 @@
+name: 옛 카카오 기록 정리 (사용자 확인 11-23)
+
+# kakao-cleanup 브랜치에 올리면 한 번 실행된다. 주소·좌표를 지운다 (예상 수와 다르면 멈춤). 끝나면 그 브랜치는 지운다.
+on:
+  push:
+    branches: [kakao-cleanup]
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 배포 열쇠 준비
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+      - name: 정리
+        run: npx tsx scripts/kakao-cleanup.ts 2>&1 | tee kakao-cleanup-output.txt
+      - name: 열쇠 지우기
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
+      - name: 결과 올리기 (ci-report 브랜치)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/push-report.sh kakao-cleanup kakao-cleanup-output.txt
+      - name: 브랜치 지우기
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete kakao-cleanup
