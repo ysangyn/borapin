@@ -1259,6 +1259,24 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByText('캄퐁 아에르').first()).toBeVisible();
   });
 
+  test('계획: 날짜 고르기는 달력. 떠나는 날 → 오는 날을 누르면 몇 박 며칠이 저절로 (사용자 의견 11-25)', async ({ page }) => {
+    await signIn(page, OWNER);
+    await page.goto('/plan?place=country:TWN:%ED%83%80%EC%9D%B4%EB%B2%A0%EC%9D%B4');
+    await page.getByRole('button', { name: '날짜 고르기' }).click();
+    const cal = page.getByTestId('month-calendar');
+    await expect(cal).toBeVisible();
+    await expect(page.getByText('며칠', { exact: true })).toHaveCount(0); // 며칠은 달력이 정한다
+    await cal.getByTestId('mcal-next').click();
+    await cal.getByRole('gridcell', { name: /^\d+월 10일/ }).click();
+    await expect(page.getByTestId('mcal-sum')).toContainText('오는 날을 눌러 주세요');
+    await page.getByTestId('planner-make').click();
+    await expect(page.getByRole('status')).toContainText('오는 날도 골라 주세요');
+    await cal.getByRole('gridcell', { name: /^\d+월 13일/ }).click();
+    await expect(page.getByTestId('mcal-sum')).toContainText('3박 4일');
+    await expect(cal.getByRole('gridcell', { name: /오는 날/ })).toHaveCount(1);
+    await shot(page, '33-plan-calendar');
+  });
+
   test('어디든 찾아보기: 홈에서 서산을 찾으면 큰 지도에서 서산 창이 열리고, 지도에서 교토를 찾으면 세계로 (사용자 의견 11-21)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/');

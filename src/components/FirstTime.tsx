@@ -83,7 +83,7 @@ export default function FirstTime({ place, again = false }: { place: Place; agai
           ))}
         </ol>
         <span className="tiny muted">{r.plan ? '많이 다니는 길로 써 둔 예시예요 · 바꿔서 쓸 수 있어요' : '도시 자료로 짠 간단한 뼈대예요 · 바꿔서 쓸 수 있어요'}</span>
-        <Link to={`/plan?place=${placeParam(cityPlace)}&first=${nights}`} className="btn block soft-on" data-testid="first-plan">이 일정으로 계획하기</Link>
+        <Link to={`/plan?place=${placeParam(cityPlace)}&first=${nights}`} className="btn block line" data-testid="first-plan">이 길을 참고해 여행 짜 보기</Link>
 
         {!!videos?.length && (
           <>

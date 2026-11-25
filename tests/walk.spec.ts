@@ -115,6 +115,7 @@ const toastText = async (page: Page) => (await page.getByRole('status').first().
 
 // ───────────────────────── 여행 이야기: 계획 → 떠나기 → 다녀와서 기록 ─────────────────────────
 const kst = (offsetDays: number) => { const d = new Date(Date.now() + 9 * 3600_000 + offsetDays * 86400_000); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ymdStr = (o: { y: number; m: number; d: number }) => `${o.y}-${String(o.m).padStart(2, '0')}-${String(o.d).padStart(2, '0')}`;
 /** 시간이 흐른 셈 치기: 여행 날짜를 오늘 기준으로 옮긴다 (from~to: 오늘부터 며칠) */
 async function moveTrip(id: string, from: number, to: number) {
@@ -293,8 +294,15 @@ test('여행 이야기: 국내는 둘이 고르고, 해외는 가고 싶은 도�
   await step(me, 'w06-make-trip', async () => { await me.getByTestId('wish-edit-plan').click(); await me.getByTestId('planner-dest').waitFor(); }, true);
   await step(me, 'w07-planner-fixed', async () => {
     await me.getByRole('button', { name: '날짜 고르기' }).click();
-    await me.getByLabel('떠날 날').fill(ymdStr(kst(40)));
-    await me.getByRole('button', { name: /^3박 4일$/ }).click();
+    // 달력에서 떠나는 날 → 오는 날을 누르면 몇 박인지 저절로 (사용자 의견 11-25). 40일 뒤라 두 달 넘겨서
+    const cal = me.getByTestId('month-calendar');
+    const go = kst(40), back = kst(43);
+    const now = kst(0);
+    for (let i = 0; i < (go.y - now.y) * 12 + go.m - now.m; i++) await cal.getByTestId('mcal-next').click();
+    await cal.getByRole('gridcell', { name: new RegExp(`^${go.m}월 ${go.d}일`) }).click();
+    for (let i = 0; i < (back.y - go.y) * 12 + back.m - go.m; i++) await cal.getByTestId('mcal-next').click();
+    await cal.getByRole('gridcell', { name: new RegExp(`^${back.m}월 ${back.d}일`) }).click();
+    await me.getByTestId('mcal-sum').filter({ hasText: '3박 4일' }).waitFor();
   }, true);
   await step(me, 'w08-made', async () => { await me.getByTestId('planner-make').click(); await me.waitForURL(/plan-next/); log(`  · 알림: ${await toastText(me)}`); });
   const abTrip = /\/trips\/([^/?]+)/.exec(me.url())?.[1] ?? '';

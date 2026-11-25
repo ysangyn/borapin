@@ -1,3 +1,4 @@
+import MonthCalendar from '../components/MonthCalendar';
 import { straightKm } from '../lib/placeApps';
 import { useHome } from '../lib/home';
 import PlaceHint from '../components/PlaceHint';
@@ -42,6 +43,8 @@ export default function Planner() {
   const wishGone = !!wishId && !!wishes && !wish;
   const [when, setWhen] = useState<WhenKind>('nextweekend');
   const [start, setStart] = useState('');
+  // 달력에서 오는 날까지 고르면 몇 박인지 저절로 (null = 오는 날을 아직 안 고름)
+  const [pickedNights, setPickedNights] = useState<number | null>(null);
   // '처음 가 보는 나라'의 '이 일정으로 계획하기'에서 오면 ?first=2|4 (그 일정을 여행 일정으로 넣는다)
   const first = sp.get('first') === '4' ? 4 : sp.get('first') === '2' ? 2 : null;
   const [nights, setNights] = useState(first ?? 1);
@@ -53,7 +56,7 @@ export default function Planner() {
 
   const go = async () => {
     if (auth.status !== 'ready' || !data || busy) return;
-    if (when === 'pick' && !start) return toast('떠날 날을 골라 주세요');
+    if (when === 'pick' && (!start || pickedNights == null)) return toast(!start ? '떠나는 날을 골라 주세요' : '오는 날도 골라 주세요');
     setBusy(true);
     try {
       const cands = planCandidates(conds, data);
@@ -66,7 +69,7 @@ export default function Planner() {
   /** 빠른 길: 정해진 곳으로 갈 예정 여행을 바로 만든다 (하루 뼈대까지) */
   const make = async () => {
     if (auth.status !== 'ready' || !data || busy || !fixed) return;
-    if (when === 'pick' && !start) return toast('떠날 날을 골라 주세요');
+    if (when === 'pick' && (!start || pickedNights == null)) return toast(!start ? '떠나는 날을 골라 주세요' : '오는 날도 골라 주세요');
     setBusy(true);
     try {
       const tripId = await createTrip({ title: `${placeLabel(fixed)} ${nights === 0 ? '나들이' : '여행'}`, kind: nights === 0 ? 'outing' : 'trip', status: 'planned', when: whenOf(conds), places: [fixed], companions: memberNames(), memo: '', tags: [], source: 'app' }, auth.user);
@@ -114,15 +117,15 @@ export default function Planner() {
           <div className="chips">
             {(['weekend', 'nextweekend', 'nextmonth', 'pick', 'unknown'] as WhenKind[]).map((k) => <button key={k} type="button" className={'chip' + (when === k ? ' on' : '')} aria-pressed={when === k} onClick={() => setWhen(k)}>{WHEN_LABEL[k]}</button>)}
           </div>
-          {when === 'pick' && <input className="input" type="date" aria-label="떠날 날" value={start} onChange={(e) => setStart(e.target.value)} />}
-          {range && <div className="tiny muted">{range.start.getMonth() + 1}월 {range.start.getDate()}일{nights > 0 ? ` ~ ${range.end.getMonth() + 1}월 ${range.end.getDate()}일` : ''}</div>}
+          {when === 'pick' && <MonthCalendar value={start} nights={pickedNights} onChange={(st, n) => { setStart(st); setPickedNights(n); if (n != null) setNights(n); }} />}
+          {range && when !== 'pick' && <div className="tiny muted">{range.start.getMonth() + 1}월 {range.start.getDate()}일{nights > 0 ? ` ~ ${range.end.getMonth() + 1}월 ${range.end.getDate()}일` : ''}</div>}
         </section>
-        <section className="planner-q">
+        {when !== 'pick' && <section className="planner-q">
           <div className="planner-label">며칠</div>
           <div className="chips">
             {[0, 1, 2, 3, 4].map((n) => <button key={n} type="button" className={'chip' + (nights === n ? ' on' : '')} aria-pressed={nights === n} onClick={() => setNights(n)}>{n === 4 ? '4박 이상' : nightsLabel(n)}</button>)}
           </div>
-        </section>
+        </section>}
         {!fixed && (
           <>
             <section className="planner-q">

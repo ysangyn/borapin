@@ -89,3 +89,21 @@ test('어느 날에 골라도 후보는 3곳 (CI 44916350581: 11-22 일요일에
     for (const c of list) assert.ok(c.reasons.length > 0, `${c.title}에 고른 까닭이 없다`);
   }
 });
+
+test('달력 한 장: 2026년 11월은 일요일 시작이라 빈칸 없이 30칸, 2027년 1월은 금요일 시작이라 빈칸 5개', async () => {
+  const { monthCells } = await import('../../src/components/MonthCalendar');
+  const nov = monthCells(2026, 10);
+  assert.equal(nov.length, 30);
+  assert.equal(nov[0], 1);
+  const jan = monthCells(2027, 0);
+  assert.equal(jan.filter((x) => x == null).length, 5);
+  assert.equal(jan.at(-1), 31);
+});
+
+test('달력 두 날 → 몇 박: 같은 날 당일, 12-23 ~ 12-26은 3박, 해 넘김도', async () => {
+  const { nightsBetween } = await import('../../src/components/MonthCalendar');
+  assert.equal(nightsBetween('2026-12-23', '2026-12-23'), 0);
+  assert.equal(nightsBetween('2026-12-23', '2026-12-26'), 3);
+  assert.equal(nightsBetween('2026-12-30', '2027-01-02'), 3);
+  assert.equal(nightsBetween('2027-03-07', '2027-03-09'), 2); // 서머타임 없는 한국 시각이라도 반올림
+});
