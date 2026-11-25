@@ -336,10 +336,15 @@ async function handle(req: Request, env: Env): Promise<Response> {
       const q = (url.searchParams.get('q') ?? '').trim().slice(0, 80);
       if (!q) return json({ error: 'empty' }, 400);
       const cache = caches.default;
-      const key = new Request(`https://cache.borapin/geo?q=${encodeURIComponent(q)}`);
+      // 해외 일정의 가볼 곳 자리 찾기: 나라 두 글자(cc)와 그 도시 둘레 상자(near=위도,경도 → 둘레 약 60km 안에서만)
+      const ccRaw = (url.searchParams.get('cc') ?? 'kr').toLowerCase();
+      const cc = /^[a-z]{2}$/.test(ccRaw) ? ccRaw : 'kr';
+      const nearM = /^(-?\d{1,2}(?:\.\d{1,4})?),(-?\d{1,3}(?:\.\d{1,4})?)$/.exec(url.searchParams.get('near') ?? '');
+      const box = nearM ? `&viewbox=${Number(nearM[2]) - 0.6},${Number(nearM[1]) + 0.55},${Number(nearM[2]) + 0.6},${Number(nearM[1]) - 0.55}&bounded=1` : '';
+      const key = new Request(`https://cache.borapin/geo?q=${encodeURIComponent(q)}&cc=${cc}&near=${nearM ? nearM[0] : ''}`);
       const hit = await cache.match(key);
       if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q=${encodeURIComponent(q)}`, { headers: { 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' } }).catch(() => null);
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=${cc}&accept-language=ko&q=${encodeURIComponent(q)}${box}`, { headers: { 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' } }).catch(() => null);
       const j = r && r.ok ? ((await r.json().catch(() => [])) as { lat: string; lon: string; display_name: string }[]) : [];
       const out = j[0] ? { lat: Number(j[0].lat), lng: Number(j[0].lon), name: j[0].display_name } : {};
       const res = json(out);

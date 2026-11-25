@@ -2080,3 +2080,10 @@ button.pub-photo { cursor: zoom-in; }
 .mcal-d.start { background: var(--violet); color: #fff !important; font-weight: 700; }
 .mcal-sum { font-size: 14px; padding: 2px 2px 0; }
 .mcal-n { color: var(--violet); }
+
+/* 일정: 가까운 곳끼리 묶기 · 차례 바꾸기 */
+.plan-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.plan-tools .btn { flex: 1; min-width: 0; white-space: nowrap; }
+.plan-move { width: 44px; height: 44px; flex: none; border-radius: 14px; border: 1.5px solid var(--edge); background: var(--card); font-size: 20px; line-height: 1; color: var(--violet); cursor: pointer; }
+.plan-move:disabled { opacity: .3; }
+.plan-move.del { color: #c8473a; }

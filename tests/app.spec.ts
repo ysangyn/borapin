@@ -868,6 +868,25 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(plan.getByTestId('plan-item').filter({ hasText: '시장 구경' })).toContainText('18:30');
     await shot(page, '13-plan');
 
+    // 차례 바꾸기·빼기: ↑ ↓ × (사용자 의견 11-25). '날짜 없이' 맨 위에서 ↑ → 마지막 날로 올라간다
+    await expect(plan.getByTestId('plan-near')).toHaveText('가까운 곳끼리 날짜 나누기');
+    await plan.getByTestId('plan-arrange').click();
+    const walkRow = plan.getByTestId('plan-item').filter({ hasText: '저녁 산책' });
+    await expect(plan.locator('section', { has: walkRow }).locator('.year-head')).toHaveText('날짜 없이');
+    await walkRow.getByTestId('plan-up').click();
+    await expect(plan.locator('section', { has: walkRow }).locator('.year-head')).not.toHaveText('날짜 없이');
+    await shot(page, '13b-plan-arrange');
+    await walkRow.getByTestId('plan-remove').click();
+    await expect(plan.getByTestId('plan-item')).toHaveCount(n0 + 1);
+    await page.getByRole('status').getByRole('button', { name: '되돌리기' }).click();
+    await expect(plan.getByTestId('plan-item')).toHaveCount(n0 + 2);
+    await plan.getByTestId('plan-arrange').click();
+    await expect(plan.getByTestId('plan-up')).toHaveCount(0);
+    // 자리 찾기가 안 되는 곳(시험 환경)에서는 묶지 못했다고 알려 주고 아무것도 안 바꾼다
+    await plan.getByTestId('plan-near').click();
+    await expect(page.getByRole('status')).toContainText(/묶지 못했어요|묶을 곳이/, { timeout: 30_000 });
+    await expect(plan.getByTestId('plan-item')).toHaveCount(n0 + 2);
+
     // 다녀온 강릉 여행: 개요·들른 곳·사진·글, 탭 글은 375px에서도 한 줄
     const vp = page.viewportSize()!;
     await page.setViewportSize({ width: 375, height: 760 });
