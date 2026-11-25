@@ -872,9 +872,10 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(plan.getByTestId('plan-near')).toHaveText('가까운 곳끼리 날짜 나누기');
     await plan.getByTestId('plan-arrange').click();
     const walkRow = plan.getByTestId('plan-item').filter({ hasText: '저녁 산책' });
-    await expect(plan.locator('section', { has: walkRow }).locator('.year-head')).toHaveText('날짜 없이');
+    const walkDay = plan.locator('section', { hasText: '저녁 산책' }).locator('.year-head');
+    await expect(walkDay).toHaveText('날짜 없이');
     await walkRow.getByTestId('plan-up').click();
-    await expect(plan.locator('section', { has: walkRow }).locator('.year-head')).not.toHaveText('날짜 없이');
+    await expect(walkDay).toHaveText(/2일째/);
     await shot(page, '13b-plan-arrange');
     await walkRow.getByTestId('plan-remove').click();
     await expect(plan.getByTestId('plan-item')).toHaveCount(n0 + 1);
