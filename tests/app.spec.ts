@@ -1279,6 +1279,34 @@ test.describe.serial('보라핀 1단계', () => {
     await expect(page.getByText('캄퐁 아에르').first()).toBeVisible();
   });
 
+  test("+ 창: 역 이름도 찾고, '대회역'처럼 한 끗 틀리면 '혹시 이 역인가요?'로 대화역 → 둘레 맛집·볼거리 창 (사용자 의견 11-25)", async ({ page }) => {
+    await signIn(page, OWNER);
+    // 역 목록은 뒷단(오픈스트리트맵)에서 받아 폰에 둔다 — 시험에선 폰에 둔 것처럼 넣어 둔다
+    await page.evaluate(() => {
+      const list: [string, number, number][] = [['대화역', 37.67597, 126.74717], ['대곡역', 37.63168, 126.81102], ['주엽역', 37.67017, 126.76134], ['강남역', 37.49795, 127.02763], ['강남구청역', 37.51713, 127.04128]];
+      for (let i = 0; i < 120; i++) list.push([`시험${i}역`, 37 + i / 1000, 127]);
+      localStorage.setItem('borapin.stations.v1', JSON.stringify({ at: Date.now(), list }));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: '남기기' }).click();
+    await page.getByTestId('where-search').fill('대회역');
+    const st = page.getByTestId('where-stations');
+    await expect(st).toContainText('혹시 이 역인가요?');
+    await expect(st.getByTestId('where-station').first()).toContainText('대화역');
+    await expect(page.getByTestId('where-landmark')).toContainText("'대회역' 둘레 보기");
+    await shot(page, '34-where-station');
+    // 자동완성: 앞부분만 쳐도
+    await page.getByTestId('where-search').fill('강남');
+    await expect(st).not.toContainText('혹시');
+    await expect(st.getByTestId('where-station')).toHaveText([/강남역/, /강남구청역/]);
+    // 역을 고르면 그 자리의 알아보기 창
+    await page.getByTestId('where-search').fill('대화');
+    await st.getByTestId('where-station').first().click();
+    const dlg = page.getByRole('dialog', { name: /대화역/ });
+    await expect(dlg).toBeVisible();
+    await expect(dlg).toContainText('고양시');
+  });
+
   test('계획: 날짜 고르기는 달력. 떠나는 날 → 오는 날을 누르면 몇 박 며칠이 저절로 (사용자 의견 11-25)', async ({ page }) => {
     await signIn(page, OWNER);
     await page.goto('/plan?place=country:TWN:%ED%83%80%EC%9D%B4%EB%B2%A0%EC%9D%B4');

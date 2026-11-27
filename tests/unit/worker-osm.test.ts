@@ -33,3 +33,16 @@ test('찾는 말: 반경 안의 식당·카페·빵집, 이름 있는 것만', (
   assert.match(q, /bakery/);
   assert.match(q, /\[name\]/);
 });
+
+test('역 목록: name:ko 먼저, 괄호 떼고 끝에 역, 같은 이름 가까운 점은 하나만, 한글 없는 이름은 뺀다', async () => {
+  const { parseStations } = await import('../../worker/src/osmParse');
+  const r = parseStations({ elements: [
+    { type: 'node', lat: 37.676, lon: 126.747, tags: { name: '대화', 'name:ko': '대화' } },
+    { type: 'node', lat: 37.6761, lon: 126.7471, tags: { name: '대화역' } },
+    { type: 'node', lat: 37.5, lon: 127.02, tags: { name: '강남 (Gangnam)', 'name:en': 'Gangnam' } },
+    { type: 'node', lat: 37.55, lon: 126.97, tags: { name: 'Seoul Station' } },
+    { type: 'node', lat: 35.1, lon: 129.0, tags: { name: '대화역' } },
+  ] });
+  assert.deepEqual(r.map((x) => x[0]), ['강남역', '대화역', '대화역']);
+  assert.deepEqual(r[1], ['대화역', 37.676, 126.747]);
+});

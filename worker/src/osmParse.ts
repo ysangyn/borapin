@@ -48,3 +48,26 @@ export function parseOsmNear(j: unknown, lat: number, lng: number): NearbyItem[]
   }
   return out.sort((a, b) => a.dist - b.dist);
 }
+
+/**
+ * 국내 전철·기차역 목록 (+ 창에서 '대화역' 같은 역 이름으로 찾기). 한 달에 한 번만 오버패스에 묻는다.
+ * 이름은 name:ko(없으면 name)에서 괄호 설명을 뗀 것, 끝에 '역'을 붙여 맞춘다.
+ */
+export const STATIONS_QUERY = '[out:json][timeout:60];area["ISO3166-1"="KR"][admin_level=2]->.k;(node(area.k)[railway~"^(station|halt)$"][name];node(area.k)[public_transport=station][name][station~"^(subway|light_rail|train)$"];);out qt;';
+
+/** [이름, 위도, 경도] 목록. 같은 이름이 2km 안에 또 있으면(환승역 여러 점) 하나만 */
+export function parseStations(j: unknown): [string, number, number][] {
+  const els = (j as { elements?: unknown } | null)?.elements;
+  if (!Array.isArray(els)) return [];
+  const out: [string, number, number][] = [];
+  for (const e of els as El[]) {
+    const raw = (e.tags?.['name:ko'] ?? e.tags?.name ?? '').replace(/\s*\(.*?\)\s*/g, '').trim();
+    if (!raw || !/[가-힣]/.test(raw) || raw.length > 20) continue;
+    const name = /역$/.test(raw) ? raw : `${raw}역`;
+    const lat = e.lat ?? e.center?.lat, lng = e.lon ?? e.center?.lon;
+    if (typeof lat !== 'number' || typeof lng !== 'number') continue;
+    if (out.some(([n, a, b]) => n === name && meters(a, b, lat, lng) < 2000)) continue;
+    out.push([name, Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5]);
+  }
+  return out.sort((a, b) => a[0].localeCompare(b[0], 'ko'));
+}

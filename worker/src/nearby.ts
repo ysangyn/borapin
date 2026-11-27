@@ -10,18 +10,22 @@ async function call(key: string, op: string, p: Record<string, string>) {
   return r.json();
 }
 
-export async function nearby(key: string, lat: number, lng: number): Promise<Response> {
+/**
+ * kind: 'food' 음식점만(39) · 'see' 관광지만(12) · 없으면 다 (지금 여기). 알아보기 창의 '근처 맛집·볼거리'는 1km → 3km.
+ */
+export async function nearby(key: string, lat: number, lng: number, kind?: 'food' | 'see'): Promise<Response> {
   const head = { 'content-type': 'application/json; charset=utf-8' };
   if (!(lat > 32 && lat < 39.5 && lng > 124 && lng < 132)) return new Response(JSON.stringify({ items: [], outside: true }), { headers: head });
   const la = lat.toFixed(3), ln = lng.toFixed(3);
   const cache = caches.default;
-  const ck = new Request(`https://cache.borapin/nearby?${la},${ln}`);
+  const ck = new Request(`https://cache.borapin/nearby?${la},${ln}${kind ? `&${kind}` : ''}`);
   const hit = await cache.match(ck);
   if (hit) return hit;
   // 500m 안에 셋이 안 되면 1.5km까지
   let items: NearbyItem[] = [];
-  for (const radius of ['500', '1500']) {
-    items = parseNearby(await call(key, 'locationBasedList2', { mapX: ln, mapY: la, radius, arrange: 'E', numOfRows: '12', pageNo: '1' }));
+  const type: Record<string, string> = kind === 'food' ? { contentTypeId: '39' } : kind === 'see' ? { contentTypeId: '12' } : {};
+  for (const radius of kind ? ['1000', '3000'] : ['500', '1500']) {
+    items = parseNearby(await call(key, 'locationBasedList2', { mapX: ln, mapY: la, radius, arrange: 'E', numOfRows: '12', pageNo: '1', ...type }));
     if (items.length >= 3) break;
   }
   items = items.slice(0, 9);

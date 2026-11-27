@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../lib/auth';
 import { useHome } from '../lib/home';
-import { fetchSpot, fetchVideos, type AboutInfo, type SpotInfo, type VideoItem } from '../lib/nearby';
+import { fetchNearby, fetchSpot, fetchVideos, walkText, type AboutInfo, type NearbyItem, type SpotInfo, type VideoItem } from '../lib/nearby';
 import { straightKm } from '../lib/placeApps';
 import { foodPlaceUrl, reviewUrl, videoUrl, type Row } from '../lib/explore';
 import { MapAppButton, useWishItem } from './MapChoice';
@@ -25,8 +25,8 @@ export interface SpotTarget {
   img?: string;
   crowd?: string | null;
   place: Place;
-  /** spot 볼거리 · food 먹거리(음식 이름) · shop 가게 */
-  kind?: 'spot' | 'food' | 'shop';
+  /** spot 볼거리 · food 먹거리(음식 이름) · shop 가게 · place 역·지명(+ 창에서 찾은 곳: 둘레 맛집·볼거리를 같이) */
+  kind?: 'spot' | 'food' | 'shop' | 'place';
   /** 위키백과 요약 (있으면) */
   about?: AboutInfo;
   /** 먹거리 창에서 보여 줄 그 지역 맛집 (관광공사) */
@@ -140,6 +140,9 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
           </dl>
         )}
 
+        <NearStrip spot={spot} onPick={setSpot} want={spot.kind === 'shop' ? 'see' : 'food'} />
+        {spot.kind === 'place' && <NearStrip spot={spot} onPick={setSpot} want="see" />}
+
         {food && (spot.foods?.length ?? 0) > 0 && (
           <div className="spot-more-places">
             <span className="small" style={{ fontWeight: 600 }}>{spot.area} 맛집</span>
@@ -179,5 +182,41 @@ export default function SpotDetail({ spot: first, onClose }: { spot: SpotTarget;
       </div>
     </div>,
     document.body,
+  );
+}
+
+/**
+ * 근처 맛집 · 근처 볼거리 (사용자 의견 11-25): 볼거리를 보면 그 둘레 음식점을, 가게를 보면 둘레 관광지를.
+ * 관광공사 위치 기반 목록(1km → 3km, 하루 캐시). 국내이고 자리를 알 때만.
+ */
+function NearStrip({ spot, onPick, want }: { spot: SpotTarget; onPick: (s: SpotTarget) => void; want: 'food' | 'see' }) {
+  const auth = useAuth();
+  const [list, setList] = useState<NearbyItem[] | null>(null);
+  const ok = spot.place.t === 'kr' && spot.kind !== 'food' && spot.lat != null && spot.lng != null;
+  useEffect(() => {
+    if (!ok) return;
+    let on = true;
+    setList(null);
+    void fetchNearby(auth.status === 'ready' ? auth.user : null, spot.lat!, spot.lng!, want).then((r) => {
+      if (!on) return;
+      const items = (r?.items ?? []).filter((x) => x.name !== spot.name && x.dist > 30);
+      setList(items.slice(0, 8));
+    });
+    return () => { on = false; };
+  }, [ok, spot.lat, spot.lng, spot.name, want, auth.status]);
+  if (!ok || !list?.length) return null;
+  return (
+    <div className="spot-more-places" data-testid="spot-near">
+      <span className="small" style={{ fontWeight: 600 }}>{want === 'food' ? '근처 맛집' : '근처 볼거리'}</span>
+      <div className="tour-strip">
+        {list.map((it) => (
+          <button key={it.id} type="button" className={'tour-card' + (it.img ? '' : ' no-img')} onClick={() => onPick({ name: it.name, area: spot.area, lat: it.lat, lng: it.lng, img: it.img, place: spot.place, kind: want === 'food' ? 'shop' : 'spot' })}>
+            {it.img ? <img src={it.img} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <span className="tour-noimg" aria-hidden="true">{want === 'food' ? '🍽' : '📍'}</span>}
+            <span>{it.name}</span>
+            <span className="tiny muted">{it.dist > 1500 ? `${(it.dist / 1000).toFixed(1)}km` : walkText(it)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

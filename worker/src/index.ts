@@ -19,7 +19,7 @@ import { bingQuery, parseBingRss, parseGoogleRss, type NewsItem } from './rss';
 import { about } from './about';
 import { nearby, spot } from './nearby';
 import { parseKakaoNear } from './kakaoParse';
-import { overpassQuery, parseOsmNear } from './osmParse';
+import { overpassQuery, parseOsmNear, parseStations, STATIONS_QUERY } from './osmParse';
 import { parseStores, storeUrl } from './storeMatch';
 import { parseVideos, videoQuery, videosUrl } from './youtube';
 import { allowedUrl, coordsFromUrl, kakaoPlaceId, naverPlaceId, parseKakaoHtml, parseNaverHtml, type PlaceInfo } from './placeInfo';
@@ -310,7 +310,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const isAbout = req.method === 'GET' && url.pathname === '/about';
     const isStores = req.method === 'GET' && url.pathname === '/stores';
     const isVideos = req.method === 'GET' && url.pathname === '/videos';
-    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && !isAbout && !isStores && !isVideos && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
+    const isStations = req.method === 'GET' && url.pathname === '/stations';
+    if (!isNews && !isPlace && !isGeo && !isNearby && !isSpot && !isFind && !isShops && !isAbout && !isStores && !isVideos && !isStations && (req.method !== 'POST' || !['/plan', '/answer'].includes(url.pathname))) return json({ error: 'not found' }, 404);
 
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -352,6 +353,23 @@ async function handle(req: Request, env: Env): Promise<Response> {
       await cache.put(key, res.clone());
       return res;
     }
+    // 국내 역 목록 (+ 창의 역 이름 찾기·오타 보정은 앱에서). 오픈스트리트맵, 30일 캐시
+    if (isStations) {
+      const ck = new Request('https://cache.borapin/stations-v1');
+      const hit = await caches.default.match(ck);
+      if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...CORS } });
+      const rl7 = await env.PER_USER.limit({ key: who.uid });
+      if (!rl7.success) return json({ error: 'too many requests', retry: 60 }, 429);
+      try {
+        const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', 'user-agent': 'borapin/1.0 (+https://borapin.web.app)' }, body: `data=${encodeURIComponent(STATIONS_QUERY)}` });
+        if (!r.ok) return json({ error: 'upstream' }, 502);
+        const list = parseStations(await r.json());
+        if (list.length < 100) return json({ error: 'upstream' }, 502);
+        const res = new Response(JSON.stringify({ stations: list }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=2592000' } });
+        await caches.default.put(ck, res.clone());
+        return new Response(res.body, { headers: { ...Object.fromEntries(res.headers), ...CORS } });
+      } catch { return json({ error: 'upstream' }, 502); }
+    }
     // 지금 여기 근처 관광지 (관광공사, 키는 Worker 비밀값 DATA_GO_KR_KEY)
     if (isNearby) {
       if (!env.DATA_GO_KR_KEY) return json({ error: 'no key' }, 503);
@@ -360,7 +378,8 @@ async function handle(req: Request, env: Env): Promise<Response> {
       const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'bad position' }, 400);
       try {
-        const r = await nearby(env.DATA_GO_KR_KEY, lat, lng);
+        const k = url.searchParams.get('kind');
+        const r = await nearby(env.DATA_GO_KR_KEY, lat, lng, k === 'food' || k === 'see' ? k : undefined);
         return new Response(r.body, { headers: { ...Object.fromEntries(r.headers), ...CORS } });
       } catch { return json({ error: 'upstream' }, 502); }
     }

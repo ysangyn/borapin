@@ -1,4 +1,4 @@
-import { useMemo, useState, type ClipboardEvent } from 'react';
+import { useEffect, useMemo, useState, type ClipboardEvent } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Icon } from './ui';
 import { useStore } from '../lib/store';
@@ -8,6 +8,12 @@ import { parseNaverShare } from '../lib/placeRecs';
 import { samePlace } from '../lib/wishes';
 import { dday } from '../lib/dates';
 import type { Place } from '../lib/types';
+import { useAuth } from '../lib/auth';
+import { loadStations, type Station } from '../lib/stations';
+import { fuzzyFind } from '../lib/fuzzyKo';
+import { lookupGeo } from '../lib/placeLookup';
+import { locate } from '../lib/geodata';
+import SpotDetail, { type SpotTarget } from './SpotDetail';
 
 /**
  * + 단추 = '어디?': 지역을 고르면 그 지역 한 장(/region/…)이 열리고 거기서 다녀왔어요·가고 싶어요를 남긴다.
@@ -19,6 +25,30 @@ export default function WhereSheet({ onClose }: { onClose: () => void }) {
   const home = useHome();
   const [q, setQ] = useState('');
   const hits = useMemo(() => (q.trim() ? searchPlaces(q, 6) : []), [q]);
+  // 역 이름으로도 찾는다: 치는 동안 자동완성, 한 끗 틀리면 '혹시' (사용자 의견 11-25: '대회역' → 대화역)
+  const auth = useAuth();
+  const [stations, setStations] = useState<Station[]>([]);
+  useEffect(() => { void loadStations(auth.status === 'ready' ? auth.user : null).then(setStations); }, [auth.status]);
+  const stationHits = useMemo(() => (q.trim().length >= 1 && !/^[ㄱ-ㅎ]+$/.test(q.trim()) ? fuzzyFind(q, stations, (s) => s[0], 5) : []), [q, stations]);
+  const [near, setNear] = useState<SpotTarget | null>(null);
+  const [finding, setFinding] = useState(false);
+  /** 역·지명을 고르면 그 자리의 알아보기 창: 둘레 맛집·볼거리 */
+  const openNear = async (name: string, lat: number, lng: number) => {
+    const place = await locate(lng, lat).catch(() => null);
+    if (!place) return;
+    setNear({ name, area: placeLabel(place), lat, lng, place, kind: 'place' });
+  };
+  /** 지역도 역도 아닌 이름(롯데월드, 광장시장…): 오픈스트리트맵에서 자리를 찾아 둘레를 본다 */
+  const findLandmark = async () => {
+    const name = q.trim();
+    if (!name || finding) return;
+    setFinding(true);
+    const g = await lookupGeo(name).catch(() => null);
+    setFinding(false);
+    if (g) void openNear(g.name?.split(',')[0] || name, g.lat, g.lng);
+    else setNotFound(name);
+  };
+  const [notFound, setNotFound] = useState<string | null>(null);
   const go = (p: Place) => { onClose(); nav(`/region/${placeParam(p)}`); };
   // 자주 가는 곳: 가게·여행이 많은 지역 (우리 집 먼저)
   const frequent = useMemo(() => {
@@ -52,14 +82,30 @@ export default function WhereSheet({ onClose }: { onClose: () => void }) {
       </div>
       <label className="where-search">
         <Icon name="search" size={18} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} onPaste={onPaste} placeholder="강릉, 성수동, 교토, ㄱㄹ… 또는 지도 공유 글 붙여 넣기" aria-label="지역 찾기" autoFocus data-testid="where-search" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} onPaste={onPaste} placeholder="강릉, 교토, 대화역, 광장시장… 또는 지도 공유 글" aria-label="지역 찾기" autoFocus data-testid="where-search" />
       </label>
       {hits.length > 0 && (
         <div className="list" style={{ gap: 2 }} data-testid="where-hits">
           {hits.map((h) => <button key={placeParam(h.place)} type="button" className="plus-item" onClick={() => go(h.place)} style={{ padding: '10px 14px' }}><Icon name="pin" size={18} /><span><b>{h.label}</b><span className="tiny muted" style={{ marginLeft: 6 }}>{h.sub}</span></span></button>)}
         </div>
       )}
-      {!hits.length && (
+      {stationHits.length > 0 && (
+        <div className="list" style={{ gap: 2 }} data-testid="where-stations">
+          {!stationHits[0].exact && <span className="tiny muted" style={{ padding: '4px 14px 0' }}>혹시 이 역인가요?</span>}
+          {stationHits.map((h) => (
+            <button key={`${h.item[0]}${h.item[1]}`} type="button" className="plus-item" onClick={() => void openNear(h.item[0], h.item[1], h.item[2])} style={{ padding: '10px 14px' }} data-testid="where-station">
+              <span aria-hidden="true" style={{ width: 18, textAlign: 'center' }}>🚉</span><span><b>{h.item[0]}</b><span className="tiny muted">주변 맛집·볼거리</span></span>
+            </button>
+          ))}
+        </div>
+      )}
+      {q.trim().length >= 2 && !/^[ㄱ-ㅎ]+$/.test(q.trim()) && (
+        <button type="button" className="plus-item" onClick={() => void findLandmark()} disabled={finding} style={{ padding: '10px 14px' }} data-testid="where-landmark">
+          <Icon name="search" size={18} /><span><b>{finding ? '찾는 중…' : `'${q.trim()}' 둘레 보기`}</b><span className="tiny muted">{notFound === q.trim() ? '자리를 찾지 못했어요. 다른 이름으로 찾아 주세요' : '장소 이름으로 그 둘레 맛집·볼거리'}</span></span>
+        </button>
+      )}
+      {near && <SpotDetail spot={near} onClose={() => setNear(null)} />}
+      {!q.trim() && (
         <>
           <div className="where-group">
             <span className="tiny muted">자주 가는 곳</span>

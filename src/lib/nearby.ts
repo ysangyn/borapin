@@ -6,11 +6,11 @@ import { aiAvailable, ASK_URL } from './ask/url';
 export interface NearbyItem { id: string; name: string; kind: 'food' | 'cafe' | 'sight' | 'stay' | 'shop' | 'etc'; type: string; dist: number; walk: number; lat: number; lng: number; img?: string; addr?: string; line?: string }
 export type NearbyResult = { items: NearbyItem[]; outside?: boolean; source?: 'kakao' | 'osm' } | null;
 
-export async function fetchNearby(user: User | null, lat: number, lng: number): Promise<NearbyResult> {
+export async function fetchNearby(user: User | null, lat: number, lng: number, kind?: 'food' | 'see'): Promise<NearbyResult> {
   if (!aiAvailable() || !user) return null;
   try {
     const token = await user.getIdToken();
-    const r = await fetch(`${ASK_URL}/nearby?lat=${lat.toFixed(5)}&lng=${lng.toFixed(5)}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(12000) });
+    const r = await fetch(`${ASK_URL}/nearby?lat=${lat.toFixed(5)}&lng=${lng.toFixed(5)}${kind ? `&kind=${kind}` : ''}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(12000) });
     if (!r.ok) return null;
     return (await r.json()) as NearbyResult;
   } catch { return null; }
