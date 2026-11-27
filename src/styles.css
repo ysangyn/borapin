@@ -2088,3 +2088,7 @@ button.pub-photo { cursor: zoom-in; }
 .plan-move:disabled { opacity: .3; }
 .plan-move.del { color: #c8473a; }
 .tour-noimg { width: 104px; height: 78px; border-radius: 10px; background: var(--mist2, var(--mist)); display: flex !important; align-items: center; justify-content: center; font-size: 26px; }
+/* + 창의 찾기 결과 줄(단추)은 링크 줄과 같은 모양으로 */
+.where-sheet button.plus-item { background: none; border: none; border-radius: 14px; font: inherit; color: var(--ink); text-align: left; width: 100%; cursor: pointer; display: flex; align-items: center; gap: 12px; }
+.where-sheet button.plus-item:hover, .where-sheet button.plus-item:active { background: var(--mist); }
+.where-sheet button.plus-item > span:last-child { display: flex; flex-direction: column; gap: 1px; }
