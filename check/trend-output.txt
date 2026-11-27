@@ -1,14 +1,14 @@
 관광빅데이터: 로컬 파일에 내용이 없어 실제 주소의 지난 자료를 받아 둡니다 — https://borapin.web.app/data/trend.json (시·군 160곳)
 지난 자료를 두었어요 → src/data/trend.json, public/data/trend.json
-방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"7","daywkDivNm":"일요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"111951.0","baseYmd":"20261011"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"7","daywkDivNm":"일요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"410497.5","baseYmd":"20261011"}] 
+방문자(all) 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"1","daywkDivNm":"월요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"179067.0","baseYmd":"20261012"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"1","daywkDivNm":"월요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"369778.5","baseYmd":"20261012"}] 
 방문자 받는 방식: 전체 한 번에(쪽으로)
-자료가 있는 마지막 날 2026-10-27 (어제보다 29일 전) → 최근 2026-09-30~2026-10-27, 작년 2025-10-01~2025-10-28
-방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"3","daywkDivNm":"수요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"191145.5","baseYmd":"20260930"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"3","daywkDivNm":"수요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"466945.5","baseYmd":"20260930"}]
+자료가 있는 마지막 날 2026-10-28 (어제보다 29일 전) → 최근 2026-10-01~2026-10-28, 작년 2025-10-02~2025-10-29
+방문자 원본 예시 [{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"4","daywkDivNm":"목요일","touDivCd":"1","touDivNm":"현지인(a)","touNum":"186042.5","baseYmd":"20261001"},{"signguCode":"11110","signguNm":"종로구","daywkDivCd":"4","daywkDivNm":"목요일","touDivCd":"2","touDivNm":"외지인(b)","touNum":"415334.5","baseYmd":"20261001"}]
 방문자: 최근 22596줄 → 시·군 160곳, 작년 22176줄 → 160곳 · 호출 53번
 연관 관광지 기준 달 202610
-연관 관광지 원본 예시 [{"baseYm":"202610","tAtsCd":"3fba20a4125c4816db66636c0cff7b70","tAtsNm":"KT&G상상마당/부산","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","rlteTatsCd":"8877984a63c9640ad6a4dec3ef934719","rlteTatsNm":"롯데백화점/부산본점","rlteRegnCd":"26","rlteRegnNm":"부산광역시","rlteSignguCd":"26230","rlteSignguNm":"부산진구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"쇼핑","rlteCtgrySclsNm":"백화점","rlteRank":"1"},{"baseYm":"202610","tAtsCd":"3fba20a4125c4816db66636c0cff7b70","tAtsNm":"KT&G상상마당/부산","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","rlteTatsCd":"88222e7e5f8172698373086e65c1fad1","rlteTatsNm":"해운대해수욕장","rlteRegnCd":"26","rlteRegnNm":"부산광역시","rlteSignguCd":"26350","rlteSignguNm":"해운대구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"자연관광","rlteCtgrySclsNm":"자연경관(하천/해양)","rlteRank":"2"}]
-붐빔 원본 예시 [{"baseYmd":"20261126","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","tAtsNm":"KT&G 상상마당 부산","cnctrRate":"70.61"},{"baseYmd":"20261127","areaCd":"26","areaNm":"부산광역시","signguCd":"26230","signguNm":"부산진구","tAtsNm":"KT&G 상상마당 부산","cnctrRate":"82.14"}]
-관광빅데이터: 시·군 160곳 (작년 비교 160곳 · 연관 137곳 · 붐빔 137곳) · 호출 566번 · 77초
-요즘 뜨는 곳: 과천시 12%, 고성군 7%, 안양시 5%, 성남시 3%, 오산시 2%, 서울 2%, 양양군 2%, 수원시 1%
-한적한 곳: 울릉군 4736, 영양군 4750, 장수군 6777, 양구군 8079, 화천군 12300, 청양군 13424, 장흥군 14404, 태백시 14592
+연관 관광지 원본 예시 [{"baseYm":"202610","tAtsCd":"b8a31e1484a78a85497d845ba183e08d","tAtsNm":"2.28민주운동기념회관","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","rlteTatsCd":"dca31ec05a023c837e713eebe846fa38","rlteTatsNm":"2.28기념중앙공원","rlteRegnCd":"27","rlteRegnNm":"대구광역시","rlteSignguCd":"27110","rlteSignguNm":"중구","rlteCtgryLclsNm":"관광지","rlteCtgryMclsNm":"문화관광","rlteCtgrySclsNm":"도시공원","rlteRank":"1"},{"baseYm":"202610","tAtsCd":"b8a31e1484a78a85497d845ba183e08d","tAtsNm":"2.28민주운동기념회관","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","rlteTatsCd":"283c2fed94692f1b3b3ecba949b7459c","rlteTatsNm":"금등어","rlteRegnCd":"27","rlteRegnNm":"대구광역시","rlteSignguCd":"27260","rlteSignguNm":"수성구","rlteCtgryLclsNm":"음식","rlteCtgryMclsNm":"음식","rlteCtgrySclsNm":"한식","rlteRank":"2"}]
+붐빔 원본 예시 [{"baseYmd":"20261127","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","tAtsNm":"264작은문학관","cnctrRate":"43.61"},{"baseYmd":"20261128","areaCd":"27","areaNm":"대구광역시","signguCd":"27110","signguNm":"중구","tAtsNm":"264작은문학관","cnctrRate":"80.63"}]
+관광빅데이터: 시·군 160곳 (작년 비교 160곳 · 연관 137곳 · 붐빔 137곳) · 호출 561번 · 60초
+요즘 뜨는 곳: 과천시 11%, 고성군 6%, 안양시 5%, 성남시 3%, 오산시 2%, 서울 1%, 양양군 1%, 수원시 0%
+한적한 곳: 울릉군 4702, 영양군 4752, 장수군 6751, 양구군 8055, 화천군 12360, 청양군 13384, 장흥군 14380, 태백시 14622
 저장 → src/data/trend.json, public/data/trend.json
