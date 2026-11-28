@@ -83,6 +83,8 @@ ol#text{list-style:none;margin:10px 0 0;padding:0}
 #text li.cur b{background:var(--red);color:#fff}
 .empty{color:var(--mute);font-size:15px;padding:14px 0;border-top:1px solid var(--line)}
 .rec{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:10px}
+#last .row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}#last .row .btn{padding:0 4px;justify-content:center;font-size:14px}
+.lx{width:32px;height:32px;margin-left:8px;border-radius:50%;border:1px solid #666;background:transparent;color:#fff;font-size:18px;line-height:1}#last .t{align-items:center}#last .t>span{display:flex;align-items:center}
 .rec .t{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
 .rec .t span{color:var(--mute);font-size:14px;white-space:nowrap}
 .pl{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
@@ -220,8 +222,8 @@ ol#text{list-style:none;margin:10px 0 0;padding:0}
     <div class="row"><button class="btn pri" id="akGo">녹음 시작</button><button class="btn" id="akX">취소</button></div>
   </div>
   <div id="last" hidden>
-    <div class="t"><strong id="lastT"></strong><span id="lastD"></span></div>
-    <div class="row"><button class="btn" id="lastPlay">▶ 들어보기</button><a class="btn pri" id="lastSave">파일로 저장</a><button class="btn" id="lastX" aria-label="닫기">닫기</button></div>
+    <div class="t"><strong id="lastT"></strong><span><span id="lastD"></span><button id="lastX" class="lx" aria-label="닫기">×</button></span></div>
+    <div class="row"><button class="btn" id="lastPlay">▶ 들어보기</button><a class="btn pri" id="lastSave">파일로 저장</a><button class="btn" id="lastRe">다시 녹음</button><button class="btn" id="lastDel">지우기</button></div>
   </div>
   <div class="in">
     <button class="big" id="recBtn" aria-label="녹음 시작"><i></i></button>

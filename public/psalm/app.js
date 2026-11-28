@@ -125,7 +125,7 @@ async function start(){
  const m=myIdx();if(m.length&&!m.includes(idx))hl(m[0]);
  const nr=+$("nr").value;phase="count";
  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:nr>0,noiseSuppression:nr>0,autoGainControl:nr>0,channelCount:1}})}
- catch(e){phase="idle";$("warn").hidden=false;$("warn").scrollIntoView({block:"center"});$("state").textContent="마이크를 쓸 수 없어요";return}
+ catch(e){phase="idle";$("warn").hidden=false;$("warn").scrollIntoView({block:"center"});$("state").textContent="마이크를 쓸 수 없어요";redo=null;return}
  /* 잡음 처리: 저역 차단 → 60Hz 험 제거 → 고역 차단 → [강하게] 노이즈 게이트 → 컴프레서 */
  let recStream=stream;
  try{actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")await actx.resume();
@@ -144,7 +144,7 @@ async function start(){
   an=actx.createAnalyser();an.fftSize=512;node.connect(an);
   const dest=actx.createMediaStreamDestination();node.connect(dest);recStream=dest.stream;
   $("meter").classList.add("live");meterLoop()}catch(e){recStream=stream}
- for(let c=3;c>0;c--){$("recBtn").textContent=c;$("state").textContent="준비… 숨을 고르세요";await sleep(700);if(phase!=="count"){teardown();$("state").textContent="취소했어요";return}}
+ for(let c=3;c>0;c--){$("recBtn").textContent=c;$("state").textContent="준비… 숨을 고르세요";await sleep(700);if(phase!=="count"){teardown();$("state").textContent="취소했어요";redo=null;return}}
  const types=["audio/webm;codecs=opus","audio/mp4","audio/webm","audio/ogg"];
  const type=types.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||"";
  try{mr=new MediaRecorder(recStream,type?{mimeType:type,audioBitsPerSecond:96000}:{})}catch(e){teardown();$("warn").hidden=false;return}
@@ -155,7 +155,9 @@ async function start(){
 function finish(){const dur=elapsed(),type=mr.mimeType||"audio/webm";mr=null;teardown();
  const blob=new Blob(chunks,{type}),vs=[...new Set(marks.map(m=>m.i+1))];
  const r={id:Date.now(),title:cur.t,key,reader:me||nm()[marks[0].i]||"",vs,date:new Date().toISOString(),dur,marks,blob};
+ const old=redo&&recs.find(o=>o.id===redo);redo=null;if(old)removeRec(old,true);
  recs.unshift(r);put(r);
+ if(old)toast("다시 녹음했어요. 예전 녹음은 지웠어요");
  if(me){const n=nm();for(const v of vs)n[v-1]=me;saveNames();renderAssign()}
  renderRead();renderMix();renderList();showLast(r);$("state").textContent="저장했어요"}
 $("recBtn").onclick=()=>{if(phase==="idle")start();else if(phase==="count")phase="cancel";else if(mr&&mr.state!=="inactive")mr.stop()};
@@ -178,7 +180,17 @@ function player(r){const el=document.createElement("div");el.className="pl";el.i
   if(r.marks&&r.marks.length){let m=r.marks[0];for(const k of r.marks)if(k.t<=a.currentTime+0.05)m=k;if(m.i!==idx)hl(m.i)}};
  bar.onclick=e=>{if(a.src&&isFinite(a.duration)){const b=bar.getBoundingClientRect();a.currentTime=(e.clientX-b.left)/b.width*a.duration}};
  el.audio=a;return el}
-function showLast(r){$("lastT").textContent=label(r);$("lastD").textContent=fmt(r.dur);$("lastSave").href=urlOf(r);$("lastSave").download=fname(r);
+/* 지우기: 녹음과 함께, 이 녹음으로 자동 기재된 이름도 (다른 녹음이 그 절을 갖고 있지 않으면) 지운다 */
+function removeRec(r,keepNames){stopAll();recs=recs.filter(y=>y!==r);del(r.id);
+ if(urls.has(r.id)){URL.revokeObjectURL(urls.get(r.id));urls.delete(r.id)}
+ if(!keepNames&&r.key&&names[r.key]){const n=names[r.key];for(const v of r.vs||[])if(n[v-1]===r.reader&&!recs.some(o=>o.key===r.key&&o.reader===r.reader&&o.vs.includes(v)))delete n[v-1];saveNames()}
+ if(!$("last").hidden&&$("last").dataset.id==r.id)$("last").hidden=true;
+ if(r.key===key){renderAssign();renderRead()}renderList();renderMix()}
+let redo=null;
+function reRecord(r){if(phase!=="idle")return;if(r.key&&r.key!==key&&(PS[+r.key-1]||r.key==="c"))load(r.key);
+ if(r.reader&&r.reader!=="합본"&&r.reader!==me){me=r.reader;meP=splitMe(me);store.set("me",me);store.set("meP",meP);fillMe();renderRead()}
+ redo=r.id;location.hash="read";hl((r.vs&&r.vs[0]||1)-1);toast(`${ranges(r.vs||[])}절을 다시 녹음해요. 끝나면 예전 녹음은 지워져요`);start()}
+function showLast(r){$("last").dataset.id=r.id;$("lastRe").onclick=()=>reRecord(r);$("lastDel").onclick=e=>confirmBtn(e.currentTarget,"정말 지울까요?",()=>{removeRec(r);toast("녹음을 지웠어요")});$("lastT").textContent=label(r);$("lastD").textContent=fmt(r.dur);$("lastSave").href=urlOf(r);$("lastSave").download=fname(r);
  $("lastPlay").onclick=()=>{const b=$("list").querySelector(`.rec[data-id="${r.id}"] .pl button`);b&&b.click()};$("last").hidden=false}
 $("lastX").onclick=()=>{$("last").hidden=true};
 $("akX").onclick=()=>{$("ask").hidden=true;$("state").textContent="붉은 버튼을 눌러 시작"};
@@ -190,9 +202,10 @@ function del(id){try{db&&db.transaction("r","readwrite").objectStore("r").delete
 function renderList(){const L=$("list");
  if(!recs.length){L.innerHTML='<div class="empty">아직 녹음이 없습니다. 아래 붉은 버튼을 누르고 읽으면서 › 로 절을 넘기세요.</div>';return}
  L.innerHTML="";for(const r of recs){const d=new Date(r.date),el=document.createElement("div");el.className="rec";el.dataset.id=r.id;
-  el.innerHTML=`<div class="t"><strong>${esc(label(r))}</strong><span>${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}</span></div><div class="row"><a class="btn pri">파일로 저장</a><button class="btn q">지우기</button></div>`;
-  el.insertBefore(player(r),el.lastChild);const [s,x]=el.lastChild.children;s.href=urlOf(r);s.download=fname(r);
-  x.onclick=()=>confirmBtn(x,"한 번 더 누르면 지워요",()=>{stopAll();recs=recs.filter(y=>y!==r);del(r.id);renderList();renderRead();$("last").hidden=true});L.appendChild(el)}}
+  el.innerHTML=`<div class="t"><strong>${esc(label(r))}</strong><span>${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}</span></div><div class="row"><a class="btn pri">파일로 저장</a>${r.reader==="합본"?"":`<button class="btn">다시 녹음</button>`}<button class="btn q">지우기</button></div>`;
+  el.insertBefore(player(r),el.lastChild);const bs=[...el.lastChild.children],s=bs[0],x=bs[bs.length-1];s.href=urlOf(r);s.download=fname(r);
+  if(bs.length===3)bs[1].onclick=()=>reRecord(r);
+  x.onclick=()=>confirmBtn(x,"한 번 더 누르면 지워요",()=>{removeRec(r);toast("녹음을 지웠어요")});L.appendChild(el)}}
 
 /* ── 3 모으기 ── */
 function parseName(n){const m=n.match(/시편(\d+)편_(.+?)_([\d,\-]+)절(?:_t([\d\-]+))?/);if(m)return{key:m[1],reader:fixName(m[2].replace(/-/g," ")),vs:parseR(m[3]),tm:m[4]?m[4].split("-").map(Number):null};
