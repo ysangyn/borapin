@@ -53,7 +53,7 @@ export default defineConfig({
         globIgnores: ['icons/bora-512.png', 'icons/bora-maskable-512.png', 'assets/write-excel-file-*.js', 'assets/tour-*.js', 'assets/trend-*.js', 'assets/photoswipe*.js', 'assets/photoswipe*.css'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/__/],
+        navigateFallbackDenylist: [/^\/__/, /^\/psalm/],
         runtimeCaching: [
           {
             // 지도 경계: 한 번 받으면 기기에 두고, 뒤에서 새것이 있나 본다
